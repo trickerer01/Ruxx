@@ -1,5 +1,5 @@
 # Ruxx
-[Download](Releases) for Windows
+[Download](Releases) (Windows, Linux)
 
 ### Features
     Tags verification
