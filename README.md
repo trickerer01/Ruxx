@@ -29,7 +29,7 @@ Note that Ruxx does not restrict your search to a couple pages or something. You
 #### Misc & Tools
 - **View -> Log** - if you want some readable output
 - **Edit -> Prefix file names with \<prefix>** - all downloaded files will be named accordingly and not just numbers. This option is enabled by default
-- **Edit -> Save tags info** - an additional (text) file will be created containing tags for every file. Format is `<file>: <tags>`
+- **Edit -> Save tags** - an additional (text) file will be created containing tags for every file. Format is `<file>: <tags>`
 - **Edit -> Save source links** - an additional (text) file will be created containing source (if present) for every file. Format is `<file>: <source>`
 - **Connection -> Headers / Cookies** - solely to work with cloudflare protected sites (RN). You'll have to provide your `cf_clearance` cookie, and the `user-agent` header has to match the one used in your web browser for target wesite - to find it while browsing said website open `Web Developer tools -> Network`, reload the page and check request headers
 - **Connection -> Set proxy** - you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
