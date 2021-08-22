@@ -1,5 +1,5 @@
 # Ruxx
-[Download](Releases) (Windows, Linux)
+[Download](https://github.com/Trickerer01/Ruxx/releases/) [latest release](https://github.com/Trickerer01/Ruxx/releases/latest/) (Windows, Linux)
 
 ### What the hell?
 Ruxx is a content downloader with a lot of filters for maximum search precision (and ugly interface). Supported sites are on your right.
