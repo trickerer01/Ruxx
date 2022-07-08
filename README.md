@@ -19,13 +19,11 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 #### Filters
 - *Videos* - some websites serve videos in multiple formats, which you can chose from. **Redundant since 01.05.2021 (RX internal changes)**. You may also exclude videos altogether
 - *Images* - some websites serve images in multiple resolutions / quilities (full, preview), which you can chose from. Just like with the videos, you can also filter all the images out
-- *Destination* - create a subfolder in target directory and download there instead. Subfolder name is based on selected tags **and does not respect maximum path length**
 - *Threading* - the number of threads to use for downloading. This also somewhat increases page scan threads. More threads means speed, less threads means safety for you and less network hiccups. Actually even max threads is no problem in most cases
 - *Order* - the download queue is sorted by ID which directly correlates with upload time. `Oldest first` mean ascending order. Well, who cares really?
 - *Search limits*
   - *Date min / max* - applied to initial search results, ignored if set to default (`01-01-1970` / `<today>`)
   - *ID min / max* - these are applied directly to your searches (transformed into tags). You can set *max* to a negative value to make it serve as a `count` (GUI only)
-- *Don't download* - this ugly thing stays there for debugging purposes. If checked the process goes as normal except all files in the final result are skipped without even trying to retrieve content info
 
 #### Misc & Tools
 - **View -> Log** - if you want some readable output
