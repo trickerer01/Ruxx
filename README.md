@@ -12,7 +12,7 @@ Ruxx is a content downloader with a lot of filters for maximum search precision 
 - \[Optional] Chose the destination **Path**. Default path is current folder
 - Press **Download**
 
-![Main window](https://user-images.githubusercontent.com/76029665/127795331-928d6645-11c4-4be4-8533-20c628708b6b.JPG)
+![Main Window](https://user-images.githubusercontent.com/76029665/178128374-06f2d1fd-0cf0-40c3-ad6e-eb6a95e07ae7.JPG)
 
 Note that Ruxx does not restrict your searches to a couple pages or something. You may even search for something like *id:>=0* (everything), this won't work though as websites actually put a limit on maximum search results returned. For something stupid like this you'll have to split your searches using an id filter. Plus you may still get banned for abusing the resource. **Ruxx is not a scraping tool**
 
@@ -51,7 +51,7 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 - ERROR: if you see this the download process may fail, Ruxx may only retry the failed action, in most cases it is enough
 
 ### Technical info
-Ruxx is written is Python (3.5). Lines of code: 4500. Executables are built using PyInstaller (4.2 for Windows, 3.6 for Linux)
+Ruxx is written is Python (3.5). Lines of code: 5500. Executables are built using PyInstaller (4.2 for Windows, 3.6 for Linux)
 
 ### Support
 Did I help you? Maybe you wish to return the favor  
