@@ -26,6 +26,8 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
   - *ID min / max* - these are applied directly to your searches (transformed into tags). You can set *max* to a negative value to make it serve as a `count` (GUI only)
 
 #### Misc & Tools
+- **File -> Save settings...** - allows you to save current run parameters to a config file for later
+- **File -> Load settings...** - load run parameters from previously saved config file
 - **View -> Log** - if you want some readable output
 - **Edit -> Prefix file names with \<prefix>** - all downloaded files will be named accordingly and not as just numbers. This option is enabled by default
 - **Edit -> Extend file names with extra info** - all file names will include short representation of their source and major tags if any. This may extend full path to the file including file name up to 200 symbols total
