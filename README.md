@@ -40,7 +40,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Connection -> Ignore proxy** - this is just a switch to disable proxy without wiping it
 - **Tools -> Load from ID list** - RX only. allows you to load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an *OR* expression, effectively allowing you search for these ids. **Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details**
 - **Help -> Tags** - a quick list of tag types and how to use them (for selected module)
-- **Tags checking** - there is a small button near the **Tags** field. When pressed, Ruxx will try to connect to the website to see if this search yields any results. As a result the **Tags** field will briefly flash green / red
+- **Tags checking** - there is a small button near the **Tags** field. When pressed, Ruxx will try to connect to the website to see if this search yields any results. As a result the **Tags** field will briefly flash green / red. Additionally, if result is positive, a window will appear with exact amount of results found
 
 #### Using from console
 It is possible to use Ruxx as a cmdline tool. In the main window you can find a *Cmd* section. It generates your cmdline arguments every time you make a change - use those arguments as an example. Invoke `Ruxx -h` for help
