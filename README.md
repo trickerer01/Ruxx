@@ -39,8 +39,12 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Connection -> Download without proxy** - you can use this option for RX if only the main domain is blocked in your country
 - **Connection -> Ignore proxy** - this is just a switch to disable proxy without wiping it
 - **Tools -> Load from ID list** - RX only. Allows you to load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an *OR* expression, effectively allowing you search for these ids. **Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details**
-- **Tools -> Un-tag files...** - Renames selected Ruxx-downloaded media files, stripping file names of all extra info
-- **Tools -> Re-tag files...** - Renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)
+- **Tools -> Un-tag files...** - renames selected Ruxx-downloaded media files, stripping file names of all extra info
+- **Tools -> Re-tag files...** - renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)
+- **Tools -> Sort files into subfolders...** - a set of tools to separate downloaded files if need be:
+    - **by type** - sort by file type (checking file extension). You can separate files by `videos`/`images`/`flash`(RN) or by extension itself. Note that both `jpeg` and `jpg` files will be moved into **jpg** folder
+    - **by size** - sort by file size (you'll have to provide a threshold in Megabytes). Currently only a single threshold is supported
+    - **by score** - sort by post score. Just enter a threshold. And make sure that selected files include score in their names or this won't work. Currently only a single threshold is supported
 - **Help -> Tags** - a quick list of tag types and how to use them (for selected module)
 - **Tags checking** - there is a small button near the **Tags** field. When pressed, Ruxx will try to connect to the website to see if this search yields any results. As a result the **Tags** field will briefly flash green / red. Additionally, if result is positive, a window will appear with exact amount of results found
 
@@ -56,7 +60,7 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 - ERROR: if you see this the download process may fail, Ruxx may only retry the failed action, in most cases it is enough
 
 ### Technical info
-Ruxx is written is Python (3.7). Lines of code: 6100. Executables are built using PyInstaller (4.2 for Windows, 3.6 for Linux)
+Ruxx is written is Python (3.7). Lines of code: 7200. Executables are built using PyInstaller (4.2 for Windows, 3.6 for Linux)
 
 ### Support
 Did I help you? Maybe you wish to return the favor  
