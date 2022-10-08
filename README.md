@@ -31,9 +31,10 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **File -> Load settings...** - load run parameters from previously saved config file
 - **View -> Log** - if you want some readable output
 - **Edit -> Prefix file names with \<prefix>** - all downloaded files will be named accordingly and not as just numbers. This option is enabled by default
-- **Edit -> Extend file names with extra info** - all file names will include short representation of their source and major tags if any. This may extend full path to the file including file name up to 200 symbols total
 - **Edit -> Save tags** - an additional (text) file will be created containing tags for every file. Format is `<file>: <score> <tags>`
 - **Edit -> Save source links** - an additional (text) file will be created containing source (if present) for every file. Format is `<file>: <source>`
+- **Edit -> Extend file names with extra info** - all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
+- **Edit -> Warn if donwload folder is not empty** - you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
 - **Connection -> Headers / Cookies** - solely to work with cloudflare protected sites (RN). You'll have to provide your `cf_clearance` cookie, and the `user-agent` header has to match the one used in your web browser for target wesite - to find it while browsing said website open `Web Developer tools -> Network`, reload the page and check request headers
 - **Connection -> Set proxy** - you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
 - **Connection -> Download without proxy** - you can use this option for RX if only the main domain is blocked in your country
@@ -60,7 +61,7 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 - ERROR: if you see this the download process may fail, Ruxx may only retry the failed action, in most cases it is enough
 
 ### Technical info
-Ruxx is written is Python (3.7). Lines of code: 7200. Executables are built using PyInstaller (4.2 for Windows, 3.6 for Linux)
+Ruxx is written is Python (3.7). Lines of code: 7300. Executables are built using PyInstaller (4.2 for Windows, 3.6 for Linux)
 
 ### Support
 Did I help you? Maybe you wish to return the favor  
