@@ -29,6 +29,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 #### Misc & Tools
 - **File -> Save settings...** - allows you to save current run parameters to a config file for later
 - **File -> Load settings...** - load run parameters from previously saved config file
+- **File -> Open download folder** - open currently selected destination folder (**Path**), Windows only
 - **View -> Log** - if you want some readable output
 - **Edit -> Prefix file names with \<prefix>** - all downloaded files will be named accordingly and not as just numbers. This option is enabled by default
 - **Edit -> Save tags** - an additional (text) file will be created containing tags for every file. Format is `<file>: <score> <tags>`
@@ -61,7 +62,7 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 - ERROR: if you see this the download process may fail, Ruxx may only retry the failed action, in most cases it is enough
 
 ### Technical info
-Ruxx is written is Python (3.7). Lines of code: 7300. Executables are built using PyInstaller (4.2 for Windows, 3.6 for Linux)
+Ruxx is written is Python (3.7). Lines of code: 7400. Executables are built using PyInstaller (4.2 for Windows, 3.6 for Linux)
 
 ### Support
 Did I help you? Maybe you wish to return the favor  
