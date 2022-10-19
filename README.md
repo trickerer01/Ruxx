@@ -12,8 +12,7 @@ Ruxx is a content downloader with a lot of filters for maximum search precision 
 - \[Optional] Chose the destination **Path**. Default path is current folder
 - Press **Download**
 
-![ruxx1](https://user-images.githubusercontent.com/76029665/187053716-7ab3dc14-365b-4d79-b436-87389091255c.jpg)
-
+![rx](https://user-images.githubusercontent.com/76029665/196680406-b76e4766-0832-4a08-953f-27b41f9636e5.JPG)
 
 Note that Ruxx does not restrict your searches to a couple pages or something. You may even search for something like *id:>=0* (everything), this won't work though as websites actually put a limit on maximum search results returned. For something stupid like this you'll have to split your searches using an id filter. Plus you may still get banned for abusing the resource. **Ruxx is not a scraping tool**
 
@@ -27,8 +26,9 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
   - *ID min / max* - these are applied directly to your searches (transformed into tags). You can set *max* to a negative value to make it serve as a `count` (GUI only)
 
 #### Misc & Tools
-- **File -> Save settings...** - allows you to save current run parameters to a config file for later
-- **File -> Load settings...** - load run parameters from previously saved config file
+- **File -> Save settings...** \<Ctrl+S> - allows you to save current run parameters to a config file for later
+- **File -> Load settings...** \<Ctrl+L> - load run parameters from previously saved config file. You can also put a `.cfg` file folder with executable and Ruxx will automatically use it to configure itself. You have to use one of the following names: ['ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg']
+- **File -> Reset all settings** - resets all settings to initial ones. If autoconfigured this will reset to those parameters
 - **File -> Open download folder** - open currently selected destination folder (**Path**), Windows only
 - **View -> Log** - if you want some readable output
 - **Edit -> Prefix file names with \<prefix>** - all downloaded files will be named accordingly and not as just numbers. This option is enabled by default
@@ -36,11 +36,13 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Edit -> Save source links** - an additional (text) file will be created containing source (if present) for every file. Format is `<file>: <source>`
 - **Edit -> Extend file names with extra info** - all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
 - **Edit -> Warn if donwload folder is not empty** - you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
-- **Connection -> Headers / Cookies** - solely to work with cloudflare protected sites (RN). You'll have to provide your `cf_clearance` cookie, and the `user-agent` header has to match the one used in your web browser for target wesite - to find it while browsing said website open `Web Developer tools -> Network`, reload the page and check request headers
-- **Connection -> Set proxy** - you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
+- **Connection -> Headers / Cookies** \<F3> - solely to work with cloudflare protected sites (RN). You'll have to provide your `cf_clearance` cookie, and the `user-agent` header has to match the one used in your web browser for target wesite - to find it while browsing said website open `Web Developer tools -> Network`, reload the page and check request headers
+- **Connection -> Set proxy** \<F4> - you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
 - **Connection -> Download without proxy** - you can use this option for RX if only the main domain is blocked in your country
 - **Connection -> Ignore proxy** - this is just a switch to disable proxy without wiping it
-- **Tools -> Load from ID list** - RX only. Allows you to load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an *OR* expression, effectively allowing you search for these ids. **Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details**
+- **Actions -> Download** \<Ctrl+Shift+D> - same as download button
+- **Actions -> Check tags** \<Ctrl+Shift+C> - same as check tags button
+- **Tools -> Load from ID list** - Allows you to load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an *OR* expression, effectively allowing you to search for those ids. ~~**Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details**~~. UPD re-enabled in version `1.1.284` for both RX and RN using a workaround, but doesn't run in parallel so be aware of that
 - **Tools -> Un-tag files...** - renames selected Ruxx-downloaded media files, stripping file names of all extra info
 - **Tools -> Re-tag files...** - renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)
 - **Tools -> Sort files into subfolders...** - a set of tools to separate downloaded files if need be:
