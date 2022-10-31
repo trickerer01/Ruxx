@@ -3,11 +3,11 @@
 [![Downloads](https://img.shields.io/github/downloads/Trickerer01/Ruxx/total?color=brightgreen&style=flat)](https://github.com/Trickerer01/Ruxx/releases/)
 
 ### What the hell?
-Ruxx is a content downloader with a lot of filters for maximum search precision (and ugly interface). Supported sites are on your right.
+Ruxx is a content downloader with a lot of filters for maximum search precision (and ugly GUI). Supported sites are on your right.
 
 ### How to use
 - \[Optional] Chose a **Module** (website) to use. Notice that an icon in the bottom left corner will change accordingly
-- Fill the **Tags** you want to search for. For base and quick advanced info on tags check **Help -> Tags** section
+- Fill the **Tags** you want to search for. For base and quick advanced info on tags check **Help -> Tags** section. [More info](#tagging)
 - \[Optional] Additonally, check the **filters** to fine-tune your search. You can choose whether you want do download **videos / images**, add **id** and **post date** limits, as well as number of **download threads** and **download order**
 - \[Optional] Chose the destination **Path**. Default path is current folder
 - Press **Download**
@@ -20,16 +20,16 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - *Videos* - some websites serve videos in multiple formats, which you can chose from. **Redundant since 01.05.2021 (RX internal changes)**. You may also exclude videos altogether
 - *Images* - some websites serve images in multiple resolutions / quilities (full, preview), which you can chose from. Just like with the videos, you can also filter all the images out
 - *Threading* - the number of threads to use for downloading. This also somewhat increases page scan threads. More threads means speed, less threads means safety for you and less network hiccups. Actually even max threads is no problem in most cases
-- *Order* - the download queue is sorted by ID which directly correlates with upload time. `Oldest first` mean ascending order. Well, who cares really?
+- *Order* - the download queue is sorted by ID which directly correlates with upload time. `Oldest first` means ascending order. Well, who cares really?
 - *Search limits*
   - *Date min / max* - applied to initial search results, ignored if set to default (`01-01-1970` / `<today>`)
   - *ID min / max* - these are applied directly to your searches (transformed into tags). You can set *max* to a negative value to make it serve as a `count` (GUI only)
 
 #### Misc & Tools
 - **File -> Save settings...** \<Ctrl+S> - allows you to save current run parameters to a config file for later
-- **File -> Load settings...** \<Ctrl+L> - load run parameters from previously saved config file. You can also put a `.cfg` file folder with executable and Ruxx will automatically use it to configure itself. You have to use one of the following names: ['ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg']
+- **File -> Load settings...** \<Ctrl+O> - load run parameters from previously saved config file. You can also put a `.cfg` file folder with executable and Ruxx will automatically use it to configure itself. You have to use one of the following names: ['ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg']
 - **File -> Reset all settings** - resets all settings to initial ones. If autoconfigured this will reset to those parameters
-- **File -> Open download folder** - open currently selected destination folder (**Path**), Windows only
+- **File -> Open download folder** \<Ctrl+L> - open currently selected destination folder (**Path**), Windows only
 - **View -> Log** - if you want some readable output
 - **Edit -> Prefix file names with \<prefix>** - all downloaded files will be named accordingly and not as just numbers. This option is enabled by default
 - **Edit -> Save tags** - an additional (text) file will be created containing tags for every file. Format is `<file>: <score> <tags>`
@@ -52,8 +52,17 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Help -> Tags** - a quick list of tag types and how to use them (for selected module)
 - **Tags checking** - there is a small button near the **Tags** field. When pressed, Ruxx will try to connect to the website to see if this search yields any results. As a result the **Tags** field will briefly flash green / red. Additionally, if result is positive, a window will appear with exact amount of results found
 
+### Tagging
+Ruxx normally allows most symbols for tags search, there are some specifics though, which are described here.  
+1. `OR` groups
+  - Ruxx syntax for `OR` is sumplified compared to what you would normally use for RX: `(tag1~tag2~...~tagN)` instead of `( tag1 ~ tag2 ~ ... ~ tagN )`
+  - Ruxx allows using `OR` groups for RN too
+  - Although using sort tags in `OR` groups is broken currently `(id:=X~score:=Y)`, Ruxx will circumvent this problem and process them properly
+2. Special tag types
+  - Negative group, syntax: `-(tag1,tag2,...tagN)`. Ruxx allows you to filter tags combinations (content where all tags in the group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for 'any symbol' and 'any number of any symbols' repectively. You can also use pipe symbol `|` for direct regex `or` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regexes `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
+
 #### Using from console
-It is possible to use Ruxx as a cmdline tool. In the main window you can find a *Cmd* section. It generates your cmdline arguments every time you make a change - use those arguments as an example. Invoke `Ruxx -h` for help
+It is possible to use Ruxx as a cmdline tool. In the main window you can find a *Cmd* section. It generates your cmdline arguments every time you make a change - use those arguments as an example. Invoke `Ruxx --help` for help
 
 #### Logging, Warnings and Errors
 Ruxx will log most of its own actions, which you can see in **Log** window  
@@ -64,7 +73,7 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 - ERROR: if you see this the download process may fail, Ruxx may only retry the failed action, in most cases it is enough
 
 ### Technical info
-Ruxx is written is Python (3.7). Lines of code: 7400. Executables are built using PyInstaller (4.2 for Windows, 3.6 for Linux)
+Ruxx is written is Python (3.7). Lines of code: 8000+. Executables are built using PyInstaller (4.2 for Windows, 3.6 for Linux)
 
 ### Support
 Did I help you? Maybe you wish to return the favor  
