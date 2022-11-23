@@ -97,6 +97,7 @@ def toggle_console() -> None:
 
 
 def ensure_compatibility() -> None:
+    assert sys.version_info >= (3, 7), 'Minimum python version required is 3.7!'
     _sys = running_system()
     if _sys not in SUPPORTED_PLATFORMS:
         messagebox.showinfo('', f'Unsupported OS \'{_sys}\'')
