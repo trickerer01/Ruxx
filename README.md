@@ -14,7 +14,7 @@ Ruxx is a content downloader with a lot of filters for maximum search precision 
 
 ![rx](https://user-images.githubusercontent.com/76029665/196680406-b76e4766-0832-4a08-953f-27b41f9636e5.JPG)
 
-Note that Ruxx does not restrict your searches to a couple pages or something. You may even search for something like *id:>=0* (everything), this won't work though as websites actually put a limit on maximum search results returned. For something stupid like this you'll have to split your searches using an id filter. Plus you may still get banned for abusing the resource. **Ruxx is not a scraping tool**
+Note that Ruxx does not restrict your searches to a couple pages or something. You may even search for something like *id:>=0* (everything), this won't work though as websites actually put a limit on maximum search results returned. For something stupid like this you'll have to split your searches using id filter. Plus you may still get banned for abusing the resource. **Ruxx is not a scraping tool**
 
 #### Filters
 - *Videos* - some websites serve videos in multiple formats, which you can chose from. **Redundant since 01.05.2021 (RX internal changes)**. You may also exclude videos altogether
@@ -77,5 +77,4 @@ Ruxx is written is Python (3.7). Lines of code: 8000+. Executables are built usi
 
 ### Support
 Did I help you? Maybe you wish to return the favor  
-[Donate](https://paypal.me/trickerer)  
-The source code will go public if this project gets any support
+[Donate](https://paypal.me/trickerer)
