@@ -1128,7 +1128,7 @@ def init_menus() -> None:
     register_menu_command('Tags', help_tags)
     register_menu_separator()
     register_menu_command('About...', help_about, Options.OPT_ISABOUTOPEN, True)
-    register_menu_command('License', help_license)
+    # register_menu_command('License', help_license)
     # 9) Debug
     if __RUXX_DEBUG__:
         register_menu('Debug', Menus.MENU_DEBUG)

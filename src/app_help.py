@@ -64,8 +64,7 @@ HELP_TAGS_MSG_RN = (
 )
 ABOUT_MSG = (
     f'{APP_NAME} version {APP_VERSION} ({APP_REV_DATE}) {APP_BUILD_TYPE_STR}\n'
-    f'© {APP_YEARS} {APP_AUTHOR} <https://github.com/trickerer01>\n'
-    r'All Rights Reserved'
+    f'© {APP_YEARS} {APP_AUTHOR} <https://github.com/trickerer01>'
 )
 # license
 ABOUT_LICENSE = (
