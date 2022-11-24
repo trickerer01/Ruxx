@@ -3,6 +3,7 @@
 release/
 images/
 un/
+hooks/
 version_info.txt
 *.pyc
 *.cfg
