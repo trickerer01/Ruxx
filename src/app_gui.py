@@ -959,10 +959,7 @@ def start_download_thread(cmdline: List[str]) -> None:
 
 
 def unfocus_buttons() -> None:
-    for g in BUTTONS_TO_UNFOCUS:
-        if is_focusing(g):
-            rootm().focus_set()
-
+    unfocus_buttons_once()
     rootm().after(GUI2_UPDATE_DELAY_DEFAULT // 3, unfocus_buttons)
 
 
@@ -970,6 +967,7 @@ def unfocus_buttons_once() -> None:
     for g in BUTTONS_TO_UNFOCUS:
         if is_focusing(g):
             rootm().focus_set()
+            break
 
 
 # def quit_with_msg(title='Exit', message='Really?') -> None:

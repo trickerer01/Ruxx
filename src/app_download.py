@@ -802,7 +802,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
                 # BUG: pool.map_async from multiprocessing.dummy causes random
                 # Runtime Error: dict changed size during iteration even though temp dict is only passed to it
-                # So using this monstrocity
+                # So using this monstrosity
                 ress = list()
                 self.active_pool = Pool(min(10, max(2, max(self.maxthreads_items // 2, self._num_pages() // 100))))
                 for larr in arr_temp:
