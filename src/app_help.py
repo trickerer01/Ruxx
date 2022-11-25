@@ -66,28 +66,6 @@ ABOUT_MSG = (
     f'{APP_NAME} version {APP_VERSION} ({APP_REV_DATE}) {APP_BUILD_TYPE_STR}\n'
     f'© {APP_YEARS} {APP_AUTHOR} <https://github.com/trickerer01>'
 )
-# license
-ABOUT_LICENSE = (
-    'LICENSE AGREEMENT\n\n'
-    f'This License Agreement ("Agreement") accompanies the {APP_NAME} and related files ("Software"). By using the Software, '
-    'you agree to be bound by all of the terms and conditions of the Agreement.\n\n'
-    f'The Software is owned by {APP_AUTHOR} ("Author") and is Copyright © {APP_YEARS} {APP_AUTHOR}. '
-    'You are allowed to use this software for free. You may install the Software on any number of storage devices, like hard disks, '
-    'memory sticks etc. and are allowed to make any number of backup copies of this Software.\n\n'
-    'The Software is distributed "as is", without warranty of any kind, expressed or implied, including, but not limited to warranty of '
-    'fitness for any particular purpose. In no event will the Author be liable to you for any special, incidental, indirect, '
-    'consequential or any other damages caused by the use, misuse, or the inability to use of the Software, including any lost profits '
-    'or lost savings, even if Author has been advised of the possibility of such damages.\n\n'
-    'You are not allowed to modify, decompile, disassemble or reverse engineer the Software except and only to the extent that such '
-    'activity is expressly permitted by applicable law. You are not allowed to distribute or use any parts of the Software separately. '
-    'You may make and distribute copies of this Software provided that a) the copy contains all files from the original distribution and '
-    'these files remain unchanged; b) if you distribute any other files together with the Software, they must be clearly marked as such '
-    'and the conditions of their use cannot be more restrictive than conditions of this Agreement; and c) you collect no fee (except '
-    'for transport media, like CD), even if your distribution contains additional files.\n\n'
-    f'This Agreement covers only the actual version {APP_VERSION} of the {APP_NAME}. All other versions are covered '
-    'by similar but separate License Agreements.\n'
-)
-# end license
 # end help messages
 
 #

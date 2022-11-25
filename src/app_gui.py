@@ -54,7 +54,7 @@ from app_gui_defines import (
     re_id_eq_rx, re_id_ge_rx, re_id_le_rx, re_id_eq_rn, re_id_ge_rn, re_id_le_rn,
     re_id_post_eq_rx, re_id_post_ge_rx, re_id_post_le_rx, re_id_post_eq_rn, re_id_post_ge_rn, re_id_post_le_rn,
 )
-from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, ABOUT_MSG, ABOUT_LICENSE
+from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, ABOUT_MSG
 from app_logger import Logger
 from app_revision import APP_NAME, __RUXX_DEBUG__
 from app_utils import normalize_path, confirm_yes_no
@@ -981,10 +981,6 @@ def help_tags(title: str = 'Tags') -> None:
 
 
 def help_about(title: str = f'About {APP_NAME}', message: str = ABOUT_MSG) -> None:
-    messagebox.showinfo(title=title, message=message, icon='info')
-
-
-def help_license(title: str = 'License', message: str = ABOUT_LICENSE) -> None:
     messagebox.showinfo(title=title, message=message, icon='info')
 
 
