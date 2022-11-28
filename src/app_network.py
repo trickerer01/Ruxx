@@ -69,7 +69,6 @@ class ThreadWorker:
 
 
 class ThreadedHtmlWorker(ABC, ThreadWorker):
-
     def __init__(self) -> None:
         super().__init__()
         self.raw_html_cache = {}  # type: Dict[str, bytes]

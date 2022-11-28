@@ -550,8 +550,8 @@ def update_statusbar() -> None:
 
 def prepare_cmdline() -> List[str]:
 
-    def normalize_tag(tag: str) -> str:
-        return tag.replace('+', '%2b').replace(' ', '+')
+    def normalize_tag(ntag: str) -> str:
+        return ntag.replace('+', '%2b').replace(' ', '+')
 
     # fill the str
     # base
@@ -573,36 +573,25 @@ def prepare_cmdline() -> List[str]:
         try:
             idmin = int(getrootconf(Options.OPT_IDMIN))
             idmax = int(getrootconf(Options.OPT_IDMAX))
-            if idmin > 0 and idmin == idmax:
-                ab_in_tags = False
-                idx = 0
-                while idx < len(tags_list):
-                    ab_in_tags = bool(re_fullmatch(re_id_eq, tags_list[idx]) is not None)
-                    idx += 1
-                    if ab_in_tags is True:
+            idmaxn = idmax if idmax >= 0 else idmin + abs(idmax)
+            if idmin + idmaxn > 0:
+                ab_in_tags = not (idmin == idmax > 0)
+                lb_in_tags = not (idmin > 0)
+                ub_in_tags = not (idmaxn > 0)
+                for idtag in tags_list:
+                    if ab_in_tags and lb_in_tags and ub_in_tags:
                         break
+                    if idtag.startswith('id') is False:
+                        continue
+                    ab_in_tags = ab_in_tags or not not re_fullmatch(re_id_eq, idtag)
+                    lb_in_tags = lb_in_tags or not not re_fullmatch(re_id_ge, idtag)
+                    ub_in_tags = ub_in_tags or not not re_fullmatch(re_id_le, idtag)
                 if ab_in_tags is False:
                     tags_list.append(f'{s_id_post_eq}{idmin:d}')
-            if idmin > 0:
-                lb_in_tags = False
-                idx = 0
-                while idx < len(tags_list):
-                    lb_in_tags = bool(re_fullmatch(re_id_ge, tags_list[idx]) is not None)
-                    idx += 1
-                    if lb_in_tags is True:
-                        break
                 if lb_in_tags is False:
                     tags_list.append(f'{s_id_post_ge}{idmin:d}')
-            if idmax != 0:
-                ub_in_tags = False
-                idx = 0
-                while idx < len(tags_list):
-                    ub_in_tags = bool(re_fullmatch(re_id_le, tags_list[idx]) is not None)
-                    idx += 1
-                    if ub_in_tags is True:
-                        break
                 if ub_in_tags is False:
-                    tags_list.append(f'{s_id_post_le}{idmax if idmax > 0 else idmin + abs(idmax):d}')
+                    tags_list.append(f'{s_id_post_le}{idmaxn:d}')
         except Exception:
             pass
     tags_str = ' '.join(normalize_tag(tag) for tag in tags_list)
