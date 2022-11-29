@@ -55,7 +55,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 ### Tagging
 Ruxx normally allows most symbols for tags search, there are some specifics though, which are described here.  
 1. `OR` groups
-  - Ruxx syntax for `OR` is sumplified compared to what you would normally use for RX: `(tag1~tag2~...~tagN)` instead of `( tag1 ~ tag2 ~ ... ~ tagN )`
+  - Ruxx syntax for `OR` is simplified compared to what you would normally use for RX: `(tag1~tag2~...~tagN)` instead of `( tag1 ~ tag2 ~ ... ~ tagN )`
   - Ruxx allows using `OR` groups for RN too
   - Although using sort tags in `OR` groups is broken currently `(id:=X~score:=Y)`, Ruxx will circumvent this problem and process them properly. Currently, using more than one such group is not supported yet
 2. Special tag types
