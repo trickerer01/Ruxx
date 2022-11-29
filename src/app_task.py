@@ -55,7 +55,9 @@ def split_tags_into_tasks(tag_groups_arr: List[str], cc: str, sc: str, can_have_
 
 def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[str]]]]:
     def esc(s: str) -> str:
-        return s.replace('.', '\\.').replace('[', '\\[').replace(']', '\\]').replace('(', '\\(').replace(')', '\\)').replace('-', '\\-')
+        for c in '.[]()-+':
+            s = s.replace(c, f'\\{c}')
+        return s.replace('?', '.').replace('*', '.*')
     parsed = []
     tags_list = tags_str.split(' ')
     for tgi in reversed(range(len(tags_list))):
@@ -63,7 +65,7 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
         if len(tag_group) < len('-(a,b)') or tag_group[0:2] != '-(':
             continue
         ngr = re_fullmatch(r'^-\(([^,]+(?:,[^,]+)+)\)$', tag_group)
-        plist = [re_compile(rf'^{esc(s).replace("?", ".").replace("*", ".*")}$') for s in ngr.group(1).split(',')] if ngr else None
+        plist = [re_compile(rf'^{esc(s)}$') for s in ngr.group(1).split(',')] if ngr else None
         if plist:
             parsed.append(plist)
             del tags_list[tgi]
