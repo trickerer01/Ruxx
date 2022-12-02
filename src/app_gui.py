@@ -481,15 +481,7 @@ def update_menu_enabled_states() -> None:
     for i in [m for m in Menus.__members__.values() if m < Menus.MAX_MENUS]:  # type: Menus
         if menu_items[i][0] is not None:
             for j in menu_items[i][1]:
-                if (
-                        i == Menus.MENU_TOOLS and j == 0  # Load Id list, disabled for non-rx
-                        and not ProcModule.is_rx()
-                ):
-                    newstate = STATE_DISABLED
-                elif (
-                        i == Menus.MENU_ACTIONS and j == 1  # Check tags, disabled when active
-                        and is_cheking_tags()
-                ):
+                if i == Menus.MENU_ACTIONS and j == 1 and is_cheking_tags():  # Check tags, disabled when active
                     newstate = STATE_DISABLED
                 else:
                     newstate = STATE_DISABLED if is_downloading() else menu_item_orig_states[i][j]
@@ -1104,8 +1096,6 @@ def init_menus() -> None:
     register_submenu_command('by type', sort_files_by_type)
     register_submenu_command('by size', sort_files_by_size)
     register_submenu_command('by score', sort_files_by_score)
-    if not ProcModule.is_rx():
-        c_menum().entryconfig(0, state=STATE_DISABLED)
     # 8) Help
     register_menu('Help')
     register_menu_command('Tags', help_tags)
