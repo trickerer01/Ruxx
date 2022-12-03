@@ -934,10 +934,13 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace(f'\nAll {"skipped" if self.download_mode == DownloadModes.DOWNLOAD_SKIP else "processed"} ({self.total_count:d} items)...')
 
     def _parse_tags(self, tags_base_arr: Iterable[str]) -> None:
+        cc = self._get_tags_concat_char()
+        sc = self._get_idval_equal_seaparator()
+        can_have_or_groups = self._can_have_or_groups()
+        split_always = self._spli_or_group_into_tasks_always()
         # join by ' ' is required by tests, although normally len(args.tags) == 1
         tags_list, self.neg_and_groups = extract_neg_and_groups(' '.join(tags_base_arr))
-        self.tags_str_arr = split_tags_into_tasks(tags_list, self._get_tags_concat_char(), self._get_idval_equal_seaparator(),
-                                                  self._can_have_or_groups(), self._spli_or_group_into_tasks_always())
+        self.tags_str_arr = split_tags_into_tasks(tags_list, cc, sc, can_have_or_groups, split_always)
 
     def _process_all_tags(self) -> None:
         if self.warn_nonempty:
@@ -989,7 +992,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace(f'\n{self._tasks_count():d} tasks completed, {self.success_count_all:d} / {total_files:d} items succeded', False, True)
         if len(self.failed_items) > 0:
             trace(f'{len(self.failed_items):d} failed items:')
-            trace('\n'.join(f for f in self.failed_items))
+            trace('\n'.join(self.failed_items))
 
     @abstractmethod
     def form_tags_search_address(self, tags: str, maxlim: Optional[int] = None) -> str:
