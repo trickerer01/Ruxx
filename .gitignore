@@ -10,6 +10,7 @@ version_info.txt
 src/curr.py
 src/app_release.py
 src/app_versioninfo.py
+src/app_genrev.py
 
 # IDE
 /.idea/*
