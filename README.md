@@ -59,7 +59,8 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
   - Ruxx allows using `OR` groups for RN too
   - Although using sort tags in `OR` groups is broken currently `(id:=X~score:=Y)`, Ruxx will circumvent this problem and process them properly. Currently, using more than one such group is not supported yet
 2. Special tag types
-  - Negative group, syntax: `-(tag1,tag2,...tagN)`. Ruxx allows you to filter tags combinations (content where all tags in the group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for 'any symbol' and 'any number of any symbols' repectively. You can also use pipe symbol `|` for direct regex `or` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regexes `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
+  - Negative group, syntax: `-(tag1,tag2,...tagN)`. Ruxx allows you to filter tags combinations (content where all tags in the group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for 'any symbol' and 'any number of any symbols' repectively. You can also use pipe symbol `|` for direct regex `or` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regexes `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out.  Things to be aware of:
+    - Unlike normal `-tag`s, negative group will not check tag aliases
 
 #### Using from console
 It is possible to use Ruxx as a cmdline tool. In the main window you can find a *Cmd* section. It generates your cmdline arguments every time you make a change - use those arguments as an example. Invoke `Ruxx --help` for help
