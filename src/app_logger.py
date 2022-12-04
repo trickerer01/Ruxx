@@ -15,6 +15,7 @@ from tkinter import END, INSERT
 # internal
 from app_gui_base import LogWindow
 from app_gui_defines import STATE_NORMAL, STATE_DISABLED
+from app_utils import find_first_not_of
 
 
 class Logger:
@@ -25,7 +26,7 @@ class Logger:
     wnd = None  # type: Optional[LogWindow]
 
     @staticmethod
-    def init(is_cmd: bool, is_disabled: bool = False) -> None:
+    def init(is_cmd: bool, is_disabled=False) -> None:
         Logger.is_cmdline = is_cmd
         Logger.is_disabled = is_disabled
 
@@ -62,14 +63,7 @@ class Logger:
             return
 
         if timestamp is True:
-            non_n_idx = -1
-            idx = 0
-            while idx < len(message):
-                if message[idx] != '\n':
-                    non_n_idx = idx
-                    break
-                idx += 1
-
+            non_n_idx = find_first_not_of(message, '\n')
             textparts = (message[:non_n_idx], message[non_n_idx:]) if non_n_idx != -1 else ('', message)
             message = f'{textparts[0]}[{strftime("%X", localtime())}] {textparts[1]}'
 
@@ -80,7 +74,7 @@ class Logger:
             Logger._prepare(message)
 
 
-def trace(message: str, safe: bool = False, timestamp: bool = False) -> None:
+def trace(message: str, safe=False, timestamp=False) -> None:
     Logger.log(message, safe, timestamp)
 
 #

@@ -17,6 +17,13 @@ from app_defines import FMT_DATE_DEFAULT, PLATFORM_WINDOWS
 from app_gui_defines import SLASH
 
 
+def find_first_not_of(s: str, not_chars: str) -> int:
+    for i, c in enumerate(s):  # type: int, str
+        if c not in not_chars:
+            return i
+    return -1
+
+
 def as_date(date_s: str) -> date:
     return datetime.strptime(date_s, FMT_DATE_DEFAULT).date()
 
