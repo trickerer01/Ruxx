@@ -173,14 +173,11 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                                 raise new_exc
                             ofile.write(temp)
 
-                        try:
-                            sreq = s.request('HEAD', link, allow_redirects=False)
-                            sreq.raise_for_status()
-                            expected_size = int(sreq.headers['content-length'])
-                        except KeyError:
-                            raise
-
+                        sreq = s.request('HEAD', link, allow_redirects=False)
+                        sreq.raise_for_status()
+                        expected_size = int(sreq.headers.get('content-length', '0'))
                         self.etags[item_id] = sreq.headers.get('etag', item_id)
+                        # this code was left here after link replacements had been removed. DO NOT MOVE
                         reqhost = re_search(r'https?://([^/]+)', link).group(1)
                         sreq.close()
 
