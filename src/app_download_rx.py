@@ -200,7 +200,7 @@ class DownloaderRx(DownloaderBase):
         if self.is_killed():
             return
 
-        h = str(raw)
+        h = raw
         item_id = self._extract_id(h)
 
         if self.download_mode == DownloadModes.DOWNLOAD_SKIP:
@@ -234,7 +234,7 @@ class DownloaderRx(DownloaderBase):
         file_re_res = re_search(r'file_url=\"([^"]+)\"', h)
         if not file_re_res:
             return '', ''
-        file_url = str(file_re_res.group(1))
+        file_url = file_re_res.group(1)
         file_ext = file_url[file_url.rfind('.') + 1:]
         return file_url, file_ext
 
@@ -243,7 +243,7 @@ class DownloaderRx(DownloaderBase):
         sample_re_res = re_search(r'sample_url=\"([^"]+)\"', h)
         if not sample_re_res:
             return '', ''
-        file_url = str(sample_re_res.group(1))
+        file_url = sample_re_res.group(1)
         file_ext = file_url[file_url.rfind('.') + 1:]
         return file_url, file_ext
 

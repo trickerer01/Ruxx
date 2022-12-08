@@ -62,8 +62,8 @@ class DownloaderRn(DownloaderBase):
         iid_url = str(raw_html.find('a', attrs={'download': '', 'href': iid_url_re}))
         try:
             iall = re_search(iid_url_re, iid_url)
-            iid = str(iall.group(1))
-            itagsext = str(iall.group(2))
+            iid = iall.group(1)
+            itagsext = iall.group(2)
             itags = ' '.join(itagsext[:itagsext.rfind('.')].split('%20'))
             iext = itagsext[itagsext.rfind('.') + 1:]
         except Exception:

@@ -130,7 +130,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                                        'DNT': '1',
                                        'Connection': 'keep-alive'}
                             if not single_chunk:
-                                headers['Range'] = f'bytes={str(start)}-{str(end)}'
+                                headers['Range'] = f'bytes={start:d}-{end:d}'
                             headers.update(self.add_headers.copy())
                             req = s.request('GET', link, timeout=CONNECT_DELAY_ITEM, stream=True, headers=headers, allow_redirects=False)
                             req.raise_for_status()
@@ -241,7 +241,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                             if path.exists(dest):
                                 remove_file(dest)
                         result.retries += 1
-                        s_result = f'{result.result_str}{str(exc_info()[0])}: {str(exc_info()[1])} retry {str(result.retries)}...'
+                        s_result = f'{result.result_str}{str(exc_info()[0])}: {str(exc_info()[1])} retry {result.retries:d}...'
                         trace(s_result, True)
                         thread_sleep(2)
                         continue
