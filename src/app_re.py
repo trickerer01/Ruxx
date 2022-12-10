@@ -71,7 +71,7 @@ re_tags_exclude_rn = re_compile(
     r'leotard|'  # l
     r'm(?:arvel|p4)|'  # m
     r'neon_[wv].+?|'  # n
-    r'one?model|'  # o
+    r'o(?:ne?model|riginal_character)|'  # o
     r'p(?:ng|rotoss?)|'  # p
     r's(?:fm|lushe|ou(?:nd|rce_filmmaker)|wf)|'  # s
     r'v(?:irtual_youtuber|olkor)|'  # v
