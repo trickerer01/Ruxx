@@ -881,7 +881,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         if self.download_limit > 0:
             if len(self.items_raw_all) > self.download_limit:
-                trace(f'\nShrinking queue down to {self.download_limit} items...')
+                trace(f'\nShrinking queue down to {self.download_limit:d} items...')
                 if self.reverse_order is True:
                     self.items_raw_all = self.items_raw_all[self.download_limit * -1:]
                 else:
@@ -969,7 +969,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 trace(f'task {i + 1} failed...')
             finally:
                 if __RUXX_DEBUG__:
-                    trace(f'\ntask {i + 1}:\n total: {self.total_count}\n succs: {self.success_count}\n fails: {self.fail_count}')
+                    trace(f'\ntask {i + 1}:\n total: {self.total_count:d}\n succs: {self.success_count:d}\n fails: {self.fail_count:d}')
                 trace('=' * LINE_BREAKS_AT)
                 self.total_count_all += self.total_count
                 self.success_count_all += self.success_count
