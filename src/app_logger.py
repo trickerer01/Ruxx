@@ -13,6 +13,7 @@ from typing import Optional
 from tkinter import END, INSERT
 
 # internal
+from app_defines import DEFAULT_ENCODING
 from app_gui_base import LogWindow
 from app_gui_defines import STATE_NORMAL, STATE_DISABLED
 from app_utils import find_first_not_of
@@ -51,7 +52,16 @@ class Logger:
     @staticmethod
     def _prepare(text: str) -> None:
         if Logger.is_cmdline is True:
-            print(text)
+            # need to circumvent non-unicode console errors
+            try:
+                print(text)
+            except UnicodeError:
+                try:
+                    print(text.encode(DEFAULT_ENCODING).decode())
+                except Exception:
+                    print(f'<Message was not logged due to UnicodeError>')
+            finally:
+                print('Previous message caused UnicodeError...')
         else:
             Logger._append(f'{text}\n')
 
