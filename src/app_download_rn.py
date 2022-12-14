@@ -216,6 +216,7 @@ class DownloaderRn(DownloaderBase):
                 orig_source_div = raw_html.find('div', style=re_compile('^overflow:.+?$'))
                 if orig_source_div:
                     self.item_info_dict[full_item_id].source = orig_source_div.text
+                # we can't extract actual score without account credentials AND cf_clearance, but favorites will do just fine
                 favorited_by_div = raw_html.find('h3', string='Favorited By')
                 if favorited_by_div:
                     fav_sib = favorited_by_div.findNextSibling()
