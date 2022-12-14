@@ -174,6 +174,8 @@ TAG_LENGTH_MAX_RN = 21
 PROXY_HTTP = 'http://'
 PROXY_SOCKS5 = 'socks5://'
 
+ACTION_STORE_TRUE = 'store_true'
+
 PLATFORM_WINDOWS = 'Windows'
 PLATFORM_LINUX = 'Linux'
 # PLATFORM_DARWIN = 'Darwin'  # Mac

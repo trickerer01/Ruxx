@@ -8,10 +8,10 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from argparse import ArgumentParser, Namespace, ONE_OR_MORE
-from typing import Optional, List
+from typing import List
 
 # internal
-from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, DEFAULT_HEADERS, DownloadModes
+from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, DEFAULT_HEADERS, ACTION_STORE_TRUE, DownloadModes
 from app_help import (
     HELP_ARG_MODULE, HELP_ARG_DOWNLOAD_MODE, HELP_ARG_REVERSE, HELP_ARG_SKIP_IMAGES, HELP_ARG_SKIP_VIDEOS, HELP_ARG_PREFER_WEBM,
     HELP_ARG_PREFER_LOWRES, HELP_ARG_LOWER_BOUND, HELP_ARG_UPPER_BOUND, HELP_ARG_MINDATE, HELP_ARG_MAXDATE, HELP_ARG_JOBS, HELP_ARG_PATH,
@@ -20,15 +20,8 @@ from app_help import (
 )
 from app_validators import valid_int, valid_thread_count, valid_date, valid_path, valid_json, valid_download_mode, valid_proxy
 
-ACTION_STORE_TRUE = 'store_true'
-ACTION_STORE_FALSE = 'store_false'
-
-parser = None  # type: Optional[ArgumentParser]
-
 
 def prepare_arglist(args: List[str]) -> Namespace:
-    global parser
-
     parser = ArgumentParser(add_help=False)
 
     parser.add_argument('--help', action='help')
