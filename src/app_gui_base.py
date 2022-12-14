@@ -13,7 +13,7 @@ from base64 import b64decode
 from datetime import datetime
 from json import dumps as json_dumps, loads as json_loads
 from os import curdir, path
-from re import search as re_search, match as re_match
+from re import search as re_search, match as re_match, findall as re_findall
 from tkinter import (
     Menu, Toplevel, messagebox, ttk, Text, Scrollbar, StringVar, Button, Entry, Widget, SOLID, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT,
     TOP, INSERT, BooleanVar, Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, E, S, X, Y, NO, YES
@@ -342,7 +342,7 @@ class AskIntWindow(AwaitableAskWindow):
 class AskFileScoreFilterWindow(AwaitableAskWindow):
     def __init__(self, parent) -> None:
         self.entry = None  # type: Optional[Entry]
-        super().__init__(parent, 'File score threshold')
+        super().__init__(parent, 'Score thresholds')
 
     def finalize(self) -> None:
         self.variable.set('')
@@ -353,9 +353,11 @@ class AskFileScoreFilterWindow(AwaitableAskWindow):
         self.entry = Entry(frame, width=18, textvariable=self.variable)
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
-    def value(self) -> Optional[int]:
+    def value(self) -> Optional[List[int]]:
         try:
-            return int(self.variable.get())
+            if self.variable.get().isnumeric():  # no separators
+                return [int(self.variable.get())]
+            return [int(val) for val in re_findall(r'[^, ]+', self.variable.get())]
         except Exception:
             return None
 

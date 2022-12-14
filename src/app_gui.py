@@ -385,12 +385,12 @@ def sort_files_by_score() -> None:
     aw.finalize()
     rootm().wait_window(aw.window)
 
-    threshold = aw.value()
-    if threshold is None:
+    thresholds = aw.value()
+    if thresholds is None:
         return
 
     setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
-    result = fs.sort_files_by_score(filelist, threshold)
+    result = fs.sort_files_by_score(filelist, thresholds)
     if result == len(filelist):
         Logger.log(f'Successfully sorted {len(filelist):d} file(s).', False, False)
     elif result > 0:

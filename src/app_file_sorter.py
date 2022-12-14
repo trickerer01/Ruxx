@@ -10,7 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from enum import IntEnum, unique, auto
 from os import makedirs, path, rename, stat
 from re import sub as re_sub
-from typing import Tuple
+from typing import Tuple, List
 
 # internal
 from app_gui_defines import SLASH
@@ -81,22 +81,24 @@ def sort_files_by_size(files: Tuple[str], threshold_mb: float) -> int:
     return moved_count
 
 
-def sort_files_by_score(files: Tuple[str], threshold: int) -> int:
-    assert threshold > 0.01
-
+def sort_files_by_score(files: Tuple[str], thresholds: List[int]) -> int:
+    thresholds = list(reversed(sorted(thresholds)))
     moved_count = 0
     try:
         full_path = files[0].replace('\\', SLASH)
         base_path = full_path[:full_path.rfind(SLASH)]
-        new_folder_greater = f'score({threshold:d}+)'
-        new_folder_less = f'score({threshold - 1:d}-)'
+        folder_names = [f'score({f"{thresholds[0]:d}+"})'] + [f'score({f"{th - 1:d}-"})' for i, th in enumerate(thresholds)]
         for full_path in files:
             full_path = full_path.replace('\\', SLASH)
             full_name = full_path[full_path.rfind(SLASH) + 1:]
             try:
                 score = re_sub(r'^(?:[a-z]{2}_)?(?:\d+?)_score\([-+]?(\d+)\).+?$', r'\1', full_name)
                 score = int(score)
-                my_folder = new_folder_greater if score >= threshold else new_folder_less
+                my_folder = folder_names[0]  # greatest
+                for i, sc in enumerate(thresholds):
+                    if score >= sc:
+                        break
+                    my_folder = folder_names[i + 1]
                 new_folder = f'{base_path}{SLASH}{my_folder}{SLASH}'
                 new_path = f'{new_folder}{full_name}'
                 if not path.isdir(new_folder):
