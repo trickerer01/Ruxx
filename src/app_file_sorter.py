@@ -52,21 +52,25 @@ def sort_files_by_type(files: Tuple[str], filter_type: FileTypeFilter) -> int:
     return moved_count
 
 
-def sort_files_by_size(files: Tuple[str], threshold_mb: float) -> int:
-    assert threshold_mb > 0.01
+def sort_files_by_size(files: Tuple[str], thresholds_mb: List[float]) -> int:
+    assert all(threshold_mb > 0.01 for threshold_mb in thresholds_mb)
+    thresholds_mb = list(reversed(sorted(thresholds_mb)))
 
     moved_count = 0
     try:
         full_path = files[0].replace('\\', SLASH)
         base_path = full_path[:full_path.rfind(SLASH)]
-        new_folder_greater = f'size({threshold_mb:.2f}MB+)'
-        new_folder_less = f'size({threshold_mb - 0.01:.2f}MB-)'
+        folder_names = [f'size({f"{thresholds_mb[0]:.2f}MB+"})'] + [f'size({f"{th - 0.01:.2f}MB-"})' for i, th in enumerate(thresholds_mb)]
         for full_path in files:
             full_path = full_path.replace('\\', SLASH)
             full_name = full_path[full_path.rfind(SLASH) + 1:]
             try:
                 file_size = stat(full_path).st_size
-                my_folder = new_folder_greater if file_size / (1024.0 * 1024.0) >= threshold_mb else new_folder_less
+                my_folder = folder_names[0]  # greatest
+                for i, siz in enumerate(thresholds_mb):
+                    if file_size / (1024.0 * 1024.0) >= siz:
+                        break
+                    my_folder = folder_names[i + 1]
                 new_folder = f'{base_path}{SLASH}{my_folder}{SLASH}'
                 new_path = f'{new_folder}{full_name}'
                 if not path.isdir(new_folder):

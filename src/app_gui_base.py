@@ -293,7 +293,7 @@ class AskFileTypeFilterWindow(AwaitableAskWindow):
 class AskFileSizeFilterWindow(AwaitableAskWindow):
     def __init__(self, parent) -> None:
         self.entry = None  # type: Optional[Entry]
-        super().__init__(parent, 'File size threshold')
+        super().__init__(parent, 'Size thresholds MB')
 
     def finalize(self) -> None:
         self.variable.set('')
@@ -301,16 +301,12 @@ class AskFileSizeFilterWindow(AwaitableAskWindow):
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = Entry(frame, width=10, textvariable=self.variable)
-        self.entry.grid(row=first_row(), column=first_column(), columnspan=1)
-        entry2 = Entry(frame, width=10, relief=FLAT)
-        entry2.insert(END, ' MB')
-        entry2.config(state=STATE_DISABLED)
-        entry2.grid(row=cur_row(), column=next_column(), columnspan=1)
+        self.entry = Entry(frame, width=18, textvariable=self.variable)
+        self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
-    def value(self) -> Optional[float]:
+    def value(self) -> Optional[List[float]]:
         try:
-            return float(self.variable.get())
+            return [float(val) for val in re_findall(r'[^, ]+', self.variable.get())]
         except Exception:
             return None
 
@@ -355,8 +351,6 @@ class AskFileScoreFilterWindow(AwaitableAskWindow):
 
     def value(self) -> Optional[List[int]]:
         try:
-            if self.variable.get().isnumeric():  # no separators
-                return [int(self.variable.get())]
             return [int(val) for val in re_findall(r'[^, ]+', self.variable.get())]
         except Exception:
             return None

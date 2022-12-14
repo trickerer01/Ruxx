@@ -360,12 +360,12 @@ def sort_files_by_size() -> None:
     aw.finalize()
     rootm().wait_window(aw.window)
 
-    threshold_mb = aw.value()
-    if threshold_mb is None:
+    thresholds_mb = aw.value()
+    if thresholds_mb is None:
         return
 
     setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
-    result = fs.sort_files_by_size(filelist, threshold_mb)
+    result = fs.sort_files_by_size(filelist, thresholds_mb)
     if result == len(filelist):
         Logger.log(f'Successfully sorted {len(filelist):d} file(s).', False, False)
     elif result > 0:
