@@ -60,8 +60,8 @@ class Logger:
                     print(text.encode(DEFAULT_ENCODING).decode())
                 except Exception:
                     print(f'<Message was not logged due to UnicodeError>')
-            finally:
-                print('Previous message caused UnicodeError...')
+                finally:
+                    print('Previous message caused UnicodeError...')
         else:
             Logger._append(f'{text}\n')
 
