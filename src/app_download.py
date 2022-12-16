@@ -1052,7 +1052,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                     continue
                 if item_info.__getattribute__(key) == '':
                     if __RUXX_DEBUG__:
-                        trace(f'Info: extract info {abbrp}{item_info.id}: not initialized key {key}!')
+                        trace(f'Info: extract info {abbrp}{item_info.id}: not initialized field {key}!')
 
     def _dump_all_tags(self) -> None:
         trace('\nSaving tags...')

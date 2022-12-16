@@ -8,9 +8,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from re import fullmatch as re_fullmatch, compile as re_compile
-from typing import Tuple, List, Pattern
+from typing import Tuple, List, Pattern, Optional
 
 # internal
+from app_defines import TAGS_STRING_LENGTH_MAX_RX
+from app_gui_defines import ProcModule
 from app_network import thread_exit
 from app_logger import trace
 
@@ -58,17 +60,44 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
         for c in '.[]()-+':
             s = s.replace(c, f'\\{c}')
         return s.replace('?', '.').replace('*', '.*')
+
+    def form_plist(neg_tags_group: str) -> Optional[List[Pattern]]:
+        ngr = re_fullmatch(r'^-\(([^,]+(?:,[^,]+)+)\)$', neg_tags_group)
+        return [re_compile(rf'^{esc(s)}$') for s in ngr.group(1).split(',')] if ngr else None
+
     parsed = []
     tags_list = tags_str.split(' ')
-    for tgi in reversed(range(len(tags_list))):
+    for tgi in reversed(range(len(tags_list))):  # type: int
         tag_group = tags_list[tgi]
         if len(tag_group) < len('-(a,b)') or tag_group[0:2] != '-(':
             continue
-        ngr = re_fullmatch(r'^-\(([^,]+(?:,[^,]+)+)\)$', tag_group)
-        plist = [re_compile(rf'^{esc(s)}$') for s in ngr.group(1).split(',')] if ngr else None
+        plist = form_plist(tag_group)
         if plist:
             parsed.append(plist)
             del tags_list[tgi]
+    if ProcModule.is_rx():
+        total_len = sum(len(t) for t in tags_list) + len(tags_list) - 1
+        if total_len > TAGS_STRING_LENGTH_MAX_RX:
+            trace('Warning (W2): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
+            neg_tags_list = []  # type: List[str]
+            for ti in reversed(range(len(tags_list))):  # type: int
+                if total_len <= TAGS_STRING_LENGTH_MAX_RX:
+                    break
+                ntag = tags_list[ti]
+                if ntag.startswith('-'):
+                    neg_tags_list.append(ntag[1:])
+                    total_len -= len(ntag) + 1
+                    del tags_list[ti]
+            if total_len > TAGS_STRING_LENGTH_MAX_RX:
+                thread_exit('Fatal: extracting negative tags doesn\'t reduce total tags length enough! '
+                            'Search result will be empty! Aborting...', -609)
+            assert len(neg_tags_list) > 0
+            extracted_neg_group_str = f'-(*,{"|".join(reversed(neg_tags_list))})'
+            trace(f'Info: extractd negative group: {extracted_neg_group_str}')
+            plist = form_plist(extracted_neg_group_str)
+            assert plist is not None
+            parsed.append(plist)
+
     return tags_list, parsed
 
 #

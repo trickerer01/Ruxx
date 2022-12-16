@@ -69,7 +69,6 @@ from app_validators import (
 download_thread = None  # type: Optional[Thread]
 tags_recheck_thread = None  # type: Optional[Thread]
 prev_download_state = 0
-# my_icon_name = ''
 console_shown = True
 IS_IDE = environ.get('PYCHARM_HOSTED') == '1'  # ran from IDE
 # end loaded
