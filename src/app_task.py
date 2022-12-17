@@ -80,14 +80,19 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
         if total_len > TAGS_STRING_LENGTH_MAX_RX:
             trace('Warning (W2): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
             neg_tags_list = []  # type: List[str]
-            for ti in reversed(range(len(tags_list))):  # type: int
-                if total_len <= TAGS_STRING_LENGTH_MAX_RX:
-                    break
-                ntag = tags_list[ti]
-                if ntag.startswith('-'):
-                    neg_tags_list.append(ntag[1:])
-                    total_len -= len(ntag) + 1
-                    del tags_list[ti]
+            # first pass: wildcarded negative tags - chance to ruin alias is lower
+            # second pass: any negative tags
+            for wildcardpass in [True, False]:
+                for ti in reversed(range(len(tags_list))):  # type: int
+                    if total_len <= TAGS_STRING_LENGTH_MAX_RX:
+                        break
+                    ntag = tags_list[ti]
+                    if wildcardpass is True and ntag.rfind('*') == -1:
+                        continue
+                    if ntag.startswith('-'):
+                        neg_tags_list.append(ntag[1:])
+                        total_len -= len(ntag) + 1
+                        del tags_list[ti]
             if total_len > TAGS_STRING_LENGTH_MAX_RX:
                 thread_exit('Fatal: extracting negative tags doesn\'t reduce total tags length enough! '
                             'Search result will be empty! Aborting...', -609)
