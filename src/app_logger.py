@@ -7,6 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from locale import getpreferredencoding
 from threading import Lock as ThreadLock
 from time import localtime, strftime
 from typing import Optional
@@ -59,7 +60,10 @@ class Logger:
                 try:
                     print(text.encode(DEFAULT_ENCODING).decode())
                 except Exception:
-                    print(f'<Message was not logged due to UnicodeError>')
+                    try:
+                        print(text.encode(DEFAULT_ENCODING).decode(getpreferredencoding()))
+                    except Exception:
+                        print(f'<Message was not logged due to UnicodeError>')
                 finally:
                     print('Previous message caused UnicodeError...')
         else:
