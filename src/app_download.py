@@ -32,7 +32,7 @@ from app_defines import (
 from app_gui_defines import UNDERSCORE
 from app_network import ThreadedHtmlWorker, thread_exit, DownloadInterruptException
 from app_logger import trace
-from app_revision import __RUXX_DEBUG__
+from app_revision import __RUXX_DEBUG__, APP_NAME, APP_VERSION
 from app_tagger import append_filtered_tags
 from app_task import extract_neg_and_groups, split_tags_into_tasks
 from app_utils import as_date, confirm_yes_no, normalize_path, trim_undersores, format_score
@@ -960,7 +960,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         if self.download_mode != DownloadModes.DOWNLOAD_FULL:
             trace(f'{"=" * LINE_BREAKS_AT}\n\n(Emulation Mode)')
-        trace(f'\n{"=" * LINE_BREAKS_AT}')
+        trace(f'\n{"=" * LINE_BREAKS_AT}\n{APP_NAME} core ver {APP_VERSION}')
         trace(f'Starting {self._get_module_abbr()}_manual', False, True)
         trace(f'\n{len(self.neg_and_groups):d} \'excluded tags combination\' custom filter(s) parsed')
         trace(f'{self._tasks_count():d} tasks scheduled\ntags: {self.tags_str_arr}\n\n{"=" * LINE_BREAKS_AT}')
