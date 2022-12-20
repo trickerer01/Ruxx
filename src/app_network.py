@@ -90,21 +90,19 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
 
     def download_file(self, link: str, item_id: str, dest: str, mode: DownloadModes) -> FileDownloadResult:
         fullname = dest[dest.rfind(SLASH) + 1:]
-        ext_char = fullname[fullname.find('.') + 1]
-        ext_full = fullname[fullname.find('.') + 1:]
+        ext_char = fullname[fullname.rfind('.') + 1]
+        ext_full = fullname[fullname.rfind('.') + 1:]
         is_video_ext = ext_full in ['webm', 'mp4']
+        touch_mode = mode == DownloadModes.DOWNLOAD_TOUCH
 
         result = FileDownloadResult()
-        result.result_str = f'[{current_process().getName()}] {item_id}({ext_char}).. '
-        result.file_size = 0
-        result.retries = 0
+        result.result_str = f'[{current_process().getName()}]{" <touch>" if touch_mode else ""} {item_id}({ext_char}).. '
 
-        expected_size = 0
-
-        if mode == DownloadModes.DOWNLOAD_TOUCH:
+        if touch_mode:
             with open(dest, 'wb'):
                 pass
         elif mode == DownloadModes.DOWNLOAD_FULL:
+            expected_size = 0
             with Session() as s:
                 # do not pool connections
                 s.adapters.clear()

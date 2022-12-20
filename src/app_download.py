@@ -679,7 +679,8 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             idx += 1
 
-        trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')
+        if total_count_temp != self.total_count:
+            trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')
 
     def _filter_existing_items(self) -> None:
         trace('Filtering out existing items...')
@@ -688,6 +689,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             return
 
         curdirfiles = list(reversed(listdir(self.dest_base))) if self.reverse_order else listdir(self.dest_base)
+
+        total_count_temp = self.total_count
 
         idx = 0
         while idx < len(self.items_raw_all):
@@ -718,6 +721,9 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             idx += 1
 
+        if total_count_temp != self.total_count:
+            trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')
+
     def _filter_items_matching_negative_and_groups(self) -> None:
         trace('Filtering out items using custom filters...')
 
@@ -738,7 +744,8 @@ class DownloaderBase(ThreadedHtmlWorker):
                 del self.items_raw_all[idx]
                 removed_count += 1
 
-        trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
+        if removed_count > 0:
+            trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
 
     def _process_tags(self, tag_str: str) -> None:
         self.url = self.form_tags_search_address(tag_str)
