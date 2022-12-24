@@ -171,7 +171,7 @@ ITEMS_PER_PAGE_RN = 63  # fixed 63
 TAG_LENGTH_MIN = 4
 TAG_LENGTH_MAX_RX = 9
 TAG_LENGTH_MAX_RN = 21
-TAGS_STRING_LENGTH_MAX_RX = 3400  # longer tags string will always return empty result
+TAGS_STRING_LENGTH_MAX_RX = 3300  # longer tags string will always return empty result
 PROXY_HTTP = 'http://'
 PROXY_SOCKS5 = 'socks5://'
 
