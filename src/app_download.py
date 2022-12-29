@@ -29,7 +29,7 @@ from app_defines import (
     ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, PageFilterType, ItemInfo, DATE_MIN_DEFAULT,
     CONNECT_DELAY_PAGE, CONNECT_RETRIES_ITEM, LINE_BREAKS_AT, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE_DEFAULT,
 )
-from app_gui_defines import UNDERSCORE
+from app_gui_defines import UNDERSCORE, NEWLINE
 from app_network import ThreadedHtmlWorker, thread_exit, DownloadInterruptException
 from app_logger import trace
 from app_revision import __RUXX_DEBUG__, APP_NAME, APP_VERSION
@@ -963,7 +963,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace(f'\n{"=" * LINE_BREAKS_AT}\n{APP_NAME} core ver {APP_VERSION}')
         trace(f'Starting {self._get_module_abbr()}_manual', False, True)
         trace(f'\n{len(self.neg_and_groups):d} \'excluded tags combination\' custom filter(s) parsed')
-        trace(f'{self._tasks_count():d} tasks scheduled\ntags: {self.tags_str_arr}\n\n{"=" * LINE_BREAKS_AT}')
+        trace(f'{self._tasks_count():d} tasks scheduled:\n{NEWLINE.join(self.tags_str_arr)}\n\n{"=" * LINE_BREAKS_AT}')
         for i in range(self._tasks_count()):
             trace(f'\ntask {i + 1} in progress...\n')
             try:

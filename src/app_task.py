@@ -19,12 +19,8 @@ from app_logger import trace
 
 def split_tags_into_tasks(tag_groups_arr: List[str], cc: str, sc: str, can_have_or_groups: bool, split_always: bool) -> List[str]:
     if can_have_or_groups:
-        # rx: (+id:2+~+id:3+)
-        # rn: (+id=2+~+id=3+)
-        # meta_or_group_re = re_compile(
-        #     fr'^\(\+([^{sc}~+]+(?:{sc}[^{sc}~+]+)?(?:\+~\+[^{sc}~+]+(?:{sc}[^{sc}~+]+)?)*)\+\)$')
         new_tags_str_arr = []  # type: List[str]
-        or_tags_to_append = []  # type: List[str]
+        or_tags_to_append = []  # type: List[List[str]]
         has_negative = False
         for g_tags in tag_groups_arr:
             splitted = False
@@ -36,22 +32,28 @@ def split_tags_into_tasks(tag_groups_arr: List[str], cc: str, sc: str, can_have_
                     add_s_meta = add_s.find(sc) != -1
                     if add_s_negative is True or split_always is True or add_s_meta is True:
                         assert add_s_negative & add_s_meta is False  # see app_tags_parser.py::split_or_group(str)
-                        if len(or_tags_to_append) > 0:
-                            containment_msg = '' if split_always else ' containing sort/negative tag(s)'
-                            thread_exit(f'Error: Can\'t handle more than one \'or\' group{containment_msg}. NYI!', -703)
                         do_split = True
                         has_negative |= add_s_negative
                 if do_split:
                     splitted = True
-                    or_tags_to_append += add_list
+                    or_tags_to_append.append(add_list)
             if not splitted:
                 new_tags_str_arr.append(g_tags)
         if len(or_tags_to_append) > 0:
             if has_negative and len(new_tags_str_arr) == 0:
                 thread_exit('Error: -tag in \'or\' group found, but no +tags! Cannot search by only -tags', -701)
-            trace(f'\nWarning (W1): sort/negative tag(s) in \'or\' group found. Splitting into {len(or_tags_to_append):d} tasks.')
-            new_base_tags_str = f'{cc}{cc.join(new_tags_str_arr)}' if len(new_tags_str_arr) > 0 else ''
-            return [f'{or_tag}{new_base_tags_str}' for or_tag in or_tags_to_append]
+            # a~b, c~d, x, -y => [a+c+x-y, a+d+a-y, b+c+x-y, b+d+x-y]
+            tags_multi_list = [f'{cc.join(new_tags_str_arr)}' if len(new_tags_str_arr) > 0 else '']
+            for or_tags_list in reversed(or_tags_to_append):
+                toapp = []  # type: List[str]
+                for or_tag in or_tags_list:
+                    for tags_string in tags_multi_list:
+                        toapp.append(f'{or_tag}{f"{cc}{tags_string}" if len(tags_string) > 0 else ""}')
+                tags_multi_list = toapp
+            contains_msg = 'sort/negative tag(s) in ' if not split_always else ''
+            trace(f'\nWarning (W1): {contains_msg}{len(or_tags_to_append):d} \'or\' group(s) found. '
+                  f'Splitting into {len(tags_multi_list):d} tasks.')
+            return tags_multi_list
     return [cc.join(tag_groups_arr)]
 
 
