@@ -1209,6 +1209,9 @@ if __name__ == '__main__':
                     console_shown = False
                 print('[Launcher] Hiding own console...')
                 Thread(target=hide_console).start()
+                ctypes.windll.user32.DeleteMenu(
+                    ctypes.windll.user32.GetSystemMenu(ctypes.windll.kernel32.GetConsoleWindow(), 0), 0xF060, ctypes.c_ulong(0)
+                )
 
         Logger.init(False)
         init_gui()
