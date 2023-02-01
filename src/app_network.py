@@ -248,7 +248,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
         self.ignore_proxy = args.noproxy or self.ignore_proxy
         self.ignore_proxy_dwn = args.proxynodown or self.ignore_proxy_dwn
         self.socks = args.socks or self.socks
-        self.proxies = {k: f'{PROXY_SOCKS5 if self.socks else PROXY_HTTP}{args.proxy}' for k in ['http', 'https']} if args.proxy else None
+        self.proxies = {'all': f'{PROXY_SOCKS5 if self.socks else PROXY_HTTP}{args.proxy}'} if args.proxy else None
 
     # threaded
     def fetch_html(self, url: str, tries: Optional[int] = None, do_cache=False) -> Optional[BeautifulSoup]:
