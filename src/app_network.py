@@ -79,6 +79,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
         self.socks = False
         self.proxies = None  # type: Optional[Dict[str, str]]
         self.etags = {}  # type: Dict[str, str]
+        self.session = None  # type: Optional[Session]
 
     @abstractmethod
     def ___this_class_has_virtual_methods___(self) -> ...:
@@ -87,6 +88,16 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
     @abstractmethod
     def _get_sitename(self) -> str:
         ...
+
+    def make_session(self) -> Session:
+        s = Session()
+        s.keep_alive = True
+        s.headers.update(self.add_headers.copy())
+        s.headers['Referer'] = self._get_sitename()
+        s.cookies.update(self.add_cookies.copy())
+        if self.proxies and not self.ignore_proxy:
+            s.proxies.update(self.proxies.copy())
+        return s
 
     def download_file(self, link: str, item_id: str, dest: str, mode: DownloadModes) -> FileDownloadResult:
         fullname = dest[dest.rfind(SLASH) + 1:]
@@ -249,6 +260,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
         self.ignore_proxy_dwn = args.proxynodown or self.ignore_proxy_dwn
         self.socks = args.socks or self.socks
         self.proxies = {'all': f'{PROXY_SOCKS5 if self.socks else PROXY_HTTP}{args.proxy}'} if args.proxy else None
+        self.session = self.make_session()
 
     # threaded
     def fetch_html(self, url: str, tries: Optional[int] = None, do_cache=False) -> Optional[BeautifulSoup]:
@@ -260,37 +272,28 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
 
         r = None
         retries = 0
-        with Session() as s:
-            # s.adapters.pop('http://')
-            s.keep_alive = False
-            s.headers.update(self.add_headers.copy())
-            s.headers['Referer'] = self._get_sitename()
-            if len(self.add_cookies) > 0:
-                s.cookies.update(self.add_cookies.copy())
-            if self.proxies and not self.ignore_proxy:
-                s.proxies.update(self.proxies.copy())
-            while retries < tries:
-                self.catch_cancel_or_ctrl_c()
-                try:
-                    r = s.request('GET', url, timeout=CONNECT_DELAY_PAGE, stream=False, allow_redirects=True)
-                    r.raise_for_status()
-                    break
-                except (KeyboardInterrupt, ThreadInterruptException):
-                    thread_exit('interrupted by user.', code=1)
-                except (Exception, HTTPError,) as err:
-                    retries += 1
-                    threadname = f'{current_process().getName()}: ' if current_process() != self.my_root_thread else ''
-                    if isinstance(err, HTTPError) and err.response.status_code == 404:
-                        if r is not None and r.content and len(r.content.decode()) > 2:
-                            trace(f'{threadname}received code 404 but received html'
-                                  f'\n{str(exc_info()[0])}: {str(exc_info()[1])}. Continuing...', True)
-                            break
-                        trace(f'{threadname}catched err 404 {str(exc_info()[0])}: {str(exc_info()[1])}. Aborting...', True)
-                        return None
-                    trace(f'{threadname}catched {str(exc_info()[0])}: {str(exc_info()[1])}.'
-                          f'{f" Reconnecting... {retries:d}" if retries < tries else ""}', True)
-                    thread_sleep(1)
-                    continue
+        while retries < tries:
+            self.catch_cancel_or_ctrl_c()
+            try:
+                r = self.session.request('GET', url, timeout=CONNECT_DELAY_PAGE, stream=False, allow_redirects=True)
+                r.raise_for_status()
+                break
+            except (KeyboardInterrupt, ThreadInterruptException):
+                thread_exit('interrupted by user.', code=1)
+            except (Exception, HTTPError,) as err:
+                retries += 1
+                threadname = f'{current_process().getName()}: ' if current_process() != self.my_root_thread else ''
+                if isinstance(err, HTTPError) and err.response.status_code == 404:
+                    if r is not None and r.content and len(r.content.decode()) > 2:
+                        trace(f'{threadname}received code 404 but received html'
+                              f'\n{str(exc_info()[0])}: {str(exc_info()[1])}. Continuing...', True)
+                        break
+                    trace(f'{threadname}catched err 404 {str(exc_info()[0])}: {str(exc_info()[1])}. Aborting...', True)
+                    return None
+                trace(f'{threadname}catched {str(exc_info()[0])}: {str(exc_info()[1])}.'
+                      f'{f" Reconnecting... {retries:d}" if retries < tries else ""}', True)
+                thread_sleep(1)
+                continue
 
         if retries >= tries:
             errmsg = f'Unable to connect. Aborting {url}'

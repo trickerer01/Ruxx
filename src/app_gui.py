@@ -758,7 +758,7 @@ def recheck_tags_direct() -> None:
         prox_type = PROXY_SOCKS5 if bool(int(getrootconf(Options.OPT_PROXY_SOCKS))) else PROXY_HTTP
         proxstr = str(getrootconf(Options.OPT_PROXYSTRING))
         if len(proxstr) > 0 and len(OPTION_CMD_IGNORE_PROXY[int(getrootconf(Options.OPT_IGNORE_PROXY))]) == 0:
-            mydwn.proxies = {'http': f'{prox_type}{proxstr}', 'https': f'{prox_type}{proxstr}'}
+            mydwn.proxies = {'all': f'{prox_type}{proxstr}'}
         else:
             mydwn.proxies = None
         headstr = window_hcookiesm().get_json_h()
@@ -769,6 +769,7 @@ def recheck_tags_direct() -> None:
         if len(cookstr) > 4:  # != "'{}'"
             cj = json_loads(cookstr)
             mydwn.add_cookies.update(cj)
+        mydwn.session = mydwn.make_session()
 
         try:
             count = mydwn.get_items_query_size(full_addr, 1)

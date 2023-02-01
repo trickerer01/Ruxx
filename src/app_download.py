@@ -107,6 +107,9 @@ class DownloaderBase(ThreadedHtmlWorker):
         if self.active_pool:
             self.active_pool.terminate()
             self.active_pool = None  # type: Optional[ThreadPool]
+        if self.session:
+            self.session.close()
+            self.session = None
 
     # threaded
     def _inc_proc_count(self) -> None:
