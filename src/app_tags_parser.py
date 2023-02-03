@@ -59,6 +59,11 @@ last_tags = ''
 last_fulltags = None  # type: Optional[List[str]]
 
 
+def reset_last_tags() -> None:
+    global last_tags
+    last_tags = ''
+
+
 def re_plain() -> Pattern:
     return re_plains[ProcModule.CUR_PROC_MODULE]
 

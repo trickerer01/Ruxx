@@ -465,7 +465,7 @@ def set_proc_module(dwnmodule: int) -> None:
         update_menu_enabled_states()
 
     # reset tags parser
-    tap.last_tags = ''
+    tap.reset_last_tags()
 
 
 def get_global(index: Globals) -> Union[Entry, Button]:
