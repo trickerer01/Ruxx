@@ -28,7 +28,7 @@ import app_download_rn as dwn_rn
 import app_download_rx as dwn_rx
 import app_file_parser as fp
 import app_file_sorter as fs
-import app_tagger as tagger
+import app_file_tagger as ft
 import app_tags_parser as tap
 from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, SUPPORTED_PLATFORMS, PROXY_SOCKS5, PROXY_HTTP, MODULE_ABBR_RX, MODULE_ABBR_RN,
@@ -298,7 +298,7 @@ def untag_files() -> None:
         filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),))  # type: Tuple[str]
     if len(filelist) > 0:
         setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
-        untagged_count = tagger.untag_files(filelist)
+        untagged_count = ft.untag_files(filelist)
         if untagged_count == len(filelist):
             Logger.log(f'Successfully un-tagged {len(filelist):d} file(s).', False, False)
         elif untagged_count > 0:
@@ -314,7 +314,7 @@ def retag_files() -> None:
     if len(filelist) > 0:
         setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
         module = get_new_proc_module()
-        retagged_count = tagger.retag_files(filelist, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
+        retagged_count = ft.retag_files(filelist, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
         if retagged_count == len(filelist):
             Logger.log(f'Successfully re-tagged {len(filelist):d} file(s).', False, False)
         elif retagged_count > 0:
