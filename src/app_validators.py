@@ -105,6 +105,16 @@ def valid_int(val: str) -> int:
     return val
 
 
+def valid_positive_int(val: str) -> int:
+    try:
+        val = int(val)
+        assert val >= 0
+    except Exception:
+        raise ArgumentError
+
+    return val
+
+
 def valid_thread_count(val: str) -> int:
     try:
         val = int(val)

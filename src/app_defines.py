@@ -111,6 +111,9 @@ class DownloadModes(IntEnum):
         return f'{self.__class__.__name__}.{self._name_} ({self.value:d})'
 
 
+DMODE_DEFAULT = DownloadModes.DOWNLOAD_FULL
+DMODE_CHOICES = {dm.value for dm in DownloadModes.__members__.values()}
+
 STATE_WORK_START = DownloaderStates.STATE_SCANNING_PAGES1
 
 
