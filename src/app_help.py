@@ -9,9 +9,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from app_revision import APP_NAME, APP_VERSION, APP_REV_DATE, __RUXX_DEBUG__
 
 APP_AUTHOR = 'Dmitriy \'trickerer\' Komardin'
-APP_YEARS = '2020-2022'
+APP_YEARS = '2020-2023'
 APP_BUILD_TYPE_STR = 'Debug' if __RUXX_DEBUG__ else 'Release'
-
 
 # cmdline args help messages
 HELP_ARG_MODULE = 'download module to use (rx, rn, etc.)'

@@ -99,10 +99,20 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
             s.proxies.update(self.proxies.copy())
         return s
 
+    def parse_args(self, args: Namespace) -> None:
+        self.add_headers = args.headers or self.add_headers
+        self.add_cookies = args.cookies or self.add_cookies
+        self.ignore_proxy = args.noproxy or self.ignore_proxy
+        self.ignore_proxy_dwn = args.proxynodown or self.ignore_proxy_dwn
+        self.socks = args.socks or self.socks
+        self.proxies = {'all': f'{PROXY_SOCKS5 if self.socks else PROXY_HTTP}{args.proxy}'} if args.proxy else None
+        self.session = self.make_session()
+
+    # threaded
     def download_file(self, link: str, item_id: str, dest: str, mode: DownloadModes) -> FileDownloadResult:
         fullname = dest[dest.rfind(SLASH) + 1:]
-        ext_char = fullname[fullname.rfind('.') + 1]
         ext_full = fullname[fullname.rfind('.') + 1:]
+        ext_char = ext_full[0]
         is_video_ext = ext_full in ['webm', 'mp4']
         touch_mode = mode == DownloadModes.DOWNLOAD_TOUCH
 
@@ -252,15 +262,6 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                         thread_sleep(2)
                         continue
         return result
-
-    def parse_args(self, args: Namespace) -> None:
-        self.add_headers = args.headers or self.add_headers
-        self.add_cookies = args.cookies or self.add_cookies
-        self.ignore_proxy = args.noproxy or self.ignore_proxy
-        self.ignore_proxy_dwn = args.proxynodown or self.ignore_proxy_dwn
-        self.socks = args.socks or self.socks
-        self.proxies = {'all': f'{PROXY_SOCKS5 if self.socks else PROXY_HTTP}{args.proxy}'} if args.proxy else None
-        self.session = self.make_session()
 
     # threaded
     def fetch_html(self, url: str, tries: Optional[int] = None, do_cache=False) -> Optional[BeautifulSoup]:
