@@ -10,10 +10,10 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from abc import abstractmethod
 from argparse import ArgumentError
 from datetime import datetime
+from ipaddress import IPv4Address
 from json import loads as json_loads
 from os import path
-from re import sub as re_sub, fullmatch as re_fullmatch
-from typing import List, Union
+from typing import Union
 try:
     from typing import Protocol
 except Exception:
@@ -47,35 +47,14 @@ def unquote(string: str) -> str:
 
 def valid_proxy(prox: str) -> str:
     try:
-        newval = prox
-        if newval != '':
-            # replace front trailing zeros: 1.004.022.055:002022 -> 1.4.22.55:2022
-            newval = str(re_sub(r'([^\d]|^)0+([1-9](?:[0-9]+)?)', r'\1\2', prox))
-            # validate IP with port
-            adr_valid = (newval == '') or re_fullmatch(r'^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{2,5})$', newval) is not None
-            assert adr_valid
-            assert len(newval) > 0
-            #  port
-            ps = str(newval).split(':')
-            ips = ps[0].split('.') if (ps and len(ps) > 0) else []  # type: List[str]
-            if len(ps) != 2 or len(ips) != 4:
-                assert False
-            if ps[1][0] == '0':
-                assert False
-            port = int(ps[1])
-            if port < 20 or port > 65535:
-                assert False
-            #  ip
-            for ip in ips:
-                if len(ip) == 0 or len(ip) > 3 or ((len(ip) > 1 or (len(ip) == 1 and ips.index(ip) == 0)) and ip[0] == '0'):
-                    assert False
-                iip = int(ip)
-                if iip < 0 or iip > 255:
-                    assert False
+        pv, pp = tuple(prox.split(':', 1))
+        pva = IPv4Address(pv)
+        ppi = int(pp)
+        assert 20 < ppi < 65535
     except Exception:
         raise ArgumentError
 
-    return newval
+    return f'{str(pva)}:{ppi:d}'
 
 
 def valid_date(date: str, rev=False) -> str:

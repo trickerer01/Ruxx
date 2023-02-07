@@ -65,7 +65,6 @@ from app_validators import (
 )
 
 # loaded
-# storedTags = []
 download_thread = None  # type: Optional[Thread]
 tags_recheck_thread = None  # type: Optional[Thread]
 prev_download_state = 0
@@ -139,7 +138,7 @@ class Settings(ABC):
             self.type = check.get_value_type()
             self.check = check
             self.check_fail_message = check_fail_message or f'Invalid value \'%s\' for config id \'{self.conf.value:d}\''
-            assert issubclass(type(self.check), (VALIDATORS_DICT[self.type], ValidatorAlwaysTrue))
+            assert issubclass(type(self.check), (VALIDATORS_DICT.get(self.type), ValidatorAlwaysTrue))
             assert self.check_fail_message.count('%s') == 1
 
         def validate(self, val: Union[int, str]) -> bool:
