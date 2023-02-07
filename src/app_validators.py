@@ -197,12 +197,13 @@ class DownloadOrderCBValidator(IntValidator):
 
 class PositiveIdValidator(StrValidator):
     def __call__(self, val: str) -> bool:
-        return all(c.isnumeric() for c in val) and 0 <= int(val)
+        return len(val) > 0 and val[0] != '0' and int(val) > 0 and all(c.isnumeric() for c in val)
 
 
 class IdValidator(StrValidator):
     def __call__(self, val: str) -> bool:
-        return all(c.isnumeric() or (i == 0 and c == '-') for i, c in enumerate(val))
+        return (len(val) > 0 and val[val.find('-') + 1] != '0' and int(val) != 0 and
+                all(c.isnumeric() or (i == 0 and c == '-') for i, c in enumerate(val)))
 
 
 class DateValidator(StrValidator):
