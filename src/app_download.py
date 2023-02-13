@@ -213,7 +213,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def _spli_or_group_into_tasks_always(self) -> bool:
+    def _split_or_group_into_tasks_always(self) -> bool:
         ...
 
     def get_tags_count(self, offset=0) -> int:
@@ -946,7 +946,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         cc = self._get_tags_concat_char()
         sc = self._get_idval_equal_seaparator()
         can_have_or_groups = self._can_have_or_groups()
-        split_always = self._spli_or_group_into_tasks_always()
+        split_always = self._split_or_group_into_tasks_always()
         # join by ' ' is required by tests, although normally len(args.tags) == 1
         tags_list, self.neg_and_groups = extract_neg_and_groups(' '.join(tags_base_arr))
         self.tags_str_arr = split_tags_into_tasks(tags_list, cc, sc, can_have_or_groups, split_always)

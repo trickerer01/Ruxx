@@ -187,7 +187,7 @@ class DownloaderRx(DownloaderBase):
     def _get_idval_equal_seaparator(self) -> str:
         return ID_VALUE_SEPARATOR_CHAR_RX
 
-    def _spli_or_group_into_tasks_always(self) -> bool:
+    def _split_or_group_into_tasks_always(self) -> bool:
         return False
 
     def _send_to_download(self, raw: str, item_id: str, is_video: bool) -> None:
