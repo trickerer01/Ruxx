@@ -99,8 +99,8 @@ class DownloaderRn(DownloaderBase):
         date_raw = raw_html.find('time')
         b = str(date_raw).find('datetime=') + len('datetime=') + 1
         # 2020-01-06
-        b = str(date_raw)[b: b + 4 + 1 + 2 + 1 + 2]
-        return b
+        d = str(date_raw)[b: b + 4 + 1 + 2 + 1 + 2]
+        return d
 
     def get_items_query_size(self, url: str, tries: Optional[int] = None) -> Union[int, BeautifulSoup]:
         raw_html = self.fetch_html(f'{url}{1:d}', tries, do_cache=True)

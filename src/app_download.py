@@ -8,7 +8,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from __future__ import annotations
-
 from abc import abstractmethod
 from argparse import Namespace
 from datetime import datetime

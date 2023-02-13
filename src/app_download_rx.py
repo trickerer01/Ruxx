@@ -26,7 +26,7 @@ from app_utils import trim_quotes_trailing_spaces
 
 SITENAME = b64decode(SITENAME_B_RX).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RX
-MAX_SEARCH_DEPTH = 200000 + (ITEMS_PER_PAGE - 1)  # set by site devs
+MAX_SEARCH_DEPTH = 200000 + ITEMS_PER_PAGE - 1  # set by site devs
 
 
 class DownloaderRx(DownloaderBase):
@@ -164,7 +164,7 @@ class DownloaderRx(DownloaderBase):
             if name == 'file_url':
                 name = 'ext'
                 value = value[value.rfind('.') + 1:]
-            # special case: source -> omit unknowsns
+            # special case: source -> omit unknowns
             # if name == 'source' and len(value) < 2:
             #     value = 'Unknown'
             if name in item_info.__slots__:
@@ -232,7 +232,7 @@ class DownloaderRx(DownloaderBase):
     @staticmethod
     def extract_file_url(h: str) -> Tuple[str, str]:
         file_re_res = re_search(r'file_url=\"([^"]+)\"', h)
-        if not file_re_res:
+        if file_re_res is None:
             return '', ''
         file_url = file_re_res.group(1)
         file_ext = file_url[file_url.rfind('.') + 1:]
@@ -241,7 +241,7 @@ class DownloaderRx(DownloaderBase):
     @staticmethod
     def extract_sample_url(h: str) -> Tuple[str, str]:
         sample_re_res = re_search(r'sample_url=\"([^"]+)\"', h)
-        if not sample_re_res:
+        if sample_re_res is None:
             return '', ''
         file_url = sample_re_res.group(1)
         file_ext = file_url[file_url.rfind('.') + 1:]
