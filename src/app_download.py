@@ -667,19 +667,14 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         total_count_temp = self.total_count
 
-        idx = 0
-        while idx < len(self.items_raw_all):
+        for idx in reversed(range(len(self.items_raw_all))):
             self.catch_cancel_or_ctrl_c()
-
             h = str(self.items_raw_all[idx])
             is_vid = self._is_video(h)
             if self.skip_videos if is_vid else self.skip_images:
                 # trace(f'Info: TagProc_filter: removing {"video" if _is_video else "image"} {_extract_id(extract_local_addr(h))}!')
-                self.items_raw_all.pop(idx)
+                del self.items_raw_all[idx]
                 self.total_count -= 1
-                continue
-
-            idx += 1
 
         if total_count_temp != self.total_count:
             trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')
@@ -690,38 +685,21 @@ class DownloaderBase(ThreadedHtmlWorker):
         if not path.exists(self.dest_base):
             return
 
-        curdirfiles = list(reversed(listdir(self.dest_base))) if self.reverse_order else listdir(self.dest_base)
-
         total_count_temp = self.total_count
 
-        idx = 0
-        while idx < len(self.items_raw_all):
+        curdirfiles = listdir(self.dest_base) if self.reverse_order else list(reversed(listdir(self.dest_base)))
+        for idx in reversed(range(len(self.items_raw_all))):
             self.catch_cancel_or_ctrl_c()
-
             h = self._local_addr_from_string(str(self.items_raw_all[idx]))
             item_id = self._extract_id(h)
-
             rex_cdfile = re_compile(fr'^(?:{self._get_module_abbr_p()})?{item_id}[._].*?$')
-            rem_idx = 0
-            f_idx = 0
-            f_len = len(curdirfiles)
-            found = False
-            while f_idx < f_len:
-                cdfile = curdirfiles[f_idx]
-                if re_fullmatch(rex_cdfile, cdfile) is not None:
-                    rem_idx = f_idx
-                    found = True
+            for f_idx in reversed(range(len(curdirfiles))):
+                if re_fullmatch(rex_cdfile, curdirfiles[f_idx]) is not None:
+                    # trace(f'Info: TagProc_filter: {item_id} already exists!')
+                    del curdirfiles[f_idx]
+                    del self.items_raw_all[idx]
+                    self.total_count -= 1
                     break
-                f_idx += 1
-
-            if found is True:
-                # trace(f'Info: TagProc_filter: {item_id} already exists!')
-                curdirfiles.pop(rem_idx)
-                self.items_raw_all.pop(idx)
-                self.total_count -= 1
-                continue
-
-            idx += 1
 
         if total_count_temp != self.total_count:
             trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')

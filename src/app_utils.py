@@ -47,7 +47,7 @@ def trim_quotes_trailing_spaces(string: str) -> str:
     return string
 
 
-def normalize_path(basepath: str, append_slash: bool = True) -> str:
+def normalize_path(basepath: str, append_slash=True) -> str:
     normalized_path = basepath.replace('\\', SLASH)
     if append_slash and len(normalized_path) != 0 and normalized_path[-1] != SLASH:
         normalized_path += SLASH
