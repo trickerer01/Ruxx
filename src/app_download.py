@@ -945,18 +945,21 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace(f'\n{len(self.neg_and_groups):d} \'excluded tags combination\' custom filter(s) parsed')
         trace(f'{self._tasks_count():d} tasks scheduled:\n{NEWLINE.join(self.tags_str_arr)}\n\n{"=" * LINE_BREAKS_AT}')
         for i in range(self._tasks_count()):
-            trace(f'\ntask {i + 1} in progress...\n')
+            trace(f'\ntask {i + 1:d} in progress...\n')
             try:
                 self._process_tags(self.tags_str_arr[i])
-                trace(f'task {i + 1} completed...')
+                trace(f'task {i + 1:d} completed...')
             except ThreadInterruptException:
-                trace(f'task {i + 1} aborted...')
+                trace(f'task {i + 1:d} aborted...')
                 raise
             except Exception:
-                trace(f'task {i + 1} failed...')
+                trace(f'task {i + 1:d} failed...')
             finally:
                 if __RUXX_DEBUG__:
-                    trace(f'\ntask {i + 1}:\n total: {self.total_count:d}\n succs: {self.success_count:d}\n fails: {self.fail_count:d}')
+                    trace(f'\ntask {i + 1:d}:'
+                          f'\n total:  {self.total_count:d}'
+                          f'\n succed: {self.success_count:d}'
+                          f'\n failed: {self.fail_count:d}')
                 trace('=' * LINE_BREAKS_AT)
                 self.total_count_all += self.total_count
                 self.success_count_all += self.success_count
@@ -994,7 +997,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         except (KeyboardInterrupt, ThreadInterruptException):
             trace(f'\nInterrupted by {str(exc_info()[0])}!\n', True)
             self.my_root_thread.killed = True
-            if self.active_pool:
+            if self.active_pool is not None:
                 self.active_pool.join()
                 trace('\nExiting gracefully\n', True)
         except Exception:
