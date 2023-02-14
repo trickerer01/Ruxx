@@ -682,7 +682,7 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _filter_existing_items(self) -> None:
         trace('Filtering out existing items...')
 
-        if not path.exists(self.dest_base):
+        if not path.isdir(self.dest_base):
             return
 
         total_count_temp = self.total_count
@@ -1058,7 +1058,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 trace('Error.\n')
                 return
 
-        if not path.exists(self.dest_base):
+        if not path.isdir(self.dest_base):
             try:
                 makedirs(self.dest_base)
             except Exception:
@@ -1085,7 +1085,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 trace('Error.\n')
                 return
 
-        if not path.exists(self.dest_base):
+        if not path.isdir(self.dest_base):
             try:
                 makedirs(self.dest_base)
             except Exception:

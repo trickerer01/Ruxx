@@ -108,7 +108,7 @@ def valid_thread_count(val: str) -> int:
 def valid_path(pathstr: str) -> str:
     try:
         newpath = normalize_path(unquote(pathstr))
-        if not path.exists(newpath[:(newpath.find(SLASH) + 1)]):
+        if not path.isdir(newpath[:(newpath.find(SLASH) + 1)]):
             raise ValueError
     except Exception:
         raise ArgumentError

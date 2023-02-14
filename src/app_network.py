@@ -136,7 +136,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                     s.cookies.update(self.add_cookies.copy())
                 if self.proxies and not self.ignore_proxy and not self.ignore_proxy_dwn:
                     s.proxies.update(self.proxies.copy())
-                while (not (path.exists(dest) and result.file_size > 0)) and result.retries < CONNECT_RETRIES_ITEM:
+                while (not (path.isfile(dest) and result.file_size > 0)) and result.retries < CONNECT_RETRIES_ITEM:
                     if self.is_killed():
                         trace(f'{result.result_str} interrupted', True)
                         raise DownloadInterruptException
@@ -240,11 +240,11 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                         if result.file_size != expected_size:
                             trace(f'Warning (W3): size mismatch for {item_id} ({result.file_size:d} / {expected_size:d}).'
                                   f' Retrying file.', True)
-                            if path.exists(dest):
+                            if path.isfile(dest):
                                 remove_file(dest)
                             raise IOError
                     except (KeyboardInterrupt, ThreadInterruptException):
-                        if path.exists(dest):
+                        if path.isfile(dest):
                             result.file_size = stat(dest).st_size
                             if result.file_size != expected_size:
                                 remove_file(dest)
@@ -254,7 +254,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                         if isinstance(err, HTTPError) and err.response.status_code == 416:  # Requested range is not satisfiable
                             if __RUXX_DEBUG__:
                                 trace(f'Warning (W3): {item_id} catched HTTPError 416!', True)
-                            if path.exists(dest):
+                            if path.isfile(dest):
                                 remove_file(dest)
                         result.retries += 1
                         s_result = f'{result.result_str}{str(exc_info()[0])}: {str(exc_info()[1])} retry {result.retries:d}...'

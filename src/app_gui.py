@@ -115,9 +115,9 @@ def get_curdir(prioritize_last_path=True) -> str:
     lastloc = str(getrootconf(Options.OPT_LASTPATH))
     curloc = str(getrootconf(Options.OPT_PATH))
     if prioritize_last_path:
-        return lastloc if len(lastloc) > 0 else curloc if path.exists(curloc) else path.abspath(curdir)
+        return lastloc if len(lastloc) > 0 else curloc if path.isdir(curloc) else path.abspath(curdir)
     else:
-        return curloc if path.exists(curloc) else lastloc if len(lastloc) > 0 else path.abspath(curdir)
+        return curloc if path.isdir(curloc) else lastloc if len(lastloc) > 0 else path.abspath(curdir)
 
 
 class Settings(ABC):
@@ -422,7 +422,7 @@ def reset_download_limit() -> None:
 def open_download_folder() -> None:
     cur_path = normalize_path(getrootconf(Options.OPT_PATH))
 
-    if not path.exists(cur_path[:(cur_path.find(SLASH) + 1)]):
+    if not path.isdir(cur_path[:(cur_path.find(SLASH) + 1)]):
         messagebox.showerror('Open download folder', f'Path \'{cur_path}\' is invalid.')
         return
 
@@ -817,7 +817,7 @@ def recheck_args() -> Tuple[bool, str]:
     pathstr = normalize_path(str(getrootconf(Options.OPT_PATH)))
     if len(pathstr) <= 0:
         return False, 'No path specified'
-    if not path.exists(pathstr[:(pathstr.find(SLASH) + 1)]):
+    if not path.isdir(pathstr[:(pathstr.find(SLASH) + 1)]):
         return False, 'Invalid path'
     # dates
     dateafter_str = '""'
