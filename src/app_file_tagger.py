@@ -46,7 +46,7 @@ def retag_files(files: Tuple[str], re_tags_to_process: Pattern, re_tags_to_exclu
         curdirfiles = list(listdir(base_path))
         for f in curdirfiles:
             if re_fullmatch(r'^[a-z]{2}_!tags_\d+?-\d+?\.txt$', f):
-                with open(f'{base_path}{SLASH}{f}', 'r', encoding=DEFAULT_ENCODING) as fo:
+                with open(f'{base_path}{SLASH}{f}', 'rt', encoding=DEFAULT_ENCODING) as fo:
                     tagfiles_lines_full.extend({tuple(a.strip().split(': ', 1)) for a in fo.readlines() if len(a) > 1})
 
         tagdict = {v[0][3:]: v[1] for v in tagfiles_lines_full}  # type: Dict[str, str]

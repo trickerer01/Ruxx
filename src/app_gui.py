@@ -194,7 +194,7 @@ class Settings(ABC):
                     continue
                 Logger.log(f'Trying to autoconfigure using {filename}...', False, False)
                 try:
-                    with open(full_path, 'r', encoding=DEFAULT_ENCODING) as rfile:
+                    with open(full_path, 'rt', encoding=DEFAULT_ENCODING) as rfile:
                         Settings._read_settings(rfile.readlines())
                     Logger.log('Ok', False, False)
                     break
@@ -272,7 +272,7 @@ class Settings(ABC):
                 if str(filepath).endswith('.cfg') is False:
                     filepath += '.cfg'
                 Logger.log(f'Saving setting to {filepath}...', False, False)
-                with open(filepath, 'w', encoding=DEFAULT_ENCODING) as wfile:
+                with open(filepath, 'wt', encoding=DEFAULT_ENCODING) as wfile:
                     wfile.writelines(Settings._write_settings())
                 Logger.log('Ok', False, False)
         except Exception:
@@ -284,7 +284,7 @@ class Settings(ABC):
             filepath = ask_filename((('Config files', '*.cfg'), ('All files', '*.*')))
             if filepath is not None and len(filepath) > 0:
                 Logger.log(f'Loading setting from {filepath}...', False, False)
-                with open(filepath, 'r', encoding=DEFAULT_ENCODING) as rfile:
+                with open(filepath, 'rt', encoding=DEFAULT_ENCODING) as rfile:
                     Settings._read_settings(rfile.readlines())
                 Logger.log('Ok', False, False)
         except Exception:

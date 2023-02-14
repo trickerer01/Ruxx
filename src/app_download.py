@@ -1064,7 +1064,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             except Exception:
                 thread_exit('ERROR: Unable to create subfolder!')
 
-        with open(filename, 'w', encoding=DEFAULT_ENCODING) as dump:
+        with open(filename, 'wt', encoding=DEFAULT_ENCODING) as dump:
             for item_info in self.item_info_dict.values():
                 item_line = f'{abbrp}{item_info.id}: {format_score(item_info.score)} {item_info.tags.strip()}\n'
                 dump.write(item_line)
@@ -1091,7 +1091,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             except Exception:
                 thread_exit('ERROR: Unable to create subfolder!')
 
-        with open(filename, 'w', encoding=DEFAULT_ENCODING) as dump:
+        with open(filename, 'wt', encoding=DEFAULT_ENCODING) as dump:
             for item_info in self.item_info_dict.values():
                 if len(item_info.source) < 2:
                     item_info.source = SOURCE_DEFAULT
