@@ -67,7 +67,7 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
         ngr = re_fullmatch(r'^-\(([^,]+(?:,[^,]+)+)\)$', neg_tags_group)
         return [re_compile(rf'^{esc(s)}$') for s in ngr.group(1).split(',')] if ngr else None
 
-    parsed = []
+    parsed = []  # type: List[List[Pattern]]
     tags_list = tags_str.split(' ')
     for tgi in reversed(range(len(tags_list))):  # type: int
         tag_group = tags_list[tgi]
@@ -104,7 +104,6 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
             plist = form_plist(extracted_neg_group_str)
             assert plist is not None
             parsed.append(plist)
-
     return tags_list, parsed
 
 #
