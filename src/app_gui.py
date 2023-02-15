@@ -23,8 +23,6 @@ from tkinter import messagebox, filedialog, BooleanVar, IntVar, Entry, Button, P
 from typing import Optional, Union, Callable, List, Tuple
 
 # internal
-import app_download_rn as dwn_rn
-import app_download_rx as dwn_rx
 from app_cmdargs import prepare_arglist
 from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, SUPPORTED_PLATFORMS, PROXY_SOCKS5, PROXY_HTTP, MODULE_ABBR_RX, MODULE_ABBR_RN,
@@ -32,6 +30,8 @@ from app_defines import (
     DEFAULT_HEADERS,
     max_progress_value_for_state, DATE_MIN_DEFAULT, FMT_DATE_DEFAULT,
 )
+from app_download_rn import DownloaderRn
+from app_download_rx import DownloaderRx
 from app_file_parser import prepare_tags_list
 from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_size, sort_files_by_score
 from app_file_tagger import untag_files, retag_files
@@ -75,10 +75,10 @@ IS_IDE = environ.get('PYCHARM_HOSTED') == '1'  # ran from IDE
 # end loaded
 
 # MODULES
-dwn = None  # type: Union[None, dwn_rn.DownloaderType, dwn_rx.DownloaderType]
+dwn = None  # type: Union[None, DownloaderRn, DownloaderRx]
 DOWNLOADERS_BY_PROC_MODULE = {
-    ProcModule.PROC_RX: dwn_rx,
-    ProcModule.PROC_RN: dwn_rn,
+    ProcModule.PROC_RX: DownloaderRx,
+    ProcModule.PROC_RN: DownloaderRn,
 }
 PROC_MODULES_BY_ABBR = {
     MODULE_ABBR_RX: ProcModule.PROC_RX,
@@ -445,8 +445,8 @@ def open_download_folder() -> None:
         Logger.log(f'Couldn\'t open \'{cur_path}\'.', False, False)
 
 
-def get_new_proc_module() -> Union[dwn_rn.DownloaderType, dwn_rx.DownloaderType]:
-    return DOWNLOADERS_BY_PROC_MODULE[ProcModule.CUR_PROC_MODULE].DownloaderType()
+def get_new_proc_module() -> Union[DownloaderRn, DownloaderRx]:
+    return DOWNLOADERS_BY_PROC_MODULE[ProcModule.CUR_PROC_MODULE]()
 
 
 def set_proc_module(dwnmodule: int) -> None:
@@ -746,7 +746,7 @@ def recheck_tags_direct() -> None:
     cur_tags = str(getrootconf(Options.OPT_TAGS))
 
     count = 0
-    mydwn = None  # type: Union[None, dwn_rn.DownloaderRn, dwn_rx.DownloaderRx]
+    mydwn = None  # type: Union[None, DownloaderRn, DownloaderRx]
     res, tags_list = parse_tags(cur_tags)
     if re_match(r'\([^: ]+:.*?', cur_tags):  # `or` group with sort tag
         Logger.log('Error: cannot check tags with sort tag(s) within \'or\' group', False, False)
@@ -1175,11 +1175,11 @@ def download_threadm() -> Thread:
     return download_thread
 
 
-def dwnm() -> dwn_rx.DownloaderBase:
+def dwnm() -> Union[DownloaderRn, DownloaderRx]:
     global dwn
 
     if dwn is None:
-        dwn = DOWNLOADERS_BY_PROC_MODULE[ProcModule.CUR_PROC_MODULE].DownloaderType()
+        dwn = DOWNLOADERS_BY_PROC_MODULE[ProcModule.CUR_PROC_MODULE]()
 
     return dwn
 
