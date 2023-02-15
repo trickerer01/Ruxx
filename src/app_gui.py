@@ -796,6 +796,9 @@ def recheck_tags_direct() -> None:
 def recheck_tags_direct_do() -> None:
     global tags_recheck_thread
 
+    if menu_items[Menus.MENU_ACTIONS][0].entrycget(menu_items[Menus.MENU_ACTIONS][1][1], 'state') == STATE_DISABLED:
+        return
+
     assert tags_recheck_thread is None
 
     tags_recheck_thread = Thread(target=recheck_tags_direct)
