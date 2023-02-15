@@ -904,6 +904,9 @@ def cancel_download() -> None:
 def do_download() -> None:
     global download_thread
 
+    if menu_items[Menus.MENU_ACTIONS][0].entrycget(menu_items[Menus.MENU_ACTIONS][1][0], 'state') == STATE_DISABLED:
+        return
+
     suc, msg = recheck_args()
     if not suc:
         messagebox.showwarning('Nope', msg)
