@@ -553,7 +553,7 @@ def prepare_cmdline() -> List[str]:
     if len(tags_line) > 0 and (tags_line.find('  ') != -1 or tags_line.find('\n') != -1):
         tags_line = re_sub(r'  +', r' ', tags_line.replace('\n', ' '))
         setrootconf(Options.OPT_TAGS, tags_line)
-    parse_suc, tags_list = parse_tags_field(tags_line)
+    parse_suc, tags_list = parse_tags(tags_line)
     # append id boundaries tags if present in id fields and not in tags
     re_id_eq = re_id_eq_rx if ProcModule.is_rx() else re_id_eq_rn
     re_id_ge = re_id_ge_rx if ProcModule.is_rx() else re_id_ge_rn
