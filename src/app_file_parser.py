@@ -17,6 +17,8 @@ from iteration_utilities import unique_everseen
 from app_defines import DEFAULT_ENCODING, FILE_NAME_PREFIX_RX, FILE_NAME_PREFIX_RN, ID_VALUE_SEPARATOR_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RN
 from app_gui_defines import ProcModule
 
+__all__ = ('prepare_tags_list',)
+
 r_comments = re_compile(r'^(?:--|//|#).*?$')
 
 prefixes = {
@@ -33,42 +35,42 @@ idstring_patterns = {
 }
 
 
-def _get_prefix() -> str:
+def get_prefix() -> str:
     return prefixes[ProcModule.get()]
 
 
-def _get_idval_eq_sep() -> str:
+def get_idval_eq_sep() -> str:
     return idval_eq_separators[ProcModule.get()]
 
 
-def _get_r_idstring() -> Pattern:
+def get_r_idstring() -> Pattern:
     return idstring_patterns[ProcModule.get()]
 
 
-def _id_list_from_string(id_str: str) -> List[str]:
+def id_list_from_string(id_str: str) -> List[str]:
     id_str = re_sub(r'(?:, *| +)', ' ', id_str)  # separators
     id_str = re_sub(r'^ +', '', id_str)  # leading wspaces
-    id_str = re_sub(fr'{_get_prefix()}?', '', id_str)  # prefix
+    id_str = re_sub(fr'{get_prefix()}?', '', id_str)  # prefix
     return id_str.strip().split(' ')
 
 
-def _parse_file(filepath: str) -> Tuple[bool, List[str]]:
+def parse_file(filepath: str) -> Tuple[bool, List[str]]:
     id_list = []  # type: List[str]
     try:
         for line in open(filepath, 'rt', encoding=DEFAULT_ENCODING).readlines():
             line = line.strip(' \n\ufeff')
             if len(line) == 0 or re_fullmatch(r_comments, line):
                 continue
-            elif not re_fullmatch(_get_r_idstring(), line):
+            elif not re_fullmatch(get_r_idstring(), line):
                 raise IOError
-            id_list += _id_list_from_string(line)
-        return True, [f'id{_get_idval_eq_sep()}{s}' for s in sorted(unique_everseen(id_list), key=lambda item: int(item))]
+            id_list += id_list_from_string(line)
+        return True, [f'id{get_idval_eq_sep()}{s}' for s in sorted(unique_everseen(id_list), key=lambda item: int(item))]
     except Exception:
         return False, []
 
 
 def prepare_tags_list(filepath: str) -> Tuple[bool, str]:
-    suc, id_list = _parse_file(filepath)
+    suc, id_list = parse_file(filepath)
     if suc is False or len(id_list) == 0:
         return False, ''
 

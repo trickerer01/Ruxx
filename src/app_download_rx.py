@@ -19,10 +19,13 @@ from app_defines import (
     SITENAME_B_RX, FILE_NAME_PREFIX_RX, MODULE_ABBR_RX, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RX, DownloadModes, ItemInfo,
     TAGS_CONCAT_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RX
 )
-from app_download import DownloaderBase, thread_exit
+from app_download import DownloaderBase
 from app_logger import trace
+from app_network import thread_exit
 from app_re import re_tags_to_process_rx, re_tags_exclude_rx
 from app_utils import trim_quotes_trailing_spaces
+
+__all__ = ('DownloaderRx',)
 
 SITENAME = b64decode(SITENAME_B_RX).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RX

@@ -10,6 +10,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from tkinter import Label, Listbox, Toplevel, LEFT, END, SOLID, Widget
 from typing import List, Optional
 
+__all__ = ('WidgetToolTip',)
+
 
 class ToolTipBase:
     def __init__(self, widget: Widget, timed: bool) -> None:

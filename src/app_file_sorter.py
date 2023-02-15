@@ -15,6 +15,8 @@ from typing import Tuple, List
 # internal
 from app_gui_defines import SLASH
 
+__all__ = ('FileTypeFilter', 'sort_files_by_type', 'sort_files_by_size', 'sort_files_by_score')
+
 
 @unique
 class FileTypeFilter(IntEnum):

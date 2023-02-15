@@ -16,6 +16,11 @@ from tkinter import messagebox
 from app_defines import FMT_DATE_DEFAULT, PLATFORM_WINDOWS
 from app_gui_defines import SLASH
 
+__all__ = (
+    'as_date', 'confirm_yes_no', 'normalize_path', 'trim_undersores', 'format_score', 'trim_quotes_trailing_spaces', 'find_first_not_of',
+    'unquote'
+)
+
 
 def find_first_not_of(s: str, not_chars: str) -> int:
     for i, c in enumerate(s):  # type: int, str
@@ -69,6 +74,23 @@ def trim_undersores(base_str: str) -> str:
 def format_score(score_str: str) -> str:
     score_str = score_str if score_str not in ['', None] else '0'
     return f'score({"" if score_str[0] in ["0", "-", "u"] else "+"}{score_str})'
+
+
+def unquote(string: str) -> str:
+    try:
+        while True:
+            found = False
+            if len(string) > 1 and string[0] in ['\'', '"']:
+                string = string[1:]
+                found = True
+            if len(string) > 1 and string[-1] in ['\'', '"']:
+                string = string[:-1]
+                found = True
+            if not found:
+                break
+        return string
+    except Exception:
+        raise ValueError
 
 #
 #

@@ -23,6 +23,8 @@ from app_validators import (
     valid_int, valid_thread_count, valid_date, valid_path, valid_json, valid_download_mode, valid_proxy, valid_positive_int
 )
 
+__all__ = ('prepare_arglist',)
+
 DMODES_STR = str(DMODE_CHOICES).replace(' ', '')
 
 

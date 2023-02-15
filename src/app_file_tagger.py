@@ -17,6 +17,8 @@ from app_gui_defines import SLASH, UNDERSCORE
 from app_tagger import append_filtered_tags
 from app_utils import trim_undersores
 
+__all__ = ('untag_files', 'retag_files')
+
 
 def untag_files(files: Tuple[str]) -> int:
     untagged_count = 0

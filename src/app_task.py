@@ -16,6 +16,8 @@ from app_gui_defines import ProcModule
 from app_network import thread_exit
 from app_logger import trace
 
+__all__ = ('split_tags_into_tasks', 'extract_neg_and_groups')
+
 
 def split_tags_into_tasks(tag_groups_arr: List[str], cc: str, sc: str, can_have_or_groups: bool, split_always: bool) -> List[str]:
     if can_have_or_groups:

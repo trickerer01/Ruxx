@@ -23,19 +23,18 @@ from tkinter import messagebox, filedialog, BooleanVar, IntVar, Entry, Button, P
 from typing import Optional, Union, Callable, List, Tuple
 
 # internal
-import app_cmdargs as cmdargs
 import app_download_rn as dwn_rn
 import app_download_rx as dwn_rx
-import app_file_parser as fp
-import app_file_sorter as fs
-import app_file_tagger as ft
-import app_tags_parser as tap
+from app_cmdargs import prepare_arglist
 from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, SUPPORTED_PLATFORMS, PROXY_SOCKS5, PROXY_HTTP, MODULE_ABBR_RX, MODULE_ABBR_RN,
     DEFAULT_ENCODING, KNOWN_EXTENSIONS, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD,
     DEFAULT_HEADERS,
     max_progress_value_for_state, DATE_MIN_DEFAULT, FMT_DATE_DEFAULT,
 )
+from app_file_parser import prepare_tags_list
+from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_size, sort_files_by_score
+from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
     AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, LogWindow,
     setrootconf, int_vars, rootm, getrootconf, window_hcookiesm, c_menum, window_proxym, c_submenum, register_menu,
@@ -57,12 +56,15 @@ from app_gui_defines import (
 from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, ABOUT_MSG
 from app_logger import Logger
 from app_revision import APP_NAME, __RUXX_DEBUG__
+from app_tags_parser import reset_last_tags, parse_tags
 from app_utils import normalize_path, confirm_yes_no
 from app_validators import (
     StrValidator, IntValidator, ValidatorAlwaysTrue, ModuleValidator, VideosCBValidator, ImagesCBValidator, VALIDATORS_DICT,
     ThreadsCBValidator, DownloadOrderCBValidator, PositiveIdValidator, IdValidator, JsonValidator, BoolStrValidator, ProxyValidator,
     DateValidator,
 )
+
+__all__ = ()
 
 # loaded
 download_thread = None  # type: Optional[Thread]
@@ -291,13 +293,13 @@ class Settings(ABC):
             Logger.log('Error loading settings.', False, False)
 
 
-def untag_files() -> None:
+def untag_files_do() -> None:
     filelist = filedialog.askopenfilenames(
         initialdir=get_curdir(),
         filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),))  # type: Tuple[str]
     if len(filelist) > 0:
         setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
-        untagged_count = ft.untag_files(filelist)
+        untagged_count = untag_files(filelist)
         if untagged_count == len(filelist):
             Logger.log(f'Successfully un-tagged {len(filelist):d} file(s).', False, False)
         elif untagged_count > 0:
@@ -306,14 +308,14 @@ def untag_files() -> None:
             Logger.log(f'An error occured while un-tagging {len(filelist):d} files.', False, False)
 
 
-def retag_files() -> None:
+def retag_files_do() -> None:
     filelist = filedialog.askopenfilenames(
         initialdir=get_curdir(),
         filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),))  # type: Tuple[str]
     if len(filelist) > 0:
         setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
         module = get_new_proc_module()
-        retagged_count = ft.retag_files(filelist, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
+        retagged_count = retag_files(filelist, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
         if retagged_count == len(filelist):
             Logger.log(f'Successfully re-tagged {len(filelist):d} file(s).', False, False)
         elif retagged_count > 0:
@@ -322,7 +324,7 @@ def retag_files() -> None:
             Logger.log(f'An error occured while re-tagging {len(filelist):d} files.', False, False)
 
 
-def sort_files_by_type() -> None:
+def sort_files_by_type_do() -> None:
     filelist = filedialog.askopenfilenames(
         initialdir=get_curdir(),
         filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),))  # type: Tuple[str]
@@ -334,11 +336,11 @@ def sort_files_by_type() -> None:
     rootm().wait_window(aw.window)
 
     filter_type = aw.value()
-    if filter_type == fs.FileTypeFilter.FILTER_INVALID:
+    if filter_type == FileTypeFilter.FILTER_INVALID:
         return
 
     setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
-    result = fs.sort_files_by_type(filelist, filter_type)
+    result = sort_files_by_type(filelist, filter_type)
     if result == len(filelist):
         Logger.log(f'Successfully sorted {len(filelist):d} file(s).', False, False)
     elif result > 0:
@@ -347,7 +349,7 @@ def sort_files_by_type() -> None:
         Logger.log(f'An error occured while sorting {len(filelist):d} files.', False, False)
 
 
-def sort_files_by_size() -> None:
+def sort_files_by_size_do() -> None:
     filelist = filedialog.askopenfilenames(
         initialdir=get_curdir(),
         filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),))  # type: Tuple[str]
@@ -363,7 +365,7 @@ def sort_files_by_size() -> None:
         return
 
     setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
-    result = fs.sort_files_by_size(filelist, thresholds_mb)
+    result = sort_files_by_size(filelist, thresholds_mb)
     if result == len(filelist):
         Logger.log(f'Successfully sorted {len(filelist):d} file(s).', False, False)
     elif result > 0:
@@ -372,7 +374,7 @@ def sort_files_by_size() -> None:
         Logger.log(f'An error occured while sorting {len(filelist):d} files.', False, False)
 
 
-def sort_files_by_score() -> None:
+def sort_files_by_score_do() -> None:
     filelist = filedialog.askopenfilenames(
         initialdir=get_curdir(),
         filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),))  # type: Tuple[str]
@@ -388,7 +390,7 @@ def sort_files_by_score() -> None:
         return
 
     setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
-    result = fs.sort_files_by_score(filelist, thresholds)
+    result = sort_files_by_score(filelist, thresholds)
     if result == len(filelist):
         Logger.log(f'Successfully sorted {len(filelist):d} file(s).', False, False)
     elif result > 0:
@@ -464,7 +466,7 @@ def set_proc_module(dwnmodule: int) -> None:
         update_menu_enabled_states()
 
     # reset tags parser
-    tap.reset_last_tags()
+    reset_last_tags()
 
 
 def get_global(index: Globals) -> Union[Entry, Button]:
@@ -551,7 +553,7 @@ def prepare_cmdline() -> List[str]:
     if len(tags_line) > 0 and (tags_line.find('  ') != -1 or tags_line.find('\n') != -1):
         tags_line = re_sub(r'  +', r' ', tags_line.replace('\n', ' '))
         setrootconf(Options.OPT_TAGS, tags_line)
-    parse_suc, tags_list = tap.parse_tags(tags_line)
+    parse_suc, tags_list = parse_tags_field(tags_line)
     # append id boundaries tags if present in id fields and not in tags
     re_id_eq = re_id_eq_rx if ProcModule.is_rx() else re_id_eq_rn
     re_id_ge = re_id_ge_rx if ProcModule.is_rx() else re_id_ge_rn
@@ -745,7 +747,7 @@ def recheck_tags_direct() -> None:
 
     count = 0
     mydwn = None  # type: Union[None, dwn_rn.DownloaderRn, dwn_rx.DownloaderRx]
-    res, tags_list = tap.parse_tags(cur_tags)
+    res, tags_list = parse_tags(cur_tags)
     if re_match(r'\([^: ]+:.*?', cur_tags):  # `or` group with sort tag
         Logger.log('Error: cannot check tags with sort tag(s) within \'or\' group', False, False)
     elif res:
@@ -805,8 +807,8 @@ def recheck_tags_direct_do() -> None:
     tags_recheck_thread.start()
 
 
-def parse_tags(tags: str) -> bool:
-    result, _ = tap.parse_tags(tags)
+def parse_tags_field(tags: str) -> bool:
+    result, _ = parse_tags(tags)
     return result
 
 
@@ -814,7 +816,7 @@ def recheck_args() -> Tuple[bool, str]:
     # tags
     if len(str(getrootconf(Options.OPT_TAGS))) <= 0:
         return False, 'No tags specified'
-    if not parse_tags(str(getrootconf(Options.OPT_TAGS))):
+    if not parse_tags_field(str(getrootconf(Options.OPT_TAGS))):
         return False, 'Invalid tags'
     # path
     pathstr = normalize_path(str(getrootconf(Options.OPT_PATH)))
@@ -939,7 +941,7 @@ def start_download_thread(cmdline: List[str]) -> None:
     global dwn
     global download_thread
 
-    arg_list = cmdargs.prepare_arglist(cmdline[1:])
+    arg_list = prepare_arglist(cmdline[1:])
     with get_new_proc_module() as dwn:
         dwn.launch(arg_list)
 
@@ -973,7 +975,7 @@ def help_about(title: str = f'About {APP_NAME}', message: str = ABOUT_MSG) -> No
 def load_id_list() -> None:
     filepath = ask_filename((('Text files', '*.txt'), ('All files', '*.*')))
     if filepath:
-        success, file_tags = fp.prepare_tags_list(filepath)
+        success, file_tags = prepare_tags_list(filepath)
         if success:
             setrootconf(Options.OPT_TAGS, file_tags)
             # reset settings for immediate downloading
@@ -1094,13 +1096,13 @@ def init_menus() -> None:
     register_menu('Tools', Menus.MENU_TOOLS)
     register_menu_command('Load from ID list...', load_id_list)
     register_menu_separator()
-    register_menu_command('Un-tag files...', untag_files)
-    register_menu_command('Re-tag files...', retag_files)
+    register_menu_command('Un-tag files...', untag_files_do)
+    register_menu_command('Re-tag files...', retag_files_do)
     register_menu_separator()
     register_submenu('Sort files into subfolders...')
-    register_submenu_command('by type', sort_files_by_type)
-    register_submenu_command('by size', sort_files_by_size)
-    register_submenu_command('by score', sort_files_by_score)
+    register_submenu_command('by type', sort_files_by_type_do)
+    register_submenu_command('by size', sort_files_by_size_do)
+    register_submenu_command('by score', sort_files_by_score_do)
     # 8) Help
     register_menu('Help')
     register_menu_command('Tags', help_tags)
@@ -1198,7 +1200,7 @@ if __name__ == '__main__':
     if len(argv) >= 2:
         Logger.init(True)
         current_process().killed = False
-        arglist = cmdargs.prepare_arglist(argv[1:])
+        arglist = prepare_arglist(argv[1:])
         set_proc_module(PROC_MODULES_BY_ABBR[arglist.module])
 
         with get_new_proc_module() as dwn:

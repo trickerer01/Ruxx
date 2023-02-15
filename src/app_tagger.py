@@ -17,6 +17,8 @@ from app_gui_defines import UNDERSCORE
 from app_re import re_replace_symbols, re_tags_exclude_major1, re_tags_exclude_major2, re_numbered_or_counted_tag
 from app_utils import trim_undersores
 
+__all__ = ('append_filtered_tags',)
+
 
 TAG_ALIASES_STR = (
     'eyJidW5ueV9ib3kiOiAiMStib3lzIiwgIm1hbGUiOiAiMStib3lzIiwgIm1hbGVfc29sbyI6ICIxK2JveXMiLCAibWFsZWRvbSI6ICIxK2JveXMiLCAibWFsZXN1YiI6ICIxK2'

@@ -32,6 +32,8 @@ from app_gui_defines import SLASH
 from app_logger import trace
 from app_revision import __RUXX_DEBUG__
 
+__all__ = ('ThreadedHtmlWorker', 'DownloadInterruptException', 'thread_exit')
+
 
 class DownloadInterruptException(BaseException):
     pass

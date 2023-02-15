@@ -39,6 +39,12 @@ from app_validators import valid_proxy
 # globals
 # ROOOT
 
+__all__ = (
+    'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'LogWindow',
+    'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'c_menum', 'window_proxym', 'c_submenum', 'register_menu',
+    'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows'
+)
+
 root = None  # type: Optional[AppRoot]
 rootFrame = None  # type: Optional[BaseFrame]
 rootMenu = None  # type: Optional[Menu]

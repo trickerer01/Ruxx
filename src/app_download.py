@@ -36,6 +36,8 @@ from app_tagger import append_filtered_tags
 from app_task import extract_neg_and_groups, split_tags_into_tasks
 from app_utils import as_date, confirm_yes_no, normalize_path, trim_undersores, format_score
 
+__all__ = ('DownloaderBase',)
+
 
 class DownloaderBase(ThreadedHtmlWorker):
     """

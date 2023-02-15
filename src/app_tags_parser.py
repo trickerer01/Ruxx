@@ -88,15 +88,17 @@ def split_or_group(gr: str) -> str:
     return f'( {" ~ ".join(part for part in orgr_parts)} )'
 
 
+def ret_tags(suc: bool, tag_list: List[str]) -> Tuple[bool, List[str]]:
+    return suc, tag_list.copy()
+
+
+def fail() -> Tuple[bool, List[str]]:
+    return ret_tags(False, DEFAULT_TAGS)
+
+
 def parse_tags(tags: str) -> Tuple[bool, List[str]]:
     global last_tags
     global last_fulltags
-
-    def ret_tags(suc: bool, tag_list: List[str]) -> Tuple[bool, List[str]]:
-        return suc, tag_list.copy()
-
-    def fail() -> Tuple[bool, List[str]]:
-        return ret_tags(False, DEFAULT_TAGS)
 
     if tags.find('  ') != -1:
         tags = re_sub(r'  +', ' ', tags)

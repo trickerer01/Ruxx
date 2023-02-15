@@ -19,6 +19,8 @@ from app_download_rx import DownloaderRx
 from app_logger import Logger
 from app_utils import normalize_path
 
+__all__ = ('run_all_tests',)
+
 
 CUR_PATH = normalize_path(path.abspath(curdir))
 

@@ -19,6 +19,8 @@ from app_gui_base import LogWindow
 from app_gui_defines import STATE_NORMAL, STATE_DISABLED
 from app_utils import find_first_not_of
 
+__all__ = ('Logger', 'trace')
+
 
 class Logger:
     print_lock = ThreadLock()
