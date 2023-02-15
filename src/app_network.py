@@ -167,7 +167,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                             c_total = content_range_m.group(3) if content_range_m else '0'
                             valid_chunk = True
                             errcode = 0
-                            if len(temp) != exp_size or (not single_chunk and int(c_total) != expected_size):
+                            if not single_chunk and (len(temp) != exp_size or int(c_total) != expected_size):
                                 valid_chunk = False
                                 errcode = 1
                             elif etag != self.etags[item_id]:
@@ -207,7 +207,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                             raise ValueError(err_msg)
 
                         # trace(f'{item_id} expected size: {expected_size:d}')
-                        use_chunked = is_video_ext or (expected_size > DOWNLOAD_CHUNK_SIZE * 5)
+                        use_chunked = is_video_ext
                         chunks = list(range(0, expected_size, DOWNLOAD_CHUNK_SIZE if use_chunked else expected_size))
                         single_chunk = (len(chunks) == 1)
                         with open(dest, 'wb') as outf:
@@ -239,7 +239,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                                 i += 1
 
                         result.file_size = stat(dest).st_size
-                        if result.file_size != expected_size:
+                        if result.file_size != expected_size and is_video_ext:
                             trace(f'Warning (W3): size mismatch for {item_id} ({result.file_size:d} / {expected_size:d}).'
                                   f' Retrying file.', True)
                             if path.isfile(dest):
