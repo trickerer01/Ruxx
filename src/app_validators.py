@@ -38,81 +38,67 @@ __all__ = (
 def valid_proxy(prox: str) -> str:
     try:
         pv, pp = tuple(prox.split(':', 1))
-        pva = IPv4Address(pv)
-        ppi = int(pp)
+        pva, ppi = IPv4Address(pv), int(pp)
         assert 20 < ppi < 65535
+        return f'{str(pva)}:{ppi:d}'
     except Exception:
         raise ArgumentError
-
-    return f'{str(pva)}:{ppi:d}'
 
 
 def valid_date(date: str, rev=False) -> str:
     try:
         _ = datetime.strptime(date, '-'.join(reversed(FMT_DATE_DEFAULT.split('-'))) if rev else FMT_DATE_DEFAULT)
+        return date
     except Exception:
         raise ArgumentError
-
-    return date
 
 
 def valid_json(json: str) -> dict:
     try:
-        val = json_loads(unquote(json).replace('\\', ''))
+        return json_loads(unquote(json).replace('\\', ''))
     except Exception:
         raise ArgumentError
-
-    return val
 
 
 def valid_int(val: str) -> int:
     try:
-        val = int(val)
+        return int(val)
     except Exception:
         raise ArgumentError
-
-    return val
 
 
 def valid_positive_int(val: str) -> int:
     try:
         val = int(val)
         assert val >= 0
+        return val
     except Exception:
         raise ArgumentError
-
-    return val
 
 
 def valid_thread_count(val: str) -> int:
     try:
         val = int(val)
-        if val < 1 or val > THREADS_MAX_ITEMS:
-            raise ValueError
+        assert 1 <= val <= THREADS_MAX_ITEMS
+        return val
     except Exception:
         raise ArgumentError
-
-    return val
 
 
 def valid_path(pathstr: str) -> str:
     try:
         newpath = normalize_path(unquote(pathstr))
-        if not path.isdir(newpath[:(newpath.find(SLASH) + 1)]):
-            raise ValueError
+        assert path.isdir(newpath[:(newpath.find(SLASH) + 1)])
+        return newpath
     except Exception:
         raise ArgumentError
-
-    return newpath
 
 
 def valid_download_mode(mode: str) -> DownloadModes:
     try:
-        dwnmode = DownloadModes(int(mode))
+        return DownloadModes(int(mode))
     except Exception:
         raise ArgumentError
-
-    return dwnmode
 
 
 class Validator(Protocol):

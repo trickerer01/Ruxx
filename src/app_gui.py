@@ -295,39 +295,46 @@ class Settings(ABC):
 
 def untag_files_do() -> None:
     filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(),
-        filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),))  # type: Tuple[str]
-    if len(filelist) > 0:
-        setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
-        untagged_count = untag_files(filelist)
-        if untagged_count == len(filelist):
-            Logger.log(f'Successfully un-tagged {len(filelist):d} file(s).', False, False)
-        elif untagged_count > 0:
-            Logger.log(f'Warning: only {untagged_count:d} / {len(filelist):d} files were un-tagged.', False, False)
-        else:
-            Logger.log(f'An error occured while un-tagging {len(filelist):d} files.', False, False)
+        initialdir=get_curdir(), filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),)
+    )  # type: Tuple[str]
+
+    if len(filelist) == 0:
+        return
+
+    setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
+    untagged_count = untag_files(filelist)
+    if untagged_count == len(filelist):
+        Logger.log(f'Successfully un-tagged {len(filelist):d} file(s).', False, False)
+    elif untagged_count > 0:
+        Logger.log(f'Warning: only {untagged_count:d} / {len(filelist):d} files were un-tagged.', False, False)
+    else:
+        Logger.log(f'An error occured while un-tagging {len(filelist):d} files.', False, False)
 
 
 def retag_files_do() -> None:
     filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(),
-        filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),))  # type: Tuple[str]
-    if len(filelist) > 0:
-        setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
-        module = get_new_proc_module()
-        retagged_count = retag_files(filelist, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
-        if retagged_count == len(filelist):
-            Logger.log(f'Successfully re-tagged {len(filelist):d} file(s).', False, False)
-        elif retagged_count > 0:
-            Logger.log(f'Warning: only {retagged_count:d} / {len(filelist):d} files were re-tagged.', False, False)
-        else:
-            Logger.log(f'An error occured while re-tagging {len(filelist):d} files.', False, False)
+        initialdir=get_curdir(), filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),)
+    )  # type: Tuple[str]
+
+    if len(filelist) == 0:
+        return
+
+    setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
+    module = get_new_proc_module()
+    retagged_count = retag_files(filelist, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
+    if retagged_count == len(filelist):
+        Logger.log(f'Successfully re-tagged {len(filelist):d} file(s).', False, False)
+    elif retagged_count > 0:
+        Logger.log(f'Warning: only {retagged_count:d} / {len(filelist):d} files were re-tagged.', False, False)
+    else:
+        Logger.log(f'An error occured while re-tagging {len(filelist):d} files.', False, False)
 
 
 def sort_files_by_type_do() -> None:
     filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(),
-        filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),))  # type: Tuple[str]
+        initialdir=get_curdir(), filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),)
+    )  # type: Tuple[str]
+
     if len(filelist) == 0:
         return
 
@@ -351,8 +358,9 @@ def sort_files_by_type_do() -> None:
 
 def sort_files_by_size_do() -> None:
     filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(),
-        filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),))  # type: Tuple[str]
+        initialdir=get_curdir(), filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),)
+    )  # type: Tuple[str]
+
     if len(filelist) == 0:
         return
 
@@ -376,8 +384,9 @@ def sort_files_by_size_do() -> None:
 
 def sort_files_by_score_do() -> None:
     filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(),
-        filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),))  # type: Tuple[str]
+        initialdir=get_curdir(), filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),)
+    )  # type: Tuple[str]
+
     if len(filelist) == 0:
         return
 
