@@ -13,9 +13,9 @@ from base64 import b64decode
 from datetime import datetime
 from json import dumps as json_dumps, loads as json_loads
 from os import curdir, path
-from re import search as re_search, match as re_match, findall as re_findall
+from re import search as re_search, findall as re_findall
 from tkinter import (
-    Menu, Toplevel, messagebox, ttk, Text, Scrollbar, StringVar, Button, Entry, Widget, SOLID, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT,
+    Menu, Toplevel, messagebox, ttk, Text, Scrollbar, StringVar, Button, Entry, Widget, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT,
     TOP, INSERT, BooleanVar, Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, E, S, X, Y, NO, YES
 )
 from typing import Optional, Callable, List, Union, Dict
@@ -35,9 +35,7 @@ from app_gui_defines import (
 from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME
 from app_tooltips import WidgetToolTip
 from app_utils import normalize_path
-from app_validators import valid_proxy
-# globals
-# ROOOT
+from app_validators import valid_proxy, valid_int, valid_positive_int
 
 __all__ = (
     'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'LogWindow',
@@ -45,6 +43,8 @@ __all__ = (
     'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows'
 )
 
+# globals
+# ROOOT
 root = None  # type: Optional[AppRoot]
 rootFrame = None  # type: Optional[BaseFrame]
 rootMenu = None  # type: Optional[Menu]
@@ -59,14 +59,11 @@ string_vars = {}  # type: Dict[str, StringVar]
 # end globals
 
 # loaded
-register_count = 0
 text_cmd = None  # type: Optional[Text]
 # end loaded
 
 # icons
-icons = {
-    ic: None for ic in Icons.__members__.values()
-}  # type: Dict[Icons, Optional[PhotoImage]]
+icons = {ic: None for ic in Icons.__members__.values()}  # type: Dict[Icons, Optional[PhotoImage]]
 # end icons
 
 c_col = None  # type: Optional[int]
@@ -74,7 +71,7 @@ c_row = None  # type: Optional[int]
 
 
 def get_icon(index: Icons) -> Optional[PhotoImage]:
-    return icons[index]
+    return icons.get(index)
 
 
 def cur_row() -> Optional[int]:
@@ -109,24 +106,13 @@ def first_column() -> Optional[int]:
     return next_column()
 
 
-def attach_tooltip(widget: Widget, contents: List[str], appeardelay=TOOLTIP_DELAY_DEFAULT, border_width=1, relief=SOLID,
+def attach_tooltip(widget: Widget, contents: List[str], appeardelay=TOOLTIP_DELAY_DEFAULT, border_width: int = None, relief: str = None,
                    bgcolor: str = None, timed=False) -> WidgetToolTip:
-    lbt = WidgetToolTip(widget, contents or ['Tooltip is missing!'], timed)
-    if bgcolor is not None:
-        lbt.bgcolor = bgcolor
-    if appeardelay is not None:
-        lbt.appear_delay = appeardelay
-    if border_width is not None:
-        lbt.border_width = border_width
-    if relief is not None:
-        lbt.relief = relief
-
-    return lbt
+    return WidgetToolTip(widget, contents, timed=timed, bgcolor=bgcolor, appear_delay=appeardelay, border_width=border_width, relief=relief)
 
 
 def register_global(index: Globals, gobject: Union[Checkbutton, ttk.Combobox, Entry, Button, Label]) -> None:
-    global register_count
-    register_count += 1
+    assert index in gobjects.keys() and gobjects.get(index) is None
     gobjects[index] = gobject
 
 
@@ -757,25 +743,17 @@ class HeadersAndCookiesWindow(BaseWindow):
 
 
 def init_additional_windows() -> None:
-
-    def create_window_proxy() -> None:
-        global window_proxy
-        window_proxy = ProxyWindow(root)
-        window_proxy.window.wm_protocol('WM_DELETE_WINDOW', window_proxy.on_destroy)
-        rootm().bind_all(hotkeys[Options.OPT_ISPROXYOPEN], func=lambda _: window_proxy.ask())
-
-    def create_window_hcookies() -> None:
-        global window_hcookies
-        window_hcookies = HeadersAndCookiesWindow(root)
-        window_hcookies.window.wm_protocol('WM_DELETE_WINDOW', window_hcookies.on_destroy)
-        rootm().bind_all(hotkeys[Options.OPT_ISHCOOKIESOPEN], func=lambda _: window_hcookies.toggle_visibility())
-
-    create_window_proxy()
-    create_window_hcookies()
+    global window_proxy
+    global window_hcookies
+    window_proxy = ProxyWindow(root)
+    window_proxy.window.wm_protocol('WM_DELETE_WINDOW', window_proxy.on_destroy)
+    rootm().bind_all(hotkeys[Options.OPT_ISPROXYOPEN], func=lambda _: window_proxy.ask())
+    window_hcookies = HeadersAndCookiesWindow(root)
+    window_hcookies.window.wm_protocol('WM_DELETE_WINDOW', window_hcookies.on_destroy)
+    rootm().bind_all(hotkeys[Options.OPT_ISHCOOKIESOPEN], func=lambda _: window_hcookies.toggle_visibility())
 
 
 def register_menu(label: str, menu_id: Menus = None) -> Menu:
-    global rootMenu
     global c_menu
     menu = BaseMenu(rootMenu)
     # register in global container for later
@@ -804,43 +782,43 @@ def setrootconf(index: Options, value: Union[int, str, bool]) -> None:
 
 
 def rootm() -> AppRoot:
-    assert root
-    return root or AppRoot()
+    assert root is not None
+    return root
 
 
 def root_framem() -> BaseFrame:
-    assert rootFrame
-    return rootFrame or BaseFrame(rootm())
+    assert rootFrame is not None
+    return rootFrame
 
 
 def root_menum() -> Menu:
-    assert rootMenu
-    return rootMenu or Menu()
+    assert rootMenu is not None
+    return rootMenu
 
 
 def c_menum() -> BaseMenu:
-    assert c_menu
-    return c_menu or BaseMenu(rootm())
+    assert c_menu is not None
+    return c_menu
 
 
 def c_submenum() -> BaseMenu:
-    assert c_submenu
-    return c_submenu or BaseMenu(c_menum())
+    assert c_submenu is not None
+    return c_submenu
 
 
 def window_proxym() -> ProxyWindow:
-    assert window_proxy
-    return window_proxy or ProxyWindow(rootm())
+    assert window_proxy is not None
+    return window_proxy
 
 
 def window_hcookiesm() -> HeadersAndCookiesWindow:
-    assert window_hcookies
-    return window_hcookies or HeadersAndCookiesWindow(rootm())
+    assert window_hcookies is not None
+    return window_hcookies
 
 
 def text_cmdm() -> Text:
-    assert text_cmd
-    return text_cmd or Text()
+    assert text_cmd is not None
+    return text_cmd
 
 
 # noinspection PyPep8Naming
@@ -873,22 +851,9 @@ def create_base_window_widgets() -> None:
     rootm().iconphoto(True, get_icon(Icons.ICON_RUXX))
 
     # validators
-    #  number
-    valid_int = rootm().register(lambda x: (re_match(r'[\d-]', str(x)) is not None) or len(str(x)) == 0)
-    valid_uint = rootm().register(lambda x: (re_match(r'\d', str(x)) is not None) or len(str(x)) == 0)
-    # valid_tag = rootm().register(lambda x: (re_match(tap.re_not_allowed_tag_symbol, str(x).lower())) is None)
-    # valid_date = rootm().register(is_date_valid)
-    # valid_nope = rootm().register(lambda _: False)
-    # vars need to be inited here, need to assign something, otherwise this won't work
+    valid_integer = rootm().register(lambda x: len(str(x)) == 0 or valid_int(x))
+    valid_uinteger = rootm().register(lambda x: len(str(x)) == 0 or valid_positive_int(x))
     string_vars[CVARS[Options.OPT_LASTPATH]] = StringVar(rootm(), '', CVARS[Options.OPT_LASTPATH])
-
-    # Main menu
-    # init_menus()
-
-    # Style conf
-    # ttkstyle = ttk.Style()
-    # ttkstyle.theme_use('alt')
-    # ttkstyle.configure('Horizontal.TProgressbar', thickness=5, bg=COLOR_STEELBLUE)
 
     # Options #
     #  Videos
@@ -957,7 +922,7 @@ def create_base_window_widgets() -> None:
     #  ID min
     op_idaf = Label(opframe_slim, text='ID min:')
     op_idaf.pack(padx=(8, 0), pady=3, expand=YES, side=LEFT, anchor=E)
-    op_idaf_t = Entry(opframe_slim, width=18, validate='key', validatecommand=(valid_uint, '%S'),
+    op_idaf_t = Entry(opframe_slim, width=18, validate='key', validatecommand=(valid_uinteger, '%S'),
                       textvariable=StringVar(rootm(), '', CVARS[Options.OPT_IDMIN]))
     register_global(Globals.GOBJECT_FIELD_IDMIN, op_idaf_t)
     op_idaf_t.insert(0, '0')
@@ -965,7 +930,7 @@ def create_base_window_widgets() -> None:
     #  ID max
     op_idbe = Label(opframe_slim, text='ID max:')
     op_idbe.pack(padx=(8, 0), pady=3, expand=YES, side=LEFT, anchor=E)
-    op_idbe_t = Entry(opframe_slim, width=18, validate='key', validatecommand=(valid_int, '%S'),
+    op_idbe_t = Entry(opframe_slim, width=18, validate='key', validatecommand=(valid_integer, '%S'),
                       textvariable=StringVar(rootm(), '', CVARS[Options.OPT_IDMAX]))
     register_global(Globals.GOBJECT_FIELD_IDMAX, op_idbe_t)
     op_idbe_t.insert(0, '0')
@@ -978,9 +943,6 @@ def create_base_window_widgets() -> None:
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Text
     op_tagsstr = Entry(opframe_tags, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), 'sfw', CVARS[Options.OPT_TAGS]))
-    #   need to set validation again because it will be forcefully disabled on such a value set
-    setrootconf(Options.OPT_TAGS, 'sfw')
-    # op_tagsstr.config(validate='key', validatecommand=(valid_tag, '%S'))
     register_global(Globals.GOBJECT_FIELD_TAGS, op_tagsstr)
     op_tagsstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button check
@@ -1001,7 +963,6 @@ def create_base_window_widgets() -> None:
     op_pathstr = Entry(opframe_path, font=FONT_LUCIDA_MEDIUM,
                        textvariable=StringVar(rootm(), '', CVARS[Options.OPT_PATH]))
     register_global(Globals.GOBJECT_FIELD_PATH, op_pathstr)
-    # op_pathstr.insert(0, decode_string(path.abspath(curdir), getpreferredencoding(False)))  # 2.7
     op_pathstr.insert(0, normalize_path(path.abspath(curdir), False))  # 3.8
     op_pathstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button open
@@ -1011,7 +972,7 @@ def create_base_window_widgets() -> None:
 
     # Cmdline and _download button #
     #  Cmdline  #
-    #   Note: global
+    #   Note: global (not registered)
     text_cmd = Text(root_framem(), font=FONT_SANS_SMALL, relief=SUNKEN, bd=0, bg=rootm().default_bg_color, height=3)
     text_cmdm().grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX - 1, rowspan=ROWSPAN_MAX,
                      sticky=STICKY_ALLDIRECTIONS, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
@@ -1021,9 +982,7 @@ def create_base_window_widgets() -> None:
                 sticky=STICKY_VERTICAL_W, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     register_global(Globals.GOBJECT_BUTTON_DOWNLOAD, dw_but)
 
-    # root_framem().grid_rowconfigure(cur_row(), weight=1)  # make plastic
-
-    # This one is after root_framem()1
+    # This one is after root_frame
     pb1 = ttk.Progressbar(rootm(), value=0, maximum=PROGRESS_BAR_MAX, mode='determinate', orient=HORIZONTAL,
                           variable=IntVar(rootm(), 0, CVARS[Options.OPT_PROGRESS]))
     pb1.pack(fill=X, expand=NO, anchor=S)
@@ -1041,7 +1000,7 @@ def create_base_window_widgets() -> None:
     sb1.pack(fill=X, expand=NO)
 
     # Safety precautions
-    if register_count < int(Globals.MAX_GOBJECTS):
+    if len(gobjects) < int(Globals.MAX_GOBJECTS):
         messagebox.showinfo('', 'Not all GOBJECTS were registered')
 
 #

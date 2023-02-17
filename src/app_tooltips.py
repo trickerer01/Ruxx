@@ -7,14 +7,15 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from tkinter import Label, Listbox, Toplevel, LEFT, END, SOLID, Widget
+from abc import abstractmethod, ABC
+from tkinter import Listbox, Toplevel, END, SOLID, Widget
 from typing import List, Optional
 
 __all__ = ('WidgetToolTip',)
 
 
-class ToolTipBase:
-    def __init__(self, widget: Widget, timed: bool) -> None:
+class ToolTipBase(ABC):
+    def __init__(self, widget: Widget, timed: bool, bgcolor='#ffffdd', appear_delay=1000, border_width=1, relief=SOLID) -> None:
         self.widget = widget
         self.timed = timed
         self.tipwindow = None  # type: Optional[Toplevel]
@@ -25,10 +26,10 @@ class ToolTipBase:
             self._id2 = self.widget.bind('<Leave>', self.leave)
             self._id3 = self.widget.bind('<ButtonPress>', self.leave)
 
-        self.bgcolor = '#ffffdd'
-        self.appear_delay = 1000
-        self.border_width = 1
-        self.relief = SOLID
+        self.bgcolor = bgcolor or '#ffffdd'
+        self.appear_delay = appear_delay or 1000
+        self.border_width = border_width or 1
+        self.relief = relief or SOLID
 
     def enter(self, *_) -> None:
         self.schedule()
@@ -58,13 +59,9 @@ class ToolTipBase:
         self.tipwindow = tw = Toplevel(self.widget)
         tw.wm_overrideredirect(1)
         tw.wm_geometry(f'+{x:.0f}+{y:.0f}')
-        self.showcontents()
+        self._showcontents()
         if self.timed:
             self.schedule()
-
-    def showcontents(self, text: str = 'Your text here') -> None:
-        label = Label(self.tipwindow, text=text, justify=LEFT, background=self.bgcolor, relief=self.relief, borderwidth=self.border_width)
-        label.pack()
 
     def hidetip(self) -> None:
         tw = self.tipwindow
@@ -72,13 +69,17 @@ class ToolTipBase:
         if tw:
             tw.destroy()
 
+    @abstractmethod
+    def _showcontents(self) -> ...:
+        ...
+
 
 class WidgetToolTip(ToolTipBase):
-    def __init__(self, widget: Widget, items: List[str], timed: bool) -> None:
-        super().__init__(widget, timed)
-        self.items = items
+    def __init__(self, widget: Widget, items: List[str], **kwargs) -> None:
+        super().__init__(widget, **kwargs)
+        self.items = items or ['Tooltip is missing!']
 
-    def showcontents(self, *ignored) -> None:
+    def _showcontents(self) -> None:
         box = Listbox(self.tipwindow, background=self.bgcolor, relief=self.relief, borderwidth=self.border_width, height=len(self.items))
         if self.timed:
             box.bind('<ButtonPress>', self.leave)

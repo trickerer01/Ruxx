@@ -1146,6 +1146,7 @@ def init_gui() -> None:
     get_global(Globals.GOBJECT_BUTTON_DOWNLOAD).config(command=do_download)
 
     # Init settings if needed
+    setrootconf(Options.OPT_TAGS, 'sfw')
     setrootconf(Options.OPT_DOWNLOAD_LIMIT, 0)
     setrootconf(Options.OPT_FNAMEPREFIX, True)
     setrootconf(Options.OPT_APPEND_SOURCE_AND_TAGS, True)
