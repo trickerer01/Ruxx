@@ -170,7 +170,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                             if len(temp) != exp_size or (not single_chunk and int(c_total) != expected_size):
                                 valid_chunk = False
                                 errcode = 1
-                            elif etag != self.etags[item_id]:
+                            elif etag != self.etags.get(item_id):
                                 # trace(f'ETag mismatch at {item_id}:{chunk_num:d}')
                                 valid_chunk = False
                                 errcode = 2

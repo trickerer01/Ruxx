@@ -94,7 +94,7 @@ PROGRESS_BAR_MAX = 1000000000
 
 
 def max_progress_value_for_state(state: DownloaderStates) -> float:
-    return PROGRESS_BAR_MAX * PROGRESS_BAR_PCT[state]
+    return PROGRESS_BAR_MAX * PROGRESS_BAR_PCT.get(state)
 
 
 PROGRESS_VALUE_DOWNLOAD = max_progress_value_for_state(DownloaderStates.STATE_DOWNLOADING)

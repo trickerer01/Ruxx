@@ -65,19 +65,19 @@ def reset_last_tags() -> None:
 
 
 def re_plain() -> Pattern:
-    return re_plains[ProcModule.CUR_PROC_MODULE]
+    return re_plains.get(ProcModule.CUR_PROC_MODULE)
 
 
 def re_meta() -> Pattern:
-    return re_metas[ProcModule.CUR_PROC_MODULE]
+    return re_metas.get(ProcModule.CUR_PROC_MODULE)
 
 
 def re_orgr_full() -> Pattern:
-    return re_orgrs_full[ProcModule.CUR_PROC_MODULE]
+    return re_orgrs_full.get(ProcModule.CUR_PROC_MODULE)
 
 
 def re_orgr_full_s() -> Pattern:
-    return re_orgrs_full_s[ProcModule.CUR_PROC_MODULE]
+    return re_orgrs_full_s.get(ProcModule.CUR_PROC_MODULE)
 
 
 def split_or_group(gr: str) -> str:

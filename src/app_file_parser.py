@@ -36,15 +36,15 @@ idstring_patterns = {
 
 
 def get_prefix() -> str:
-    return prefixes[ProcModule.get()]
+    return prefixes.get(ProcModule.get())
 
 
 def get_idval_eq_sep() -> str:
-    return idval_eq_separators[ProcModule.get()]
+    return idval_eq_separators.get(ProcModule.get())
 
 
 def get_r_idstring() -> Pattern:
-    return idstring_patterns[ProcModule.get()]
+    return idstring_patterns.get(ProcModule.get())
 
 
 def id_list_from_string(id_str: str) -> List[str]:
@@ -66,7 +66,7 @@ def parse_file(filepath: str) -> Tuple[bool, List[str]]:
             id_list += id_list_from_string(line)
         return True, [f'id{get_idval_eq_sep()}{s}' for s in sorted(unique_everseen(id_list), key=lambda item: int(item))]
     except Exception:
-        return False, []
+        return False, id_list
 
 
 def prepare_tags_list(filepath: str) -> Tuple[bool, str]:

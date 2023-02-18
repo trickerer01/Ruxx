@@ -101,7 +101,7 @@ class DownloaderRx(DownloaderBase):
             thread_exit(f'Unable to extract post date from raw: {raw}', -446)
 
         # '2020-01-06'
-        d = f'{d_re_res.group(3)}-{months[d_re_res.group(1)]}-{d_re_res.group(2)}'
+        d = f'{d_re_res.group(3)}-{months.get(d_re_res.group(1))}-{d_re_res.group(2)}'
         return d
 
     def get_items_query_size(self, url: str, tries: Optional[int] = None) -> int:

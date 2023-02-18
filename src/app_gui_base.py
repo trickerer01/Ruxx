@@ -442,9 +442,9 @@ class ProxyWindow(BaseWindow):
         disentry.insert(END, 'http://')
         disentry.config(state=STATE_DISABLED)
         disentry.grid(row=1, column=0, columnspan=1)
-        _ = Entry(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS[Options.OPT_PROXYSTRING]))
+        _ = Entry(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS.get(Options.OPT_PROXYSTRING)))
         self.entry = Entry(downframe, font=FONT_SANS_MEDIUM, width=23,
-                           textvariable=StringVar(rootm(), '', CVARS[Options.OPT_PROXYSTRING_TEMP]))
+                           textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PROXYSTRING_TEMP)))
         if __RUXX_DEBUG__:
             self.entry.insert(END, PROXY_DEFAULT_STR)
         self.err_message = attach_tooltip(self.entry, TOOLTIP_INVALID_SYNTAX, 5000, timed=True)
@@ -453,8 +453,8 @@ class ProxyWindow(BaseWindow):
         # BaseFrame(downframe, height=16).grid(row=2, columnspan=COLUMNSPAN_MAX)
         BaseFrame(downframe, height=16).grid(row=4, columnspan=COLUMNSPAN_MAX)
 
-        self.opchb_socks_var_fake = BooleanVar(rootm(), __RUXX_DEBUG__, CVARS[Options.OPT_PROXY_SOCKS_TEMP])
-        self.opchb_socks_var = BooleanVar(rootm(), __RUXX_DEBUG__, CVARS[Options.OPT_PROXY_SOCKS])
+        self.opchb_socks_var_fake = BooleanVar(rootm(), __RUXX_DEBUG__, CVARS.get(Options.OPT_PROXY_SOCKS_TEMP))
+        self.opchb_socks_var = BooleanVar(rootm(), __RUXX_DEBUG__, CVARS.get(Options.OPT_PROXY_SOCKS))
         self.cb_socks = Checkbutton(downframe, text='Use SOCKS5 instead', variable=self.opchb_socks_var_fake)
         # register_global(Globals.GOBJECT_CHECK_SOCKS, self.cb_socks)
         self.cb_socks.grid(row=3, column=0, columnspan=COLUMNSPAN_MAX)
@@ -563,7 +563,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.badd_h = Button(hframe, image=get_icon(Icons.ICON_ADD), command=self.add_header_to_list)
         self.badd_h.pack(side=LEFT, padx=0, pady=5)
 
-        self.entry_h = Entry(hframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.OPT_HEADER_ADD_STR]))
+        self.entry_h = Entry(hframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_HEADER_ADD_STR)))
         self.entry_h.pack(side=LEFT, padx=5, pady=5, fill=X, expand=YES)
         attach_tooltip(self.entry_h, TOOLTIP_HCOOKIE_ADD_ENTRY)
 
@@ -589,7 +589,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.badd_c = Button(cframe, image=get_icon(Icons.ICON_ADD), command=self.add_coookie_to_list)
         self.badd_c.pack(side=LEFT, padx=0, pady=5)
 
-        self.entry_c = Entry(cframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.OPT_COOKIE_ADD_STR]))
+        self.entry_c = Entry(cframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_COOKIE_ADD_STR)))
         self.entry_c.pack(side=LEFT, padx=5, pady=5, fill=X, expand=YES)
         attach_tooltip(self.entry_c, TOOLTIP_HCOOKIE_ADD_ENTRY)
 
@@ -747,10 +747,10 @@ def init_additional_windows() -> None:
     global window_hcookies
     window_proxy = ProxyWindow(root)
     window_proxy.window.wm_protocol('WM_DELETE_WINDOW', window_proxy.on_destroy)
-    rootm().bind_all(hotkeys[Options.OPT_ISPROXYOPEN], func=lambda _: window_proxy.ask())
+    rootm().bind_all(hotkeys.get(Options.OPT_ISPROXYOPEN), func=lambda _: window_proxy.ask())
     window_hcookies = HeadersAndCookiesWindow(root)
     window_hcookies.window.wm_protocol('WM_DELETE_WINDOW', window_hcookies.on_destroy)
-    rootm().bind_all(hotkeys[Options.OPT_ISHCOOKIESOPEN], func=lambda _: window_hcookies.toggle_visibility())
+    rootm().bind_all(hotkeys.get(Options.OPT_ISHCOOKIESOPEN), func=lambda _: window_hcookies.toggle_visibility())
 
 
 def register_menu(label: str, menu_id: Menus = None) -> Menu:
@@ -774,11 +774,11 @@ def register_submenu(label: str) -> Menu:
 
 
 def getrootconf(index: Options) -> Union[int, str]:
-    return rootm().getvar(CVARS[index])
+    return rootm().getvar(CVARS.get(index))
 
 
 def setrootconf(index: Options, value: Union[int, str, bool]) -> None:
-    return rootm().setvar(CVARS[index], value)
+    return rootm().setvar(CVARS.get(index), value)
 
 
 def rootm() -> AppRoot:
@@ -853,7 +853,7 @@ def create_base_window_widgets() -> None:
     # validators
     valid_integer = rootm().register(lambda x: len(str(x)) == 0 or valid_int(x))
     valid_uinteger = rootm().register(lambda x: len(str(x)) == 0 or valid_positive_int(x))
-    string_vars[CVARS[Options.OPT_LASTPATH]] = StringVar(rootm(), '', CVARS[Options.OPT_LASTPATH])
+    string_vars[CVARS.get(Options.OPT_LASTPATH)] = StringVar(rootm(), '', CVARS.get(Options.OPT_LASTPATH))
 
     # Options #
     #  Videos
@@ -861,7 +861,7 @@ def create_base_window_widgets() -> None:
     opframe_vid.grid(row=cur_row(), column=cur_column(), rowspan=1, columnspan=1,
                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_vid = ttk.Combobox(opframe_vid, values=OPTION_VALUES_VIDEOS, state=STATE_READONLY, width=18,
-                          textvariable=StringVar(rootm(), '', CVARS[Options.OPT_VIDSETTING]))
+                          textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_VIDSETTING)))
     register_global(Globals.GOBJECT_COMBOBOX_VIDEOS, op_vid)
     attach_tooltip(op_vid, TOOLTIP_VIDEOS)
     op_vid.current(1)
@@ -871,7 +871,7 @@ def create_base_window_widgets() -> None:
     opframe_img.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_img = ttk.Combobox(opframe_img, values=OPTION_VALUES_IMAGES, state=STATE_READONLY, width=20,
-                          textvariable=StringVar(rootm(), '', CVARS[Options.OPT_IMGSETTING]))
+                          textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_IMGSETTING)))
     register_global(Globals.GOBJECT_COMBOBOX_IMAGES, op_img)
     attach_tooltip(op_img, TOOLTIP_IMAGES)
     op_img.current(len(OPTION_VALUES_IMAGES) - 1)
@@ -881,7 +881,7 @@ def create_base_window_widgets() -> None:
     opframe_thread.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                         sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_thread = ttk.Combobox(opframe_thread, values=OPTION_VALUES_THREADING, state=STATE_READONLY, width=18,
-                             textvariable=StringVar(rootm(), '', CVARS[Options.OPT_THREADSETTING]))
+                             textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_THREADSETTING)))
     register_global(Globals.GOBJECT_COMBOBOX_THREADING, op_thread)
     attach_tooltip(op_thread, TOOLTIP_THREADING)
     op_thread.current(len(OPTION_VALUES_THREADING) - 1)
@@ -891,7 +891,7 @@ def create_base_window_widgets() -> None:
     opframe_order.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=COLUMNSPAN_MAX - 3,
                        sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_order = ttk.Combobox(opframe_order, values=OPTION_VALUES_DOWNORDER, state=STATE_READONLY, width=18,
-                            textvariable=StringVar(rootm(), '', CVARS[Options.OPT_DOWNORDER]))
+                            textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DOWNORDER)))
     register_global(Globals.GOBJECT_COMBOBOX_DOWNORDER, op_order)
     attach_tooltip(op_order, TOOLTIP_ORDER)
     op_order.current(1)
@@ -905,7 +905,7 @@ def create_base_window_widgets() -> None:
     op_dateaf = Label(opframe_slim, text='Date min:')
     op_dateaf.pack(padx=(0, 0), pady=3, expand=YES, side=LEFT, anchor=E)
     op_dateaf_t = Entry(opframe_slim, width=13,  # validate='all', validatecommand=(valid_date, '%P'),
-                        textvariable=StringVar(rootm(), '', CVARS[Options.OPT_DATEAFTER]))
+                        textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEAFTER)))
     register_global(Globals.GOBJECT_FIELD_DATEAFTER, op_dateaf_t)
     op_dateaf_t.insert(0, DATE_MIN_DEFAULT_REV)
     op_dateaf_t.pack(padx=(0, 0), pady=3, expand=NO, side=LEFT)
@@ -913,7 +913,7 @@ def create_base_window_widgets() -> None:
     op_datebe = Label(opframe_slim, text='Date max:')
     op_datebe.pack(padx=(8, 0), pady=3, expand=YES, side=LEFT, anchor=E)
     op_datebe_t = Entry(opframe_slim, width=13,  # validate='all', validatecommand=(valid_date, '%P'),
-                        textvariable=StringVar(rootm(), '', CVARS[Options.OPT_DATEBEFORE]))
+                        textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEBEFORE)))
     register_global(Globals.GOBJECT_FIELD_DATEBEFORE, op_datebe_t)
     op_datebe_t.insert(0, datetime.today().strftime(FMT_DATE))
     op_datebe_t.pack(padx=(0, 0), pady=3, expand=NO, side=LEFT)
@@ -923,7 +923,7 @@ def create_base_window_widgets() -> None:
     op_idaf = Label(opframe_slim, text='ID min:')
     op_idaf.pack(padx=(8, 0), pady=3, expand=YES, side=LEFT, anchor=E)
     op_idaf_t = Entry(opframe_slim, width=18, validate='key', validatecommand=(valid_uinteger, '%S'),
-                      textvariable=StringVar(rootm(), '', CVARS[Options.OPT_IDMIN]))
+                      textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_IDMIN)))
     register_global(Globals.GOBJECT_FIELD_IDMIN, op_idaf_t)
     op_idaf_t.insert(0, '0')
     op_idaf_t.pack(padx=(0, 0), pady=3, expand=NO, side=LEFT)
@@ -931,7 +931,7 @@ def create_base_window_widgets() -> None:
     op_idbe = Label(opframe_slim, text='ID max:')
     op_idbe.pack(padx=(8, 0), pady=3, expand=YES, side=LEFT, anchor=E)
     op_idbe_t = Entry(opframe_slim, width=18, validate='key', validatecommand=(valid_integer, '%S'),
-                      textvariable=StringVar(rootm(), '', CVARS[Options.OPT_IDMAX]))
+                      textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_IDMAX)))
     register_global(Globals.GOBJECT_FIELD_IDMAX, op_idbe_t)
     op_idbe_t.insert(0, '0')
     op_idbe_t.pack(padx=(0, PADDING_DEFAULT + 1), pady=3, expand=NO, side=LEFT)
@@ -942,7 +942,7 @@ def create_base_window_widgets() -> None:
     opframe_tags.grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX,
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Text
-    op_tagsstr = Entry(opframe_tags, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), 'sfw', CVARS[Options.OPT_TAGS]))
+    op_tagsstr = Entry(opframe_tags, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), 'sfw', CVARS.get(Options.OPT_TAGS)))
     register_global(Globals.GOBJECT_FIELD_TAGS, op_tagsstr)
     op_tagsstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button check
@@ -961,7 +961,7 @@ def create_base_window_widgets() -> None:
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Text
     op_pathstr = Entry(opframe_path, font=FONT_LUCIDA_MEDIUM,
-                       textvariable=StringVar(rootm(), '', CVARS[Options.OPT_PATH]))
+                       textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PATH)))
     register_global(Globals.GOBJECT_FIELD_PATH, op_pathstr)
     op_pathstr.insert(0, normalize_path(path.abspath(curdir), False))  # 3.8
     op_pathstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
@@ -984,7 +984,7 @@ def create_base_window_widgets() -> None:
 
     # This one is after root_frame
     pb1 = ttk.Progressbar(rootm(), value=0, maximum=PROGRESS_BAR_MAX, mode='determinate', orient=HORIZONTAL,
-                          variable=IntVar(rootm(), 0, CVARS[Options.OPT_PROGRESS]))
+                          variable=IntVar(rootm(), 0, CVARS.get(Options.OPT_PROGRESS)))
     pb1.pack(fill=X, expand=NO, anchor=S)
 
     # This one is after progressbar
@@ -996,7 +996,7 @@ def create_base_window_widgets() -> None:
     register_global(Globals.GOBJECT_MODULE_ICON, ib1)
 
     sb1 = Label(sb_frame, borderwidth=1, relief=SUNKEN, anchor=W, text='Ready', bg=COLOR_DARKGRAY,
-                textvariable=StringVar(rootm(), '', CVARS[Options.OPT_STATUS]))
+                textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_STATUS)))
     sb1.pack(fill=X, expand=NO)
 
     # Safety precautions

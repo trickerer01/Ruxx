@@ -106,7 +106,9 @@ def ensure_compatibility() -> None:
 
 
 def hotkey_text(option: Options) -> str:
-    return hotkeys[option].upper().replace('CONTROL', 'Ctrl').replace('SHIFT', 'Shift').replace('-', '+').replace('<', '').replace('>', '')
+    return (
+        hotkeys.get(option).upper().replace('CONTROL', 'Ctrl').replace('SHIFT', 'Shift').replace('-', '+').replace('<', '').replace('>', '')
+    )
 
 
 # def niy() -> None:
@@ -223,7 +225,7 @@ class Settings(ABC):
         for k in Settings.settings.keys():
             # noinspection PyUnusedLocal
             myval = ...  # type: Union[str, int]
-            conf = Settings.settings[k].conf
+            conf = Settings.settings.get(k).conf
             if conf == Options.OPT_HEADER_ADD_STR:
                 myval = window_hcookiesm().get_json_h()
             elif conf == Options.OPT_COOKIE_ADD_STR:
@@ -231,7 +233,7 @@ class Settings(ABC):
             elif conf == Options.OPT_MODULE:
                 myval = ProcModule.get() - 1
             elif conf in Settings.combobox_setting_arrays.keys():
-                myval = Settings.combobox_setting_arrays[conf].index(getrootconf(conf))
+                myval = Settings.combobox_setting_arrays.get(conf).index(getrootconf(conf))
             else:
                 myval = getrootconf(conf)
             settings.append(to_cfg_line(k, myval))
@@ -245,9 +247,9 @@ class Settings(ABC):
                 continue
             kv_k, kv_v = line.split('=', 1)  # type: str, str
             if kv_k in Settings.settings.keys():
-                conf = Settings.settings[kv_k].conf
-                val = Settings.settings[kv_k].type(kv_v)
-                assert Settings.settings[kv_k].validate(val)
+                conf = Settings.settings.get(kv_k).conf
+                val = Settings.settings.get(kv_k).type(kv_v)
+                assert Settings.settings.get(kv_k).validate(val)
                 if conf == Options.OPT_HEADER_ADD_STR:
                     window_hcookiesm().set_to_h(val)
                 elif conf == Options.OPT_COOKIE_ADD_STR:
@@ -255,11 +257,11 @@ class Settings(ABC):
                 elif conf == Options.OPT_MODULE:
                     set_proc_module(val + 1)
                     setrootconf(conf, ProcModule.get_cur_module_name())
-                    int_vars.get(CVARS[conf]).set(val + 1)
+                    int_vars.get(CVARS.get(conf)).set(val + 1)
                 elif conf == Options.OPT_PROXYSTRING:
                     setrootconf(Options.OPT_PROXYSTRING_TEMP, val)
                 elif conf in Settings.combobox_setting_arrays.keys():
-                    setrootconf(conf, Settings.combobox_setting_arrays[conf][val])
+                    setrootconf(conf, Settings.combobox_setting_arrays.get(conf)[val])
                 else:
                     setrootconf(conf, val)
             else:
@@ -420,13 +422,13 @@ def set_download_limit() -> None:
         return
 
     setrootconf(Options.OPT_DOWNLOAD_LIMIT, limit)
-    menu_items[Menus.MENU_DEBUG][0].entryconfig(3, label=f'Set download limit ({limit})...')
+    menu_items.get(Menus.MENU_DEBUG)[0].entryconfig(3, label=f'Set download limit ({limit})...')
     Logger.log(f'Download limit set to {limit:d} item(s).', False, False)
 
 
 def reset_download_limit() -> None:
     setrootconf(Options.OPT_DOWNLOAD_LIMIT, 0)
-    menu_items[Menus.MENU_DEBUG][0].entryconfig(3, label='Set download limit (0)...')
+    menu_items.get(Menus.MENU_DEBUG)[0].entryconfig(3, label='Set download limit (0)...')
     Logger.log('Download limit was reset.', False, False)
 
 
@@ -468,7 +470,7 @@ def set_proc_module(dwnmodule: int) -> None:
     prefix_opt_text = f'Prefix file names with \'{ProcModule.get_cur_module_name()}_\''
 
     if GetRoot() is not None:
-        menu_items[Menus.MENU_EDIT][0].entryconfig(0, label=prefix_opt_text)
+        menu_items.get(Menus.MENU_EDIT)[0].entryconfig(0, label=prefix_opt_text)
         # icon
         config_global(Globals.GOBJECT_MODULE_ICON, image=get_icon(Icons.ICON_RX) if ProcModule.is_rx() else get_icon(Icons.ICON_RN))
         # enable/disable features specific to the module
@@ -488,13 +490,13 @@ def config_global(index: Globals, **kwargs) -> None:
 
 def update_menu_enabled_states() -> None:
     for i in [m for m in Menus.__members__.values() if m < Menus.MAX_MENUS]:  # type: Menus
-        if menu_items[i][0] is not None:
-            for j in menu_items[i][1]:
+        if menu_items.get(i)[0] is not None:
+            for j in menu_items.get(i)[1]:
                 if i == Menus.MENU_ACTIONS and j == 1 and is_cheking_tags():  # Check tags, disabled when active
                     newstate = STATE_DISABLED
                 else:
                     newstate = STATE_DISABLED if is_downloading() else menu_item_orig_states[i][j]
-                menu_items[i][0].entryconfig(j, state=newstate)
+                menu_items.get(i)[0].entryconfig(j, state=newstate)
 
 
 def is_focusing(gidx: Globals) -> bool:
@@ -750,7 +752,7 @@ def recheck_tags_direct() -> None:
         return tag.replace('+', '%2b').replace(' ', '+')
 
     config_global(Globals.GOBJECT_BUTTON_CHECKTAGS, state=STATE_DISABLED)
-    menu_items[Menus.MENU_ACTIONS][0].entryconfig(menu_items[Menus.MENU_ACTIONS][1][1], state=STATE_DISABLED)
+    menu_items.get(Menus.MENU_ACTIONS)[0].entryconfig(menu_items.get(Menus.MENU_ACTIONS)[1][1], state=STATE_DISABLED)
 
     cur_tags = str(getrootconf(Options.OPT_TAGS))
 
@@ -798,8 +800,8 @@ def recheck_tags_direct() -> None:
     if not is_downloading():
         config_global(Globals.GOBJECT_FIELD_TAGS, bg=COLOR_WHITE)
         config_global(Globals.GOBJECT_BUTTON_CHECKTAGS, state=gobject_orig_states[Globals.GOBJECT_BUTTON_CHECKTAGS])
-        menu_items[Menus.MENU_ACTIONS][0].entryconfig(
-            menu_items[Menus.MENU_ACTIONS][1][1], state=menu_item_orig_states[Menus.MENU_ACTIONS][2])
+        menu_items.get(Menus.MENU_ACTIONS)[0].entryconfig(
+            menu_items.get(Menus.MENU_ACTIONS)[1][1], state=menu_item_orig_states[Menus.MENU_ACTIONS][2])
 
     tags_recheck_thread = None
 
@@ -807,7 +809,7 @@ def recheck_tags_direct() -> None:
 def recheck_tags_direct_do() -> None:
     global tags_recheck_thread
 
-    if menu_items[Menus.MENU_ACTIONS][0].entrycget(menu_items[Menus.MENU_ACTIONS][1][1], 'state') == STATE_DISABLED:
+    if menu_items.get(Menus.MENU_ACTIONS)[0].entrycget(menu_items.get(Menus.MENU_ACTIONS)[1][1], 'state') == STATE_DISABLED:
         return
 
     assert tags_recheck_thread is None
@@ -915,7 +917,7 @@ def cancel_download() -> None:
 def do_download() -> None:
     global download_thread
 
-    if menu_items[Menus.MENU_ACTIONS][0].entrycget(menu_items[Menus.MENU_ACTIONS][1][0], 'state') == STATE_DISABLED:
+    if menu_items.get(Menus.MENU_ACTIONS)[0].entrycget(menu_items.get(Menus.MENU_ACTIONS)[1][0], 'state') == STATE_DISABLED:
         return
 
     suc, msg = recheck_args()
@@ -1018,7 +1020,7 @@ def register_menu_command(label: str, command: Callable[[], None], hotkey_opt: O
         accelerator = None
     c_menum().add_command(label=label, image=icon, compound=LEFT, command=command, accelerator=accelerator)
     if accelerator and (do_bind is True):
-        rootm().bind(hotkeys[hotkey_opt], func=lambda _: command())
+        rootm().bind(hotkeys.get(hotkey_opt), func=lambda _: command())
 
 
 def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind: bool = False,
@@ -1029,7 +1031,7 @@ def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt
         accelerator = None
     c_submenum().add_command(label=label, image=icon, compound=LEFT, command=command, accelerator=accelerator)
     if accelerator and (do_bind is True):
-        rootm().bind(hotkeys[hotkey_opt], func=lambda _: command())
+        rootm().bind(hotkeys.get(hotkey_opt), func=lambda _: command())
 
 
 def register_menu_checkbutton(label: str, variablename: str, command: Callable = None, hotkey_str: str = None) -> None:
@@ -1074,28 +1076,28 @@ def init_menus() -> None:
         c_menum().entryconfig(5, state=STATE_DISABLED)  # disable 'Open download folder'
     # 2) Edit
     register_menu('Edit', Menus.MENU_EDIT)
-    register_menu_checkbutton('Prefix file names with \'rx_\'', CVARS[Options.OPT_FNAMEPREFIX])
-    register_menu_checkbutton('Save tags', CVARS[Options.OPT_SAVE_TAGS])
-    register_menu_checkbutton('Save source links', CVARS[Options.OPT_SAVE_SOURCES])
-    register_menu_checkbutton('Extend file names with extra info', CVARS[Options.OPT_APPEND_SOURCE_AND_TAGS])
-    register_menu_checkbutton('Warn if download folder is not empty', CVARS[Options.OPT_WARN_NONEMPTY_DEST])
+    register_menu_checkbutton('Prefix file names with \'rx_\'', CVARS.get(Options.OPT_FNAMEPREFIX))
+    register_menu_checkbutton('Save tags', CVARS.get(Options.OPT_SAVE_TAGS))
+    register_menu_checkbutton('Save source links', CVARS.get(Options.OPT_SAVE_SOURCES))
+    register_menu_checkbutton('Extend file names with extra info', CVARS.get(Options.OPT_APPEND_SOURCE_AND_TAGS))
+    register_menu_checkbutton('Warn if download folder is not empty', CVARS.get(Options.OPT_WARN_NONEMPTY_DEST))
     # 3) View
     register_menu('View')
-    register_menu_checkbutton('Log', CVARS[Options.OPT_ISLOGOPEN], Logger.wnd.toggle_visibility, hotkey_text(Options.OPT_ISLOGOPEN))
+    register_menu_checkbutton('Log', CVARS.get(Options.OPT_ISLOGOPEN), Logger.wnd.toggle_visibility, hotkey_text(Options.OPT_ISLOGOPEN))
     if __RUXX_DEBUG__ and running_system() == PLATFORM_WINDOWS:
-        register_menu_checkbutton('Console', CVARS[Options.OPT_ISCONSOLELOGOPEN], toggle_console)
+        register_menu_checkbutton('Console', CVARS.get(Options.OPT_ISCONSOLELOGOPEN), toggle_console)
         if IS_IDE:
             c_menum().entryconfig(1, state=STATE_DISABLED)
     # 4) Module
     register_menu('Module', Menus.MENU_MODULE)
-    register_menu_radiobutton('rx', CVARS[Options.OPT_MODULE], ProcModule.PROC_RX, lambda: set_proc_module(ProcModule.PROC_RX))
-    register_menu_radiobutton('rn', CVARS[Options.OPT_MODULE], ProcModule.PROC_RN, lambda: set_proc_module(ProcModule.PROC_RN))
+    register_menu_radiobutton('rx', CVARS.get(Options.OPT_MODULE), ProcModule.PROC_RX, lambda: set_proc_module(ProcModule.PROC_RX))
+    register_menu_radiobutton('rn', CVARS.get(Options.OPT_MODULE), ProcModule.PROC_RN, lambda: set_proc_module(ProcModule.PROC_RN))
     # 5) Connection
     register_menu('Connection', Menus.MENU_CONNECTION)
     register_menu_command('Headers / Cookies...', window_hcookiesm().toggle_visibility, Options.OPT_ISHCOOKIESOPEN)
     register_menu_command('Set proxy...', window_proxym().ask, Options.OPT_ISPROXYOPEN)
-    register_menu_checkbutton('Download without proxy', CVARS[Options.OPT_PROXY_NO_DOWNLOAD])
-    register_menu_checkbutton('Ignore proxy', CVARS[Options.OPT_IGNORE_PROXY])
+    register_menu_checkbutton('Download without proxy', CVARS.get(Options.OPT_PROXY_NO_DOWNLOAD))
+    register_menu_checkbutton('Ignore proxy', CVARS.get(Options.OPT_IGNORE_PROXY))
     # 6) Action
     register_menu('Actions', Menus.MENU_ACTIONS)
     register_menu_command('Download', do_download, Options.OPT_ACTION_DOWNLOAD, True)
@@ -1121,9 +1123,9 @@ def init_menus() -> None:
     # 9) Debug
     if __RUXX_DEBUG__:
         register_menu('Debug', Menus.MENU_DEBUG)
-        register_menu_radiobutton('Download: full', CVARS[Options.OPT_DOWNLOAD_MODE], DownloadModes.DOWNLOAD_FULL.value)
-        register_menu_radiobutton('Download: skip', CVARS[Options.OPT_DOWNLOAD_MODE], DownloadModes.DOWNLOAD_SKIP.value)
-        register_menu_radiobutton('Download: touch', CVARS[Options.OPT_DOWNLOAD_MODE], DownloadModes.DOWNLOAD_TOUCH.value)
+        register_menu_radiobutton('Download: full', CVARS.get(Options.OPT_DOWNLOAD_MODE), DownloadModes.DOWNLOAD_FULL.value)
+        register_menu_radiobutton('Download: skip', CVARS.get(Options.OPT_DOWNLOAD_MODE), DownloadModes.DOWNLOAD_SKIP.value)
+        register_menu_radiobutton('Download: touch', CVARS.get(Options.OPT_DOWNLOAD_MODE), DownloadModes.DOWNLOAD_TOUCH.value)
         register_menu_command('Set download limit (0)...', set_download_limit)
         register_menu_command('Reset download limit', reset_download_limit)
 
@@ -1136,7 +1138,7 @@ def init_gui() -> None:
     # additional windows
     Logger.wnd = LogWindow(rootm())
     Logger.wnd.window.wm_protocol('WM_DELETE_WINDOW', Logger.wnd.on_destroy)
-    rootm().bind_all(hotkeys[Options.OPT_ISLOGOPEN], func=lambda _: Logger.wnd.toggle_visibility())
+    rootm().bind_all(hotkeys.get(Options.OPT_ISLOGOPEN), func=lambda _: Logger.wnd.toggle_visibility())
     init_additional_windows()
     # Main menu
     init_menus()
@@ -1189,7 +1191,7 @@ def dwnm() -> Union[DownloaderRn, DownloaderRx]:
     global dwn
 
     if dwn is None:
-        dwn = DOWNLOADERS_BY_PROC_MODULE[ProcModule.CUR_PROC_MODULE]()
+        dwn = DOWNLOADERS_BY_PROC_MODULE.get(ProcModule.CUR_PROC_MODULE)()
 
     return dwn
 

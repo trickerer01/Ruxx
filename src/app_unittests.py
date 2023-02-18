@@ -94,9 +94,9 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual(dwn.date_max, '2038-01-01')
             self.assertEqual(dwn.maxthreads_items, 8)
             self.assertEqual(dwn.dest_base, CUR_PATH)
-            self.assertEqual(dwn.proxies['all'], 'http://8.8.8.8:65333')
-            self.assertEqual(dwn.add_headers['name1'], 'value1')
-            self.assertEqual(dwn.add_cookies['name2'], 'value2')
+            self.assertEqual(dwn.proxies.get('all'), 'http://8.8.8.8:65333')
+            self.assertEqual(dwn.add_headers.get('name1'), 'value1')
+            self.assertEqual(dwn.add_cookies.get('name2'), 'value2')
         print('test_cmdline2 passed')
 
 

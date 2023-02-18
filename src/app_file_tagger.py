@@ -62,7 +62,7 @@ def retag_files(files: Tuple[str], re_tags_to_process: Pattern, re_tags_to_exclu
                 continue
             untagged_name_noext = re_sub(r'^([a-z]{2}_)?(\d+?)[_.].+?$', r'\1\2', name)
             try:
-                tags = tagdict[name[3:] if name[0].isalpha() else name]
+                tags = tagdict.get(name[3:] if name[0].isalpha() else name)
             except Exception:
                 continue
             score_str, tags_rest = tuple(tags.split(' ', 1))
