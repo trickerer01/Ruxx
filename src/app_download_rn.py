@@ -181,7 +181,7 @@ class DownloaderRn(DownloaderBase):
     def get_re_tags_to_exclude(self) -> Pattern:
         return re_tags_exclude_rn
 
-    def _get_tags_concat_char(self) -> str:
+    def get_tags_concat_char(self) -> str:
         return TAGS_CONCAT_CHAR_RN
 
     def _can_have_or_groups(self) -> bool:
@@ -260,7 +260,7 @@ class DownloaderRn(DownloaderBase):
         self._inc_proc_count()
 
     def form_tags_search_address(self, tags: str, *ignored) -> str:
-        return f'{self._get_sitename()}post/list/{tags} order%253Did_desc/'
+        return f'{self._get_sitename()}post/list/{tags}{self.get_tags_concat_char()}order%253Did_desc/'
 
     @staticmethod
     def extract_local_addr(raw: str) -> str:

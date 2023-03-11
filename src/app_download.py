@@ -203,7 +203,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def _get_tags_concat_char(self) -> str:
+    def get_tags_concat_char(self) -> str:
         ...
 
     @abstractmethod
@@ -219,7 +219,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     def get_tags_count(self, offset=0) -> int:
-        return len(self.tags_str_arr[offset].split(self._get_tags_concat_char()))
+        return len(self.tags_str_arr[offset].split(self.get_tags_concat_char()))
 
     def _try_append_extra_info(self, item_abbrname: str, maxlen: int) -> str:
         if not self.append_info:
@@ -305,10 +305,6 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('Max page: no Id limit! Skipping')
             pnum = self.maxpage
         else:
-            # p_chks = [None] * (self.maxpage + 2)
-            # for i in range(self.maxpage + 2):
-            #     p_chks[i] = PageCheck()
-
             p_chks = list()
             for i in range(self.maxpage + 3):
                 p_chks.append(PageCheck())
@@ -730,8 +726,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
 
     def _process_tags(self, tag_str: str) -> None:
-        self.url = self.form_tags_search_address(tag_str)
         self.current_state = DownloaderStates.STATE_SCANNING_PAGES1
+        self.url = self.form_tags_search_address(tag_str)
         self.total_count = self.get_items_query_size(self.url)
 
         page_size = self._get_items_per_page()
@@ -923,7 +919,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace(f'\nAll {"skipped" if self.download_mode == DownloadModes.DOWNLOAD_SKIP else "processed"} ({self.total_count:d} items)...')
 
     def _parse_tags(self, tags_base_arr: Iterable[str]) -> None:
-        cc = self._get_tags_concat_char()
+        cc = self.get_tags_concat_char()
         sc = self._get_idval_equal_seaparator()
         can_have_or_groups = self._can_have_or_groups()
         split_always = self._split_or_group_into_tasks_always()

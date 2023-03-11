@@ -181,7 +181,7 @@ class DownloaderRx(DownloaderBase):
     def get_re_tags_to_exclude(self) -> Pattern:
         return re_tags_exclude_rx
 
-    def _get_tags_concat_char(self) -> str:
+    def get_tags_concat_char(self) -> str:
         return TAGS_CONCAT_CHAR_RX
 
     def _can_have_or_groups(self) -> bool:

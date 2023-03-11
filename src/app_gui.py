@@ -762,8 +762,8 @@ def recheck_tags_direct() -> None:
     if re_match(r'\([^: ]+:.*?', cur_tags):  # `or` group with sort tag
         Logger.log('Error: cannot check tags with sort tag(s) within \'or\' group', False, False)
     elif res:
-        tags_str = ' '.join(normalize_tag(tag) for tag in tags_list)
         mydwn = get_new_proc_module()
+        tags_str = mydwn.get_tags_concat_char().join(normalize_tag(tag) for tag in tags_list)
 
         full_addr = mydwn.form_tags_search_address(tags_str, 1)
         # init proxy / headers & cookies if needed

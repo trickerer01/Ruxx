@@ -380,12 +380,12 @@ re_id_post_ge_rn = 'id>='
 re_id_post_le_rn = 'id<='
 # tooltips
 TOOLTIP_VIDEOS = [' Selected file type will be preferred during search.',
-                  ' If file is unavailable an alternative type will be',
+                  ' If file is unavailable, alternative type will be',
                   ' attempted automatically.']
 TOOLTIP_IMAGES = [' Selected file type will be preferred during search.',
-                  ' If file is unavailable an alternative type will be',
+                  ' If file is unavailable, alternative type will be',
                   ' attempted automatically.',
-                  ' Warning: low res variant of a gif may be not animated!']
+                  ' Warning: low res variant of a gif may be unanimated!']
 TOOLTIP_THREADING = [' Number of threads affects scan and download speed.']
 TOOLTIP_ORDER = [' Download order.']
 TOOLTIP_DATE = [' Date must be in \'dd-mm-yyyy\' format.']
