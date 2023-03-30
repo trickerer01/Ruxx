@@ -36,6 +36,8 @@ __all__ = (
 
 
 def valid_proxy(prox: str) -> str:
+    if len(prox) == 0:
+        return prox
     try:
         pv, pp = tuple(prox.split(':', 1))
         pva, ppi = IPv4Address(pv), int(pp)
