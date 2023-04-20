@@ -28,7 +28,7 @@ re_tags_to_process_rx = re_compile(
     r'[a-z]{4}hral_i.+?|(?:\d{1,2}\+?)?(?:boys?|girls?|fu[a-z]{2}(?:[a-z]{4}|s)?|in[d-v]{2}cts?)|succ[a-z]{4}|'
     r'bbw|dog|eel|f(?:acesitting|ur)|hmv|pmv|tar|c(?:\.c\.|um)|d\.va|na\'vi|kai\'sa|'
     r'[^(]+\([^)]+\).*?|[a-z_\-]+\d+?|\d{2,4}[a-z_\-]+?|[a-z_]{2,15}sfm|[^_]+_pov|fu[a-z]{2}(?:/|_(?:on|with)_)[a-z]{4}(?:oy)?|'
-    fr'[a-z][a-z_]{{{TAG_LENGTH_MIN - 1:d},{TAG_LENGTH_MAX_RX - 1:d}}}|[a-g]ea?st[a-z]{{6}}|[lapymg]{{3}})$'
+    fr'[a-z][a-z_]{{{TAG_LENGTH_MIN - 1:d},{TAG_LENGTH_MAX_RX - 1:d}}}|[a-g]ea?st[a-z]{{6}}|[lapymg]{{3}}|ai_(?:gen|up|voi).+?)$'
 )
 re_tags_to_process_rn = re_compile(
     r'^(?:.+?_warc.+?|(?:[a-z]+?_)?elf|drae.{3}|tent[a-z]{3}es|(?:bell[a-z]|sto[a-z]{4})_bul[a-z]{2,3}|inf[a-z]{5}n|egg(?:_[a-z]{3,9}|s)?|'
