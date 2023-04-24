@@ -11,7 +11,7 @@ from re import fullmatch as re_fullmatch, compile as re_compile
 from typing import Tuple, List, Pattern, Optional
 
 # internal
-from app_defines import TAGS_STRING_LENGTH_MAX_RX
+from app_defines import TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN
 from app_gui_defines import ProcModule
 from app_network import thread_exit
 from app_logger import trace
@@ -60,12 +60,11 @@ def split_tags_into_tasks(tag_groups_arr: List[str], cc: str, sc: str, can_have_
 
 
 def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[str]]]]:
-    def esc(s: str) -> str:
-        for c in '.[]()-+':
-            s = s.replace(c, f'\\{c}')
-        return s.replace('?', '.').replace('*', '.*')
-
     def form_plist(neg_tags_group: str) -> Optional[List[Pattern]]:
+        def esc(s: str) -> str:
+            for c in '.[]()-+':
+                s = s.replace(c, f'\\{c}')
+            return s.replace('?', '.').replace('*', '.*')
         ngr = re_fullmatch(r'^-\(([^,]+(?:,[^,]+)+)\)$', neg_tags_group)
         return [re_compile(rf'^{esc(s)}$') for s in ngr.group(1).split(',')] if ngr else None
 
@@ -79,33 +78,37 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
         if plist:
             parsed.append(plist)
             del tags_list[tgi]
-    if ProcModule.is_rx():
-        total_len = sum(len(t) for t in tags_list) + len(tags_list) - 1
-        if total_len > TAGS_STRING_LENGTH_MAX_RX:
-            trace('Warning (W2): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
-            neg_tags_list = []  # type: List[str]
-            # first pass: wildcarded negative tags - chance to ruin alias is lower
-            # second pass: any negative tags
-            for wildcardpass in [True, False]:
-                for ti in reversed(range(len(tags_list))):  # type: int
-                    if total_len <= TAGS_STRING_LENGTH_MAX_RX:
-                        break
-                    ntag = tags_list[ti]
-                    if wildcardpass is True and ntag.rfind('*') == -1:
-                        continue
-                    if ntag.startswith('-'):
-                        neg_tags_list.append(ntag[1:])
-                        total_len -= len(ntag) + 1
-                        del tags_list[ti]
-            if total_len > TAGS_STRING_LENGTH_MAX_RX:
-                thread_exit('Fatal: extracting negative tags doesn\'t reduce total tags length enough! '
-                            'Search result will be empty! Aborting...', -609)
-            assert len(neg_tags_list) > 0
-            extracted_neg_group_str = f'-(*,{"|".join(reversed(neg_tags_list))})'
-            trace(f'Info: extractd negative group: {extracted_neg_group_str}')
-            plist = form_plist(extracted_neg_group_str)
-            assert plist is not None
-            parsed.append(plist)
+
+    # check rn 'or' groups (always split) otherwise they will count as a single tag (can be extremely long)
+    total_len = len(tags_list) - 1  # concat chars count
+    for t in tags_list:  # + length of each tag
+        total_len += max(len(ogt) for ogt in t.split('+~+')) if t.startswith('(+') and ProcModule.is_rn() else len(t)
+    max_string_len = TAGS_STRING_LENGTH_MAX_RX if ProcModule.is_rx() else TAGS_STRING_LENGTH_MAX_RN
+    if total_len > max_string_len:
+        trace('Warning (W2): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
+        neg_tags_list = []  # type: List[str]
+        # first pass: wildcarded negative tags - chance to ruin alias is lower (rx)
+        # second pass: any negative tags
+        for wildcardpass in [True, False]:
+            for ti in reversed(range(len(tags_list))):  # type: int
+                if total_len <= max_string_len:
+                    break
+                ntag = tags_list[ti]
+                if wildcardpass is True and ntag.rfind('*') == -1:
+                    continue
+                if ntag.startswith('-'):
+                    neg_tags_list.append(ntag[1:])
+                    total_len -= len(ntag) + 1
+                    del tags_list[ti]
+        if total_len > max_string_len:
+            thread_exit('Fatal: extracting negative tags doesn\'t reduce total tags length enough! Aborting...', -609)
+        assert len(neg_tags_list) > 0
+        extracted_neg_group_str = f'-(*,{"|".join(reversed(neg_tags_list))})'
+        trace(f'Info: extractd negative group: {extracted_neg_group_str}')
+        plist = form_plist(extracted_neg_group_str)
+        assert plist is not None
+        parsed.append(plist)
+
     return tags_list, parsed
 
 #
