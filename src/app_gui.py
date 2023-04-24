@@ -68,7 +68,7 @@ __all__ = ()
 
 # loaded
 download_thread = None  # type: Optional[Thread]
-tags_recheck_thread = None  # type: Optional[Thread]
+tags_check_thread = None  # type: Optional[Thread]
 prev_download_state = 0
 console_shown = True
 IS_IDE = environ.get('PYCHARM_HOSTED') == '1'  # ran from IDE
@@ -745,8 +745,8 @@ def update_frame_cmdline() -> None:
     rootm().after(int(GUI2_UPDATE_DELAY_DEFAULT * 3), update_frame_cmdline)
 
 
-def recheck_tags_direct() -> None:
-    global tags_recheck_thread
+def check_tags_direct() -> None:
+    global tags_check_thread
 
     def normalize_tag(tag: str) -> str:
         return tag.replace('+', '%2b').replace(' ', '+')
@@ -803,19 +803,19 @@ def recheck_tags_direct() -> None:
         menu_items.get(Menus.MENU_ACTIONS)[0].entryconfig(
             menu_items.get(Menus.MENU_ACTIONS)[1][1], state=menu_item_orig_states[Menus.MENU_ACTIONS][2])
 
-    tags_recheck_thread = None
+    tags_check_thread = None
 
 
-def recheck_tags_direct_do() -> None:
-    global tags_recheck_thread
+def check_tags_direct_do() -> None:
+    global tags_check_thread
 
     if menu_items.get(Menus.MENU_ACTIONS)[0].entrycget(menu_items.get(Menus.MENU_ACTIONS)[1][1], 'state') == STATE_DISABLED:
         return
 
-    assert tags_recheck_thread is None
+    assert tags_check_thread is None
 
-    tags_recheck_thread = Thread(target=recheck_tags_direct)
-    tags_recheck_thread.start()
+    tags_check_thread = Thread(target=check_tags_direct)
+    tags_check_thread.start()
 
 
 def parse_tags_field(tags: str) -> bool:
@@ -875,7 +875,7 @@ def is_downloading() -> bool:
 
 
 def is_cheking_tags() -> bool:
-    return tags_recheck_thread is not None
+    return tags_check_thread is not None
 
 
 def update_download_state() -> None:
@@ -1102,7 +1102,7 @@ def init_menus() -> None:
     register_menu('Actions', Menus.MENU_ACTIONS)
     register_menu_command('Download', do_download, Options.OPT_ACTION_DOWNLOAD, True)
     register_menu_separator()
-    register_menu_command('Check tags', recheck_tags_direct_do, Options.OPT_ACTION_CHECKTAGS, True)
+    register_menu_command('Check tags', check_tags_direct_do, Options.OPT_ACTION_CHECKTAGS, True)
     # 7) Tools
     register_menu('Tools', Menus.MENU_TOOLS)
     register_menu_command('Load from ID list...', load_id_list)
@@ -1131,7 +1131,7 @@ def init_menus() -> None:
 
 
 def init_gui() -> None:
-    global tags_recheck_thread
+    global tags_check_thread
 
     create_base_window_widgets()
 
@@ -1143,7 +1143,7 @@ def init_gui() -> None:
     # Main menu
     init_menus()
 
-    get_global(Globals.GOBJECT_BUTTON_CHECKTAGS).config(command=recheck_tags_direct_do)
+    get_global(Globals.GOBJECT_BUTTON_CHECKTAGS).config(command=check_tags_direct_do)
     get_global(Globals.GOBJECT_BUTTON_OPENFOLDER).config(command=browse_path)
     get_global(Globals.GOBJECT_BUTTON_DOWNLOAD).config(command=do_download)
 
