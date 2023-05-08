@@ -19,7 +19,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 #### Filters
 - *Videos* - some websites serve videos in multiple formats, here you can select a prefered one. **Redundant since 01.05.2021 (RX internal changes)**. You may also exclude videos altogether
 - *Images* - some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you can also filter all the images out
-- *Threading* - the number of threads to use for downloading. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Actually even max threads is no problem in most cases
+- *Threading* - the number of threads to use for downloading. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
 - *Order* - the download queue is sorted by ID which directly correlates with upload time. `Oldest first` means ascending order. If you really care
 - *Search limits*
   - *Date min / max* - applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset do default
@@ -27,7 +27,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 
 #### Misc & Tools
 - **File -> Save settings...** \<Ctrl+S> - allows you to save current run parameters to a config file for later or as a template
-- **File -> Load settings...** \<Ctrl+O> - load run parameters from previously saved config file. You can also put a `.cfg` file folder with executable and Ruxx will automatically pick it up to configure itself. You have to use one of the following names: ['ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg']
+- **File -> Load settings...** \<Ctrl+O> - load run parameters from previously saved config file. You can also put a `.cfg` file folder with executable and Ruxx will automatically pick it and configure itself. You have to use one of the following names: ['ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg']
 - **File -> Reset all settings** - resets all settings to initial ones. If autoconfigured this will reset to those parameters
 - **File -> Open download folder** \<Ctrl+L> - open currently selected destination folder (**Path**), Windows only
 - **View -> Log** - open a log window, if you want some readable output
@@ -70,7 +70,7 @@ It's possible to use Ruxx as a cmdline tool. In the main window you can find a `
 Invoke `Ruxx --help` for full help
 
 #### Logging
-Ruxx will log most of its own actions, which you can see in **Log** window  
+Ruxx will log most of its actions, which you can see in **Log** window  
 If any problem occurs it will yield some info unless it's an unexpected fatal error. Ruxx is able to resolve most non-fatal networking errors and IO mishaps, including dropped searches (search overload), non-matching e-tags, file size mismatch, malformed packets, etc.
 - **W1**: a minor problem, more of the info
 - **W2**: a problem which is going to be fixed, but there is no guarantee it won't occur again
