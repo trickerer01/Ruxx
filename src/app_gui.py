@@ -49,6 +49,7 @@ from app_gui_defines import (
     OPTION_CMD_COOKIES, OPTION_CMD_HEADERS, OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_SOCKS,
     OPTION_CMD_PROXY_NO_DOWNLOAD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, FMT_DATE, DATE_MIN_DEFAULT_REV, SLASH,
     OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, BUTTONS_TO_UNFOCUS,
+    OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI,
     ProcModule, menu_items, menu_item_orig_states, gobjects, gobject_orig_states, Options, Globals, Menus, Icons, CVARS,
     re_id_eq_rx, re_id_ge_rx, re_id_le_rx, re_id_eq_rn, re_id_ge_rn, re_id_le_rn,
     re_id_post_eq_rx, re_id_post_ge_rx, re_id_post_le_rx, re_id_post_eq_rn, re_id_post_ge_rn, re_id_post_le_rn,
@@ -61,7 +62,7 @@ from app_utils import normalize_path, confirm_yes_no
 from app_validators import (
     StrValidator, IntValidator, ValidatorAlwaysTrue, ModuleValidator, VideosCBValidator, ImagesCBValidator, VALIDATORS_DICT,
     ThreadsCBValidator, DownloadOrderCBValidator, PositiveIdValidator, IdValidator, JsonValidator, BoolStrValidator, ProxyValidator,
-    DateValidator,
+    DateValidator, ParchiCBValidator,
 )
 
 __all__ = ()
@@ -157,6 +158,7 @@ class Settings(ABC):
         'path': Setting(Options.OPT_PATH, ValidatorAlwaysTrue(), 'Invalid path \'%s\'!'),  # no validation, str
         'videos': Setting(Options.OPT_VIDSETTING, VideosCBValidator(), 'Invalid videos option \'%s\'!'),
         'images': Setting(Options.OPT_IMGSETTING, ImagesCBValidator(), 'Invalid images option \'%s\'!'),
+        'parchi': Setting(Options.OPT_PARCHISETTING, ParchiCBValidator(), 'Invalid parchi option \'%s\'!'),
         'threads': Setting(Options.OPT_THREADSETTING, ThreadsCBValidator(), 'Invalid threads option \'%s\'!'),
         'order': Setting(Options.OPT_DOWNORDER, DownloadOrderCBValidator(), 'Invalid order option \'%s\'!'),
         'idmin': Setting(Options.OPT_IDMIN, PositiveIdValidator(), 'Invalid idmin value \'%s\'!'),
@@ -179,6 +181,7 @@ class Settings(ABC):
     combobox_setting_arrays = {
         Options.OPT_VIDSETTING: OPTION_VALUES_VIDEOS,
         Options.OPT_IMGSETTING: OPTION_VALUES_IMAGES,
+        Options.OPT_PARCHISETTING: OPTION_VALUES_PARCHI,
         Options.OPT_THREADSETTING: OPTION_VALUES_THREADING,
         Options.OPT_DOWNORDER: OPTION_VALUES_DOWNORDER,
     }
@@ -615,6 +618,9 @@ def prepare_cmdline() -> List[str]:
     addstr = OPTION_CMD_IMAGES[OPTION_VALUES_IMAGES.index(str(getrootconf(Options.OPT_IMGSETTING)))]
     if len(addstr) > 0:
         newstr.append(addstr)
+    addstr = OPTION_CMD_PARCHI[OPTION_VALUES_PARCHI.index(str(getrootconf(Options.OPT_PARCHISETTING)))]
+    if len(addstr) > 0:
+        newstr.append(addstr)
     addstr = OPTION_CMD_THREADING[OPTION_VALUES_THREADING.index(str(getrootconf(Options.OPT_THREADSETTING)))]
     if len(addstr) > 0:
         newstr.append(OPTION_CMD_THREADING_CMD)
@@ -784,8 +790,8 @@ def check_tags_direct() -> None:
         mydwn.session = mydwn.make_session()
 
         try:
-            count = mydwn.get_items_query_size(full_addr, 1)
-            if type(count) != int:
+            count = mydwn.get_items_query_size_or_html(full_addr, 1)
+            if not isinstance(count, int):
                 count = 1
         except (Exception, SystemExit):
             pass

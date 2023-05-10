@@ -57,12 +57,11 @@ class DownloaderRn(DownloaderBase):
     def _get_max_search_depth(self) -> int:
         return MAX_SEARCH_DEPTH
 
-    def _form_item_string_manually(self) -> None:
-        assert isinstance(self.total_count, BeautifulSoup)
+    def _form_item_string_manually(self, raw_html_page: BeautifulSoup) -> None:
+        assert isinstance(raw_html_page, BeautifulSoup)
         # extract id
-        raw_html = self.total_count
         iid_url_re = re_compile(r'/_images/[^/]+/(\d+)%20-%20([^">]+)')
-        iid_url = str(raw_html.find('a', attrs={'download': '', 'href': iid_url_re}))
+        iid_url = str(raw_html_page.find('a', attrs={'download': '', 'href': iid_url_re}))
         try:
             iall = re_search(iid_url_re, iid_url)
             iid = iall.group(1)
@@ -105,7 +104,7 @@ class DownloaderRn(DownloaderBase):
         d = str(date_raw)[b: b + 4 + 1 + 2 + 1 + 2]
         return d
 
-    def get_items_query_size(self, url: str, tries: Optional[int] = None) -> Union[int, BeautifulSoup]:
+    def get_items_query_size_or_html(self, url: str, tries: Optional[int] = None) -> Union[int, BeautifulSoup]:
         raw_html = self.fetch_html(f'{url}{1:d}', tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)

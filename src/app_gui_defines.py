@@ -89,10 +89,12 @@ STICKY_VERTICAL_W = 'wns'
 # Combobox
 OPTION_VALUES_VIDEOS = ['Don\'t download', 'Prefer MP4', 'Prefer Webm']
 OPTION_VALUES_IMAGES = ['Don\'t download', 'Prefer low res', 'Prefer high res']
+OPTION_VALUES_PARCHI = ['Don\'t download', 'Download everything']
 OPTION_VALUES_THREADING = ['1 Thread', '2 Threads', '3 Threads', '4 Threads', '5 Threads', '6 Threads', '7 Threads', '8 Threads']
 OPTION_VALUES_DOWNORDER = ['Newest first', 'Oldest first']
 OPTION_CMD_VIDEOS = ['-skip_vid', '', '-webm']
 OPTION_CMD_IMAGES = ['-skip_img', '-lowres', '']
+OPTION_CMD_PARCHI = ['', '-include_parchi']
 OPTION_CMD_THREADING_CMD = '-threads'
 OPTION_CMD_THREADING = ['1', '2', '3', '4', '5', '6', '7', '8']
 OPTION_CMD_DOWNORDER = ['', '-rev']
@@ -164,6 +166,7 @@ class Options(IntEnum):
     OPT_ISLOGOPEN = 0
     OPT_VIDSETTING = auto()
     OPT_IMGSETTING = auto()
+    OPT_PARCHISETTING = auto()
     OPT_THREADSETTING = auto()
     OPT_DOWNLOAD_MODE = auto()
     OPT_DOWNLOAD_LIMIT = auto()
@@ -210,6 +213,7 @@ CVARS = {
     Options.OPT_ISLOGOPEN: 'isLogOpen',
     Options.OPT_VIDSETTING: 'vidsetting',
     Options.OPT_IMGSETTING: 'imgsetting',
+    Options.OPT_PARCHISETTING: 'parchisetting',
     Options.OPT_THREADSETTING: 'threadsetting',
     Options.OPT_DOWNLOAD_MODE: 'downloadmode',
     Options.OPT_DOWNLOAD_LIMIT: 'downloadlimit',
@@ -251,6 +255,7 @@ CVARS = {
 class Globals(IntEnum):
     GOBJECT_COMBOBOX_VIDEOS = 0
     GOBJECT_COMBOBOX_IMAGES = auto()
+    GOBJECT_COMBOBOX_PARCHI = auto()
     GOBJECT_COMBOBOX_THREADING = auto()
     GOBJECT_FIELD_DATEAFTER = auto()
     GOBJECT_FIELD_DATEBEFORE = auto()
@@ -273,6 +278,7 @@ class Globals(IntEnum):
 gobjects = {
     Globals.GOBJECT_COMBOBOX_VIDEOS: None,
     Globals.GOBJECT_COMBOBOX_IMAGES: None,
+    Globals.GOBJECT_COMBOBOX_PARCHI: None,
     Globals.GOBJECT_COMBOBOX_THREADING: None,
     Globals.GOBJECT_FIELD_DATEAFTER: None,
     Globals.GOBJECT_FIELD_DATEBEFORE: None,
@@ -291,6 +297,7 @@ gobjects = {
 gobject_orig_states = {
     Globals.GOBJECT_COMBOBOX_VIDEOS: STATE_READONLY,
     Globals.GOBJECT_COMBOBOX_IMAGES: STATE_READONLY,
+    Globals.GOBJECT_COMBOBOX_PARCHI: STATE_READONLY,
     Globals.GOBJECT_COMBOBOX_THREADING: STATE_READONLY,
     Globals.GOBJECT_FIELD_DATEAFTER: STATE_NORMAL,
     Globals.GOBJECT_FIELD_DATEBEFORE: STATE_NORMAL,
@@ -386,6 +393,7 @@ TOOLTIP_IMAGES = [' Selected file type will be preferred during search.',
                   ' If file is unavailable, alternative type will be',
                   ' attempted automatically.',
                   ' Warning: low res variant of a gif may be unanimated!']
+TOOLTIP_PARCHI = [' Download parent posts / child posts even if they don\'t match provided tags.']
 TOOLTIP_THREADING = [' Number of threads affects scan and download speed.']
 TOOLTIP_ORDER = [' Download order.']
 TOOLTIP_DATE = [' Date must be in \'dd-mm-yyyy\' format.']

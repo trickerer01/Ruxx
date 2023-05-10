@@ -57,7 +57,7 @@ class DownloaderRx(DownloaderBase):
     def _get_max_search_depth(self) -> int:
         return MAX_SEARCH_DEPTH
 
-    def _form_item_string_manually(self) -> None:
+    def _form_item_string_manually(self, *ignored) -> None:
         raise NotImplementedError
 
     def _is_search_overload_page(self, raw_html_page: BeautifulSoup) -> bool:
@@ -104,7 +104,7 @@ class DownloaderRx(DownloaderBase):
         d = f'{d_re_res.group(3)}-{months.get(d_re_res.group(1))}-{d_re_res.group(2)}'
         return d
 
-    def get_items_query_size(self, url: str, tries: Optional[int] = None) -> int:
+    def get_items_query_size_or_html(self, url: str, tries: Optional[int] = None) -> int:
         raw_html = self.fetch_html(f'{url}&pid=0', tries)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)

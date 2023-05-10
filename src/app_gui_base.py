@@ -30,7 +30,8 @@ from app_gui_defines import (
     IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL, PADDING_DEFAULT,
     OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, Globals, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
     OPTION_VALUES_DOWNORDER, TOOLTIP_ORDER, FMT_DATE, TOOLTIP_DATE, TOOLTIP_IDMIN, TOOLTIP_IDMAX, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK,
-    ROWSPAN_MAX, GLOBAL_COLUMNCOUNT, STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, DATE_MIN_DEFAULT_REV, gobjects, Icons
+    ROWSPAN_MAX, GLOBAL_COLUMNCOUNT, STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, DATE_MIN_DEFAULT_REV, gobjects, Icons,
+    OPTION_VALUES_PARCHI, TOOLTIP_PARCHI
 )
 from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME
 from app_tooltips import WidgetToolTip
@@ -860,7 +861,7 @@ def create_base_window_widgets() -> None:
     opframe_vid = ttk.LabelFrame(root_framem(), text='Videos')
     opframe_vid.grid(row=cur_row(), column=cur_column(), rowspan=1, columnspan=1,
                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_vid = ttk.Combobox(opframe_vid, values=OPTION_VALUES_VIDEOS, state=STATE_READONLY, width=18,
+    op_vid = ttk.Combobox(opframe_vid, values=OPTION_VALUES_VIDEOS, state=STATE_READONLY, width=14,
                           textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_VIDSETTING)))
     register_global(Globals.GOBJECT_COMBOBOX_VIDEOS, op_vid)
     attach_tooltip(op_vid, TOOLTIP_VIDEOS)
@@ -870,17 +871,27 @@ def create_base_window_widgets() -> None:
     opframe_img = ttk.LabelFrame(root_framem(), text='Images')
     opframe_img.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_img = ttk.Combobox(opframe_img, values=OPTION_VALUES_IMAGES, state=STATE_READONLY, width=20,
+    op_img = ttk.Combobox(opframe_img, values=OPTION_VALUES_IMAGES, state=STATE_READONLY, width=14,
                           textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_IMGSETTING)))
     register_global(Globals.GOBJECT_COMBOBOX_IMAGES, op_img)
     attach_tooltip(op_img, TOOLTIP_IMAGES)
     op_img.current(len(OPTION_VALUES_IMAGES) - 1)
     op_img.pack(padx=PADDING_DEFAULT * 2, pady=3)
+    # Parant posts / child posts
+    opframe_parch = ttk.LabelFrame(root_framem(), text='Parent posts / child posts')
+    opframe_parch.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
+                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
+    op_parch = ttk.Combobox(opframe_parch, values=OPTION_VALUES_PARCHI, state=STATE_READONLY, width=18,
+                            textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PARCHISETTING)))
+    register_global(Globals.GOBJECT_COMBOBOX_PARCHI, op_parch)
+    attach_tooltip(op_parch, TOOLTIP_PARCHI)
+    op_parch.current(len(OPTION_VALUES_PARCHI) - 2)
+    op_parch.pack(padx=PADDING_DEFAULT * 2, pady=3)
     #  Threading
     opframe_thread = ttk.LabelFrame(root_framem(), text='Threading')
     opframe_thread.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                         sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_thread = ttk.Combobox(opframe_thread, values=OPTION_VALUES_THREADING, state=STATE_READONLY, width=18,
+    op_thread = ttk.Combobox(opframe_thread, values=OPTION_VALUES_THREADING, state=STATE_READONLY, width=10,
                              textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_THREADSETTING)))
     register_global(Globals.GOBJECT_COMBOBOX_THREADING, op_thread)
     attach_tooltip(op_thread, TOOLTIP_THREADING)
@@ -890,7 +901,7 @@ def create_base_window_widgets() -> None:
     opframe_order = ttk.LabelFrame(root_framem(), text='Order')
     opframe_order.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=COLUMNSPAN_MAX - 3,
                        sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_order = ttk.Combobox(opframe_order, values=OPTION_VALUES_DOWNORDER, state=STATE_READONLY, width=18,
+    op_order = ttk.Combobox(opframe_order, values=OPTION_VALUES_DOWNORDER, state=STATE_READONLY, width=11,
                             textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DOWNORDER)))
     register_global(Globals.GOBJECT_COMBOBOX_DOWNORDER, op_order)
     attach_tooltip(op_order, TOOLTIP_ORDER)

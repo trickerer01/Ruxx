@@ -62,6 +62,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.lower_bound = 0
         self.upper_bound = 0
         self.maxthreads_items = 1
+        self.include_parchi = False
         self.skip_images = False
         self.skip_videos = False
         self.prefer_webm = False
@@ -79,7 +80,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.success_count = 0
         self.fail_count = 0
         self.failed_items = []  # type: List[str]
-        self.total_count = 0  # type: Union[int, BeautifulSoup]
+        self.total_count = 0  # type: int
         self.total_count_old = 0
         self.processed_count = 0
         self.total_pages = 0
@@ -88,6 +89,10 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.items_raw_all_dict = {}  # type: Dict[int, List[str]]
         self.item_info_dict = {}  # type: Dict[str, ItemInfo]
         self.neg_and_groups = []  # type: List[List[Pattern[str]]]
+        self.parents_prev_all = []  # type: List[str]
+        self.parents_prev = []  # type: List[str]
+        self.parents = []  # type: List[str]
+        self.children_all = []  # type: List[str]
         # resilts_all
         self.total_count_all = 0
         self.success_count_all = 0
@@ -143,7 +148,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def _form_item_string_manually(self) -> None:
+    def _form_item_string_manually(self, raw_html_page: BeautifulSoup) -> None:
         ...
 
     @abstractmethod
@@ -179,7 +184,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def get_items_query_size(self, url: str, tries: Optional[int] = None) -> Union[int, BeautifulSoup]:
+    def get_items_query_size_or_html(self, url: str, tries: Optional[int] = None) -> Union[int, BeautifulSoup]:
         ...
 
     @abstractmethod
@@ -220,6 +225,29 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     def get_tags_count(self, offset=0) -> int:
         return len(self.tags_str_arr[offset].split(self.get_tags_concat_char()))
+
+    def _register_parent_post(self, item_id: str) -> None:
+        if item_id not in self.parents_prev_all and item_id not in self.parents:
+            self.parents.append(item_id)
+
+    def _register_child_post(self, item_id: str) -> None:
+        if item_id not in self.children_all:
+            self.children_all.append(item_id)
+
+    def reset_after_task(self, task_num: int) -> None:
+        if __RUXX_DEBUG__:
+            trace(f'\ntask {task_num:d}:'
+                  f'\n total:  {self.total_count:d}'
+                  f'\n succed: {self.success_count:d}'
+                  f'\n failed: {self.fail_count:d}')
+        self.total_count_all += self.total_count
+        self.success_count_all += self.success_count
+        self.fail_count_all += self.fail_count
+        if task_num < self._tasks_count():
+            self.processed_count = 0
+            self.total_count = 0
+            self.success_count = 0
+            self.fail_count = 0
 
     def _try_append_extra_info(self, item_abbrname: str, maxlen: int) -> str:
         if not self.append_info:
@@ -665,7 +693,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         total_count_temp = self.total_count
 
-        for idx in reversed(range(len(self.items_raw_all))):
+        for idx in reversed(range(len(self.items_raw_all))):  # type: int
             self.catch_cancel_or_ctrl_c()
             h = str(self.items_raw_all[idx])
             is_vid = self._is_video(h)
@@ -686,7 +714,11 @@ class DownloaderBase(ThreadedHtmlWorker):
         total_count_temp = self.total_count
 
         curdirfiles = listdir(self.dest_base) if self.reverse_order else list(reversed(listdir(self.dest_base)))
-        for idx in reversed(range(len(self.items_raw_all))):
+        curdirfiles = [curfile for curfile in curdirfiles if path.isfile(f'{self.dest_base}{curfile}')]
+        if len(curdirfiles) == 0:
+            return
+
+        for idx in reversed(range(len(self.items_raw_all))):  # type: int
             self.catch_cancel_or_ctrl_c()
             h = self._local_addr_from_string(str(self.items_raw_all[idx]))
             item_id = self._extract_id(h)
@@ -711,7 +743,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         abbrp = self._get_module_abbr_p()
         total_count_old = len(self.items_raw_all)
         removed_count = 0
-        for idx in reversed(range(total_count_old)):
+        for idx in reversed(range(total_count_old)):  # type: int
             h = self._local_addr_from_string(str(self.items_raw_all[idx]))
             item_id = self._extract_id(h)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'
@@ -725,16 +757,42 @@ class DownloaderBase(ThreadedHtmlWorker):
         if removed_count > 0:
             trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
 
-    def _process_tags(self, tag_str: str) -> None:
+    def _filter_parents_and_children(self) -> None:
+        if len(self.parents_prev) > 0:
+            return
+
+        trace('Filtering out parent and child posts for later...')
+
+        parchi_list = list(unique_everseen(self.parents_prev_all + self.parents + self.children_all))  # type: List[str]
+        if len(parchi_list) == 0:
+            return
+
+        abbrp = self._get_module_abbr_p()
+        total_count_old = len(self.items_raw_all)
+        removed_count = 0
+        for idx in reversed(range(total_count_old)):  # type: int
+            h = self._local_addr_from_string(str(self.items_raw_all[idx]))
+            item_id = self._extract_id(h)
+            if item_id in parchi_list:
+                idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'
+                del self.item_info_dict[idstring]
+                del self.items_raw_all[idx]
+                removed_count += 1
+
+        if removed_count > 0:
+            trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
+
+    def _process_tags(self, tag_str: str, task_num: int) -> None:
         self.current_state = DownloaderStates.STATE_SCANNING_PAGES1
         self.url = self.form_tags_search_address(tag_str)
-        self.total_count = self.get_items_query_size(self.url)
 
         page_size = self._get_items_per_page()
+        total_count_or_html = self.get_items_query_size_or_html(self.url)
 
-        if isinstance(self.total_count, int):
+        if isinstance(total_count_or_html, int):
+            self.total_count = total_count_or_html
             self.minpage = 0
-            self.maxpage = (self.total_count // page_size + (1 if self.total_count % page_size != 0 else 0)) - 1
+            self.maxpage = (self.total_count - 1) // page_size  # (self.total_count + page_size - 1) // page_size - 1
 
             if self.total_count <= 0:
                 trace('Nothing to process: query result is empty')
@@ -761,9 +819,9 @@ class DownloaderBase(ThreadedHtmlWorker):
                 return self._get_page_boundary(di, ft)
 
             for fstate, direction, ftype in pageargs:
-                if fstate in (DownloaderStates.STATE_SCANNING_PAGES2, DownloaderStates.STATE_SCANNING_PAGES4):
+                if direction is True:
                     self.minpage = page_filter(fstate, direction, ftype)
-                elif fstate in (DownloaderStates.STATE_SCANNING_PAGES3, DownloaderStates.STATE_SCANNING_PAGES5):
+                else:
                     self.maxpage = page_filter(fstate, direction, ftype)
                 self.total_pages = self._num_pages()
 
@@ -822,7 +880,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             self.items_raw_all = [None] * self.total_count  # type: List[Optional[str]]
             cur_idx = 0
             for k in range(self.minpage, self.maxpage + 1):
-                cur_l = self.items_raw_all_dict[k]
+                cur_l = self.items_raw_all_dict.get(k)
+                assert cur_l is not None
                 for i in range(len(cur_l)):
                     self.items_raw_all[cur_idx] = cur_l[i]
                     cur_idx += 1
@@ -835,7 +894,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             if __RUXX_DEBUG__:
                 trace('Warning (W1): A single match redirect was hit, forming item string manually')
 
-            self._form_item_string_manually()
+            self._form_item_string_manually(total_count_or_html)
 
         def after_filter(sleep_time: float = 0.2) -> None:
             self.total_count = len(self.items_raw_all)
@@ -859,6 +918,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self._extract_all_infos()
 
         apply_filter(DownloaderStates.STATE_FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups)
+        apply_filter(DownloaderStates.STATE_FILTERING_ITEMS4, self._filter_parents_and_children)
 
         if self.total_count <= 0:
             trace('\nNothing to process: queue is empty')
@@ -918,6 +978,19 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         trace(f'\nAll {"skipped" if self.download_mode == DownloadModes.DOWNLOAD_SKIP else "processed"} ({self.total_count:d} items)...')
 
+        self.reset_after_task(task_num)
+
+    def _process_parents(self, task_num: int) -> None:
+        if len(self.parents) > 0:
+            trace(f'\nProcessing {len(self.parents)} parent(s) & children...\n')
+            self.parents_prev = self.parents.copy()
+            self.parents_prev_all.extend(self.parents_prev)
+            self.parents.clear()
+            for parent in self.parents_prev:
+                ives = self._get_idval_equal_seaparator()
+                self._process_tags(f'parent{ives}{parent}', task_num)
+            self.parents_prev.clear()
+
     def _parse_tags(self, tags_base_arr: Iterable[str]) -> None:
         cc = self.get_tags_concat_char()
         sc = self._get_idval_equal_seaparator()
@@ -948,7 +1021,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         for i in range(self._tasks_count()):
             trace(f'\ntask {i + 1:d} in progress...\n')
             try:
-                self._process_tags(self.tags_str_arr[i])
+                self._process_tags(self.tags_str_arr[i], i + 1)
+                self._process_parents(i + 1)
                 trace(f'task {i + 1:d} completed...')
             except ThreadInterruptException:
                 trace(f'task {i + 1:d} aborted...')
@@ -956,20 +1030,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             except Exception:
                 trace(f'task {i + 1:d} failed...')
             finally:
-                if __RUXX_DEBUG__:
-                    trace(f'\ntask {i + 1:d}:'
-                          f'\n total:  {self.total_count:d}'
-                          f'\n succed: {self.success_count:d}'
-                          f'\n failed: {self.fail_count:d}')
                 trace('=' * LINE_BREAKS_AT)
-                self.total_count_all += self.total_count
-                self.success_count_all += self.success_count
-                self.fail_count_all += self.fail_count
-                if i + 1 < self._tasks_count():
-                    self.processed_count = 0
-                    self.total_count = 0
-                    self.success_count = 0
-                    self.fail_count = 0
         self.item_info_dict = {
             k: v for k, v in sorted(sorted(self.item_info_dict.items(), key=lambda item: item[0]), key=lambda item: int(item[1].id))
         }  # type: Dict[str, ItemInfo]
@@ -980,7 +1041,8 @@ class DownloaderBase(ThreadedHtmlWorker):
                 self._dump_all_sources()
             trace('=' * LINE_BREAKS_AT)
         total_files = min(self.success_count_all + self.fail_count_all, self.total_count_all)
-        trace(f'\n{self._tasks_count():d} tasks completed, {self.success_count_all:d} / {total_files:d} items succeded', False, True)
+        success_files = min(self.success_count_all, self.total_count_all - self.fail_count)
+        trace(f'\n{self._tasks_count():d} task(s) completed, {success_files:d} / {total_files:d} item(s) succeded', False, True)
         if len(self.failed_items) > 0:
             trace(f'{len(self.failed_items):d} failed items:')
             trace('\n'.join(self.failed_items))
@@ -1021,6 +1083,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.lower_bound = args.low or self.lower_bound
         self.upper_bound = args.high or self.upper_bound
         self.maxthreads_items = args.threads or self.maxthreads_items
+        self.include_parchi = args.include_parchi or self.include_parchi
         self.skip_images = args.skip_img or self.skip_images
         self.skip_videos = args.skip_vid or self.skip_videos
         self.prefer_webm = args.webm or self.prefer_webm
@@ -1035,14 +1098,20 @@ class DownloaderBase(ThreadedHtmlWorker):
         abbrp = self._get_module_abbr_p()
         for item in self.items_raw_all:
             item_info = self._extract_item_info(item)
+            if self.include_parchi is True:
+                if item_info.has_children == 'true':
+                    self._register_parent_post(item_info.id)
+                elif item_info.parent_id.isnumeric():
+                    self._register_parent_post(item_info.parent_id)
+                    self._register_child_post(item_info.id)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_info.id}'
             self.item_info_dict[idstring] = item_info
             # debug
-            for key in item_info.__slots__:
-                if key in ItemInfo.optional_slots:  # fields set later
-                    continue
-                if item_info.__getattribute__(key) == '':
-                    if __RUXX_DEBUG__:
+            if __RUXX_DEBUG__:
+                for key in item_info.__slots__:
+                    if key in ItemInfo.optional_slots:  # fields set later
+                        continue
+                    if item_info.__getattribute__(key) == '':
                         trace(f'Info: extract info {abbrp}{item_info.id}: not initialized field {key}!')
 
     def _dump_all_tags(self) -> None:

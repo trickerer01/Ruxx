@@ -19,6 +19,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 #### Filters
 - *Videos* - some websites serve videos in multiple formats, here you can select a prefered one. **Redundant since 01.05.2021 (RX internal changes)**. You may also exclude videos altogether
 - *Images* - some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you can also filter all the images out
+- *Parent posts / child posts* - this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX only
 - *Threading* - the number of threads to use for downloading. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
 - *Order* - the download queue is sorted by ID which directly correlates with upload time. `Oldest first` means ascending order. If you really care
 - *Search limits*
@@ -78,7 +79,7 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 - **ERROR**: if you see this the download process may fail, Ruxx can only retry the failed action, in most cases that's enough
 
 ### Technical info
-Ruxx is written is Python (3.7). Lines of code: 8000+. Executables are built using PyInstaller (4.2 for Windows, 3.6 for Linux)
+Ruxx is written is Python (3.7). Lines of code: 8100+. Executables are built using PyInstaller (4.2 for Windows, 3.6 for Linux)
 
 ### Support
 Did I help you? Maybe you wish to return the favor  

@@ -17,7 +17,7 @@ from app_help import (
     HELP_ARG_PREFER_WEBM, HELP_ARG_PREFER_LOWRES, HELP_ARG_LOWER_BOUND, HELP_ARG_UPPER_BOUND, HELP_ARG_MINDATE, HELP_ARG_MAXDATE,
     HELP_ARG_JOBS, HELP_ARG_PATH, HELP_ARG_PROXY, HELP_ARG_NOPROXY, HELP_ARG_PROXYNODOWN, HELP_ARG_PROXYSOCKS, HELP_ARG_HEADERS,
     HELP_ARG_COOKIES, HELP_ARG_PREFIX, HELP_ARG_DUMP_TAGS, HELP_ARG_DUMP_SOURCES, HELP_ARG_APPEND_SOURCE_AND_TAGS, HELP_ARG_TAGS,
-    HELP_ARG_WARN_NON_EMPTY_FOLDER,
+    HELP_ARG_WARN_NON_EMPTY_FOLDER, HELP_ARG_INCLUDE_PARCHI,
 )
 from app_validators import (
     valid_int, valid_thread_count, valid_date, valid_path, valid_json, valid_download_mode, valid_proxy, valid_positive_int
@@ -35,6 +35,7 @@ def prepare_arglist(args: List[str]) -> Namespace:
 
     parser.add_argument('-module', default=MODULE_ABBR_RX, help=HELP_ARG_MODULE, choices=(MODULE_ABBR_RX, MODULE_ABBR_RN))
     parser.add_argument('-rev', action=ACTION_STORE_TRUE, help=HELP_ARG_REVERSE)
+    parser.add_argument('-include_parchi', action=ACTION_STORE_TRUE, help=HELP_ARG_INCLUDE_PARCHI)
     parser.add_argument('-skip_img', action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_IMAGES)
     parser.add_argument('-skip_vid', action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_VIDEOS)
     parser.add_argument('-webm', action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_WEBM)

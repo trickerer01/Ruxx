@@ -112,7 +112,7 @@ class ConnTests(TestCase):
         with DownloaderRx() as dwn:
             dwn.parse_args(arglist)
             dwn.url = dwn.form_tags_search_address(dwn.tags_str_arr[0])
-            dwn.total_count = dwn.get_items_query_size(dwn.url)
+            dwn.total_count = dwn.get_items_query_size_or_html(dwn.url)
             self.assertEqual(dwn.total_count, 1)
         print('test_connect_rx1 passed')
 

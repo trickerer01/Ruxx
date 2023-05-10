@@ -15,15 +15,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #     return n if (p == 1) else (n * pow_b(n, p - 1)) if (p & 1) else (pow_b(n * n, p // 2))
 
 from enum import Enum, IntEnum, auto, unique
-from typing import Dict, Tuple, Optional
+from typing import Dict, Tuple, Optional, Set
 
 
 class ItemInfo:
     """
-    ItemInfo
     Used to store universal info for processed item
     """
-    __slots__ = ('id', 'height', 'width', 'tags', 'ext', 'source', 'score')
+    __slots__ = ('id', 'height', 'width', 'tags', 'ext', 'source', 'score', 'has_children', 'parent_id')
     optional_slots = __slots__[__slots__.index('source'):]
 
     def __init__(self) -> None:
@@ -34,6 +33,8 @@ class ItemInfo:
         self.ext = ''
         self.source = ''
         self.score = ''
+        self.has_children = ''
+        self.parent_id = ''
 
 
 class PageCheck:
@@ -112,7 +113,7 @@ class DownloadModes(IntEnum):
 
 
 DMODE_DEFAULT = DownloadModes.DOWNLOAD_FULL
-DMODE_CHOICES = {dm.value for dm in DownloadModes.__members__.values()}
+DMODE_CHOICES = {dm.value for dm in DownloadModes.__members__.values()}  # type: Set[int]
 
 STATE_WORK_START = DownloaderStates.STATE_SCANNING_PAGES1
 

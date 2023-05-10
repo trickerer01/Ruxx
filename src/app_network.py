@@ -119,7 +119,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
         touch_mode = mode == DownloadModes.DOWNLOAD_TOUCH
 
         result = FileDownloadResult()
-        result.result_str = f'[{current_process().getName()}]{" <touch>" if touch_mode else ""} {item_id}({ext_char}).. '
+        result.result_str = f'[{current_process().getName()}]{" <touch>" if touch_mode else ""} {item_id}({ext_char})... '
 
         if touch_mode:
             with open(dest, 'wb'):

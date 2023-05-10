@@ -23,7 +23,7 @@ except Exception:
 # internal
 from app_defines import FMT_DATE_DEFAULT, THREADS_MAX_ITEMS, DownloadModes
 from app_gui_defines import (
-    SLASH, ProcModule, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_DOWNORDER
+    SLASH, ProcModule, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_DOWNORDER, OPTION_VALUES_PARCHI
 )
 from app_utils import normalize_path, unquote
 
@@ -31,7 +31,7 @@ __all__ = (
     'valid_int', 'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int',
     'StrValidator', 'IntValidator', 'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator', 'VALIDATORS_DICT',
     'ThreadsCBValidator', 'DownloadOrderCBValidator', 'PositiveIdValidator', 'IdValidator', 'JsonValidator', 'BoolStrValidator',
-    'ProxyValidator', 'DateValidator'
+    'ProxyValidator', 'DateValidator', 'ParchiCBValidator',
 )
 
 
@@ -161,6 +161,11 @@ class VideosCBValidator(IntValidator):
 class ImagesCBValidator(IntValidator):
     def __call__(self, val: int) -> bool:
         return 0 <= val <= len(OPTION_VALUES_IMAGES) - 1
+
+
+class ParchiCBValidator(IntValidator):
+    def __call__(self, val: int) -> bool:
+        return 0 <= val <= len(OPTION_VALUES_PARCHI) - 1
 
 
 class ThreadsCBValidator(IntValidator):
