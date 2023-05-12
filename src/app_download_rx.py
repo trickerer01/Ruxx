@@ -171,7 +171,7 @@ class DownloaderRx(DownloaderBase):
             # if name == 'source' and len(value) < 2:
             #     value = 'Unknown'
             if name in item_info.__slots__:
-                item_info.__setattr__(name, trim_quotes_trailing_spaces(value))
+                item_info.__setattr__(name, trim_quotes_trailing_spaces(value.replace('\n', ' ')))
 
         return item_info
 

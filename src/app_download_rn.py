@@ -170,7 +170,7 @@ class DownloaderRn(DownloaderBase):
                 name = 'ext'
                 value = value[value.rfind(' ') + 1:]
             if name in item_info.__slots__:
-                item_info.__setattr__(name, trim_quotes_trailing_spaces(value))
+                item_info.__setattr__(name, trim_quotes_trailing_spaces(value.replace('\n', ' ')))
 
         return item_info
 
