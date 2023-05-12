@@ -8,12 +8,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from datetime import datetime, date
-from platform import system as running_system
 from re import sub as re_sub
 from tkinter import messagebox
 
 # internal
-from app_defines import FMT_DATE_DEFAULT, PLATFORM_WINDOWS
+from app_defines import FMT_DATE_DEFAULT
 from app_gui_defines import SLASH
 
 __all__ = (
@@ -35,11 +34,6 @@ def as_date(date_s: str) -> date:
 
 def confirm_yes_no(title: str, msg: str) -> bool:
     return messagebox.askyesno(title, msg)
-
-
-# unused
-def endl() -> str:
-    return '\r\n' if running_system() == PLATFORM_WINDOWS else '\n'
 
 
 def trim_quotes_trailing_spaces(string: str) -> str:
