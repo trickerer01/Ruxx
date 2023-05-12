@@ -67,7 +67,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 - Very long search queries will cause website to return empty result. Generally this happens when trying to add too many `-tags` to narrow down the search. If resulting query is too long Ruxx will automatically create a specific [negative group](#tags-syntax) from excessive `-tags` and use them as an additional filter. The message will be given as follows: `<X> 'excluded tags combination' custom filter(s) parsed`
 
 #### Using from console
-It's possible to use Ruxx as a cmdline tool. In the main window you can find a `Cmd` section. It generates your cmdline arguments every time you make a change - use those arguments as an example  
+It's possible to use Ruxx as a cmdline tool. In main window you will find a `Cmd` section - it generates your cmdline arguments every time you make a change - use those arguments as an example. In console window you may need to escape some of them (path, 'or' groups, tags containing dot(s), etc.). Most arguments are optional though - the only ones required are `module` and `tags`  
 Invoke `Ruxx --help` for full help
 
 #### Logging
