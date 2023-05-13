@@ -183,9 +183,6 @@ class DownloaderRn(DownloaderBase):
     def get_tags_concat_char(self) -> str:
         return TAGS_CONCAT_CHAR_RN
 
-    def _can_have_or_groups(self) -> bool:
-        return True
-
     def _get_idval_equal_seaparator(self) -> str:
         return ID_VALUE_SEPARATOR_CHAR_RN
 

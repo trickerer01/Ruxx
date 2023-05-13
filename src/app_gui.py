@@ -765,8 +765,8 @@ def check_tags_direct() -> None:
     count = 0
     mydwn = None  # type: Union[None, DownloaderRn, DownloaderRx]
     res, tags_list = parse_tags(cur_tags)
-    if re_match(r'\([^: ]+:.*?', cur_tags):  # `or` group with sort tag
-        Logger.log('Error: cannot check tags with sort tag(s) within \'or\' group', False, False)
+    if re_match(r'\([^: ]+:.*?', cur_tags):  # `or` group with meta tag
+        Logger.log('Error: cannot check tags with meta tag(s) within \'or\' group', False, False)
     elif res:
         mydwn = get_new_proc_module()
         tags_str = mydwn.get_tags_concat_char().join(normalize_tag(tag) for tag in tags_list)

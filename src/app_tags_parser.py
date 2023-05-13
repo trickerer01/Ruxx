@@ -84,7 +84,7 @@ def split_or_group(gr: str) -> str:
     assert re_fullmatch(re_orgr_full(), gr)
     orgr_parts = gr[1:-1].split('~')
     for part in orgr_parts:
-        assert not re_fullmatch(r'^-[^:]+:.+?$', part)  # negative sort tags
+        assert not re_fullmatch(r'^-[^:]+:.+?$', part)  # negative meta tags
     return f'( {" ~ ".join(part for part in orgr_parts)} )'
 
 

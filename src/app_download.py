@@ -210,10 +210,6 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def _can_have_or_groups(self) -> bool:
-        ...
-
-    @abstractmethod
     def _get_idval_equal_seaparator(self) -> str:
         ...
 
@@ -963,14 +959,13 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _parse_tags(self, tags_base_arr: Iterable[str]) -> None:
         cc = self.get_tags_concat_char()
         sc = self._get_idval_equal_seaparator()
-        can_have_or_groups = self._can_have_or_groups()
         split_always = self._split_or_group_into_tasks_always()
         # join by ' ' is required by tests, although normally len(args.tags) == 1
         tags_list, self.neg_and_groups = extract_neg_and_groups(' '.join(tags_base_arr))
         for t in tags_list:
             if t.startswith('(') and t.endswith(')') and not (t.startswith(f'({cc}') and t.endswith(f'{cc})')):
                 thread_exit(f'Invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated with \'{cc}\'.')
-        self.tags_str_arr = split_tags_into_tasks(tags_list, cc, sc, can_have_or_groups, split_always)
+        self.tags_str_arr = split_tags_into_tasks(tags_list, cc, sc, split_always)
         self.orig_tasks_count = self._tasks_count()
 
     def _process_all_tags(self) -> None:
