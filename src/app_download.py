@@ -84,6 +84,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.total_count_old = 0
         self.processed_count = 0
         self.total_pages = 0
+        self.orig_tasks_count = 0
         self.current_state = DownloaderStates.STATE_IDLE
         self.items_raw_all = []  # type: List[Optional[str]]
         self.items_raw_all_dict = {}  # type: Dict[int, List[str]]
@@ -754,7 +755,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         if removed_count > 0:
             trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
 
-    def _process_tags(self, tag_str: str) -> None:
+    def _process_tags(self, tag_str: str, skip_custom_filters: bool) -> None:
         self.current_state = DownloaderStates.STATE_SCANNING_PAGES1
         self.url = self.form_tags_search_address(tag_str)
 
@@ -890,12 +891,15 @@ class DownloaderBase(ThreadedHtmlWorker):
         task_parents = set()  # type: Set[str]
         self._extract_all_infos(task_parents)
 
-        apply_filter(DownloaderStates.STATE_FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
+        if not skip_custom_filters:
+            apply_filter(DownloaderStates.STATE_FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
 
         if len(task_parents) > 0:
-            trace(f'\nInfo: parent post(s) detected! Scheduling {len(task_parents):d} extra task(s)!')
-            for parent in task_parents:
-                self.tags_str_arr.append(f'parent{self._get_idval_equal_seaparator()}{parent}')
+            trace(f'\nParent post(s) detected! Scheduling {len(task_parents):d} extra task(s)!')
+            for parent in sorted(task_parents):
+                new_task_str = f'parent{self._get_idval_equal_seaparator()}{parent}'
+                trace(f' {new_task_str}')
+                self.tags_str_arr.append(new_task_str)
             self.known_parents.update(task_parents)
 
         if self.total_count <= 0:
@@ -967,6 +971,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             if t.startswith('(') and t.endswith(')') and not (t.startswith(f'({cc}') and t.endswith(f'{cc})')):
                 thread_exit(f'Invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated with \'{cc}\'.')
         self.tags_str_arr = split_tags_into_tasks(tags_list, cc, sc, can_have_or_groups, split_always)
+        self.orig_tasks_count = self._tasks_count()
 
     def _process_all_tags(self) -> None:
         if self.warn_nonempty:
@@ -982,13 +987,15 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace(f'\n{"=" * LINE_BREAKS_AT}\n{APP_NAME} core ver {APP_VERSION}')
         trace(f'Starting {self._get_module_abbr()}_manual', False, True)
         trace(f'\n{len(self.neg_and_groups):d} \'excluded tags combination\' custom filter(s) parsed')
-        trace(f'{self._tasks_count():d} tasks scheduled:\n{NEWLINE.join(self.tags_str_arr)}\n\n{"=" * LINE_BREAKS_AT}')
+        trace(f'{self._tasks_count():d} task(s) scheduled:\n{NEWLINE.join(self.tags_str_arr)}\n\n{"=" * LINE_BREAKS_AT}')
         i = 0
-        while i < len(self.tags_str_arr):  # this container may get extended during processing
+        while i < self._tasks_count():
             i += 1
-            trace(f'\ntask {i:d} in progress...\n')
+            cut_task_tags = self.tags_str_arr[i - 1]
+            is_extra = i > self.orig_tasks_count
+            trace(f'\n{f"[extra {i - self.orig_tasks_count:d}] " if is_extra else ""}task {i:d} in progress...\n{cut_task_tags}\n')
             try:
-                self._process_tags(self.tags_str_arr[i - 1])
+                self._process_tags(cut_task_tags, is_extra)
                 trace(f'task {i:d} completed...')
             except ThreadInterruptException:
                 trace(f'task {i:d} aborted...')
@@ -996,8 +1003,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             except Exception:
                 trace(f'task {i:d} failed...')
             finally:
-                trace('=' * LINE_BREAKS_AT)
                 self._reset_after_task(i)
+                trace('=' * LINE_BREAKS_AT)
         self.item_info_dict = {
             k: v for k, v in sorted(sorted(self.item_info_dict.items(), key=lambda item: item[0]), key=lambda item: int(item[1].id))
         }  # type: Dict[str, ItemInfo]
