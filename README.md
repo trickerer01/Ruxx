@@ -58,7 +58,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 1. `OR` groups
 - Ruxx syntax for `OR` is simplified compared to what you would normally use for RX: `(tag1~tag2~...~tagN)` instead of `( tag1 ~ tag2 ~ ... ~ tagN )`
 - Ruxx allows using `OR` groups for RN too
-- Although using sort tags in `OR` groups is broken currently `(id:=X~score:=Y)`, Ruxx will circumvent this problem and process them properly
+- Although using meta tags in `OR` groups is broken currently `(id:=X~score:=Y)`, Ruxx will circumvent this problem and process them properly
 2. Special tag types
 - Negative group, syntax: `-(tag1,tag2,...,tagN)`. Ruxx allows you to filter tag combinations (content where all tags in the group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for 'any symbol' and 'any number of any symbols' repectively. You can also use pipe symbol `|` for direct regex `or` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regexes `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
     - Important note: unlike normal `-tags`, negative group will not check tag aliases
