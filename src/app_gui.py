@@ -97,12 +97,14 @@ def toggle_console() -> None:
     console_shown = not console_shown
 
 
-def ensure_compatibility() -> None:
+def ensure_compatibility(is_gui: bool) -> None:
     assert sys.version_info >= (3, 7), 'Minimum python version required is 3.7!'
-    _sys = running_system()
-    if _sys not in SUPPORTED_PLATFORMS:
-        messagebox.showinfo('', f'Unsupported OS \'{_sys}\'')
-        # print(f'Unsupported OS {_sys}')
+    mysystem = running_system()
+    if mysystem not in SUPPORTED_PLATFORMS:
+        if is_gui:
+            messagebox.showinfo('', f'Unsupported OS \'{mysystem}\'')
+        else:
+            Logger.log(f'Unsupported OS \'{mysystem}\'', False, False)
         exit(-1)
 
 
@@ -1213,10 +1215,11 @@ def dwnm() -> Union[DownloaderRn, DownloaderRx]:
 #########################################
 
 if __name__ == '__main__':
-    ensure_compatibility()
+    running_in_gui = len(argv) < 2
+    Logger.init(not running_in_gui)
+    ensure_compatibility(running_in_gui)
 
-    if len(argv) >= 2:
-        Logger.init(True)
+    if not running_in_gui:
         current_process().killed = False
         arglist = prepare_arglist(argv[1:])
         set_proc_module(PROC_MODULES_BY_ABBR[arglist.module])
@@ -1239,7 +1242,6 @@ if __name__ == '__main__':
                     ctypes.windll.user32.GetSystemMenu(ctypes.windll.kernel32.GetConsoleWindow(), 0), 0xF060, ctypes.c_ulong(0)
                 )
 
-        Logger.init(False)
         init_gui()
 
     sys.exit(0)

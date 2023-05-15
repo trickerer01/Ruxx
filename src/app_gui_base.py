@@ -13,6 +13,7 @@ from base64 import b64decode
 from datetime import datetime
 from json import dumps as json_dumps, loads as json_loads
 from os import curdir, path
+from platform import system as running_system
 from re import search as re_search, findall as re_findall
 from tkinter import (
     Menu, Toplevel, messagebox, ttk, Text, Scrollbar, StringVar, Button, Entry, Widget, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT,
@@ -21,7 +22,7 @@ from tkinter import (
 from typing import Optional, Callable, List, Union, Dict
 
 # internal
-from app_defines import PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX
+from app_defines import PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_LINUX
 from app_file_sorter import FileTypeFilter
 from app_gui_defines import (
     BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, Options, STATE_NORMAL,
@@ -36,7 +37,7 @@ from app_gui_defines import (
 from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME
 from app_tooltips import WidgetToolTip
 from app_utils import normalize_path
-from app_validators import valid_proxy, valid_int, valid_positive_int
+from app_validators import valid_proxy
 
 __all__ = (
     'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'LogWindow',
@@ -55,8 +56,8 @@ window_hcookies = None  # type: Optional[HeadersAndCookiesWindow]
 # counters
 c_menu = None  # type: Optional[BaseMenu]
 c_submenu = None  # type: Optional[BaseMenu]
-int_vars = {}  # type: Dict[str, IntVar]
-string_vars = {}  # type: Dict[str, StringVar]
+int_vars = dict()  # type: Dict[str, IntVar]
+string_vars = dict()  # type: Dict[str, StringVar]
 # end globals
 
 # loaded
@@ -852,8 +853,6 @@ def create_base_window_widgets() -> None:
     rootm().iconphoto(True, get_icon(Icons.ICON_RUXX))
 
     # validators
-    valid_integer = rootm().register(lambda x: len(str(x)) == 0 or valid_int(x))
-    valid_uinteger = rootm().register(lambda x: len(str(x)) == 0 or valid_positive_int(x))
     string_vars[CVARS.get(Options.OPT_LASTPATH)] = StringVar(rootm(), '', CVARS.get(Options.OPT_LASTPATH))
 
     # Options #
@@ -915,16 +914,14 @@ def create_base_window_widgets() -> None:
     #  Date min
     op_dateaf = Label(opframe_slim, text='Date min:')
     op_dateaf.pack(padx=(0, 0), pady=3, expand=YES, side=LEFT, anchor=E)
-    op_dateaf_t = Entry(opframe_slim, width=13,  # validate='all', validatecommand=(valid_date, '%P'),
-                        textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEAFTER)))
+    op_dateaf_t = Entry(opframe_slim, width=13, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEAFTER)))
     register_global(Globals.GOBJECT_FIELD_DATEAFTER, op_dateaf_t)
     op_dateaf_t.insert(0, DATE_MIN_DEFAULT_REV)
     op_dateaf_t.pack(padx=(0, 0), pady=3, expand=NO, side=LEFT)
     #  Date max
     op_datebe = Label(opframe_slim, text='Date max:')
     op_datebe.pack(padx=(8, 0), pady=3, expand=YES, side=LEFT, anchor=E)
-    op_datebe_t = Entry(opframe_slim, width=13,  # validate='all', validatecommand=(valid_date, '%P'),
-                        textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEBEFORE)))
+    op_datebe_t = Entry(opframe_slim, width=13, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEBEFORE)))
     register_global(Globals.GOBJECT_FIELD_DATEBEFORE, op_datebe_t)
     op_datebe_t.insert(0, datetime.today().strftime(FMT_DATE))
     op_datebe_t.pack(padx=(0, 0), pady=3, expand=NO, side=LEFT)
@@ -933,7 +930,7 @@ def create_base_window_widgets() -> None:
     #  ID min
     op_idaf = Label(opframe_slim, text='ID min:')
     op_idaf.pack(padx=(8, 0), pady=3, expand=YES, side=LEFT, anchor=E)
-    op_idaf_t = Entry(opframe_slim, width=18, validate='key', validatecommand=(valid_uinteger, '%S'),
+    op_idaf_t = Entry(opframe_slim, width=12 if running_system() == PLATFORM_LINUX else 18,
                       textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_IDMIN)))
     register_global(Globals.GOBJECT_FIELD_IDMIN, op_idaf_t)
     op_idaf_t.insert(0, '0')
@@ -941,7 +938,7 @@ def create_base_window_widgets() -> None:
     #  ID max
     op_idbe = Label(opframe_slim, text='ID max:')
     op_idbe.pack(padx=(8, 0), pady=3, expand=YES, side=LEFT, anchor=E)
-    op_idbe_t = Entry(opframe_slim, width=18, validate='key', validatecommand=(valid_integer, '%S'),
+    op_idbe_t = Entry(opframe_slim, width=12 if running_system() == PLATFORM_LINUX else 18,
                       textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_IDMAX)))
     register_global(Globals.GOBJECT_FIELD_IDMAX, op_idbe_t)
     op_idbe_t.insert(0, '0')

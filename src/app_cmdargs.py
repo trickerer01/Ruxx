@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from argparse import ArgumentParser, Namespace, ONE_OR_MORE
+from os import path
 from typing import List
 
 # internal
@@ -45,7 +46,7 @@ def prepare_arglist(args: List[str]) -> Namespace:
     parser.add_argument('-mindate', metavar='#YYYY-MM-DD', help=HELP_ARG_MINDATE, type=valid_date)
     parser.add_argument('-maxdate', metavar='#YYYY-MM-DD', help=HELP_ARG_MAXDATE, type=valid_date)
     parser.add_argument('-threads', metavar='1..8', help=HELP_ARG_JOBS, type=valid_thread_count)
-    parser.add_argument('-path', metavar='#PATH', help=HELP_ARG_PATH, type=valid_path)
+    parser.add_argument('-path', metavar='#PATH', default=valid_path(path.curdir), help=HELP_ARG_PATH, type=valid_path)
     parser.add_argument('-proxy', metavar='#X.X.X.X:Y', help=HELP_ARG_PROXY, type=valid_proxy)
     parser.add_argument('-noproxy', action=ACTION_STORE_TRUE, help=HELP_ARG_NOPROXY)
     parser.add_argument('-proxynodown', action=ACTION_STORE_TRUE, help=HELP_ARG_PROXYNODOWN)
