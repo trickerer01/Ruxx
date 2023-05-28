@@ -1,4 +1,4 @@
 beautifulsoup4>=4.9.3,<4.10
 iteration-utilities==0.11.0
 PySocks==1.7.1
-requests>=2.26.0,<2.27
+requests>=2.31.0
