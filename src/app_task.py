@@ -21,12 +21,13 @@ __all__ = ('split_tags_into_tasks', 'extract_neg_and_groups')
 
 def split_tags_into_tasks(tag_groups_arr: List[str], cc: str, sc: str, split_always: bool) -> List[str]:
     """
-    Converts natively unprocessible tags into processible tags combinations\n
+    Converts natively not processible tags into processible tags combinations\n
+    Ex. ['(+a+~+b+)', '(+c+~+d+)', 'x', '-y'] => ['a+c+x+-y', 'a+d+x+-y', 'b+c+x+-y', 'b+d+x+-y']\n
     :param tag_groups_arr: list of tags ex. ['a', 'b', '(+c+~+d+)']
-    :param cc: tags concatenation char (ex. a+b => cc = '+')
-    :param sc: meta tag type-value separator char (ex. id:123 => sc = ':')
+    :param cc: tags concatenation char (ex. 'a+b' => cc = '+')
+    :param sc: meta tag type-value separator char (ex. 'id:123' => sc = ':')
     :param split_always: unconditionally separate all 'or' groups
-    :return: list of fully formed tags directly injectable into request query template (len = 1 ... max_group_len**2)
+    :return: list of fully formed tags directly injectable into request query template, len is up to max_or_group_len**2
     """
     new_tags_str_arr = []  # type: List[str]
     or_tags_to_append = []  # type: List[List[str]]
@@ -51,7 +52,6 @@ def split_tags_into_tasks(tag_groups_arr: List[str], cc: str, sc: str, split_alw
     if len(or_tags_to_append) > 0:
         if has_negative and len(new_tags_str_arr) == 0:
             thread_exit('Error: -tag in \'or\' group found, but no +tags! Cannot search by only -tags', -701)
-        # a~b, c~d, x, -y => [a+c+x-y, a+d+a-y, b+c+x-y, b+d+x-y]
         tags_multi_list = [f'{cc.join(new_tags_str_arr)}' if len(new_tags_str_arr) > 0 else '']
         for or_tags_list in reversed(or_tags_to_append):
             toapp = []  # type: List[str]
@@ -69,9 +69,9 @@ def split_tags_into_tasks(tag_groups_arr: List[str], cc: str, sc: str, split_alw
 def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[str]]]]:
     """
     Separates tags string into fully formed tags and negative tag patterns\n
-    Ex. 'a b (+c+~+d+) -(ffgg)' => (['a', 'b' , '(+c+~+d+)'], [[re_compile(r'^ff$'), re_compile(r'^gg$')]])\n
+    Ex. 'a b (+c+~+d+) -(ff,gg)' => (['a', 'b' , '(+c+~+d+)'], [[re_compile(r'^ff$'), re_compile(r'^gg$')]])\n
     :param tags_str: provided string of tags separated by space
-    :return: 1) list of fully-formed tags without negative groups, 2) a number of tag pattern lists
+    :return: 1) list of fully-formed tags without negative groups, 2) zero or more tag pattern lists
     """
     def form_plist(neg_tags_group: str) -> Optional[List[Pattern]]:
         def esc(s: str) -> str:
@@ -92,13 +92,12 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
             parsed.append(plist)
             del tags_list[tgi]
 
-    # check rn 'or' groups (always split) otherwise they will count as a single tag (can be extremely long)
     total_len = len(tags_list) - 1  # concat chars count
     for t in tags_list:  # + length of each tag
         total_len += max(len(ogt) for ogt in t.split('+~+')) if t.startswith('(+') and ProcModule.is_rn() else len(t)
     max_string_len = TAGS_STRING_LENGTH_MAX_RX if ProcModule.is_rx() else TAGS_STRING_LENGTH_MAX_RN
     if total_len > max_string_len:
-        trace('Warning (W2): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
+        trace('Warning (W1): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
         neg_tags_list = []  # type: List[str]
         # first pass: wildcarded negative tags - chance to ruin alias is lower (rx)
         # second pass: any negative tags
