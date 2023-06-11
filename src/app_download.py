@@ -26,7 +26,7 @@ from iteration_utilities import unique_everseen
 # internal
 from app_defines import (
     ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, PageFilterType, ItemInfo, DATE_MIN_DEFAULT,
-    CONNECT_DELAY_PAGE, CONNECT_RETRIES_ITEM, LINE_BREAKS_AT, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE_DEFAULT,
+    CONNECT_DELAY_PAGE, CONNECT_RETRIES_ITEM, BR, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE_DEFAULT,
 )
 from app_gui_defines import UNDERSCORE, NEWLINE
 from app_network import ThreadedHtmlWorker, thread_exit, DownloadInterruptException
@@ -71,7 +71,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.date_max = datetime.today().strftime(FMT_DATE_DEFAULT)
         self.dest_base = normalize_path(path.abspath(curdir))
         self.warn_nonempty = False
-        self.tags_str_arr = []  # type: List[str]
+        self.tags_str_arr = list()  # type: List[str]
 
         # results
         self.url = ''
@@ -79,17 +79,17 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.maxpage = 0
         self.success_count = 0
         self.fail_count = 0
-        self.failed_items = []  # type: List[str]
-        self.total_count = 0  # type: int
+        self.failed_items = list()  # type: List[str]
+        self.total_count = 0
         self.total_count_old = 0
         self.processed_count = 0
         self.total_pages = 0
         self.orig_tasks_count = 0
         self.current_state = DownloaderStates.STATE_IDLE
-        self.items_raw_all = []  # type: List[Optional[str]]
-        self.items_raw_all_dict = {}  # type: Dict[int, List[str]]
-        self.item_info_dict = {}  # type: Dict[str, ItemInfo]
-        self.neg_and_groups = []  # type: List[List[Pattern[str]]]
+        self.items_raw_all = list()  # type: List[str]
+        self.items_raw_all_dict = dict()  # type: Dict[int, List[str]]
+        self.item_info_dict = dict()  # type: Dict[str, ItemInfo]
+        self.neg_and_groups = list()  # type: List[List[Pattern[str]]]
         self.known_parents = set()  # type: Set[str]
         # resilts_all
         self.total_count_all = 0
@@ -108,9 +108,6 @@ class DownloaderBase(ThreadedHtmlWorker):
     def __cleanup(self) -> None:
         # self.current_state = DownloaderStates.STATE_IDLE
         self.raw_html_cache.clear()
-        if self.active_pool:
-            self.active_pool.terminate()
-            self.active_pool = None  # type: Optional[ThreadPool]
         if self.session:
             self.session.close()
             self.session = None
@@ -226,10 +223,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     def _reset_after_task(self, task_num: int) -> None:
         if __RUXX_DEBUG__:
-            trace(f'\ntask {task_num:d}:'
-                  f'\n total:  {self.total_count:d}'
-                  f'\n succed: {self.success_count:d}'
-                  f'\n failed: {self.fail_count:d}')
+            trace(f'\ntask {task_num:d}:\n total:  {self.total_count:d}\n succed: {self.success_count:d}\n failed: {self.fail_count:d}')
         self.total_count_all += self.total_count
         self.success_count_all += self.success_count
         self.fail_count_all += self.fail_count
@@ -519,7 +513,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         trace(f'mindate at {self.date_min}, lower bound at {self.lower_bound:d}, filtering')
         items_tofilter = self.items_raw_all[-(min(len(self.items_raw_all), self._get_items_per_page() * 2)):]
-        self.items_raw_all = self.items_raw_all[:-len(items_tofilter)]  # type: List[Optional[str]]
+        self.items_raw_all = self.items_raw_all[:-len(items_tofilter)]  # type: List[str]
         trace(f'Items to potentially remove: {len(items_tofilter):d}')
 
         divider = 1
@@ -603,7 +597,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         trace(f'maxdate at {self.date_max}, upper bound at {self.upper_bound:d}, filtering')
         items_tofilter = self.items_raw_all[:(min(len(self.items_raw_all), self._get_items_per_page() * 2))]
-        self.items_raw_all = self.items_raw_all[len(items_tofilter):]  # type: List[Optional[str]]
+        self.items_raw_all = self.items_raw_all[len(items_tofilter):]  # type: List[str]
 
         trace(f'Items to potentially remove: {len(items_tofilter):d}')
 
@@ -647,7 +641,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             if dofinal is True:
                 items_tofilter = items_tofilter[cur_index:]
                 trace(f'Items after filter: {len(items_tofilter):d}')
-                self.items_raw_all = items_tofilter + self.items_raw_all  # type: List[Optional[str]]
+                self.items_raw_all = items_tofilter + self.items_raw_all  # type: List[str]
                 break
 
             h = self._local_addr_from_string(str(items_tofilter[cur_index]))
@@ -810,34 +804,19 @@ class DownloaderBase(ThreadedHtmlWorker):
                 arr_temp = list()
                 for n in range(self.minpage, self.maxpage + 1):
                     c_page += 1
-                    arr_temp.append([n, c_page, self.maxpage])
+                    arr_temp.append((n, c_page, self.maxpage))
 
-                # BUG: pool.map_async from multiprocessing.dummy causes random
-                # Runtime Error: dict changed size during iteration even though temp dict is only passed to it
-                # So using this monstrosity
                 ress = list()
-                self.active_pool = Pool(min(10, max(2, max(self.maxthreads_items // 2, self._num_pages() // 100))))
-                for larr in arr_temp:
-                    ress.append(self.active_pool.apply_async(self._get_page_items, args=larr))
-                self.active_pool.close()
+                with Pool(max(2, self.maxthreads_items // 2)) as active_pool:  # type: ThreadPool
+                    for larr in arr_temp:
+                        ress.append(active_pool.apply_async(self._get_page_items, args=larr))
+                    active_pool.close()
 
-                while len(ress) > 0:
-                    self.catch_cancel_or_ctrl_c()
-                    while len(ress) > 0 and ress[0].ready():
-                        ress.pop(0)
-                    thread_sleep(0.2)
-
-                self.active_pool.terminate()
-                self.active_pool = None  # type: Optional[ThreadPool]
-
-                # pool = Pool(maxthreads_items)
-                # res = pool.map_async(self.GetPageItems_L, arr_temp, 1)  # max(((page_max - page_min) + 1) / 20, 1)
-                # pool.map_async(self.GetPageItems_L, arr_temp, max(((page_max - page_min) + 1) / 20, 1))
-                # pool.close()
-                # active_pool = pool
-                # res.get(0x7FFFFFFF)
-                # pool.join()
-                # active_pool = None
+                    while len(ress) > 0:
+                        self.catch_cancel_or_ctrl_c()
+                        while len(ress) > 0 and ress[0].ready():
+                            ress.pop(0)
+                        thread_sleep(0.2)
             else:
                 c_page = 0
                 for n in range(self.minpage, self.maxpage + 1):
@@ -846,7 +825,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                     self._get_page_items(n, c_page, self.maxpage)
 
             # move out async result into a linear array
-            self.items_raw_all = [None] * self.total_count  # type: List[Optional[str]]
+            self.items_raw_all = [''] * self.total_count
             cur_idx = 0
             for k in range(self.minpage, self.maxpage + 1):
                 cur_l = self.items_raw_all_dict.get(k)
@@ -855,9 +834,9 @@ class DownloaderBase(ThreadedHtmlWorker):
                     self.items_raw_all[cur_idx] = cur_l[i]
                     cur_idx += 1
 
-            self.items_raw_all_dict = dict()  # type: Dict[int, List[str]]
+            self.items_raw_all_dict.clear()
 
-            self.items_raw_all = list(unique_everseen(self.items_raw_all))  # type: List[Optional[str]]
+            self.items_raw_all = list(unique_everseen(self.items_raw_all))  # type: List[str]
         else:
             # we have been redirected to a page with our single result! compose item string manually
             if __RUXX_DEBUG__:
@@ -929,27 +908,17 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace(f'{self.total_count:d} item(s) scheduled, {self.maxthreads_items:d} thread(s) max\nWorking...\n')
 
         if self.maxthreads_items > 1 and len(self.items_raw_all) > 1:
-            # pool = Pool(self.maxthreads_items)
-            # pool.map_async(self._process_item, self.items_raw_all, max((len(self.items_raw_all) // self.maxthreads_items) // 100, 1))
-            # pool.close()
-            # self.active_pool = pool
-            # pool.join()
-            # pool.terminate()
-
             ress = list()
-            self.active_pool = Pool(self.maxthreads_items)
-            for iarr in self.items_raw_all:
-                ress.append(self.active_pool.apply_async(self._process_item, args=[str(iarr)]))
-            self.active_pool.close()
+            with Pool(self.maxthreads_items) as active_pool:  # type: ThreadPool
+                for iarr in self.items_raw_all:
+                    ress.append(active_pool.apply_async(self._process_item, args=[str(iarr)]))
+                active_pool.close()
 
-            while len(ress) > 0:
-                self.catch_cancel_or_ctrl_c()
-                while len(ress) > 0 and ress[0].ready():
-                    ress.pop(0)
-                thread_sleep(0.2)
-
-            self.active_pool.terminate()
-            self.active_pool = None  # type: Optional[ThreadPool]
+                while len(ress) > 0:
+                    self.catch_cancel_or_ctrl_c()
+                    while len(ress) > 0 and ress[0].ready():
+                        ress.pop(0)
+                    thread_sleep(0.2)
         else:
             for i in range(self.total_count):
                 self._process_item(self.items_raw_all[i])
@@ -978,11 +947,11 @@ class DownloaderBase(ThreadedHtmlWorker):
                 trace('Warning (W1): argument \'-warn_nonempty\' is ignored in non-GUI mode')
 
         if self.download_mode != DownloadModes.DOWNLOAD_FULL:
-            trace(f'{"=" * LINE_BREAKS_AT}\n\n(Emulation Mode)')
-        trace(f'\n{"=" * LINE_BREAKS_AT}\n{APP_NAME} core ver {APP_VERSION}')
+            trace(f'{BR}\n\n(Emulation Mode)')
+        trace(f'\n{BR}\n{APP_NAME} core ver {APP_VERSION}')
         trace(f'Starting {self._get_module_abbr()}_manual', False, True)
         trace(f'\n{len(self.neg_and_groups):d} \'excluded tags combination\' custom filter(s) parsed')
-        trace(f'{self._tasks_count():d} task(s) scheduled:\n{NEWLINE.join(self.tags_str_arr)}\n\n{"=" * LINE_BREAKS_AT}')
+        trace(f'{self._tasks_count():d} task(s) scheduled:\n{NEWLINE.join(self.tags_str_arr)}\n\n{BR}')
         i = 0
         while i < self._tasks_count():
             i += 1
@@ -999,7 +968,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 trace(f'task {i:d} failed...')
             finally:
                 self._reset_after_task(i)
-                trace('=' * LINE_BREAKS_AT)
+                trace(BR)
         self.item_info_dict = {
             k: v for k, v in sorted(sorted(self.item_info_dict.items(), key=lambda item: item[0]), key=lambda item: int(item[1].id))
         }  # type: Dict[str, ItemInfo]
@@ -1008,7 +977,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 self._dump_all_tags()
             if self.dump_source is True:
                 self._dump_all_sources()
-            trace('=' * LINE_BREAKS_AT)
+            trace(BR)
         total_files = min(self.success_count_all + self.fail_count_all, self.total_count_all)
         success_files = min(self.success_count_all, self.total_count_all - self.fail_count)
         trace(f'\n{self._tasks_count():d} task(s) completed, {success_files:d} / {total_files:d} item(s) succeded', False, True)
@@ -1029,9 +998,6 @@ class DownloaderBase(ThreadedHtmlWorker):
         except (KeyboardInterrupt, ThreadInterruptException):
             trace(f'\nInterrupted by {str(exc_info()[0])}!\n', True)
             self.my_root_thread.killed = True
-            if self.active_pool is not None:
-                self.active_pool.join()
-                trace('\nExiting gracefully\n', True)
         except Exception:
             trace(f'Unhandled {str(exc_info()[0])}: {str(exc_info()[1])}', True)
         finally:
@@ -1077,10 +1043,10 @@ class DownloaderBase(ThreadedHtmlWorker):
             # debug
             if __RUXX_DEBUG__:
                 for key in item_info.__slots__:
-                    if key in ItemInfo.optional_slots:  # fields set later
+                    if key in ItemInfo.optional_slots:
                         continue
                     if item_info.__getattribute__(key) == '':
-                        trace(f'Info: extract info {abbrp}{item_info.id}: not initialized field {key}!')
+                        trace(f'Info: extract info {abbrp}{item_info.id}: not initialized field \'{key}\'!')
 
     def _dump_all_tags(self) -> None:
         trace('\nSaving tags...')

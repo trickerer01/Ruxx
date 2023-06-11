@@ -11,7 +11,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from argparse import Namespace
 from multiprocessing.dummy import current_process
-from multiprocessing.pool import ThreadPool
 from os import path, stat, remove as remove_file
 from re import search as re_search
 from sys import exc_info
@@ -55,7 +54,6 @@ def thread_exit(err_str='', code=-1) -> None:
 class ThreadWorker:
     def __init__(self) -> None:
         self.my_root_thread = None  # type: Optional[Thread]
-        self.active_pool = None  # type: Optional[ThreadPool]
         self.item_lock = ThreadLock()
         self.items_all_lock = ThreadLock()
 
@@ -73,14 +71,14 @@ class ThreadWorker:
 class ThreadedHtmlWorker(ABC, ThreadWorker):
     def __init__(self) -> None:
         super().__init__()
-        self.raw_html_cache = {}  # type: Dict[str, bytes]
-        self.add_headers = {}  # type: Dict[str, str]
-        self.add_cookies = {}  # type: Dict[str, str]
+        self.raw_html_cache = dict()  # type: Dict[str, bytes]
+        self.add_headers = dict()  # type: Dict[str, str]
+        self.add_cookies = dict()  # type: Dict[str, str]
         self.ignore_proxy = False
         self.ignore_proxy_dwn = False
         self.socks = False
         self.proxies = None  # type: Optional[Dict[str, str]]
-        self.etags = {}  # type: Dict[str, str]
+        self.etags = dict()  # type: Dict[str, str]
         self.session = None  # type: Optional[Session]
 
     @abstractmethod

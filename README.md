@@ -43,7 +43,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Connection -> Ignore proxy** - this is just a switch to disable proxy temporarily without wiping it
 - **Actions -> Download** \<Ctrl+Shift+D> - same as download button
 - **Actions -> Check tags** \<Ctrl+Shift+C> - same as check tags button
-- **Tools -> Load from ID list** - Allows you to load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group expression, effectively allowing you to search for those ids. ~~**Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details**~~. UPD re-enabled since version `1.1.284` for both RX and RN using a workaround, but doesn't run in parallel so be aware of that
+- **Tools -> Load from ID list** - Allows you to load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group expression, effectively allowing you to search for those ids. ~~Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details.~~ Re-enabled since version `1.1.284` for both RX and RN using a workaround, but doesn't run in parallel so be aware of that
 - **Tools -> Un-tag files...** - renames selected Ruxx-downloaded media files, stripping file names of all extra info
 - **Tools -> Re-tag files...** - renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)
 - **Tools -> Sort files into subfolders...** - a set of tools to separate downloaded files if need be:
@@ -60,14 +60,14 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 - Ruxx allows using `OR` groups for RN too
 - Although using meta tags in `OR` groups is broken currently `(id:=X~score:=Y)`, Ruxx will circumvent this problem and process them properly
 2. Special tag types
-- Negative group, syntax: `-(tag1,tag2,...,tagN)`. Ruxx allows you to filter tag combinations (content where all tags in the group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for 'any symbol' and 'any number of any symbols' repectively. You can also use pipe symbol `|` for direct regex `or` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regexes `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
+- Negative group, syntax: `-(tag1,tag2,...,tagN)`. Ruxx can filter out tag combinations (content where all tags in group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for 'any symbol' and 'any number of any symbols' repectively. You can also use pipe symbol `|` for direct regex `or` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regexes `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
     - Important note: unlike normal `-tags`, negative group will not check tag aliases
 3. Tags number limits
 - Any valid search query requires at least one positive tag to search for. Search query cannot be formed using `-tags` only
 - Very long search queries will cause website to return empty result. Generally this happens when trying to add too many `-tags` to narrow down the search. If resulting query is too long Ruxx will automatically create a specific [negative group](#tags-syntax) from excessive `-tags` and use them as an additional filter. The message will be given as follows: `<X> 'excluded tags combination' custom filter(s) parsed`
 
 #### Using from console
-It's possible to use Ruxx as a cmdline tool. In main window you will find a `Cmd` section - it generates your cmdline arguments every time you make a change - use those arguments as an example. In console window you may need to escape some of them (path, 'or' groups, tags containing dot(s), etc.). Most arguments are optional though - the only ones required are `module` and `tags`  
+It is possible to use Ruxx as a cmdline tool. In main window you will find a `Cmd` section - it generates your cmdline arguments every time you make a change - use those arguments as an example. In console window you may need to escape some of them (path, 'or' groups, tags containing dot(s), etc.). Most arguments are optional though - the only ones required are `module` and `tags`  
 Invoke `Ruxx --help` for full help
 
 #### Logging
@@ -75,7 +75,7 @@ Ruxx will log most of its actions, which you can see in **Log** window
 If any problem occurs it will yield some info unless it's an unexpected fatal error. Ruxx is able to resolve most non-fatal networking errors and IO mishaps, including dropped searches (search overload), non-matching e-tags, file size mismatch, malformed packets, etc.
 - **W1**: a minor problem, more of the info
 - **W2**: a problem which is going to be fixed, but there is no guarantee it won't occur again
-- **W3**: a rather serious problem, Ruxx will attempt to fix it, but it may be not enough, may lead to an error down the line
+- **W3**: a rather serious problem, Ruxx will attempt to fix it, but it may be not enough, may lead to an error down the road
 - **ERROR**: if you see this the download process may fail, Ruxx can only retry the failed action, in most cases that's enough
 
 ### Technical info
