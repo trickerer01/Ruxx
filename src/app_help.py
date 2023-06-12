@@ -8,7 +8,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 from app_revision import APP_NAME, APP_VERSION, APP_REV_DATE, __RUXX_DEBUG__
 
-APP_AUTHOR = 'Dmitriy \'trickerer\' Komardin'
+APP_AUTHOR_NICKNAME = f'trickerer'
+APP_AUTHOR = f'Dmitriy \'{APP_AUTHOR_NICKNAME}\' Komardin'
+APP_ADDRESS = f'github.com/trickerer01/{APP_NAME}'
 APP_YEARS = '2020-2023'
 APP_BUILD_TYPE_STR = 'Debug' if __RUXX_DEBUG__ else 'Release'
 
@@ -64,7 +66,7 @@ HELP_TAGS_MSG_RN = (
     '\'tag=value\'      \tmeta tags (id<999999, score>=1337, etc.)\n'
 )
 ABOUT_MSG = (
-    f'{APP_NAME} version {APP_VERSION} ({APP_REV_DATE}) {APP_BUILD_TYPE_STR}\n© {APP_YEARS} {APP_AUTHOR} <https://github.com/trickerer01>'
+    f'{APP_NAME} version {APP_VERSION} ({APP_REV_DATE}) {APP_BUILD_TYPE_STR}\n© {APP_YEARS} {APP_AUTHOR} <{APP_ADDRESS}>'
 )
 # end help messages
 
