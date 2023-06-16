@@ -7,7 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from re import fullmatch as re_fullmatch, compile as re_compile
+from re import compile as re_compile
 from typing import Tuple, List, Pattern, Optional
 
 # internal
@@ -17,6 +17,8 @@ from app_network import thread_exit
 from app_logger import trace
 
 __all__ = ('split_tags_into_tasks', 'extract_neg_and_groups')
+
+re_negative_and_group = re_compile(r'^-\(([^,]+(?:,[^,]+)+)\)$')
 
 
 def split_tags_into_tasks(tag_groups_arr: List[str], cc: str, sc: str, split_always: bool) -> List[str]:
@@ -78,7 +80,7 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
             for c in '.[]()-+':
                 s = s.replace(c, f'\\{c}')
             return s.replace('?', '.').replace('*', '.*')
-        ngr = re_fullmatch(r'^-\(([^,]+(?:,[^,]+)+)\)$', neg_tags_group)
+        ngr = re_negative_and_group.fullmatch(neg_tags_group)
         return [re_compile(rf'^{esc(s)}$') for s in ngr.group(1).split(',')] if ngr else None
 
     parsed = []  # type: List[List[Pattern]]

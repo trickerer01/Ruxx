@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from base64 import b64decode
-from re import search as re_search, findall as re_findall
+from re import compile as re_compile
 from typing import Tuple, Optional, Pattern
 
 # requirements
@@ -23,13 +23,17 @@ from app_download import DownloaderBase
 from app_logger import trace
 from app_network import thread_exit
 from app_re import re_tags_to_process_rx, re_tags_exclude_rx
-from app_utils import trim_quotes_trailing_spaces
 
 __all__ = ('DownloaderRx',)
 
 SITENAME = b64decode(SITENAME_B_RX).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RX
 MAX_SEARCH_DEPTH = 200000 + ITEMS_PER_PAGE - 1  # set by site devs
+
+re_item_info_part_rx = re_compile(r'([\w5_]+=\"[^"]+\")[> ]')
+re_post_date_rx = re_compile(r'^\w{3} (\w{3}) (\d\d) \d{2}:\d{2}:\d{2} \+\d{4} (\d{4})$')
+re_orig_file_link = re_compile(r'file_url=\"([^"]+)\"')
+re_sample_file_link = re_compile(r'file_url=\"([^"]+)\"')
 
 
 class DownloaderRx(DownloaderBase):
@@ -96,7 +100,7 @@ class DownloaderRx(DownloaderBase):
         d_raw = raw[raw.find('created_at="') + len('created_at="'):]
         d_raw = d_raw[:d_raw.find('"')]
         # Mon Jan 06 21:51:58 +0000 2020
-        d_re_res = re_search(r'^\w{3} (\w{3}) (\d\d) \d{2}:\d{2}:\d{2} \+\d{4} (\d{4})$', d_raw)
+        d_re_res = re_post_date_rx.search(d_raw)
         if not d_re_res:
             thread_exit(f'Unable to extract post date from raw: {raw}', -446)
 
@@ -160,7 +164,7 @@ class DownloaderRx(DownloaderBase):
 
     def _extract_item_info(self, item: str) -> ItemInfo:
         item_info = ItemInfo()
-        all_parts = re_findall(r'([\w5_]+=\"[^"]+\")[> ]', item)
+        all_parts = re_item_info_part_rx.findall(item)
         for part in all_parts:
             name, value = tuple(str(part).split('=', 1))
             # special case: file_url -> extract ext
@@ -171,7 +175,7 @@ class DownloaderRx(DownloaderBase):
             # if name == 'source' and len(value) < 2:
             #     value = 'Unknown'
             if name in item_info.__slots__:
-                item_info.__setattr__(name, trim_quotes_trailing_spaces(value.replace('\n', ' ')))
+                item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
 
         return item_info
 
@@ -207,7 +211,7 @@ class DownloaderRx(DownloaderBase):
             self._inc_proc_count()
             return
 
-        orig_item = re_search(r'file_url=\"([^"]+)\"', h)
+        orig_item = re_orig_file_link.search(h)
 
         if self.add_filename_prefix is True:
             item_id = f'{FILE_NAME_PREFIX_RX}{item_id}'
@@ -231,7 +235,7 @@ class DownloaderRx(DownloaderBase):
 
     @staticmethod
     def extract_file_url(h: str) -> Tuple[str, str]:
-        file_re_res = re_search(r'file_url=\"([^"]+)\"', h)
+        file_re_res = re_orig_file_link.search(h)
         if file_re_res is None:
             return '', ''
         file_url = file_re_res.group(1)
@@ -240,7 +244,7 @@ class DownloaderRx(DownloaderBase):
 
     @staticmethod
     def extract_sample_url(h: str) -> Tuple[str, str]:
-        sample_re_res = re_search(r'sample_url=\"([^"]+)\"', h)
+        sample_re_res = re_sample_file_link.search(h)
         if sample_re_res is None:
             return '', ''
         file_url = sample_re_res.group(1)

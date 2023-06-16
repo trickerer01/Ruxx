@@ -7,7 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from re import compile as re_compile, sub as re_sub, fullmatch as re_fullmatch
+from re import compile as re_compile
 from typing import List, Tuple, Pattern
 
 # requirements
@@ -19,7 +19,8 @@ from app_gui_defines import ProcModule
 
 __all__ = ('prepare_tags_list',)
 
-r_comments = re_compile(r'^(?:--|//|#).*?$')
+re_comments = re_compile(r'^(?:--|//|#).*?$')
+re_separators = re_compile(r'(?:, *| +)')
 
 prefixes = {
     ProcModule.PROC_RX: FILE_NAME_PREFIX_RX,
@@ -33,10 +34,10 @@ idstring_patterns = {
     ProcModule.PROC_RX: re_compile(r'^(?:rx_?)?\d+?(?:(?:, *?| +?)(?:rx_?)?\d+?)*$'),
     ProcModule.PROC_RN: re_compile(r'^(?:rn_?)?\d+?(?:(?:, *?| +?)(?:rn_?)?\d+?)*$'),
 }
-
-
-def get_prefix() -> str:
-    return prefixes.get(ProcModule.get())
+prefix_optional_patterns = {
+    ProcModule.PROC_RX: re_compile(fr'{prefixes.get(ProcModule.PROC_RX)}?'),
+    ProcModule.PROC_RN: re_compile(fr'{prefixes.get(ProcModule.PROC_RN)}?'),
+}
 
 
 def get_idval_eq_sep() -> str:
@@ -47,10 +48,13 @@ def get_r_idstring() -> Pattern:
     return idstring_patterns.get(ProcModule.get())
 
 
+def get_r_prefix_optional() -> Pattern:
+    return prefix_optional_patterns.get(ProcModule.get())
+
+
 def id_list_from_string(id_str: str) -> List[str]:
-    id_str = re_sub(r'(?:, *| +)', ' ', id_str)  # separators
-    id_str = re_sub(r'^ +', '', id_str)  # leading wspaces
-    id_str = re_sub(fr'{get_prefix()}?', '', id_str)  # prefix
+    id_str = re_separators.sub(' ', id_str.strip())  # separators
+    id_str = get_r_prefix_optional().sub('', id_str)  # prefix
     return id_str.strip().split(' ')
 
 
@@ -59,9 +63,9 @@ def parse_file(filepath: str) -> Tuple[bool, List[str]]:
     try:
         for line in open(filepath, 'rt', encoding=DEFAULT_ENCODING).readlines():
             line = line.strip(' \n\ufeff')
-            if len(line) == 0 or re_fullmatch(r_comments, line):
+            if len(line) == 0 or re_comments.fullmatch(line):
                 continue
-            elif not re_fullmatch(get_r_idstring(), line):
+            elif not get_r_idstring().fullmatch(line):
                 raise IOError
             id_list += id_list_from_string(line)
         return True, [f'id{get_idval_eq_sep()}{s}' for s in sorted(unique_everseen(id_list), key=lambda item: int(item))]

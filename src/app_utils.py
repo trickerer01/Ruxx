@@ -8,23 +8,21 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from datetime import datetime, date
-from re import sub as re_sub
 from tkinter import messagebox
 
 # internal
 from app_defines import FMT_DATE_DEFAULT
-from app_gui_defines import SLASH
+from app_gui_defines import SLASH, re_uscore_mult
 
-__all__ = (
-    'as_date', 'confirm_yes_no', 'normalize_path', 'trim_undersores', 'format_score', 'trim_quotes_trailing_spaces', 'find_first_not_of',
-    'unquote'
-)
+__all__ = ('as_date', 'confirm_yes_no', 'normalize_path', 'trim_undersores', 'format_score', 'find_first_not_of')
 
 
-def find_first_not_of(s: str, not_chars: str) -> int:
-    for i, c in enumerate(s):  # type: int, str
-        if c not in not_chars:
+def find_first_not_of(s: str, chars: str) -> int:
+    i = 0
+    for c in s:
+        if c not in chars:
             return i
+        i += 1
     return -1
 
 
@@ -36,16 +34,6 @@ def confirm_yes_no(title: str, msg: str) -> bool:
     return messagebox.askyesno(title, msg)
 
 
-def trim_quotes_trailing_spaces(string: str) -> str:
-    string = string.replace('"', '')
-    while len(string) > 0 and string[0] == ' ':
-        string = string[1:]
-    while len(string) > 0 and string[-1] == ' ':
-        string = string[:-1]
-
-    return string
-
-
 def normalize_path(basepath: str, append_slash=True) -> str:
     normalized_path = basepath.replace('\\', SLASH)
     if append_slash and len(normalized_path) != 0 and normalized_path[-1] != SLASH:
@@ -54,37 +42,12 @@ def normalize_path(basepath: str, append_slash=True) -> str:
 
 
 def trim_undersores(base_str: str) -> str:
-    ret_str = re_sub(r'_{2,}', '_', base_str)
-    if len(ret_str) != 0:
-        if len(ret_str) >= 2 and ret_str[0] == '_' and ret_str[-1] == '_':
-            ret_str = ret_str[1:-1]
-        elif ret_str[-1] == '_':
-            ret_str = ret_str[:-1]
-        elif ret_str[0] == '_':
-            ret_str = ret_str[1:]
-    return ret_str
+    return re_uscore_mult.sub('_', base_str).strip('_')
 
 
 def format_score(score_str: str) -> str:
     score_str = score_str if score_str not in ['', None] else '0'
     return f'score({"" if score_str[0] in ["0", "-", "u"] else "+"}{score_str})'
-
-
-def unquote(string: str) -> str:
-    try:
-        while True:
-            found = False
-            if len(string) > 1 and string[0] in ['\'', '"']:
-                string = string[1:]
-                found = True
-            if len(string) > 1 and string[-1] in ['\'', '"']:
-                string = string[:-1]
-                found = True
-            if not found:
-                break
-        return string
-    except Exception:
-        raise ValueError
 
 #
 #

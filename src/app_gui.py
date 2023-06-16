@@ -15,7 +15,6 @@ from json import loads as json_loads
 from multiprocessing.dummy import current_process
 from os import path, curdir, environ, system, makedirs, stat
 from platform import system as running_system
-from re import fullmatch as re_fullmatch, match as re_match, sub as re_sub
 from sys import exit, argv
 from threading import Thread
 from time import sleep as thread_sleep
@@ -53,6 +52,7 @@ from app_gui_defines import (
     ProcModule, menu_items, menu_item_orig_states, gobjects, gobject_orig_states, Options, Globals, Menus, Icons, CVARS,
     re_id_eq_rx, re_id_ge_rx, re_id_le_rx, re_id_eq_rn, re_id_ge_rn, re_id_le_rn,
     re_id_post_eq_rx, re_id_post_ge_rx, re_id_post_le_rx, re_id_post_eq_rn, re_id_post_ge_rn, re_id_post_le_rn,
+    re_space_mult, re_or_meta_group,
 )
 from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, ABOUT_MSG
 from app_logger import Logger
@@ -567,7 +567,7 @@ def prepare_cmdline() -> List[str]:
     # + tags
     tags_line = str(getrootconf(Options.OPT_TAGS))
     if len(tags_line) > 0 and (tags_line.find('  ') != -1 or tags_line.find('\n') != -1):
-        tags_line = re_sub(r'  +', r' ', tags_line.replace('\n', ' '))
+        tags_line = re_space_mult.sub(r' ', tags_line.replace('\n', ' '))
         setrootconf(Options.OPT_TAGS, tags_line)
     parse_suc, tags_list = parse_tags(tags_line)
     # append id boundaries tags if present in id fields and not in tags
@@ -591,9 +591,9 @@ def prepare_cmdline() -> List[str]:
                         break
                     if idtag.startswith('id') is False:
                         continue
-                    ab_in_tags = ab_in_tags or not not re_fullmatch(re_id_eq, idtag)
-                    lb_in_tags = lb_in_tags or not not re_fullmatch(re_id_ge, idtag)
-                    ub_in_tags = ub_in_tags or not not re_fullmatch(re_id_le, idtag)
+                    ab_in_tags = ab_in_tags or not not re_id_eq.fullmatch(idtag)
+                    lb_in_tags = lb_in_tags or not not re_id_ge.fullmatch(idtag)
+                    ub_in_tags = ub_in_tags or not not re_id_le.fullmatch(idtag)
                 if ab_in_tags is False:
                     tags_list.append(f'{s_id_post_eq}{idmin:d}')
                 if lb_in_tags is False:
@@ -767,7 +767,7 @@ def check_tags_direct() -> None:
     count = 0
     mydwn = None  # type: Union[None, DownloaderRn, DownloaderRx]
     res, tags_list = parse_tags(cur_tags)
-    if re_match(r'\([^: ]+:.*?', cur_tags):  # `or` group with meta tag
+    if re_or_meta_group.match(cur_tags):  # `or` group with meta tag
         Logger.log('Error: cannot check tags with meta tag(s) within \'or\' group', False, False)
     elif res:
         mydwn = get_new_proc_module()

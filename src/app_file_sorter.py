@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from enum import IntEnum, unique, auto
 from os import makedirs, path, rename, stat
-from re import fullmatch
+from re import compile as re_compile
 from typing import Tuple, List, TypeVar
 
 # internal
@@ -88,10 +88,11 @@ def sort_files_by_score(files: Tuple[str], thresholds: List[int]) -> int:
     try:
         base_path = path.split(normalize_path(files[0], False))[0]
         folder_names = [f'score({f"{th - 1:d}-"})' for th in thresholds] + [f'score({f"{thresholds[-1]:d}+"})']
+        re_media_scored_name = re_compile(r'^(?:[a-z]{2}_)?(?:\d+?)_score\([-+]?(\d+)\).+?$')
         for full_path in files:
             try:
                 full_name = path.split(full_path)[1]
-                score = fullmatch(r'^(?:[a-z]{2}_)?(?:\d+?)_score\([-+]?(\d+)\).+?$', full_name).group(1)
+                score = re_media_scored_name.fullmatch(full_name).group(1)
                 my_folder = folder_names[get_threshold_index(thresholds, int(score))]
                 move_file(full_path, f'{base_path}{SLASH}{my_folder}{SLASH}', full_name)
                 moved_count += 1

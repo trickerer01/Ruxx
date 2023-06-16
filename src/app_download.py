@@ -14,7 +14,7 @@ from datetime import datetime
 from multiprocessing.dummy import current_process, Pool
 from multiprocessing.pool import ThreadPool
 from os import makedirs, listdir, path, curdir
-from re import fullmatch as re_fullmatch, compile as re_compile
+from re import compile as re_compile
 from sys import exc_info
 from time import sleep as thread_sleep
 from typing import Optional, Dict, Tuple, Union, List, Callable, Pattern, Iterable, Set
@@ -708,7 +708,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             item_id = self._extract_id(h)
             rex_cdfile = re_compile(fr'^(?:{self._get_module_abbr_p()})?{item_id}[._].*?$')
             for f_idx in reversed(range(len(curdirfiles))):
-                if re_fullmatch(rex_cdfile, curdirfiles[f_idx]) is not None:
+                if rex_cdfile.fullmatch(curdirfiles[f_idx]) is not None:
                     # trace(f'Info: TagProc_filter: {item_id} already exists!')
                     del curdirfiles[f_idx]
                     del self.items_raw_all[idx]
@@ -733,7 +733,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'
             item_info = self.item_info_dict.get(idstring)
             tags_list = item_info.tags.split(' ')
-            if any(all(any(re_fullmatch(p, tag) is not None for tag in tags_list) for p in plist) for plist in self.neg_and_groups):
+            if any(all(any(p.fullmatch(tag) is not None for tag in tags_list) for p in plist) for plist in self.neg_and_groups):
                 if item_id in parents:
                     parents.remove(item_id)
                 if item_info.parent_id in parents:

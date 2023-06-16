@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from base64 import b64decode
-from re import search as re_search, findall as re_findall, compile as re_compile
+from re import compile as re_compile
 from typing import Tuple, Optional, Pattern, Union
 
 # requirements
@@ -23,13 +23,17 @@ from app_download import DownloaderBase
 from app_logger import trace
 from app_network import thread_exit
 from app_re import re_tags_to_process_rn, re_tags_exclude_rn
-from app_utils import trim_quotes_trailing_spaces
 
 __all__ = ('DownloaderRn',)
 
 SITENAME = b64decode(SITENAME_B_RN).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RN
 MAX_SEARCH_DEPTH = 0
+
+re_item_info_part_rn = re_compile(r'([\w\-]+=\"[^"]+\")[/> ]')
+re_shimmie_image_href = re_compile(r'/_images/[^/]+/\d+?')
+re_shimmie_thumb = re_compile(r'^thumb shm-thumb.+?$')
+re_shimmie_orig_source = re_compile('^overflow:.+?$')
 
 
 class DownloaderRn(DownloaderBase):
@@ -63,7 +67,7 @@ class DownloaderRn(DownloaderBase):
         iid_url_re = re_compile(r'/_images/[^/]+/(\d+)%20-%20([^">]+)')
         iid_url = str(raw_html_page.find('a', attrs={'download': '', 'href': iid_url_re}))
         try:
-            iall = re_search(iid_url_re, iid_url)
+            iall = iid_url_re.search(iid_url)
             iid = iall.group(1)
             itagsext = iall.group(2)
             itags = ' '.join(itagsext[:itagsext.rfind('.')].split('%20'))
@@ -81,7 +85,7 @@ class DownloaderRn(DownloaderBase):
         return f'{self.url}{n + 1:d}'
 
     def _get_all_post_tags(self, raw_html_page: BeautifulSoup) -> list:
-        return raw_html_page.find_all('a', class_=re_compile(r'^thumb shm-thumb.+?$'))
+        return raw_html_page.find_all('a', class_=re_shimmie_thumb)
 
     def _local_addr_from_string(self, h: str) -> str:
         return self.extract_local_addr(h)
@@ -124,7 +128,7 @@ class DownloaderRn(DownloaderBase):
         # items count on all full pages plus items count on last page
         last_thumbs = len(self._get_all_post_tags(raw_html))
         count = (last - 1) * self._get_items_per_page() + last_thumbs  # type: Union[int, BeautifulSoup]
-        if count == 0 and len(raw_html.find_all('a', attrs={'download': '', 'href': re_compile(r'/_images/[^/]+/\d+?')})) > 0:
+        if count == 0 and len(raw_html.find_all('a', attrs={'download': '', 'href': re_shimmie_image_href})) > 0:
             count = raw_html
 
         return count
@@ -153,7 +157,7 @@ class DownloaderRn(DownloaderBase):
 
     def _extract_item_info(self, item: str) -> ItemInfo:
         item_info = ItemInfo()
-        all_parts = re_findall(r'([\w\-]+=\"[^"]+\")[/> ]', item)
+        all_parts = re_item_info_part_rn.findall(item)
         for part in all_parts:
             name, value = tuple(str(part).split('=', 1))
             # special case id (thumb_...): skip
@@ -170,7 +174,7 @@ class DownloaderRn(DownloaderBase):
                 name = 'ext'
                 value = value[value.rfind(' ') + 1:]
             if name in item_info.__slots__:
-                item_info.__setattr__(name, trim_quotes_trailing_spaces(value.replace('\n', ' ')))
+                item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
 
         return item_info
 
@@ -212,7 +216,7 @@ class DownloaderRn(DownloaderBase):
 
             full_item_id = f'{self._get_module_abbr_p()}{item_id}'
             if full_item_id in self.item_info_dict.keys():
-                orig_source_div = raw_html.find('div', style=re_compile('^overflow:.+?$'))
+                orig_source_div = raw_html.find('div', style=re_shimmie_orig_source)
                 if orig_source_div:
                     self.item_info_dict[full_item_id].source = orig_source_div.text
                 # we can't extract actual score without account credentials AND cf_clearance, but favorites will do just fine

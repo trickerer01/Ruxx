@@ -12,7 +12,7 @@ from abc import ABC, abstractmethod
 from argparse import Namespace
 from multiprocessing.dummy import current_process
 from os import path, stat, remove as remove_file
-from re import search as re_search
+from re import compile as re_compile
 from sys import exc_info
 from threading import Thread, Lock as ThreadLock
 from time import sleep as thread_sleep
@@ -32,6 +32,9 @@ from app_logger import trace
 from app_revision import __RUXX_DEBUG__
 
 __all__ = ('ThreadedHtmlWorker', 'DownloadInterruptException', 'thread_exit')
+
+re_content_range_str = re_compile(r'bytes (\d+)-(\d+)?(?:/(\d+))?')
+re_link_host = re_compile(r'https?://([^/]+)')
 
 
 class DownloadInterruptException(BaseException):
@@ -159,7 +162,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                             req.close()
                             etag = req.headers.get('etag', item_id)
                             content_range = req.headers.get('content-range') if not single_chunk else None
-                            content_range_m = re_search(r'bytes (\d+)-(\d+)?(?:/(\d+))?', content_range) if content_range else None
+                            content_range_m = re_content_range_str.search(content_range) if content_range else None
                             c_start = content_range_m.group(1) if content_range_m else '0'
                             c_end = content_range_m.group(2) if content_range_m else '0'
                             c_total = content_range_m.group(3) if content_range_m else '0'
@@ -197,7 +200,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                         expected_size = int(sreq.headers.get('content-length', '0'))
                         self.etags[item_id] = sreq.headers.get('etag', item_id)
                         # this code was left here after link replacements had been removed. DO NOT MOVE
-                        reqhost = re_search(r'https?://([^/]+)', link).group(1)
+                        reqhost = re_link_host.search(link).group(1)
                         sreq.close()
 
                         if expected_size == 0:

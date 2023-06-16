@@ -7,15 +7,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from re import compile as re_compile, fullmatch as re_fullmatch, sub as re_sub
+from re import compile as re_compile
 from typing import List, Pattern, Tuple, Optional
 
 # requirements
 from iteration_utilities import unique_everseen
 
 # internal
-from app_gui_defines import ProcModule
-
+from app_gui_defines import ProcModule, re_space_mult
 
 DEFAULT_TAGS = ['sfw']
 
@@ -55,6 +54,8 @@ re_orgrs_full_s = {
 }
 re_andgr_full = re_compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$')
 
+re_negative_meta = re_compile(r'^-[^:]+:.+?$')
+
 last_tags = ''
 last_fulltags = None  # type: Optional[List[str]]
 
@@ -81,10 +82,10 @@ def re_orgr_full_s() -> Pattern:
 
 
 def split_or_group(gr: str) -> str:
-    assert re_fullmatch(re_orgr_full(), gr)
+    assert re_orgr_full().fullmatch(gr)
     orgr_parts = gr[1:-1].split('~')
     for part in orgr_parts:
-        assert not re_fullmatch(r'^-[^:]+:.+?$', part)  # negative meta tags
+        assert not re_negative_meta.fullmatch(part)  # negative meta tags
     return f'( {" ~ ".join(part for part in orgr_parts)} )'
 
 
@@ -101,11 +102,8 @@ def parse_tags(tags: str) -> Tuple[bool, List[str]]:
     global last_fulltags
 
     if tags.find('  ') != -1:
-        tags = re_sub(r'  +', ' ', tags)
-    if len(tags) > 0 and tags[0] == ' ':
-        tags = tags[1:]
-    if len(tags) > 0 and tags[-1] == ' ':
-        tags = tags[:-1]
+        tags = re_space_mult.sub(' ', tags)
+    tags = tags.strip()
 
     if last_tags == tags:
         if last_fulltags:
@@ -124,16 +122,16 @@ def parse_tags(tags: str) -> Tuple[bool, List[str]]:
             return fail()
         if ProcModule.is_rn() and tag.startswith('order='):
             return fail()
-        if tag[0] == '(' and re_fullmatch(re_orgr_full(), tag):
+        if tag[0] == '(' and re_orgr_full().fullmatch(tag):
             try:
                 tag = split_or_group(tag)
             except Exception:
                 return fail()
         if not (
-                re_fullmatch(re_orgr_full_s(), tag) or
-                re_fullmatch(re_andgr_full, tag) or
-                re_fullmatch(re_meta(), tag) or
-                re_fullmatch(re_plain(), tag)
+                re_orgr_full_s().fullmatch(tag) or
+                re_andgr_full.fullmatch(tag) or
+                re_meta().fullmatch(tag) or
+                re_plain().fullmatch(tag)
         ):
             return fail()
         fulltags.append(tag)

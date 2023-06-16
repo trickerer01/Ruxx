@@ -385,6 +385,10 @@ re_id_post_le_rx = 'id:<='
 re_id_post_eq_rn = 'id='
 re_id_post_ge_rn = 'id>='
 re_id_post_le_rn = 'id<='
+
+re_space_mult = re_compile(r' {2,}')
+re_uscore_mult = re_compile(r'_{2,}')
+re_or_meta_group = re_compile(r'\([^: ]+:.*?')
 # tooltips
 TOOLTIP_VIDEOS = [' Selected file type will be preferred during search.',
                   ' If file is unavailable, alternative type will be',

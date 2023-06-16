@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from base64 import b64decode
 from json import loads
-from re import fullmatch as re_fullmatch, sub as re_sub
+from re import compile as re_compile
 from typing import Pattern, Dict, List
 
 # internal
@@ -18,6 +18,9 @@ from app_re import re_replace_symbols, re_tags_exclude_major1, re_tags_exclude_m
 from app_utils import trim_undersores
 
 __all__ = ('append_filtered_tags',)
+
+re_meta_group = re_compile(r'^([^(]+)\(([^)]+)\).*$')
+re_not_a_letter = re_compile(r'[^a-z]+')
 
 
 TAG_ALIASES_STR = (
@@ -244,15 +247,15 @@ def append_filtered_tags(add_string: str, tags_str: str, re_tags_to_process: Pat
 
     for tag in tags_list:
         tag = tag.replace('-', '').replace('\'', '')
-        if TAG_ALIASES.get(tag) is None and re_fullmatch(re_tags_to_process, tag) is None:
+        if TAG_ALIASES.get(tag) is None and re_tags_to_process.fullmatch(tag) is None:
             continue
 
         # digital_media_(artwork)
-        aser_match = re_fullmatch(r'^([^(]+)\(([^)]+)\).*$', tag)
+        aser_match = re_meta_group.fullmatch(tag)
         aser_valid = False
         if aser_match:
-            major_skip_match1 = re_fullmatch(re_tags_exclude_major1, aser_match.group(1))
-            major_skip_match2 = re_fullmatch(re_tags_exclude_major2, aser_match.group(2))
+            major_skip_match1 = re_tags_exclude_major1.fullmatch(aser_match.group(1))
+            major_skip_match2 = re_tags_exclude_major2.fullmatch(aser_match.group(2))
             if major_skip_match1 or major_skip_match2:
                 continue
             stag = trim_undersores(aser_match.group(1))
@@ -266,25 +269,25 @@ def append_filtered_tags(add_string: str, tags_str: str, re_tags_to_process: Pat
         if alias:
             tag = alias
 
-        if re_fullmatch(re_tags_to_exclude, tag):
+        if re_tags_to_exclude.fullmatch(tag):
             continue
 
         do_add = True
         if len(tags_toadd_list) > 0:
-            nutag = re_sub(r'[^a-z]+', '', re_sub(re_numbered_or_counted_tag, r'\1', tag))
+            nutag = re_not_a_letter.sub('', re_numbered_or_counted_tag.sub(r'\1', tag))
             # try and see
             # 1) if this tag can be consumed by existing tags
             # 2) if this tag can consume existing tags
             for i in reversed(range(len(tags_toadd_list))):
-                t = re_sub(re_numbered_or_counted_tag, r'\1', tags_toadd_list[i].lower())
-                nut = re_sub(r'[^a-z]+', '', t)
+                t = re_numbered_or_counted_tag.sub(r'\1', tags_toadd_list[i].lower())
+                nut = re_not_a_letter.sub('', t)
                 if len(nut) >= len(nutag) and (nutag in nut):
                     do_add = False
                     break
             if do_add:
                 for i in reversed(range(len(tags_toadd_list))):
-                    t = re_sub(re_numbered_or_counted_tag, r'\1', tags_toadd_list[i].lower())
-                    nut = re_sub(r'[^a-z]+', '', t)
+                    t = re_numbered_or_counted_tag.sub(r'\1', tags_toadd_list[i].lower())
+                    nut = re_not_a_letter.sub('', t)
                     if len(nutag) >= len(nut) and (nut in nutag):
                         if aser_valid is False and tags_toadd_list[i][0].isupper():
                             aser_valid = True
@@ -296,7 +299,7 @@ def append_filtered_tags(add_string: str, tags_str: str, re_tags_to_process: Pat
                         tag = f'{tag[:i]}{c.upper()}{tag[i + 1:]}'
             tags_toadd_list.append(tag)
 
-    return f'{add_string}{UNDERSCORE}{re_sub(re_replace_symbols, UNDERSCORE, UNDERSCORE.join(sorted(tags_toadd_list)))}'
+    return f'{add_string}{UNDERSCORE}{re_replace_symbols.sub(UNDERSCORE, UNDERSCORE.join(sorted(tags_toadd_list)))}'
 
 #
 #

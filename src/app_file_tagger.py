@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from os import path, rename as rename_file, listdir
-from re import fullmatch
+from re import compile as re_compile
 from typing import Tuple, Pattern, Dict
 
 # internal
@@ -23,9 +23,10 @@ __all__ = ('untag_files', 'retag_files')
 def untag_files(files: Tuple[str]) -> int:
     untagged_count = 0
     try:
+        re_media_tagged_name = re_compile(r'^([a-z]{2}_)?(\d+?)[_.].+?$')
         for full_path in files:
             base_path, full_name = path.split(normalize_path(full_path, False))
-            fname_match = fullmatch(r'^([a-z]{2}_)?(\d+?)[_.].+?$', full_name)
+            fname_match = re_media_tagged_name.fullmatch(full_name)
             if fname_match is None:
                 continue
             _, ext = path.splitext(full_name)
@@ -41,11 +42,13 @@ def untag_files(files: Tuple[str]) -> int:
 def retag_files(files: Tuple[str], re_tags_to_process: Pattern, re_tags_to_exclude: Pattern) -> int:
     retagged_count = 0
     try:
+        re_media_untagged_name = re_compile(r'^([a-z]{2}_)?(\d+?)[.].+?$')
+        re_tagsfile_name = re_compile(r'^[a-z]{2}_!tags_\d+?-\d+?\.txt$')
         base_path = path.split(normalize_path(files[0], False))[0]
         tagdict = dict()  # type: Dict[str, str]
         for diritem in listdir(base_path):
             if path.splitext(diritem)[1] == '.txt':
-                if fullmatch(r'^[a-z]{2}_!tags_\d+?-\d+?\.txt$', diritem) is not None:
+                if re_tagsfile_name.fullmatch(diritem) is not None:
                     with open(f'{base_path}{SLASH}{diritem}', 'rt', encoding=DEFAULT_ENCODING) as tags_file:
                         lines = tags_file.readlines()
                     for line in lines:
@@ -62,7 +65,7 @@ def retag_files(files: Tuple[str], re_tags_to_process: Pattern, re_tags_to_exclu
             tags = tagdict.get(name[3:] if name[0].isalpha() else name)
             if tags is None:
                 continue
-            fname_match = fullmatch(r'^([a-z]{2}_)?(\d+?)[.].+?$', full_name)
+            fname_match = re_media_untagged_name.fullmatch(full_name)
             if fname_match is None:
                 continue
             maxlen = FILE_NAME_FULL_MAX_LEN - len(full_path)

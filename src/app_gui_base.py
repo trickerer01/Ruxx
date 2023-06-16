@@ -14,7 +14,7 @@ from datetime import datetime
 from json import dumps as json_dumps, loads as json_loads
 from os import curdir, path
 from platform import system as running_system
-from re import search as re_search, findall as re_findall
+from re import compile as re_compile
 from tkinter import (
     Menu, Toplevel, messagebox, ttk, Text, Scrollbar, StringVar, Button, Entry, Widget, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT,
     TOP, INSERT, BooleanVar, Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, E, S, X, Y, NO, YES
@@ -67,6 +67,9 @@ text_cmd = None  # type: Optional[Text]
 # icons
 icons = {ic: None for ic in Icons.__members__.values()}  # type: Dict[Icons, Optional[PhotoImage]]
 # end icons
+
+re_ask_values = re_compile(r'[^, ]+')
+re_json_entry_value = re_compile(r'^([^: ,]+)[: ,](.+)$')
 
 c_col = None  # type: Optional[int]
 c_row = None  # type: Optional[int]
@@ -300,7 +303,7 @@ class AskFileSizeFilterWindow(AwaitableAskWindow):
 
     def value(self) -> Optional[List[float]]:
         try:
-            return [float(val) for val in re_findall(r'[^, ]+', self.variable.get())]
+            return [float(val) for val in re_ask_values.findall(self.variable.get())]
         except Exception:
             return None
 
@@ -345,7 +348,7 @@ class AskFileScoreFilterWindow(AwaitableAskWindow):
 
     def value(self) -> Optional[List[int]]:
         try:
-            return [int(val) for val in re_findall(r'[^, ]+', self.variable.get())]
+            return [int(val) for val in re_ask_values.findall(self.variable.get())]
         except Exception:
             return None
 
@@ -660,7 +663,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         newval = str(getrootconf(Options.OPT_HEADER_ADD_STR))
 
         try:
-            parts = re_search(r'^([^: ,]+)[: ,](.+)$', newval)
+            parts = re_json_entry_value.search(newval)
             h_title, h_value = parts.group(1), parts.group(2)
             for i in range(self.lbox_h.size()):
                 part1, _ = tuple(str(self.lbox_h.get(i)).split(':', 1))
@@ -693,7 +696,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         newval = str(getrootconf(Options.OPT_COOKIE_ADD_STR))
 
         try:
-            parts = re_search(r'^([^: ,]+)[: ,](.+)$', newval)
+            parts = re_json_entry_value.search(newval)
             c_title, c_value = parts.group(1), parts.group(2)
             for i in range(self.lbox_c.size()):
                 part1, _ = tuple(str(self.lbox_c.get(i)).split(':', 1))
