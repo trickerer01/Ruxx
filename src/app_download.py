@@ -1036,7 +1036,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             if self.include_parchi is True:
                 if item_info.has_children == 'true':
                     self._register_parent_post(parents, item_info.id)
-                elif item_info.parent_id.isnumeric():
+                if item_info.parent_id.isnumeric():
                     self._register_parent_post(parents, item_info.parent_id)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_info.id}'
             self.item_info_dict[idstring] = item_info
