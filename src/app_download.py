@@ -17,7 +17,7 @@ from os import makedirs, listdir, path, curdir
 from re import compile as re_compile
 from sys import exc_info
 from time import sleep as thread_sleep
-from typing import Optional, Dict, Tuple, Union, List, Callable, Pattern, Iterable, Set
+from typing import Optional, Dict, Tuple, Union, List, Callable, Pattern, Iterable, Set, MutableSet
 
 # requirements
 from bs4 import BeautifulSoup
@@ -179,7 +179,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def get_items_query_size_or_html(self, url: str, tries: Optional[int] = None) -> Union[int, BeautifulSoup]:
+    def get_items_query_size_or_html(self, url: str, tries: int = None) -> Union[int, BeautifulSoup]:
         ...
 
     @abstractmethod
@@ -217,7 +217,7 @@ class DownloaderBase(ThreadedHtmlWorker):
     def get_tags_count(self, offset=0) -> int:
         return len(self.tags_str_arr[offset].split(self.get_tags_concat_char()))
 
-    def _register_parent_post(self, parents: Set[str], item_id: str) -> None:
+    def _register_parent_post(self, parents: MutableSet[str], item_id: str) -> None:
         if item_id not in self.known_parents:
             parents.add(item_id)
 
@@ -487,7 +487,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             except ConnectionError:
                 return
             except KeyError:
-                items_raw_temp = []
+                items_raw_temp = list()
                 thread_sleep(CONNECT_DELAY_PAGE / 2)
                 continue
 
@@ -718,7 +718,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         if total_count_temp != self.total_count:
             trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')
 
-    def _filter_items_matching_negative_and_groups(self, parents: Set[str]) -> None:
+    def _filter_items_matching_negative_and_groups(self, parents: MutableSet[str]) -> None:
         trace('Filtering out items using custom filters...')
 
         if len(self.neg_and_groups) == 0:
@@ -778,7 +778,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             def page_filter(st: DownloaderStates, di: bool, ft: PageFilterType) -> int:
                 self.current_state = st
-                trace(f'Looking for {("min" if di else "max")} page by: {ft.value}...')
+                trace(f'Looking for {"min" if di else "max"} page by: {ft.value}...')
                 return self._get_page_boundary(di, ft)
 
             for fstate, direction, ftype in pageargs:
@@ -788,7 +788,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                     self.maxpage = page_filter(fstate, direction, ftype)
                 self.total_pages = self._num_pages()
 
-            self.total_count = min((self._num_pages() * page_size), self.total_count)
+            self.total_count = min(self._num_pages() * page_size, self.total_count)
             trace(f'new totalcount: {self.total_count:d}')
 
             # list all items on selected pages
@@ -900,7 +900,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         if self.reverse_order is True:
             self.items_raw_all.reverse()
         # default order is newest first
-        orders = ['oldest', 'newest']
+        orders = ('oldest', 'newest')
         trace(f'...{orders[1 - int(self.reverse_order)]} to {orders[self.reverse_order]}\n')
 
         self.current_state = DownloaderStates.STATE_DOWNLOADING
@@ -911,7 +911,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             ress = list()
             with Pool(self.maxthreads_items) as active_pool:  # type: ThreadPool
                 for iarr in self.items_raw_all:
-                    ress.append(active_pool.apply_async(self._process_item, args=[str(iarr)]))
+                    ress.append(active_pool.apply_async(self._process_item, args=(iarr,)))
                 active_pool.close()
 
                 while len(ress) > 0:
@@ -1029,7 +1029,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.warn_nonempty = args.warn_nonempty or self.warn_nonempty
         self._parse_tags(args.tags)
 
-    def _extract_all_infos(self, parents: Set[str]) -> None:
+    def _extract_all_infos(self, parents: MutableSet[str]) -> None:
         abbrp = self._get_module_abbr_p()
         for item in self.items_raw_all:
             item_info = self._extract_item_info(item)

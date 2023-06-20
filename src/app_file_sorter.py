@@ -10,7 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from enum import IntEnum, unique, auto
 from os import makedirs, path, rename, stat
 from re import compile as re_compile
-from typing import Tuple, List, TypeVar
+from typing import TypeVar, Collection, Iterable, Sequence
 
 # internal
 from app_gui_defines import SLASH
@@ -28,7 +28,7 @@ class FileTypeFilter(IntEnum):
     FILTER_INVALID = auto()
 
 
-def get_threshold_index(thresholds: List[T], val: T) -> int:
+def get_threshold_index(thresholds: Collection[T], val: T) -> int:
     for i, threshold in enumerate(thresholds):
         if val < threshold:
             return i
@@ -41,7 +41,7 @@ def move_file(old_fullpath: str, new_folder: str, file_name: str) -> None:
     rename(old_fullpath, f'{new_folder}{file_name}')
 
 
-def sort_files_by_type(files: Tuple[str], filter_type: FileTypeFilter) -> int:
+def sort_files_by_type(files: Iterable[str], filter_type: FileTypeFilter) -> int:
     assert filter_type != FileTypeFilter.FILTER_INVALID
     moved_count = 0
     for full_path in files:
@@ -60,7 +60,7 @@ def sort_files_by_type(files: Tuple[str], filter_type: FileTypeFilter) -> int:
     return moved_count
 
 
-def sort_files_by_size(files: Tuple[str], thresholds_mb: List[float]) -> int:
+def sort_files_by_size(files: Sequence[str], thresholds_mb: Collection[float]) -> int:
     assert all(threshold_mb > 0.01 for threshold_mb in thresholds_mb)
     thresholds_mb = list(sorted(thresholds_mb))
     moved_count = 0
@@ -82,7 +82,7 @@ def sort_files_by_size(files: Tuple[str], thresholds_mb: List[float]) -> int:
     return moved_count
 
 
-def sort_files_by_score(files: Tuple[str], thresholds: List[int]) -> int:
+def sort_files_by_score(files: Sequence[str], thresholds: Collection[int]) -> int:
     thresholds = list(sorted(thresholds))
     moved_count = 0
     try:

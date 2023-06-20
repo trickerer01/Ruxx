@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from os import path, rename as rename_file, listdir
 from re import compile as re_compile
-from typing import Tuple, Pattern, Dict
+from typing import Pattern, Iterable, Sequence
 
 # internal
 from app_defines import DEFAULT_ENCODING, FILE_NAME_FULL_MAX_LEN
@@ -20,7 +20,7 @@ from app_utils import trim_undersores, normalize_path
 __all__ = ('untag_files', 'retag_files')
 
 
-def untag_files(files: Tuple[str]) -> int:
+def untag_files(files: Iterable[str]) -> int:
     untagged_count = 0
     try:
         re_media_tagged_name = re_compile(r'^([a-z]{2}_)?(\d+?)[_.].+?$')
@@ -39,13 +39,13 @@ def untag_files(files: Tuple[str]) -> int:
     return untagged_count
 
 
-def retag_files(files: Tuple[str], re_tags_to_process: Pattern, re_tags_to_exclude: Pattern) -> int:
+def retag_files(files: Sequence[str], re_tags_to_process: Pattern, re_tags_to_exclude: Pattern) -> int:
     retagged_count = 0
     try:
         re_media_untagged_name = re_compile(r'^([a-z]{2}_)?(\d+?)[.].+?$')
         re_tagsfile_name = re_compile(r'^[a-z]{2}_!tags_\d+?-\d+?\.txt$')
         base_path = path.split(normalize_path(files[0], False))[0]
-        tagdict = dict()  # type: Dict[str, str]
+        tagdict = dict()
         for diritem in listdir(base_path):
             if path.splitext(diritem)[1] == '.txt':
                 if re_tagsfile_name.fullmatch(diritem) is not None:

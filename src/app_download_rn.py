@@ -108,7 +108,7 @@ class DownloaderRn(DownloaderBase):
         d = str(date_raw)[b: b + 4 + 1 + 2 + 1 + 2]
         return d
 
-    def get_items_query_size_or_html(self, url: str, tries: Optional[int] = None) -> Union[int, BeautifulSoup]:
+    def get_items_query_size_or_html(self, url: str, tries: int = None) -> Union[int, BeautifulSoup]:
         raw_html = self.fetch_html(f'{url}{1:d}', tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)

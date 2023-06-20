@@ -116,7 +116,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
         fullname = dest[dest.rfind(SLASH) + 1:]
         ext_full = fullname[fullname.rfind('.') + 1:]
         ext_char = ext_full[0]
-        is_video_ext = ext_full in ['webm', 'mp4']
+        is_video_ext = ext_full in {'webm', 'mp4'}
         touch_mode = mode == DownloadModes.DOWNLOAD_TOUCH
 
         result = FileDownloadResult()
@@ -188,7 +188,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                                 if __RUXX_DEBUG__:
                                     trace(f'Warning (W2): {item_id} invalid chunk {chunk_num:d} err {errcode:d}', True)
                                 # website may send not an HTTP error but instead just a mismatched chunk and call it good
-                                severe_err = errcode in [1, 2, 3, 4]
+                                severe_err = errcode in {1, 2, 3, 4}
                                 response = Response()
                                 response.status_code = 416 if severe_err else 417  # Expectation Failed
                                 new_exc = HTTPError(response=response)

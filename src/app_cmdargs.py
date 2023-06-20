@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from argparse import ArgumentParser, Namespace, ONE_OR_MORE
 from os import path
-from typing import List
+from typing import Sequence
 
 # internal
 from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, DEFAULT_HEADERS, ACTION_STORE_TRUE, DMODE_DEFAULT, DMODE_CHOICES
@@ -29,7 +29,7 @@ __all__ = ('prepare_arglist',)
 DMODES_STR = str(DMODE_CHOICES).replace(' ', '')
 
 
-def prepare_arglist(args: List[str]) -> Namespace:
+def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser = ArgumentParser(add_help=False)
 
     parser.add_argument('--help', action='help')

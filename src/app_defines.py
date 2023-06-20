@@ -188,11 +188,11 @@ PLATFORM_WINDOWS = 'Windows'
 PLATFORM_LINUX = 'Linux'
 # PLATFORM_DARWIN = 'Darwin'  # Mac
 
-SUPPORTED_PLATFORMS = [
+SUPPORTED_PLATFORMS = (
     PLATFORM_WINDOWS,
     PLATFORM_LINUX,
     # PLATFORM_DARWIN
-]
+)
 
 KNOWN_EXTENSIONS = {'mp4', 'webm', 'swf', 'png', 'jpg', 'jpeg', 'gif'}
 

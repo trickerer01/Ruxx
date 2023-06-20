@@ -87,31 +87,31 @@ STICKY_HORIZONTAL = 'we'
 STICKY_VERTICAL_W = 'wns'
 # STICKY_VERTICAL_E = 'ens'
 # Combobox
-OPTION_VALUES_VIDEOS = ['Don\'t download', 'Prefer MP4', 'Prefer Webm']
-OPTION_VALUES_IMAGES = ['Don\'t download', 'Prefer low res', 'Prefer high res']
-OPTION_VALUES_PARCHI = ['Don\'t download', 'Download everything']
-OPTION_VALUES_THREADING = ['1 Thread', '2 Threads', '3 Threads', '4 Threads', '5 Threads', '6 Threads', '7 Threads', '8 Threads']
-OPTION_VALUES_DOWNORDER = ['Newest first', 'Oldest first']
-OPTION_CMD_VIDEOS = ['-skip_vid', '', '-webm']
-OPTION_CMD_IMAGES = ['-skip_img', '-lowres', '']
-OPTION_CMD_PARCHI = ['', '-include_parchi']
+OPTION_VALUES_VIDEOS = ('Don\'t download', 'Prefer MP4', 'Prefer Webm')
+OPTION_VALUES_IMAGES = ('Don\'t download', 'Prefer low res', 'Prefer high res')
+OPTION_VALUES_PARCHI = ('Don\'t download', 'Download everything')
+OPTION_VALUES_THREADING = ('1 Thread', '2 Threads', '3 Threads', '4 Threads', '5 Threads', '6 Threads', '7 Threads', '8 Threads')
+OPTION_VALUES_DOWNORDER = ('Newest first', 'Oldest first')
+OPTION_CMD_VIDEOS = ('-skip_vid', '', '-webm')
+OPTION_CMD_IMAGES = ('-skip_img', '-lowres', '')
+OPTION_CMD_PARCHI = ('', '-include_parchi')
 OPTION_CMD_THREADING_CMD = '-threads'
-OPTION_CMD_THREADING = ['1', '2', '3', '4', '5', '6', '7', '8']
-OPTION_CMD_DOWNORDER = ['', '-rev']
+OPTION_CMD_THREADING = ('1', '2', '3', '4', '5', '6', '7', '8')
+OPTION_CMD_DOWNORDER = ('', '-rev')
 OPTION_CMD_COOKIES = '-cookies'
 OPTION_CMD_HEADERS = '-headers'
 OPTION_CMD_PROXY = '-proxy'
-OPTION_CMD_IGNORE_PROXY = ['', '-noproxy']
-OPTION_CMD_PROXY_SOCKS = ['', '-socks']
-OPTION_CMD_PROXY_NO_DOWNLOAD = ['', '-proxynodown']
-OPTION_CMD_FNAMEPREFIX = ['', '-prefix']
+OPTION_CMD_IGNORE_PROXY = ('', '-noproxy')
+OPTION_CMD_PROXY_SOCKS = ('', '-socks')
+OPTION_CMD_PROXY_NO_DOWNLOAD = ('', '-proxynodown')
+OPTION_CMD_FNAMEPREFIX = ('', '-prefix')
 OPTION_CMD_DOWNMODE_CMD = '-dmode'
 OPTION_CMD_DOWNLIMIT_CMD = '-dlimit'
-OPTION_CMD_DOWNMODE = ['', '1', '2']
-OPTION_CMD_SAVE_TAGS = ['', '-dump_tags']
-OPTION_CMD_SAVE_SOURCES = ['', '-dump_sources']
-OPTION_CMD_APPEND_SOURCE_AND_TAGS = ['', '-append_info']
-OPTION_CMD_WARN_NONEMPTY_DEST = ['', '-warn_nonempty']
+OPTION_CMD_DOWNMODE = ('', '1', '2')
+OPTION_CMD_SAVE_TAGS = ('', '-dump_tags')
+OPTION_CMD_SAVE_SOURCES = ('', '-dump_sources')
+OPTION_CMD_APPEND_SOURCE_AND_TAGS = ('', '-append_info')
+OPTION_CMD_WARN_NONEMPTY_DEST = ('', '-warn_nonempty')
 OPTION_CMD_IDMIN = '-low'
 OPTION_CMD_IDMAX = '-high'
 OPTION_CMD_DATEAFTER = '-mindate'
@@ -390,26 +390,26 @@ re_space_mult = re_compile(r' {2,}')
 re_uscore_mult = re_compile(r'_{2,}')
 re_or_meta_group = re_compile(r'\([^: ]+:.*?')
 # tooltips
-TOOLTIP_VIDEOS = [' Selected file type will be preferred during search.',
+TOOLTIP_VIDEOS = (' Selected file type will be preferred during search.',
                   ' If file is unavailable, alternative type will be',
-                  ' attempted automatically.']
-TOOLTIP_IMAGES = [' Selected file type will be preferred during search.',
+                  ' attempted automatically.')
+TOOLTIP_IMAGES = (' Selected file type will be preferred during search.',
                   ' If file is unavailable, alternative type will be',
                   ' attempted automatically.',
-                  ' Warning: low res variant of a gif may be unanimated!']
-TOOLTIP_PARCHI = [' Download parent posts / child posts even if they don\'t match provided tags.']
-TOOLTIP_THREADING = [' Number of threads affects scan and download speed.']
-TOOLTIP_ORDER = [' Download order.']
-TOOLTIP_DATE = [' Date must be in \'dd-mm-yyyy\' format.']
-TOOLTIP_IDMIN = [' Minimum ID must be a positive number.']
-TOOLTIP_IDMAX = [' If maximum ID is negative it will act as count.']
-TOOLTIP_TAGS_CHECK = [' Validate tags (live).']
-TOOLTIP_HCOOKIE_DELETE = [' Delete selected (Del works too)']
-TOOLTIP_HCOOKIE_ADD_ENTRY = [' Must be in on of the valid formats:',
+                  ' Warning: low res variant of a gif may be unanimated!')
+TOOLTIP_PARCHI = (' Download parent posts / child posts even if they don\'t match provided tags.',)
+TOOLTIP_THREADING = (' Number of threads affects scan and download speed.',)
+TOOLTIP_ORDER = (' Download order.',)
+TOOLTIP_DATE = (' Date must be in \'dd-mm-yyyy\' format.',)
+TOOLTIP_IDMIN = (' Minimum ID must be a positive number.',)
+TOOLTIP_IDMAX = (' If maximum ID is negative it will act as count.',)
+TOOLTIP_TAGS_CHECK = (' Validate tags (live).',)
+TOOLTIP_HCOOKIE_DELETE = (' Delete selected (Del works too)',)
+TOOLTIP_HCOOKIE_ADD_ENTRY = (' Must be in on of the valid formats:',
                              '  1) [name] [value]',
                              '  2) [name]:[value]',
-                             '  3) [name],[value]']
-TOOLTIP_INVALID_SYNTAX = ['Invalid syntax.']
+                             '  3) [name],[value]')
+TOOLTIP_INVALID_SYNTAX = ('Invalid syntax.',)
 # end tooltips
 # end text cache
 

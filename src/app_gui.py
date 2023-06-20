@@ -19,7 +19,7 @@ from sys import exit, argv
 from threading import Thread
 from time import sleep as thread_sleep
 from tkinter import messagebox, filedialog, BooleanVar, IntVar, Entry, Button, PhotoImage, END, LEFT
-from typing import Optional, Union, Callable, List, Tuple
+from typing import Optional, Union, Callable, List, Tuple, Iterable
 
 # internal
 from app_cmdargs import prepare_arglist
@@ -133,7 +133,7 @@ class Settings(ABC):
     """
 
     INITIAL_SETTINGS = []  # type: List[str]
-    AUTOCONFIG_FILENAMES = ['ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg']
+    AUTOCONFIG_FILENAMES = ('ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg')
 
     @abstractmethod
     def ___this_class_is_static___(self) -> ...:
@@ -245,7 +245,7 @@ class Settings(ABC):
         return settings
 
     @staticmethod
-    def _read_settings(lines: List[str]) -> None:
+    def _read_settings(lines: Iterable[str]) -> None:
         for line in lines:
             line = line.strip(' \n\ufeff')  # remove BOM too
             if line.startswith('#') or line == '':  # comment or a newline
@@ -659,7 +659,7 @@ def prepare_cmdline() -> List[str]:
         except Exception:
             setrootconf(Options.OPT_IDMAX, 0)
     # date min / max
-    for datestr in [(Options.OPT_DATEAFTER, OPTION_CMD_DATEAFTER), (Options.OPT_DATEBEFORE, OPTION_CMD_DATEBEFORE)]:
+    for datestr in ((Options.OPT_DATEAFTER, OPTION_CMD_DATEAFTER), (Options.OPT_DATEBEFORE, OPTION_CMD_DATEBEFORE)):
         while True:
             try:
                 addstr = str(datetime.strptime(str(getrootconf(datestr[0])), FMT_DATE).date())
@@ -734,10 +734,10 @@ def prepare_cmdline() -> List[str]:
 
 def update_frame_cmdline() -> None:
     cant_update = False
-    for gidx in [Globals.GOBJECT_FIELD_DATEBEFORE,
+    for gidx in {Globals.GOBJECT_FIELD_DATEBEFORE,
                  Globals.GOBJECT_FIELD_DATEAFTER,
                  Globals.GOBJECT_FIELD_IDMIN,
-                 Globals.GOBJECT_FIELD_IDMAX]:
+                 Globals.GOBJECT_FIELD_IDMAX}:
         cant_update |= is_focusing(gidx)
 
     if not cant_update:
@@ -1006,7 +1006,7 @@ def load_id_list() -> None:
             messagebox.showwarning(message=f'Unable to load ids from {filepath[filepath.rfind("/") + 1:]}!')
 
 
-def ask_filename(ftypes: Tuple[Tuple[str, str], Tuple[str, str]]) -> str:
+def ask_filename(ftypes: Iterable[Tuple[str, str]]) -> str:
     fullpath = filedialog.askopenfilename(filetypes=ftypes, initialdir=get_curdir())
     if fullpath and len(fullpath) > 0:
         setrootconf(Options.OPT_LASTPATH, fullpath[:normalize_path(fullpath, False).rfind(SLASH) + 1])  # not bound

@@ -116,7 +116,7 @@ def parse_tags(tags: str) -> Tuple[bool, List[str]]:
     if len(tags) <= 0:
         return fail()
 
-    fulltags = []  # type: List[str]
+    fulltags = list()
     for tag in unique_everseen(tags.split(' ')):  # type: str
         if ProcModule.is_rx() and tag.startswith('sort:'):
             return fail()

@@ -24,13 +24,16 @@ __all__ = ('run_all_tests',)
 
 CUR_PATH = normalize_path(path.abspath(curdir))
 
-args_argparse_str1 = 'sfw asd ned -nds -proxr ' \
-                     '-dmode 0 -rev -skip_img -skip_vid -webm -lowres -noproxy -proxynodown -socks -prefix -dump_tags -dump_sources ' \
-                     '-append_info'
-args_argparse_str2 = 'sfw asd ned -nds -proxt ' \
-                     '-low 123 -high 987 -mindate 1950-12-31 -maxdate 2038-01-01 -threads 8 -proxy 8.8.8.8:65333 ' \
-                     '-headers {"name1":"value1"} -cookies {"name2":"value2"} ' \
-                     '-path ' + CUR_PATH
+args_argparse_str1 = (
+    'sfw asd ned -nds -proxr '
+    '-dmode 0 -rev -skip_img -skip_vid -webm -lowres -noproxy -proxynodown -socks -prefix -dump_tags -dump_sources -append_info'
+)
+args_argparse_str2 = (
+    'sfw asd ned -nds -proxt '
+    '-low 123 -high 987 -mindate 1950-12-31 -maxdate 2038-01-01 -threads 8 -proxy 8.8.8.8:65333 '
+    '-headers {"name1":"value1"} -cookies {"name2":"value2"} '
+    '-path ' + CUR_PATH
+)
 
 
 class ArgParseTests(TestCase):
@@ -107,7 +110,7 @@ class ConnTests(TestCase):
         # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
         Logger.init(True, True)
         # ____empty,  tag,             tag,       flag,    v,     flag,     v,     flag,         v             flag      v
-        argslist = ['id:=2000000', '-severals', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH]
+        argslist = ('id:=2000000', '-severals', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with DownloaderRx() as dwn:
             dwn.parse_args(arglist)
@@ -122,7 +125,7 @@ class DownloadTests(TestCase):
         # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
         Logger.init(True, True)
         # ____empty,  tag,             tag,       flag,    v,     flag,     v,     flag,         v             flag      v
-        argslist = ['id:=2000000', '-overflow', '-dmode', '1', '-threads', '2', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH]
+        argslist = ('id:=2000000', '-overflow', '-dmode', '1', '-threads', '2', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with DownloaderRx() as dwn:
             dwn.launch(arglist)
@@ -137,7 +140,7 @@ class DownloadTests(TestCase):
         tempfile_path = f'{normalize_path(gettempdir())}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
         # ____empty,  tag,            flag,     v,     flag,         v             flag      v
-        argslist = [f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', gettempdir()]
+        argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', gettempdir())
         arglist = prepare_arglist(argslist)
         with DownloaderRx() as dwn:
             dwn.launch(arglist)

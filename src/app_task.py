@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from re import compile as re_compile
-from typing import Tuple, List, Pattern, Optional
+from typing import Tuple, List, Pattern, Optional, Iterable
 
 # internal
 from app_defines import TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN
@@ -21,7 +21,7 @@ __all__ = ('split_tags_into_tasks', 'extract_neg_and_groups')
 re_negative_and_group = re_compile(r'^-\(([^,]+(?:,[^,]+)+)\)$')
 
 
-def split_tags_into_tasks(tag_groups_arr: List[str], cc: str, sc: str, split_always: bool) -> List[str]:
+def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split_always: bool) -> List[str]:
     """
     Converts natively not processible tags into processible tags combinations\n
     Ex. ['(+a+~+b+)', '(+c+~+d+)', 'x', '-y'] => ['a+c+x+-y', 'a+d+x+-y', 'b+c+x+-y', 'b+d+x+-y']\n
@@ -31,12 +31,12 @@ def split_tags_into_tasks(tag_groups_arr: List[str], cc: str, sc: str, split_alw
     :param split_always: unconditionally separate all 'or' groups
     :return: list of fully formed tags directly injectable into request query template, len is up to max_or_group_len**2
     """
-    new_tags_str_arr = []  # type: List[str]
-    or_tags_to_append = []  # type: List[List[str]]
+    new_tags_str_arr = list()  # type: List[str]
+    or_tags_to_append = list()  # type: List[List[str]]
     has_negative = False
     for g_tags in tag_groups_arr:
         splitted = False
-        add_list = g_tags[2:-2].split('+~+') if len(g_tags) >= len('(+_+~+_+)') else []  # type: List[str]
+        add_list = g_tags[2:-2].split('+~+') if len(g_tags) >= len('(+_+~+_+)') else list()  # type: List[str]
         if len(add_list) > 1:
             do_split = split_always
             for add_s in add_list:
@@ -56,7 +56,7 @@ def split_tags_into_tasks(tag_groups_arr: List[str], cc: str, sc: str, split_alw
             thread_exit('Error: -tag in \'or\' group found, but no +tags! Cannot search by only -tags', -701)
         tags_multi_list = [f'{cc.join(new_tags_str_arr)}' if len(new_tags_str_arr) > 0 else '']
         for or_tags_list in reversed(or_tags_to_append):
-            toapp = []  # type: List[str]
+            toapp = list()  # type: List[str]
             for or_tag in or_tags_list:
                 for tags_string in tags_multi_list:
                     toapp.append(f'{or_tag}{f"{cc}{tags_string}" if len(tags_string) > 0 else ""}')
@@ -83,7 +83,7 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
         ngr = re_negative_and_group.fullmatch(neg_tags_group)
         return [re_compile(rf'^{esc(s)}$') for s in ngr.group(1).split(',')] if ngr else None
 
-    parsed = []  # type: List[List[Pattern]]
+    parsed = list()  # type: List[List[Pattern]]
     tags_list = tags_str.split(' ')
     for tgi in reversed(range(len(tags_list))):  # type: int
         tag_group = tags_list[tgi]
@@ -100,7 +100,7 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
     max_string_len = TAGS_STRING_LENGTH_MAX_RX if ProcModule.is_rx() else TAGS_STRING_LENGTH_MAX_RN
     if total_len > max_string_len:
         trace('Warning (W1): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
-        neg_tags_list = []  # type: List[str]
+        neg_tags_list = list()  # type: List[str]
         # first pass: wildcarded negative tags - chance to ruin alias is lower (rx)
         # second pass: any negative tags
         for wildcardpass in [True, False]:

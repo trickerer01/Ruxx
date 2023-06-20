@@ -19,7 +19,7 @@ from tkinter import (
     Menu, Toplevel, messagebox, ttk, Text, Scrollbar, StringVar, Button, Entry, Widget, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT,
     TOP, INSERT, BooleanVar, Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, E, S, X, Y, NO, YES
 )
-from typing import Optional, Callable, List, Union, Dict
+from typing import Optional, Callable, List, Union, Dict, Iterable
 
 # internal
 from app_defines import PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_LINUX
@@ -111,9 +111,10 @@ def first_column() -> Optional[int]:
     return next_column()
 
 
-def attach_tooltip(widget: Widget, contents: List[str], appeardelay=TOOLTIP_DELAY_DEFAULT, border_width: int = None, relief: str = None,
-                   bgcolor: str = None, timed=False) -> WidgetToolTip:
-    return WidgetToolTip(widget, contents, timed=timed, bgcolor=bgcolor, appear_delay=appeardelay, border_width=border_width, relief=relief)
+def attach_tooltip(widget: Widget, contents: Iterable[str], appeardelay=TOOLTIP_DELAY_DEFAULT, border_width: int = None,
+                   relief: str = None, bgcolor: str = None, timed=False) -> WidgetToolTip:
+    return WidgetToolTip(widget, contents, timed=timed, bgcolor=bgcolor, appear_delay=appeardelay, border_width=border_width,
+                         relief=relief)
 
 
 def register_global(index: Globals, gobject: Union[Checkbutton, ttk.Combobox, Entry, Button, Label]) -> None:
@@ -619,7 +620,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         def get_maxlen(b: Listbox) -> int:
             return max(len(str(b.get(i))) for i in range(b.size())) if b.size() > 0 else 0
 
-        maxlen = max(max(get_maxlen(lbox) for lbox in [self.lbox_h, self.lbox_c]), HeadersAndCookiesWindow.LBOX_WIDTH)
+        maxlen = max(max(get_maxlen(lbox) for lbox in (self.lbox_h, self.lbox_c)), HeadersAndCookiesWindow.LBOX_WIDTH)
         self.lbox_h.configure(width=maxlen)
         self.lbox_c.configure(width=maxlen)
 

@@ -227,13 +227,11 @@ TAG_ALIASES = loads(b64decode(TAG_ALIASES_STR))  # type: Dict[str, str]
 __UPDATE_TAG_ALIASES__ = False
 if __UPDATE_TAG_ALIASES__:
     from base64 import b64encode
-    [TAG_ALIASES.pop(k) for k in []]
+    [TAG_ALIASES.pop(k) for k in ('',)]
     TAG_ALIASES.update({
     })
     TAG_ALIASES = {
-        k: v
-        for k, v in
-        sorted(sorted(TAG_ALIASES.items(), key=lambda item: item[0]), key=lambda item: item[1])
+        k: v for k, v in sorted(sorted(TAG_ALIASES.items(), key=lambda item: item[0]), key=lambda item: item[1])
     }  # type: Dict[str, str]
     TAG_ALIASES_STR = b64encode(str(TAG_ALIASES).replace('\'', '"').encode()).decode()
 

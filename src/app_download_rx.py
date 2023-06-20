@@ -86,7 +86,7 @@ class DownloaderRx(DownloaderBase):
     def _is_video(self, h: str) -> bool:
         # tags are not 100% accurate so use a more direct approach
         _, file_ext = self.extract_file_url(h)
-        return file_ext in ['mp4', 'webm']
+        return file_ext in {'mp4', 'webm'}
 
     def _get_item_html(self, h: str) -> str:
         return h
@@ -108,7 +108,7 @@ class DownloaderRx(DownloaderBase):
         d = f'{d_re_res.group(3)}-{months.get(d_re_res.group(1))}-{d_re_res.group(2)}'
         return d
 
-    def get_items_query_size_or_html(self, url: str, tries: Optional[int] = None) -> int:
+    def get_items_query_size_or_html(self, url: str, tries: int = None) -> int:
         raw_html = self.fetch_html(f'{url}&pid=0', tries)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
