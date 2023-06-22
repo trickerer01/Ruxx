@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 from app_revision import APP_NAME, APP_VERSION, APP_REV_DATE, __RUXX_DEBUG__
 
-APP_AUTHOR_NICKNAME = f'trickerer'
+APP_AUTHOR_NICKNAME = 'trickerer'
 APP_AUTHOR = f'Dmitriy \'{APP_AUTHOR_NICKNAME}\' Komardin'
 APP_ADDRESS = f'github.com/trickerer01/{APP_NAME}'
 APP_YEARS = '2020-2023'

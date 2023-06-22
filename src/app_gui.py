@@ -48,7 +48,7 @@ from app_gui_defines import (
     OPTION_CMD_COOKIES, OPTION_CMD_HEADERS, OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_SOCKS,
     OPTION_CMD_PROXY_NO_DOWNLOAD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, FMT_DATE, DATE_MIN_DEFAULT_REV, SLASH,
     OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, BUTTONS_TO_UNFOCUS,
-    OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI,
+    OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI, BUT_ALT_F4,
     ProcModule, menu_items, menu_item_orig_states, gobjects, gobject_orig_states, Options, Globals, Menus, Icons, CVARS,
     re_id_eq_rx, re_id_ge_rx, re_id_le_rx, re_id_eq_rn, re_id_ge_rn, re_id_le_rn,
     re_id_post_eq_rx, re_id_post_ge_rx, re_id_post_le_rx, re_id_post_eq_rn, re_id_post_ge_rn, re_id_post_le_rn,
@@ -1146,8 +1146,14 @@ def init_gui() -> None:
     # additional windows
     Logger.wnd = LogWindow(rootm())
     Logger.wnd.window.wm_protocol('WM_DELETE_WINDOW', Logger.wnd.on_destroy)
-    rootm().bind_all(hotkeys.get(Options.OPT_ISLOGOPEN), func=lambda _: Logger.wnd.toggle_visibility())
     init_additional_windows()
+    rootm().bind_all(hotkeys.get(Options.OPT_ISLOGOPEN), func=lambda _: Logger.wnd.toggle_visibility())
+    rootm().bind_all(hotkeys.get(Options.OPT_ISPROXYOPEN), func=lambda e: window_proxym().ask() if e.state != 0x20000 else None)
+    rootm().bind_all(hotkeys.get(Options.OPT_ISHCOOKIESOPEN), func=lambda _: window_hcookiesm().toggle_visibility())
+    rootm().bind(BUT_ALT_F4, func=lambda _: rootm().destroy())
+    Logger.wnd.window.bind(BUT_ALT_F4, func=lambda _: Logger.wnd.hide() if Logger.wnd.visible else None)
+    window_hcookiesm().window.bind(BUT_ALT_F4, func=lambda _: window_hcookiesm().hide() if window_hcookiesm().visible else None)
+    window_proxym().window.bind(BUT_ALT_F4, func=lambda _: window_proxym().cancel() if window_proxym().visible else None)
     # Main menu
     init_menus()
 

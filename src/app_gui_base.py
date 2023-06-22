@@ -27,7 +27,7 @@ from app_file_sorter import FileTypeFilter
 from app_gui_defines import (
     BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, Options, STATE_NORMAL,
     TOOLTIP_INVALID_SYNTAX, CVARS, FONT_SANS_MEDIUM, COLUMNSPAN_MAX, BUT_CTRL_A, TOOLTIP_HCOOKIE_ADD_ENTRY, TOOLTIP_HCOOKIE_DELETE,
-    BUT_DELETE, WINDOW_MINSIZE, PADDING_ROOTFRAME_I, Menus, menu_items, hotkeys, IMG_SAVE_DATA, IMG_PROC_RX_DATA, IMG_PROC_RN_DATA,
+    BUT_DELETE, WINDOW_MINSIZE, PADDING_ROOTFRAME_I, Menus, menu_items, IMG_SAVE_DATA, IMG_PROC_RX_DATA, IMG_PROC_RN_DATA,
     IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL, PADDING_DEFAULT,
     OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, Globals, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
     OPTION_VALUES_DOWNORDER, TOOLTIP_ORDER, FMT_DATE, TOOLTIP_DATE, TOOLTIP_IDMIN, TOOLTIP_IDMAX, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK,
@@ -753,10 +753,8 @@ def init_additional_windows() -> None:
     global window_hcookies
     window_proxy = ProxyWindow(root)
     window_proxy.window.wm_protocol('WM_DELETE_WINDOW', window_proxy.on_destroy)
-    rootm().bind_all(hotkeys.get(Options.OPT_ISPROXYOPEN), func=lambda _: window_proxy.ask())
     window_hcookies = HeadersAndCookiesWindow(root)
     window_hcookies.window.wm_protocol('WM_DELETE_WINDOW', window_hcookies.on_destroy)
-    rootm().bind_all(hotkeys.get(Options.OPT_ISHCOOKIESOPEN), func=lambda _: window_hcookies.toggle_visibility())
 
 
 def register_menu(label: str, menu_id: Menus = None) -> Menu:

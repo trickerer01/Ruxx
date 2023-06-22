@@ -65,6 +65,7 @@ BUT_F1 = '<F1>'
 BUT_F2 = '<F2>'
 BUT_F3 = '<F3>'
 BUT_F4 = '<F4>'
+BUT_ALT_F4 = '<Alt-F4>'
 # Colors
 #  Color enum
 COLOR_WHITE = 'white'
