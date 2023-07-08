@@ -103,7 +103,7 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
         neg_tags_list = list()  # type: List[str]
         # first pass: wildcarded negative tags - chance to ruin alias is lower (rx)
         # second pass: any negative tags
-        for wildcardpass in [True, False]:
+        for wildcardpass in (True, False):
             for ti in reversed(range(len(tags_list))):  # type: int
                 if total_len <= max_string_len:
                     break

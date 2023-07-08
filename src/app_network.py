@@ -145,11 +145,11 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                         raise DownloadInterruptException
                     try:
                         def download_chunk(ofile: IO, start: int, end: int, exp_size: int, chunk_num: int) -> None:
-                            headers = {'Host': reqhost,
-                                       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                            headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                                        'Accept-Language': 'en-US,en;q=0.5',
                                        'Accept-Encoding': 'gzip, deflate, br',
                                        'DNT': '1',
+                                       # 'Host': reqhost,
                                        'Connection': 'keep-alive'}
                             if not single_chunk:
                                 headers['Range'] = f'bytes={start:d}-{end:d}'
@@ -200,7 +200,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                         expected_size = int(sreq.headers.get('content-length', '0'))
                         self.etags[item_id] = sreq.headers.get('etag', item_id)
                         # this code was left here after link replacements had been removed. DO NOT MOVE
-                        reqhost = re_link_host.search(link).group(1)
+                        # reqhost = re_link_host.search(link).group(1)
                         sreq.close()
 
                         if expected_size == 0:

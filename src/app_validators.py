@@ -14,18 +14,13 @@ from ipaddress import IPv4Address
 from json import loads as json_loads
 from os import path
 from typing import Union
-try:
-    from typing import Protocol
-except Exception:
-    # noinspection PyUnresolvedReferences
-    from typing_extensions import Protocol
 
 # internal
 from app_defines import FMT_DATE_DEFAULT, THREADS_MAX_ITEMS, DownloadModes
 from app_gui_defines import (
     SLASH, ProcModule, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_DOWNORDER, OPTION_VALUES_PARCHI
 )
-from app_utils import normalize_path
+from app_utils import Protocol, normalize_path
 
 __all__ = (
     'valid_int', 'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int',
@@ -209,7 +204,7 @@ class JsonValidator(StrValidator):
 
 class BoolStrValidator(StrValidator):
     def __call__(self, val: str) -> bool:
-        return len(val) == 1 and val[0] in ['0', '1']
+        return len(val) == 1 and val[0] in ('0', '1')
 
 
 class ProxyValidator(StrValidator):

@@ -13,7 +13,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from json import loads as json_loads
 from multiprocessing.dummy import current_process
-from os import path, curdir, environ, system, makedirs, stat
+from os import path, curdir, system, makedirs, stat
 from platform import system as running_system
 from sys import exit, argv
 from threading import Thread
@@ -25,9 +25,9 @@ from typing import Optional, Union, Callable, List, Tuple, Iterable
 from app_cmdargs import prepare_arglist
 from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, SUPPORTED_PLATFORMS, PROXY_SOCKS5, PROXY_HTTP, MODULE_ABBR_RX, MODULE_ABBR_RN,
-    DEFAULT_ENCODING, KNOWN_EXTENSIONS, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD,
-    DEFAULT_HEADERS,
-    max_progress_value_for_state, DATE_MIN_DEFAULT, FMT_DATE_DEFAULT,
+    DEFAULT_ENCODING, KNOWN_EXTENSIONS_STR, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD,
+    DEFAULT_HEADERS, DATE_MIN_DEFAULT, FMT_DATE_DEFAULT,
+    max_progress_value_for_state,
 )
 from app_download_rn import DownloaderRn
 from app_download_rx import DownloaderRx
@@ -37,7 +37,7 @@ from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
     AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, LogWindow,
     setrootconf, int_vars, rootm, getrootconf, window_hcookiesm, c_menum, window_proxym, c_submenum, register_menu,
-    register_submenu, GetRoot, create_base_window_widgets, text_cmdm, get_icon, init_additional_windows
+    register_submenu, GetRoot, create_base_window_widgets, text_cmdm, get_icon, init_additional_windows,
 )
 from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, hotkeys,
@@ -70,9 +70,10 @@ __all__ = ()
 # loaded
 download_thread = None  # type: Optional[Thread]
 tags_check_thread = None  # type: Optional[Thread]
-prev_download_state = 0
+prev_download_state = True
 console_shown = True
-IS_IDE = environ.get('PYCHARM_HOSTED') == '1'  # ran from IDE
+IS_RAW = '_sitebuiltins' in sys.modules  # ran from console (shell or IDE)
+IS_IDE = '_virtualenv' in sys.modules  # ran from IDE
 # end loaded
 
 # MODULES
@@ -89,8 +90,6 @@ PROC_MODULES_BY_ABBR = {
 
 
 # static methods
-
-
 def toggle_console() -> None:
     global console_shown
     ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), not console_shown)
@@ -302,7 +301,7 @@ class Settings(ABC):
 
 def untag_files_do() -> None:
     filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(), filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),)
+        initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),)
     )  # type: Tuple[str]
 
     if len(filelist) == 0:
@@ -320,7 +319,7 @@ def untag_files_do() -> None:
 
 def retag_files_do() -> None:
     filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(), filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),)
+        initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),)
     )  # type: Tuple[str]
 
     if len(filelist) == 0:
@@ -339,7 +338,7 @@ def retag_files_do() -> None:
 
 def sort_files_by_type_do() -> None:
     filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(), filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),)
+        initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),)
     )  # type: Tuple[str]
 
     if len(filelist) == 0:
@@ -365,7 +364,7 @@ def sort_files_by_type_do() -> None:
 
 def sort_files_by_size_do() -> None:
     filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(), filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),)
+        initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),)
     )  # type: Tuple[str]
 
     if len(filelist) == 0:
@@ -391,7 +390,7 @@ def sort_files_by_size_do() -> None:
 
 def sort_files_by_score_do() -> None:
     filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(), filetypes=(('All supported', ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)),)
+        initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),)
     )  # type: Tuple[str]
 
     if len(filelist) == 0:
@@ -479,7 +478,7 @@ def set_proc_module(dwnmodule: int) -> None:
         # icon
         config_global(Globals.GOBJECT_MODULE_ICON, image=get_icon(Icons.ICON_RX) if ProcModule.is_rx() else get_icon(Icons.ICON_RN))
         # enable/disable features specific to the module
-        update_menu_enabled_states()
+        update_widget_enabled_states()
 
     # reset tags parser
     reset_last_tags()
@@ -493,15 +492,19 @@ def config_global(index: Globals, **kwargs) -> None:
     get_global(index).config(kwargs)
 
 
-def update_menu_enabled_states() -> None:
+def update_widget_enabled_states() -> None:
+    downloading = is_downloading()
     for i in [m for m in Menus.__members__.values() if m < Menus.MAX_MENUS]:  # type: Menus
         if menu_items.get(i)[0] is not None:
             for j in menu_items.get(i)[1]:
                 if i == Menus.MENU_ACTIONS and j == 1 and is_cheking_tags():  # Check tags, disabled when active
                     newstate = STATE_DISABLED
                 else:
-                    newstate = STATE_DISABLED if is_downloading() else menu_item_orig_states[i][j]
+                    newstate = STATE_DISABLED if downloading else menu_item_orig_states[i][j]
                 menu_items.get(i)[0].entryconfig(j, state=newstate)
+    for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:  # type: Globals
+        if gi == Globals.GOBJECT_COMBOBOX_PARCHI:
+            config_global(gi, state=(STATE_DISABLED if not ProcModule.is_rx() else gobject_orig_states[gi]))
 
 
 def is_focusing(gidx: Globals) -> bool:
@@ -798,14 +801,15 @@ def check_tags_direct() -> None:
         except (Exception, SystemExit):
             pass
 
-    if not is_downloading():
+    downloading = is_downloading()
+    if downloading is False:
         config_global(Globals.GOBJECT_FIELD_TAGS, bg=COLOR_PALEGREEN if count > 0 else COLOR_BROWN1)
         if mydwn and count > 0:
             Thread(target=lambda: messagebox.showinfo(title='', message=f'Found {count:d} results!', icon='info')).start()
 
     thread_sleep(1.5)
 
-    if not is_downloading():
+    if downloading is False:
         config_global(Globals.GOBJECT_FIELD_TAGS, bg=COLOR_WHITE)
         config_global(Globals.GOBJECT_BUTTON_CHECKTAGS, state=gobject_orig_states[Globals.GOBJECT_BUTTON_CHECKTAGS])
         menu_items.get(Menus.MENU_ACTIONS)[0].entryconfig(
@@ -890,29 +894,30 @@ def update_download_state() -> None:
     global download_thread
     global prev_download_state
 
-    if prev_download_state != is_downloading():
-        update_menu_enabled_states()
+    downloading = is_downloading()
+    if prev_download_state != downloading:
+        update_widget_enabled_states()
         for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:  # type: Globals
-            if gi in [Globals.GOBJECT_BUTTON_DOWNLOAD, Globals.GOBJECT_MODULE_ICON]:
+            if gi in (Globals.GOBJECT_BUTTON_DOWNLOAD, Globals.GOBJECT_MODULE_ICON, Globals.GOBJECT_COMBOBOX_PARCHI):
                 pass  # config_global(i, state=gobject_orig_states[i])
             elif gi == Globals.GOBJECT_BUTTON_CHECKTAGS:
                 if not is_cheking_tags():
-                    config_global(gi, state=(STATE_DISABLED if is_downloading() else gobject_orig_states[gi]))
+                    config_global(gi, state=(STATE_DISABLED if downloading else gobject_orig_states[gi]))
             else:
-                config_global(gi, state=(STATE_DISABLED if is_downloading() else gobject_orig_states[gi]))
+                config_global(gi, state=(STATE_DISABLED if downloading else gobject_orig_states[gi]))
         # special case 1: _download button: turn into cancel button
         dw_button = get_global(Globals.GOBJECT_BUTTON_DOWNLOAD)
-        if is_downloading():
+        if downloading:
             dw_button.config(text='Cancel', command=cancel_download)
         else:
             dw_button.config(text='Download', command=do_download)
 
-    if not is_downloading() and (download_thread is not None):
+    if not downloading and (download_thread is not None):
         download_threadm().join()  # make thread terminate
         del download_thread
         download_thread = None
 
-    prev_download_state = is_downloading()
+    prev_download_state = downloading
 
     rootm().after(int(THREAD_CHECK_PERIOD_DEFAULT), update_download_state)
 
@@ -1067,6 +1072,7 @@ def finalize_additional_windows() -> None:
     Logger.wnd.finalize()
     window_proxym().finalize()
     window_hcookiesm().finalize()
+    Logger.print_pending_strings()
 
 
 def init_menus() -> None:
@@ -1094,7 +1100,7 @@ def init_menus() -> None:
     register_menu_checkbutton('Log', CVARS.get(Options.OPT_ISLOGOPEN), Logger.wnd.toggle_visibility, hotkey_text(Options.OPT_ISLOGOPEN))
     if __RUXX_DEBUG__ and running_system() == PLATFORM_WINDOWS:
         register_menu_checkbutton('Console', CVARS.get(Options.OPT_ISCONSOLELOGOPEN), toggle_console)
-        if IS_IDE:
+        if IS_RAW:
             c_menum().entryconfig(1, state=STATE_DISABLED)
     # 4) Module
     register_menu('Module', Menus.MENU_MODULE)
@@ -1166,16 +1172,10 @@ def init_gui() -> None:
     setrootconf(Options.OPT_DOWNLOAD_LIMIT, 0)
     setrootconf(Options.OPT_FNAMEPREFIX, True)
     setrootconf(Options.OPT_APPEND_SOURCE_AND_TAGS, True)
-    if IS_IDE:
-        setrootconf(Options.OPT_IGNORE_PROXY, True)
-        setrootconf(Options.OPT_SAVE_TAGS, False)
-        setrootconf(Options.OPT_SAVE_SOURCES, False)
-        setrootconf(Options.OPT_WARN_NONEMPTY_DEST, False)
-    else:
-        setrootconf(Options.OPT_IGNORE_PROXY, False)
-        setrootconf(Options.OPT_SAVE_TAGS, True)
-        setrootconf(Options.OPT_SAVE_SOURCES, True)
-        setrootconf(Options.OPT_WARN_NONEMPTY_DEST, True)
+    setrootconf(Options.OPT_IGNORE_PROXY, IS_IDE)
+    setrootconf(Options.OPT_SAVE_TAGS, not IS_IDE)
+    setrootconf(Options.OPT_SAVE_SOURCES, not IS_IDE)
+    setrootconf(Options.OPT_WARN_NONEMPTY_DEST, not IS_IDE)
 
     # Background looping tasks
     update_frame_cmdline()
@@ -1229,25 +1229,19 @@ if __name__ == '__main__':
         current_process().killed = False
         arglist = prepare_arglist(argv[1:])
         set_proc_module(PROC_MODULES_BY_ABBR[arglist.module])
-
         with get_new_proc_module() as dwn:
             dwn.launch(arglist)
     else:
         # hide console if running the GUI
-        if running_system() == PLATFORM_WINDOWS and not IS_IDE:
+        if running_system() == PLATFORM_WINDOWS and not IS_RAW:
             # 1 process is a main window, 2 is the console itself, 3 would be external console
             if ctypes.windll.kernel32.GetConsoleProcessList(ctypes.byref(ctypes.c_int(0)), 1) == 2:
-                def hide_console() -> None:
-                    global console_shown
-                    thread_sleep(1.5)
-                    ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
-                    console_shown = False
-                print('[Launcher] Hiding own console...')
-                Thread(target=hide_console).start()
+                Logger.pending_strings.append('[Launcher] Hiding own console...')
+                ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
                 ctypes.windll.user32.DeleteMenu(
                     ctypes.windll.user32.GetSystemMenu(ctypes.windll.kernel32.GetConsoleWindow(), 0), 0xF060, ctypes.c_ulong(0)
                 )
-
+                console_shown = False
         init_gui()
 
     sys.exit(0)

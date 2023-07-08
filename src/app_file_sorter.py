@@ -14,11 +14,11 @@ from typing import TypeVar, Collection, Iterable, Sequence
 
 # internal
 from app_gui_defines import SLASH
-from app_utils import normalize_path
+from app_utils import normalize_path, Comparable
 
 __all__ = ('FileTypeFilter', 'sort_files_by_type', 'sort_files_by_size', 'sort_files_by_score')
 
-T = TypeVar('T', float, int)
+CT = TypeVar('CT', bound=Comparable)
 
 
 @unique
@@ -28,7 +28,7 @@ class FileTypeFilter(IntEnum):
     FILTER_INVALID = auto()
 
 
-def get_threshold_index(thresholds: Collection[T], val: T) -> int:
+def get_threshold_index(thresholds: Collection[CT], val: CT) -> int:
     for i, threshold in enumerate(thresholds):
         if val < threshold:
             return i
@@ -51,7 +51,7 @@ def sort_files_by_type(files: Iterable[str], filter_type: FileTypeFilter) -> int
             if filter_type == FileTypeFilter.BY_EXTENSION:
                 sub_name = 'jpg' if ext == 'jpeg' else ext
             else:
-                sub_name = 'video' if ext in ['mp4', 'webm'] else 'flash' if ext in ['swf'] else 'image'
+                sub_name = 'video' if ext in ('mp4', 'webm') else 'flash' if ext in ('swf',) else 'image'
             move_file(full_path, f'{base_path}{SLASH}{sub_name}{SLASH}', full_name)
             moved_count += 1
         except Exception:

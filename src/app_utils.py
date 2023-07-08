@@ -7,14 +7,33 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from abc import abstractmethod
 from datetime import datetime, date
 from tkinter import messagebox
+# from typing import Iterable
+try:
+    from typing import Protocol
+except Exception:
+    # noinspection PyUnresolvedReferences
+    from typing_extensions import Protocol
 
 # internal
 from app_defines import FMT_DATE_DEFAULT
 from app_gui_defines import SLASH, re_uscore_mult
 
-__all__ = ('as_date', 'confirm_yes_no', 'normalize_path', 'trim_undersores', 'format_score', 'find_first_not_of')
+__all__ = ('Protocol', 'Comparable', 'as_date', 'confirm_yes_no', 'normalize_path', 'trim_undersores', 'format_score', 'find_first_not_of')
+
+
+class Comparable(Protocol):
+    @abstractmethod
+    def __lt__(self, other) -> bool: ...
+
+    @abstractmethod
+    def __eq__(self, other) -> bool: ...
+
+
+# def is_sorted(c: Iterable) -> bool:
+#     return all(a <= b for a, b in zip(c, c[1:]))
 
 
 def find_first_not_of(s: str, chars: str) -> int:

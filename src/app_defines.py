@@ -194,7 +194,8 @@ SUPPORTED_PLATFORMS = (
     # PLATFORM_DARWIN
 )
 
-KNOWN_EXTENSIONS = {'mp4', 'webm', 'swf', 'png', 'jpg', 'jpeg', 'gif'}
+KNOWN_EXTENSIONS = ('mp4', 'webm', 'swf', 'png', 'jpg', 'jpeg', 'gif')
+KNOWN_EXTENSIONS_STR = ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)
 
 
 class ThreadInterruptException(Exception):

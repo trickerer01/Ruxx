@@ -966,6 +966,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 raise
             except Exception:
                 trace(f'task {i:d} failed...')
+                raise
             finally:
                 self._reset_after_task(i)
                 trace(BR)

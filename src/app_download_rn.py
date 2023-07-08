@@ -35,6 +35,8 @@ re_shimmie_image_href = re_compile(r'/_images/[^/]+/\d+?')
 re_shimmie_thumb = re_compile(r'^thumb shm-thumb.+?$')
 re_shimmie_orig_source = re_compile('^overflow:.+?$')
 
+item_info_fields = {'data-post-id': 'id', 'data-tags': 'tags', 'title': 'ext'}
+
 
 class DownloaderRn(DownloaderBase):
     """
@@ -157,21 +159,12 @@ class DownloaderRn(DownloaderBase):
 
     def _extract_item_info(self, item: str) -> ItemInfo:
         item_info = ItemInfo()
-        all_parts = re_item_info_part_rn.findall(item)
-        for part in all_parts:
+        for part in re_item_info_part_rn.findall(item):
             name, value = tuple(str(part).split('=', 1))
-            # special case id (thumb_...): skip
-            if name == 'id':
+            if name == 'id':  # special case id (thumb_...): skip
                 continue
-            # special case data-post-id -> id
-            if name == 'data-post-id':
-                name = 'id'
-            # special case data-tags -> tags
-            if name == 'data-tags':
-                name = 'tags'
-            # special case: title -> extract ext
-            if name == 'title':
-                name = 'ext'
+            name = item_info_fields.get(name, name)
+            if name == 'ext':  # special case: title -> ext -> extract ext
                 value = value[value.rfind(' ') + 1:]
             if name in item_info.__slots__:
                 item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())

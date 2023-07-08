@@ -35,6 +35,8 @@ re_post_date_rx = re_compile(r'^\w{3} (\w{3}) (\d\d) \d{2}:\d{2}:\d{2} \+\d{4} (
 re_orig_file_link = re_compile(r'file_url=\"([^"]+)\"')
 re_sample_file_link = re_compile(r'file_url=\"([^"]+)\"')
 
+item_info_fields = {'file_url': 'ext'}
+
 
 class DownloaderRx(DownloaderBase):
     """
@@ -164,16 +166,11 @@ class DownloaderRx(DownloaderBase):
 
     def _extract_item_info(self, item: str) -> ItemInfo:
         item_info = ItemInfo()
-        all_parts = re_item_info_part_rx.findall(item)
-        for part in all_parts:
+        for part in re_item_info_part_rx.findall(item):
             name, value = tuple(str(part).split('=', 1))
-            # special case: file_url -> extract ext
-            if name == 'file_url':
-                name = 'ext'
+            name = item_info_fields.get(name, name)
+            if name == 'ext':  # special case: file_url -> ext -> extract ext
                 value = value[value.rfind('.') + 1:]
-            # special case: source -> omit unknowns
-            # if name == 'source' and len(value) < 2:
-            #     value = 'Unknown'
             if name in item_info.__slots__:
                 item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
 

@@ -10,7 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from locale import getpreferredencoding
 from threading import Lock as ThreadLock
 from time import localtime, strftime
-from typing import Optional
+from typing import Optional, List
 from tkinter import END, INSERT
 
 # internal
@@ -25,6 +25,7 @@ __all__ = ('Logger', 'trace')
 class Logger:
     print_lock = ThreadLock()
 
+    pending_strings = []  # type: List[str]
     is_cmdline = False
     is_disabled = False
     wnd = None  # type: Optional[LogWindow]
@@ -89,6 +90,12 @@ class Logger:
                 Logger._prepare(message)
         else:
             Logger._prepare(message)
+
+    @staticmethod
+    def print_pending_strings(safe=False, timestamp=False) -> None:
+        for ps in Logger.pending_strings:
+            Logger.log(ps, safe, timestamp)
+        Logger.pending_strings.clear()
 
 
 def trace(message: str, safe=False, timestamp=False) -> None:
