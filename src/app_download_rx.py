@@ -251,9 +251,6 @@ class DownloaderRx(DownloaderBase):
     def maxlim_str(self, maxlim: int) -> str:
         return f'&limit={maxlim or self._get_items_per_page():d}'
 
-
-DownloaderType = DownloaderRx
-
 #
 #
 #########################################

@@ -226,7 +226,7 @@ class Settings(ABC):
             return f'{name}={str(value)}\n'
 
         settings = ['# Ruxx config settings #\n\n']
-        for k in Settings.settings.keys():
+        for k in Settings.settings:
             # noinspection PyUnusedLocal
             myval = ...  # type: Union[str, int]
             conf = Settings.settings.get(k).conf
@@ -236,7 +236,7 @@ class Settings(ABC):
                 myval = window_hcookiesm().get_json_c()
             elif conf == Options.OPT_MODULE:
                 myval = ProcModule.get() - 1
-            elif conf in Settings.combobox_setting_arrays.keys():
+            elif conf in Settings.combobox_setting_arrays:
                 myval = Settings.combobox_setting_arrays.get(conf).index(getrootconf(conf))
             else:
                 myval = getrootconf(conf)
@@ -250,7 +250,7 @@ class Settings(ABC):
             if line.startswith('#') or line == '':  # comment or a newline
                 continue
             kv_k, kv_v = line.split('=', 1)  # type: str, str
-            if kv_k in Settings.settings.keys():
+            if kv_k in Settings.settings:
                 conf = Settings.settings.get(kv_k).conf
                 val = Settings.settings.get(kv_k).type(kv_v)
                 assert Settings.settings.get(kv_k).validate(val)
@@ -264,7 +264,7 @@ class Settings(ABC):
                     int_vars.get(CVARS.get(conf)).set(val + 1)
                 elif conf == Options.OPT_PROXYSTRING:
                     setrootconf(Options.OPT_PROXYSTRING_TEMP, val)
-                elif conf in Settings.combobox_setting_arrays.keys():
+                elif conf in Settings.combobox_setting_arrays:
                     setrootconf(conf, Settings.combobox_setting_arrays.get(conf)[val])
                 else:
                     setrootconf(conf, val)
@@ -1053,7 +1053,7 @@ def register_menu_checkbutton(label: str, variablename: str, command: Callable =
 
 
 def register_menu_radiobutton(label: str, variablename: str, value: int, command: Callable = None, hotkey_str: str = None) -> None:
-    if variablename not in int_vars.keys():
+    if variablename not in int_vars:
         int_vars[variablename] = IntVar(rootm(), value=value, name=variablename)  # needed so it won't be discarded
     c_menum().add_radiobutton(label=label, command=command, variable=int_vars.get(variablename), value=value, accelerator=hotkey_str)
 

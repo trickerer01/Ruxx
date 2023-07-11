@@ -208,7 +208,7 @@ class DownloaderRn(DownloaderBase):
                 return
 
             full_item_id = f'{self._get_module_abbr_p()}{item_id}'
-            if full_item_id in self.item_info_dict.keys():
+            if full_item_id in self.item_info_dict:
                 orig_source_div = raw_html.find('div', style=re_shimmie_orig_source)
                 if orig_source_div:
                     self.item_info_dict[full_item_id].source = orig_source_div.text
@@ -216,7 +216,7 @@ class DownloaderRn(DownloaderBase):
                 favorited_by_div = raw_html.find('h3', string='Favorited By')
                 if favorited_by_div:
                     fav_sib = favorited_by_div.findNextSibling()
-                    score_text = fav_sib.text[:max(fav_sib.text.find(' '), 0)]  # str(number) or ''
+                    score_text = fav_sib.text[:max(fav_sib.text.find(' '), 0)]
                     self.item_info_dict[full_item_id].score = score_text
 
         if self.download_mode == DownloadModes.DOWNLOAD_SKIP:
@@ -260,9 +260,6 @@ class DownloaderRn(DownloaderBase):
         h = raw[raw.find('href="') + len('href="') + 1:]
         h = h[:h.find('"')]
         return h
-
-
-DownloaderType = DownloaderRn
 
 #
 #

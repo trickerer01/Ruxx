@@ -118,7 +118,7 @@ def attach_tooltip(widget: Widget, contents: Iterable[str], appeardelay=TOOLTIP_
 
 
 def register_global(index: Globals, gobject: Union[Checkbutton, ttk.Combobox, Entry, Button, Label]) -> None:
-    assert index in gobjects.keys() and gobjects.get(index) is None
+    assert index in gobjects and gobjects.get(index) is None
     gobjects[index] = gobject
 
 
@@ -762,7 +762,7 @@ def register_menu(label: str, menu_id: Menus = None) -> Menu:
     menu = BaseMenu(rootMenu)
     # register in global container for later
     if menu_id is not None:
-        if menu_id in menu_items.keys():
+        if menu_id in menu_items:
             menu_items[menu_id][0] = menu
     root_menum().add_cascade(menu=menu, label=label)
     c_menu = menu
