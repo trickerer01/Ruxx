@@ -29,9 +29,7 @@ DMODES_STR = str(DMODE_CHOICES).replace(' ', '')
 
 def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser = ArgumentParser(add_help=False)
-
     parser.add_argument('--help', action='help')
-
     parser.add_argument('-module', default=MODULE_ABBR_RX, help=HELP_ARG_MODULE, choices=(MODULE_ABBR_RX, MODULE_ABBR_RN))
     parser.add_argument('-include_parchi', action=ACTION_STORE_TRUE, help=HELP_ARG_INCLUDE_PARCHI)
     parser.add_argument('-skip_img', action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_IMAGES)

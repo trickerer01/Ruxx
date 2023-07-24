@@ -14,8 +14,6 @@ from datetime import datetime
 from json import loads as json_loads
 from multiprocessing.dummy import current_process
 from os import path, curdir, system, makedirs, stat
-from platform import system as running_system
-from sys import exit, argv
 from threading import Thread
 from time import sleep as thread_sleep
 from tkinter import messagebox, filedialog, BooleanVar, IntVar, Entry, Button, PhotoImage, END, LEFT
@@ -71,6 +69,9 @@ prev_download_state = True
 console_shown = True
 IS_RAW = '_sitebuiltins' in sys.modules  # ran from console (shell or IDE)
 IS_IDE = '_virtualenv' in sys.modules  # ran from IDE
+CONSOLEVAL = ctypes.windll.kernel32.GetConsoleProcessList(ctypes.byref(ctypes.c_int(0)), 1) if sys.platform == PLATFORM_WINDOWS else -1
+HAS_OWN_CONSOLE = CONSOLEVAL == 2  # 1 process is a main window, 2 is the console itself, 3 would be external console
+CAN_MANIPULATE_CONSOLE = HAS_OWN_CONSOLE and not IS_RAW
 # end loaded
 
 # MODULES
@@ -95,13 +96,12 @@ def toggle_console() -> None:
 
 def ensure_compatibility(is_gui: bool) -> None:
     assert sys.version_info >= (3, 7), 'Minimum python version required is 3.7!'
-    mysystem = running_system()
-    if mysystem not in SUPPORTED_PLATFORMS:
+    if sys.platform not in SUPPORTED_PLATFORMS:
         if is_gui:
-            messagebox.showinfo('', f'Unsupported OS \'{mysystem}\'')
+            messagebox.showinfo('', f'Unsupported OS \'{sys.platform}\'')
         else:
-            Logger.log(f'Unsupported OS \'{mysystem}\'', False, False)
-        exit(-1)
+            Logger.log(f'Unsupported OS \'{sys.platform}\'', False, False)
+        sys.exit(-1)
 
 
 def hotkey_text(option: Options) -> str:
@@ -903,7 +903,7 @@ def unfocus_buttons_once() -> None:
 
 # def quit_with_msg(title='Exit', message='Really?') -> None:
 #     if messagebox.askokcancel(title=title, message=message, icon='warning'):
-#         exit()
+#         sys.exit()
 
 
 def help_tags(title: str = 'Tags') -> None:
@@ -1002,8 +1002,8 @@ def init_menus() -> None:
     register_menu_separator()
     register_menu_command('Open download folder', open_download_folder, Options.OPT_ACTION_OPEN_DWN_FOLDER, True)
     register_menu_separator()
-    register_menu_command('Exit', exit)
-    if running_system() != PLATFORM_WINDOWS:
+    register_menu_command('Exit', sys.exit)
+    if sys.platform != PLATFORM_WINDOWS:
         c_menum().entryconfig(5, state=STATE_DISABLED)  # disable 'Open download folder'
     # 2) Edit
     register_menu('Edit', Menus.MENU_EDIT)
@@ -1015,10 +1015,8 @@ def init_menus() -> None:
     # 3) View
     register_menu('View')
     register_menu_checkbutton('Log', CVARS.get(Options.OPT_ISLOGOPEN), Logger.wnd.toggle_visibility, hotkey_text(Options.OPT_ISLOGOPEN))
-    if __RUXX_DEBUG__ and running_system() == PLATFORM_WINDOWS:
+    if CAN_MANIPULATE_CONSOLE and __RUXX_DEBUG__:
         register_menu_checkbutton('Console', CVARS.get(Options.OPT_ISCONSOLELOGOPEN), toggle_console)
-        if IS_RAW:
-            c_menum().entryconfig(1, state=STATE_DISABLED)
     # 4) Module
     register_menu('Module', Menus.MENU_MODULE)
     register_menu_radiobutton('rx', CVARS.get(Options.OPT_MODULE), ProcModule.PROC_RX, lambda: set_proc_module(ProcModule.PROC_RX))
@@ -1138,27 +1136,24 @@ def dwnm() -> Union[DownloaderRn, DownloaderRx]:
 #########################################
 
 if __name__ == '__main__':
-    running_in_gui = len(argv) < 2
+    running_in_gui = len(sys.argv) < 2
     Logger.init(not running_in_gui)
     ensure_compatibility(running_in_gui)
 
     if not running_in_gui:
         current_process().killed = False
-        arglist = prepare_arglist(argv[1:])
+        arglist = prepare_arglist(sys.argv[1:])
         set_proc_module(PROC_MODULES_BY_ABBR[arglist.module])
         with get_new_proc_module() as dwn:
             dwn.launch(arglist)
     else:
-        # hide console if running the GUI
-        if running_system() == PLATFORM_WINDOWS and not IS_RAW:
-            # 1 process is a main window, 2 is the console itself, 3 would be external console
-            if ctypes.windll.kernel32.GetConsoleProcessList(ctypes.byref(ctypes.c_int(0)), 1) == 2:
-                Logger.pending_strings.append('[Launcher] Hiding own console...')
-                ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
-                ctypes.windll.user32.DeleteMenu(
-                    ctypes.windll.user32.GetSystemMenu(ctypes.windll.kernel32.GetConsoleWindow(), 0), 0xF060, ctypes.c_ulong(0)
-                )
-                console_shown = False
+        if CAN_MANIPULATE_CONSOLE:
+            Logger.pending_strings.append('[Launcher] Hiding own console...')
+            ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
+            ctypes.windll.user32.DeleteMenu(
+                ctypes.windll.user32.GetSystemMenu(ctypes.windll.kernel32.GetConsoleWindow(), 0), 0xF060, ctypes.c_ulong(0)
+            )
+            console_shown = False
         init_gui()
 
     sys.exit(0)

@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from __future__ import annotations
+import sys
 from abc import abstractmethod
 from argparse import Namespace
 from datetime import datetime
@@ -15,7 +16,6 @@ from multiprocessing.dummy import current_process, Pool
 from multiprocessing.pool import ThreadPool
 from os import makedirs, listdir, path, curdir
 from re import compile as re_compile
-from sys import exc_info
 from time import sleep as thread_sleep
 from typing import Optional, Dict, Tuple, Union, List, Callable, Pattern, Iterable, Set, MutableSet
 
@@ -26,7 +26,7 @@ from iteration_utilities import unique_everseen
 # internal
 from app_defines import (
     ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, ItemInfo, DATE_MIN_DEFAULT,
-    CONNECT_DELAY_PAGE, CONNECT_RETRIES_ITEM, BR, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE_DEFAULT,
+    CONNECT_DELAY_PAGE, CONNECT_RETRIES_ITEM, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE_DEFAULT, PLATFORM_WINDOWS
 )
 from app_gui_defines import UNDERSCORE, NEWLINE
 from app_network import ThreadedHtmlWorker, thread_exit, DownloadInterruptException
@@ -37,6 +37,11 @@ from app_task import extract_neg_and_groups, split_tags_into_tasks
 from app_utils import as_date, confirm_yes_no, normalize_path, trim_undersores, format_score
 
 __all__ = ('DownloaderBase',)
+
+
+LINE_BREAKS_AT = 104 if sys.platform == PLATFORM_WINDOWS else 90
+BR = "=" * LINE_BREAKS_AT
+"""line breaker"""
 
 
 class DownloaderBase(ThreadedHtmlWorker):
@@ -928,10 +933,10 @@ class DownloaderBase(ThreadedHtmlWorker):
             self.parse_args(args)
             self._process_all_tags()
         except (KeyboardInterrupt, ThreadInterruptException):
-            trace(f'\nInterrupted by {str(exc_info()[0])}!\n', True)
+            trace(f'\nInterrupted by {str(sys.exc_info()[0])}!\n', True)
             self.my_root_thread.killed = True
         except Exception:
-            trace(f'Unhandled {str(exc_info()[0])}: {str(exc_info()[1])}', True)
+            trace(f'Unhandled {str(sys.exc_info()[0])}: {str(sys.exc_info()[1])}', True)
         finally:
             self.current_state = DownloaderStates.STATE_IDLE
 

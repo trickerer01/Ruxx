@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # app_gui, app_cmdargs
 
 # native
+import sys
 from abc import ABC, abstractmethod
 from base64 import b64decode
 from datetime import datetime
@@ -21,7 +22,7 @@ from tkinter import (
 from typing import Optional, Callable, List, Union, Dict, Iterable
 
 # internal
-from app_defines import PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX
+from app_defines import PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS
 from app_file_sorter import FileTypeFilter
 from app_gui_defines import (
     BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, Options, STATE_NORMAL,
@@ -903,7 +904,7 @@ def create_base_window_widgets() -> None:
     op_datemin_t = Entry(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMIN)))
     register_global(Globals.GOBJECT_FIELD_DATEMIN, op_datemin_t)
     op_datemin_t.insert(0, DATE_MIN_DEFAULT_REV)
-    op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * 3)
+    op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if sys.platform == PLATFORM_WINDOWS else 1))
     attach_tooltip(op_datemin_t, TOOLTIP_DATE)
     #  Date max
     opframe_datemax = ttk.LabelFrame(root_framem(), text='Date max')
@@ -912,7 +913,7 @@ def create_base_window_widgets() -> None:
     op_datemax_t = Entry(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMAX)))
     register_global(Globals.GOBJECT_FIELD_DATEMAX, op_datemax_t)
     op_datemax_t.insert(0, datetime.today().strftime(FMT_DATE))
-    op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * 3)
+    op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if sys.platform == PLATFORM_WINDOWS else 1))
     attach_tooltip(op_datemax_t, TOOLTIP_DATE)
 
     # Tags #
