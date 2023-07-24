@@ -8,7 +8,7 @@ Ruxx is a content downloader with a lot of filters for maximum search precision 
 ### How to use
 - \[Optional] Choose a **Module** (website) to use. Notice that an icon in the bottom left corner will change accordingly
 - Fill the **Tags** field with tags you want to search for. For base and quick advanced info on tags check **Help -> Tags** section. [More info](#tags-syntax)
-- \[Optional] Additonally, check the **filters** to fine-tune your search. You can choose whether you want do download **videos**, **images**, or **both**, add **id** and **post date** limits, as well as number of **download threads** and **download order**
+- \[Optional] Additonally, check the **filters** to fine-tune your search. You can choose whether you want do download **videos**, **images** or **both**, add **id** and **post date** limits, number of **download threads**
 - \[Optional] Choose the destination **Path**. Default path is current folder
 - Press **Download**
 
@@ -21,7 +21,6 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - *Images* - some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you can also filter all the images out
 - *Parent posts / child posts* - this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX only
 - *Threading* - the number of threads to use for downloading. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
-- *Order* - the download queue is sorted by ID which directly correlates with upload time. `Oldest first` means ascending order. If you really care
 - *Search limits*
   - *Date min / max* - applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset do default
   - *ID min / max* - these are applied directly to your searches (transformed into tags), unless tags string already contains respective id tags. You can set `max` to a negative value to make it serve as `count` (GUI only)

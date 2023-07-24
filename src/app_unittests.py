@@ -26,7 +26,7 @@ CUR_PATH = normalize_path(path.abspath(curdir))
 
 args_argparse_str1 = (
     'sfw asd ned -nds -proxr '
-    '-dmode 0 -rev -skip_img -skip_vid -webm -lowres -noproxy -proxynodown -socks -prefix -dump_tags -dump_sources -append_info'
+    '-dmode 0 -skip_img -skip_vid -webm -lowres -noproxy -proxynodown -socks -prefix -dump_tags -dump_sources -append_info'
 )
 args_argparse_str2 = (
     'sfw asd ned -nds -proxt '
@@ -71,7 +71,6 @@ class DownloaderBaseTests(TestCase):
             dwn.parse_args(arglist)
             self.assertEqual(dwn.get_tags_count(), 5)
             self.assertEqual(dwn.download_mode, DownloadModes.DOWNLOAD_FULL)
-            self.assertEqual(dwn.reverse_order, True)
             self.assertEqual(dwn.skip_images, True)
             self.assertEqual(dwn.skip_videos, True)
             self.assertEqual(dwn.prefer_webm, True)

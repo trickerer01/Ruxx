@@ -42,7 +42,7 @@ from app_gui_base import (
 from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, hotkeys,
     COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING,
-    OPTION_VALUES_DOWNORDER, OPTION_CMD_VIDEOS, OPTION_CMD_IMAGES, OPTION_CMD_THREADING_CMD, OPTION_CMD_THREADING, OPTION_CMD_DOWNORDER,
+    OPTION_CMD_VIDEOS, OPTION_CMD_IMAGES, OPTION_CMD_THREADING_CMD, OPTION_CMD_THREADING,
     OPTION_CMD_FNAMEPREFIX, OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS,
     OPTION_CMD_SAVE_SOURCES, OPTION_CMD_IDMIN, OPTION_CMD_IDMAX, OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH,
     OPTION_CMD_COOKIES, OPTION_CMD_HEADERS, OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_SOCKS,
@@ -61,8 +61,7 @@ from app_tags_parser import reset_last_tags, parse_tags
 from app_utils import normalize_path, confirm_yes_no
 from app_validators import (
     StrValidator, IntValidator, ValidatorAlwaysTrue, ModuleValidator, VideosCBValidator, ImagesCBValidator, VALIDATORS_DICT,
-    ThreadsCBValidator, DownloadOrderCBValidator, PositiveIdValidator, IdValidator, JsonValidator, BoolStrValidator, ProxyValidator,
-    DateValidator, ParchiCBValidator,
+    ThreadsCBValidator, PositiveIdValidator, IdValidator, JsonValidator, BoolStrValidator, ProxyValidator, DateValidator, ParchiCBValidator,
 )
 
 __all__ = ()
@@ -161,7 +160,6 @@ class Settings(ABC):
         'images': Setting(Options.OPT_IMGSETTING, ImagesCBValidator(), 'Invalid images option \'%s\'!'),
         'parchi': Setting(Options.OPT_PARCHISETTING, ParchiCBValidator(), 'Invalid parchi option \'%s\'!'),
         'threads': Setting(Options.OPT_THREADSETTING, ThreadsCBValidator(), 'Invalid threads option \'%s\'!'),
-        'order': Setting(Options.OPT_DOWNORDER, DownloadOrderCBValidator(), 'Invalid order option \'%s\'!'),
         'idmin': Setting(Options.OPT_IDMIN, PositiveIdValidator(), 'Invalid idmin value \'%s\'!'),
         'idmax': Setting(Options.OPT_IDMAX, IdValidator(), 'Invalid idmax value \'%s\'!'),
         'datemin': Setting(Options.OPT_DATEAFTER, DateValidator(), 'Invalid date value \'%s\'!'),
@@ -184,7 +182,6 @@ class Settings(ABC):
         Options.OPT_IMGSETTING: OPTION_VALUES_IMAGES,
         Options.OPT_PARCHISETTING: OPTION_VALUES_PARCHI,
         Options.OPT_THREADSETTING: OPTION_VALUES_THREADING,
-        Options.OPT_DOWNORDER: OPTION_VALUES_DOWNORDER,
     }
 
     @staticmethod
@@ -269,7 +266,7 @@ class Settings(ABC):
                 else:
                     setrootconf(conf, val)
             else:
-                Logger.log(f'unknown option {kv_k}, skipped', False, False)
+                Logger.log(f'unknown option \'{kv_k}\', skipped', False, False)
 
     @staticmethod
     def save_settings() -> None:
@@ -629,9 +626,6 @@ def prepare_cmdline() -> List[str]:
     addstr = OPTION_CMD_THREADING[OPTION_VALUES_THREADING.index(str(getrootconf(Options.OPT_THREADSETTING)))]
     if len(addstr) > 0:
         newstr.append(OPTION_CMD_THREADING_CMD)
-        newstr.append(addstr)
-    addstr = OPTION_CMD_DOWNORDER[OPTION_VALUES_DOWNORDER.index(str(getrootconf(Options.OPT_DOWNORDER)))]
-    if len(addstr) > 0:
         newstr.append(addstr)
     addstr = str(getrootconf(Options.OPT_IDMIN))
     try:

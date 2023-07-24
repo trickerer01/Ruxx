@@ -92,13 +92,11 @@ OPTION_VALUES_VIDEOS = ('Don\'t download', 'Prefer MP4', 'Prefer Webm')
 OPTION_VALUES_IMAGES = ('Don\'t download', 'Prefer low res', 'Prefer high res')
 OPTION_VALUES_PARCHI = ('Don\'t download', 'Download everything')
 OPTION_VALUES_THREADING = ('1 Thread', '2 Threads', '3 Threads', '4 Threads', '5 Threads', '6 Threads', '7 Threads', '8 Threads')
-OPTION_VALUES_DOWNORDER = ('Newest first', 'Oldest first')
 OPTION_CMD_VIDEOS = ('-skip_vid', '', '-webm')
 OPTION_CMD_IMAGES = ('-skip_img', '-lowres', '')
 OPTION_CMD_PARCHI = ('', '-include_parchi')
 OPTION_CMD_THREADING_CMD = '-threads'
 OPTION_CMD_THREADING = ('1', '2', '3', '4', '5', '6', '7', '8')
-OPTION_CMD_DOWNORDER = ('', '-rev')
 OPTION_CMD_COOKIES = '-cookies'
 OPTION_CMD_HEADERS = '-headers'
 OPTION_CMD_PROXY = '-proxy'
@@ -180,7 +178,6 @@ class Options(IntEnum):
     OPT_LASTPATH = auto()  # unbound, internal
     OPT_PROGRESS = auto()
     OPT_STATUS = auto()
-    OPT_DOWNORDER = auto()
     OPT_FNAMEPREFIX = auto()
     OPT_ISPROXYOPEN = auto()
     OPT_PROXYSTRING = auto()
@@ -227,7 +224,6 @@ CVARS = {
     Options.OPT_LASTPATH: 'curpath',
     Options.OPT_PROGRESS: 'progress',
     Options.OPT_STATUS: 'status',
-    Options.OPT_DOWNORDER: 'downorder',
     Options.OPT_FNAMEPREFIX: 'fnameprefix',
     Options.OPT_ISPROXYOPEN: 'isProxyOpen',
     Options.OPT_PROXYSTRING: 'proxyString',
@@ -268,7 +264,6 @@ class Globals(IntEnum):
     GOBJECT_FIELD_PATH = auto()
     GOBJECT_BUTTON_OPENFOLDER = auto()
     GOBJECT_BUTTON_DOWNLOAD = auto()
-    GOBJECT_COMBOBOX_DOWNORDER = auto()
     GOBJECT_MODULE_ICON = auto()
     MAX_GOBJECTS = auto()
 
@@ -291,7 +286,6 @@ gobjects = {
     Globals.GOBJECT_FIELD_PATH: None,
     Globals.GOBJECT_BUTTON_OPENFOLDER: None,
     Globals.GOBJECT_BUTTON_DOWNLOAD: None,
-    Globals.GOBJECT_COMBOBOX_DOWNORDER: None,
     Globals.GOBJECT_MODULE_ICON: None,
 }
 
@@ -310,7 +304,6 @@ gobject_orig_states = {
     Globals.GOBJECT_FIELD_PATH: STATE_NORMAL,
     Globals.GOBJECT_BUTTON_OPENFOLDER: STATE_NORMAL,
     Globals.GOBJECT_BUTTON_DOWNLOAD: STATE_NORMAL,
-    Globals.GOBJECT_COMBOBOX_DOWNORDER: STATE_READONLY,
     Globals.GOBJECT_MODULE_ICON: STATE_NORMAL,
 }
 
@@ -400,7 +393,6 @@ TOOLTIP_IMAGES = (' Selected file type will be preferred during search.',
                   ' Warning: low res variant of a gif may be unanimated!')
 TOOLTIP_PARCHI = (' Download parent posts / child posts even if they don\'t match provided tags.',)
 TOOLTIP_THREADING = (' Number of threads affects scan and download speed.',)
-TOOLTIP_ORDER = (' Download order.',)
 TOOLTIP_DATE = (' Date must be in \'dd-mm-yyyy\' format.',)
 TOOLTIP_IDMIN = (' Minimum ID must be a positive number.',)
 TOOLTIP_IDMAX = (' If maximum ID is negative it will act as count.',)

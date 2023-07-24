@@ -30,9 +30,8 @@ from app_gui_defines import (
     BUT_DELETE, WINDOW_MINSIZE, PADDING_ROOTFRAME_I, Menus, menu_items, IMG_SAVE_DATA, IMG_PROC_RX_DATA, IMG_PROC_RN_DATA,
     IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL, PADDING_DEFAULT,
     OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, Globals, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
-    OPTION_VALUES_DOWNORDER, TOOLTIP_ORDER, FMT_DATE, TOOLTIP_DATE, TOOLTIP_IDMIN, TOOLTIP_IDMAX, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK,
-    ROWSPAN_MAX, GLOBAL_COLUMNCOUNT, STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, DATE_MIN_DEFAULT_REV, gobjects, Icons,
-    OPTION_VALUES_PARCHI, TOOLTIP_PARCHI
+    FMT_DATE, TOOLTIP_DATE, TOOLTIP_IDMIN, TOOLTIP_IDMAX, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
+    STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, DATE_MIN_DEFAULT_REV, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, gobjects, Icons,
 )
 from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME
 from app_tooltips import WidgetToolTip
@@ -898,16 +897,6 @@ def create_base_window_widgets() -> None:
     attach_tooltip(op_thread, TOOLTIP_THREADING)
     op_thread.current(len(OPTION_VALUES_THREADING) - 1)
     op_thread.pack(padx=PADDING_DEFAULT * 2, pady=3)
-    # Download order
-    opframe_order = ttk.LabelFrame(root_framem(), text='Order')
-    opframe_order.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=COLUMNSPAN_MAX - 3,
-                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_order = ttk.Combobox(opframe_order, values=OPTION_VALUES_DOWNORDER, state=STATE_READONLY, width=11,
-                            textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DOWNORDER)))
-    register_global(Globals.GOBJECT_COMBOBOX_DOWNORDER, op_order)
-    attach_tooltip(op_order, TOOLTIP_ORDER)
-    op_order.current(1)
-    op_order.pack(padx=PADDING_DEFAULT * 2, pady=3)
 
     # Search limits  #
     opframe_slim = ttk.LabelFrame(root_framem(), text='Search limits')

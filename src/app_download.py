@@ -53,7 +53,6 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         # config
         self.add_filename_prefix = False
-        self.reverse_order = False
         self.dump_tags = False
         self.dump_source = False
         self.append_info = False
@@ -697,8 +696,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         total_count_temp = self.total_count
 
-        curdirfiles = listdir(self.dest_base) if self.reverse_order else list(reversed(listdir(self.dest_base)))
-        curdirfiles = [curfile for curfile in curdirfiles if path.isfile(f'{self.dest_base}{curfile}')]
+        curdirfiles = [curfile for curfile in listdir(self.dest_base) if path.isfile(f'{self.dest_base}{curfile}')]
         if len(curdirfiles) == 0:
             return
 
@@ -884,10 +882,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         if self.download_limit > 0:
             if len(self.items_raw_all) > self.download_limit:
                 trace(f'\nShrinking queue down to {self.download_limit:d} items...')
-                if self.reverse_order is True:
-                    self.items_raw_all = self.items_raw_all[self.download_limit * -1:]
-                else:
-                    self.items_raw_all = self.items_raw_all[:self.download_limit]
+                self.items_raw_all = self.items_raw_all[self.download_limit * -1:]
                 self.total_count = len(self.items_raw_all)
             else:
                 trace('\nShrinking queue down is not required!')
@@ -897,14 +892,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         # front item is always >= end item
         trace(f'\nProcessing {self.total_count:d} items, bound {item_end} to {item_front}')
 
-        if self.reverse_order is True:
-            self.items_raw_all.reverse()
-        # default order is newest first
-        orders = ('oldest', 'newest')
-        trace(f'...{orders[1 - int(self.reverse_order)]} to {orders[self.reverse_order]}\n')
-
+        self.items_raw_all.reverse()
         self.current_state = DownloaderStates.STATE_DOWNLOADING
-
         trace(f'{self.total_count:d} item(s) scheduled, {self.maxthreads_items:d} thread(s) max\nWorking...\n')
 
         if self.maxthreads_items > 1 and len(self.items_raw_all) > 1:
@@ -1010,7 +999,6 @@ class DownloaderBase(ThreadedHtmlWorker):
         ThreadedHtmlWorker.parse_args(self, args)
 
         self.add_filename_prefix = args.prefix or self.add_filename_prefix
-        self.reverse_order = args.rev or self.reverse_order
         self.dump_tags = args.dump_tags or self.dump_tags
         self.dump_source = args.dump_sources or self.dump_source
         self.append_info = args.append_info or self.append_info
