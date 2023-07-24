@@ -30,7 +30,7 @@ args_argparse_str1 = (
 )
 args_argparse_str2 = (
     'sfw asd ned -nds -proxt '
-    '-low 123 -high 987 -mindate 1950-12-31 -maxdate 2038-01-01 -threads 8 -proxy 8.8.8.8:65333 '
+    '-mindate 1950-12-31 -maxdate 2038-01-01 -threads 8 -proxy 8.8.8.8:65333 '
     '-headers {"name1":"value1"} -cookies {"name2":"value2"} '
     '-path ' + CUR_PATH
 )
@@ -51,8 +51,6 @@ class ArgParseTests(TestCase):
         arglist = prepare_arglist(args.split())
         self.assertIsNotNone(arglist.tags)
         self.assertEqual(len(arglist.tags), 5)
-        self.assertIsNotNone(arglist.low)
-        self.assertIsNotNone(arglist.high)
         self.assertIsNotNone(arglist.mindate)
         self.assertIsNotNone(arglist.maxdate)
         self.assertIsNotNone(arglist.threads)
@@ -90,8 +88,6 @@ class DownloaderBaseTests(TestCase):
         with DownloaderRx() as dwn:
             dwn.parse_args(arglist)
             self.assertEqual(dwn.get_tags_count(), 5)
-            self.assertEqual(dwn.lower_bound, 123)
-            self.assertEqual(dwn.upper_bound, 987)
             self.assertEqual(dwn.date_min, '1950-12-31')
             self.assertEqual(dwn.date_max, '2038-01-01')
             self.assertEqual(dwn.maxthreads_items, 8)
@@ -138,7 +134,7 @@ class DownloadTests(TestCase):
         tempfile_ext = 'png'
         tempfile_path = f'{normalize_path(gettempdir())}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
-        # ____empty,  tag,            flag,     v,     flag,         v             flag      v
+        # ____empty,  tag,                   flag,     v,     flag,         v             flag      v
         argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', gettempdir())
         arglist = prepare_arglist(argslist)
         with DownloaderRx() as dwn:

@@ -14,7 +14,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # def pow_b(n: int, p: int) -> int:
 #     return n if (p == 1) else (n * pow_b(n, p - 1)) if (p & 1) else (pow_b(n * n, p // 2))
 
-from enum import Enum, IntEnum, auto, unique
+from enum import IntEnum, auto, unique
 from typing import Dict, Tuple, Optional, Set
 
 
@@ -51,20 +51,11 @@ class PageCheck:
 
 
 @unique
-class PageFilterType(Enum):
-    MODE_ID = 'id'
-    MODE_DATE = 'date'
-
-
-@unique
 class DownloaderStates(IntEnum):
     STATE_IDLE = 0
+    STATE_SEARCHING = auto()
     STATE_SCANNING_PAGES1 = auto()
     STATE_SCANNING_PAGES2 = auto()
-    STATE_SCANNING_PAGES3 = auto()
-    STATE_SCANNING_PAGES4 = auto()
-    STATE_SCANNING_PAGES5 = auto()
-    STATE_SCANNING_PAGES6 = auto()
     STATE_FILTERING_ITEMS1 = auto()
     STATE_FILTERING_ITEMS2 = auto()
     STATE_FILTERING_ITEMS3 = auto()
@@ -77,18 +68,16 @@ class DownloaderStates(IntEnum):
 
 
 PROGRESS_BAR_PCT = {
+    DownloaderStates.STATE_SEARCHING: 0.005,
     DownloaderStates.STATE_SCANNING_PAGES1: 0.005,
     DownloaderStates.STATE_SCANNING_PAGES2: 0.005,
-    DownloaderStates.STATE_SCANNING_PAGES3: 0.005,
-    DownloaderStates.STATE_SCANNING_PAGES4: 0.005,
-    DownloaderStates.STATE_SCANNING_PAGES5: 0.005,
-    DownloaderStates.STATE_SCANNING_PAGES6: 0.005,
     DownloaderStates.STATE_FILTERING_ITEMS1: 0.005,
     DownloaderStates.STATE_FILTERING_ITEMS2: 0.005,
     DownloaderStates.STATE_FILTERING_ITEMS3: 0.005,
     DownloaderStates.STATE_FILTERING_ITEMS4: 0.005,
-    DownloaderStates.STATE_DOWNLOADING: 0.95
+    DownloaderStates.STATE_DOWNLOADING: 0.965
 }
+assert sum(v for v in PROGRESS_BAR_PCT.values()) == 1.000
 
 
 PROGRESS_BAR_MAX = 1000000000
@@ -115,17 +104,14 @@ class DownloadModes(IntEnum):
 DMODE_DEFAULT = DownloadModes.DOWNLOAD_FULL
 DMODE_CHOICES = {dm.value for dm in DownloadModes.__members__.values()}  # type: Set[int]
 
-STATE_WORK_START = DownloaderStates.STATE_SCANNING_PAGES1
+STATE_WORK_START = DownloaderStates.STATE_SEARCHING
 
 
 STATUSBAR_INFO_MAP = {
     DownloaderStates.STATE_IDLE: ('Ready', None, None, None),
-    DownloaderStates.STATE_SCANNING_PAGES1: ('Searching...', None, None, None),
-    DownloaderStates.STATE_SCANNING_PAGES2: ('Filtering pages (1/4)... ', 'total_pages', None, None),
-    DownloaderStates.STATE_SCANNING_PAGES3: ('Filtering pages (2/4)... ', 'total_pages', None, None),
-    DownloaderStates.STATE_SCANNING_PAGES4: ('Filtering pages (3/4)... ', 'total_pages', None, None),
-    DownloaderStates.STATE_SCANNING_PAGES5: ('Filtering pages (4/4)... ', 'total_pages', None, None),
-    DownloaderStates.STATE_SCANNING_PAGES6: ('Preparing list... ', 'total_count', None, None),
+    DownloaderStates.STATE_SEARCHING: ('Searching...', None, None, None),
+    DownloaderStates.STATE_SCANNING_PAGES1: ('Filtering pages (1/2)... ', 'total_pages', None, None),
+    DownloaderStates.STATE_SCANNING_PAGES2: ('Filtering pages (2/2)... ', 'total_pages', None, None),
     DownloaderStates.STATE_FILTERING_ITEMS1: ('Filtering files (1/4)... ', 'total_count', None, None),
     DownloaderStates.STATE_FILTERING_ITEMS2: ('Filtering files (2/4)... ', 'total_count', None, None),
     DownloaderStates.STATE_FILTERING_ITEMS3: ('Filtering files (3/4)... ', 'total_count', None, None),

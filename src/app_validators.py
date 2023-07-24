@@ -23,10 +23,9 @@ from app_gui_defines import (
 from app_utils import Protocol, normalize_path
 
 __all__ = (
-    'valid_int', 'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int',
+    'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int',
     'StrValidator', 'IntValidator', 'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator', 'VALIDATORS_DICT',
-    'ThreadsCBValidator', 'PositiveIdValidator', 'IdValidator', 'JsonValidator', 'BoolStrValidator',
-    'ProxyValidator', 'DateValidator', 'ParchiCBValidator',
+    'ThreadsCBValidator', 'JsonValidator', 'BoolStrValidator', 'ProxyValidator', 'DateValidator', 'ParchiCBValidator',
 )
 
 
@@ -53,13 +52,6 @@ def valid_date(date: str, rev=False) -> str:
 def valid_json(json: str) -> dict:
     try:
         return json_loads(json.strip('\'"').replace('\\', ''))
-    except Exception:
-        raise ArgumentError
-
-
-def valid_int(val: str) -> int:
-    try:
-        return int(val)
     except Exception:
         raise ArgumentError
 
@@ -166,17 +158,6 @@ class ParchiCBValidator(IntValidator):
 class ThreadsCBValidator(IntValidator):
     def __call__(self, val: int) -> bool:
         return 0 <= val <= len(OPTION_VALUES_THREADING) - 1
-
-
-class PositiveIdValidator(StrValidator):
-    def __call__(self, val: str) -> bool:
-        return len(val) > 0 and not (len(val) > 1 and val[0] == '0') and all(c.isnumeric() for c in val)
-
-
-class IdValidator(StrValidator):
-    def __call__(self, val: str) -> bool:
-        return (len(val) > 0 and not (len(val) > 1 and (val[0] == '0' or val[0:2] == '-0')) and
-                all(c.isnumeric() or (i == 0 and c == '-') for i, c in enumerate(val)))
 
 
 class DateValidator(StrValidator):

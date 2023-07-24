@@ -13,16 +13,15 @@ from base64 import b64decode
 from datetime import datetime
 from json import dumps as json_dumps, loads as json_loads
 from os import curdir, path
-from platform import system as running_system
 from re import compile as re_compile
 from tkinter import (
     Menu, Toplevel, messagebox, ttk, Text, Scrollbar, StringVar, Button, Entry, Widget, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT,
-    TOP, INSERT, BooleanVar, Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, E, S, X, Y, NO, YES
+    TOP, INSERT, BooleanVar, Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, S, X, Y, NO, YES
 )
 from typing import Optional, Callable, List, Union, Dict, Iterable
 
 # internal
-from app_defines import PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_LINUX
+from app_defines import PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX
 from app_file_sorter import FileTypeFilter
 from app_gui_defines import (
     BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, Options, STATE_NORMAL,
@@ -30,7 +29,7 @@ from app_gui_defines import (
     BUT_DELETE, WINDOW_MINSIZE, PADDING_ROOTFRAME_I, Menus, menu_items, IMG_SAVE_DATA, IMG_PROC_RX_DATA, IMG_PROC_RN_DATA,
     IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL, PADDING_DEFAULT,
     OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, Globals, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
-    FMT_DATE, TOOLTIP_DATE, TOOLTIP_IDMIN, TOOLTIP_IDMAX, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
+    FMT_DATE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
     STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, DATE_MIN_DEFAULT_REV, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, gobjects, Icons,
 )
 from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME
@@ -861,7 +860,7 @@ def create_base_window_widgets() -> None:
     opframe_vid = ttk.LabelFrame(root_framem(), text='Videos')
     opframe_vid.grid(row=cur_row(), column=cur_column(), rowspan=1, columnspan=1,
                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_vid = ttk.Combobox(opframe_vid, values=OPTION_VALUES_VIDEOS, state=STATE_READONLY, width=14,
+    op_vid = ttk.Combobox(opframe_vid, values=OPTION_VALUES_VIDEOS, state=STATE_READONLY, width=13,
                           textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_VIDSETTING)))
     register_global(Globals.GOBJECT_COMBOBOX_VIDEOS, op_vid)
     attach_tooltip(op_vid, TOOLTIP_VIDEOS)
@@ -871,7 +870,7 @@ def create_base_window_widgets() -> None:
     opframe_img = ttk.LabelFrame(root_framem(), text='Images')
     opframe_img.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_img = ttk.Combobox(opframe_img, values=OPTION_VALUES_IMAGES, state=STATE_READONLY, width=14,
+    op_img = ttk.Combobox(opframe_img, values=OPTION_VALUES_IMAGES, state=STATE_READONLY, width=13,
                           textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_IMGSETTING)))
     register_global(Globals.GOBJECT_COMBOBOX_IMAGES, op_img)
     attach_tooltip(op_img, TOOLTIP_IMAGES)
@@ -891,51 +890,31 @@ def create_base_window_widgets() -> None:
     opframe_thread = ttk.LabelFrame(root_framem(), text='Threading')
     opframe_thread.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                         sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_thread = ttk.Combobox(opframe_thread, values=OPTION_VALUES_THREADING, state=STATE_READONLY, width=10,
+    op_thread = ttk.Combobox(opframe_thread, values=OPTION_VALUES_THREADING, state=STATE_READONLY, width=9,
                              textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_THREADSETTING)))
     register_global(Globals.GOBJECT_COMBOBOX_THREADING, op_thread)
     attach_tooltip(op_thread, TOOLTIP_THREADING)
     op_thread.current(len(OPTION_VALUES_THREADING) - 1)
     op_thread.pack(padx=PADDING_DEFAULT * 2, pady=3)
-
-    # Search limits  #
-    opframe_slim = ttk.LabelFrame(root_framem(), text='Search limits')
-    opframe_slim.grid(row=next_row(), column=first_column(), rowspan=1, columnspan=COLUMNSPAN_MAX,
-                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Date min
-    op_dateaf = Label(opframe_slim, text='Date min:')
-    op_dateaf.pack(padx=(0, 0), pady=3, expand=YES, side=LEFT, anchor=E)
-    op_dateaf_t = Entry(opframe_slim, width=13, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEAFTER)))
-    register_global(Globals.GOBJECT_FIELD_DATEAFTER, op_dateaf_t)
-    op_dateaf_t.insert(0, DATE_MIN_DEFAULT_REV)
-    op_dateaf_t.pack(padx=(0, 0), pady=3, expand=NO, side=LEFT)
+    opframe_datemin = ttk.LabelFrame(root_framem(), text='Date min')
+    opframe_datemin.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
+                         sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
+    op_datemin_t = Entry(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMIN)))
+    register_global(Globals.GOBJECT_FIELD_DATEMIN, op_datemin_t)
+    op_datemin_t.insert(0, DATE_MIN_DEFAULT_REV)
+    op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * 3)
+    attach_tooltip(op_datemin_t, TOOLTIP_DATE)
     #  Date max
-    op_datebe = Label(opframe_slim, text='Date max:')
-    op_datebe.pack(padx=(8, 0), pady=3, expand=YES, side=LEFT, anchor=E)
-    op_datebe_t = Entry(opframe_slim, width=13, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEBEFORE)))
-    register_global(Globals.GOBJECT_FIELD_DATEBEFORE, op_datebe_t)
-    op_datebe_t.insert(0, datetime.today().strftime(FMT_DATE))
-    op_datebe_t.pack(padx=(0, 0), pady=3, expand=NO, side=LEFT)
-    attach_tooltip(op_dateaf_t, TOOLTIP_DATE)
-    attach_tooltip(op_datebe_t, TOOLTIP_DATE)
-    #  ID min
-    op_idaf = Label(opframe_slim, text='ID min:')
-    op_idaf.pack(padx=(8, 0), pady=3, expand=YES, side=LEFT, anchor=E)
-    op_idaf_t = Entry(opframe_slim, width=12 if running_system() == PLATFORM_LINUX else 18,
-                      textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_IDMIN)))
-    register_global(Globals.GOBJECT_FIELD_IDMIN, op_idaf_t)
-    op_idaf_t.insert(0, '0')
-    op_idaf_t.pack(padx=(0, 0), pady=3, expand=NO, side=LEFT)
-    #  ID max
-    op_idbe = Label(opframe_slim, text='ID max:')
-    op_idbe.pack(padx=(8, 0), pady=3, expand=YES, side=LEFT, anchor=E)
-    op_idbe_t = Entry(opframe_slim, width=12 if running_system() == PLATFORM_LINUX else 18,
-                      textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_IDMAX)))
-    register_global(Globals.GOBJECT_FIELD_IDMAX, op_idbe_t)
-    op_idbe_t.insert(0, '0')
-    op_idbe_t.pack(padx=(0, PADDING_DEFAULT + 1), pady=3, expand=NO, side=LEFT)
-    attach_tooltip(op_idaf_t, TOOLTIP_IDMIN)
-    attach_tooltip(op_idbe_t, TOOLTIP_IDMAX)
+    opframe_datemax = ttk.LabelFrame(root_framem(), text='Date max')
+    opframe_datemax.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=COLUMNSPAN_MAX - 5,
+                         sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
+    op_datemax_t = Entry(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMAX)))
+    register_global(Globals.GOBJECT_FIELD_DATEMAX, op_datemax_t)
+    op_datemax_t.insert(0, datetime.today().strftime(FMT_DATE))
+    op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * 3)
+    attach_tooltip(op_datemax_t, TOOLTIP_DATE)
+
     # Tags #
     opframe_tags = ttk.LabelFrame(root_framem(), text='Tags')
     opframe_tags.grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX,

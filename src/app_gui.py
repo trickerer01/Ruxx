@@ -44,14 +44,12 @@ from app_gui_defines import (
     COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING,
     OPTION_CMD_VIDEOS, OPTION_CMD_IMAGES, OPTION_CMD_THREADING_CMD, OPTION_CMD_THREADING,
     OPTION_CMD_FNAMEPREFIX, OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS,
-    OPTION_CMD_SAVE_SOURCES, OPTION_CMD_IDMIN, OPTION_CMD_IDMAX, OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH,
+    OPTION_CMD_SAVE_SOURCES, OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH,
     OPTION_CMD_COOKIES, OPTION_CMD_HEADERS, OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_SOCKS,
     OPTION_CMD_PROXY_NO_DOWNLOAD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, FMT_DATE, DATE_MIN_DEFAULT_REV, SLASH,
     OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, BUTTONS_TO_UNFOCUS,
     OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI, BUT_ALT_F4,
     ProcModule, menu_items, menu_item_orig_states, gobjects, gobject_orig_states, Options, Globals, Menus, Icons, CVARS,
-    re_id_eq_rx, re_id_ge_rx, re_id_le_rx, re_id_eq_rn, re_id_ge_rn, re_id_le_rn,
-    re_id_post_eq_rx, re_id_post_ge_rx, re_id_post_le_rx, re_id_post_eq_rn, re_id_post_ge_rn, re_id_post_le_rn,
     re_space_mult, re_or_meta_group,
 )
 from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, ABOUT_MSG
@@ -61,7 +59,7 @@ from app_tags_parser import reset_last_tags, parse_tags
 from app_utils import normalize_path, confirm_yes_no
 from app_validators import (
     StrValidator, IntValidator, ValidatorAlwaysTrue, ModuleValidator, VideosCBValidator, ImagesCBValidator, VALIDATORS_DICT,
-    ThreadsCBValidator, PositiveIdValidator, IdValidator, JsonValidator, BoolStrValidator, ProxyValidator, DateValidator, ParchiCBValidator,
+    ThreadsCBValidator, JsonValidator, BoolStrValidator, ProxyValidator, DateValidator, ParchiCBValidator,
 )
 
 __all__ = ()
@@ -160,10 +158,8 @@ class Settings(ABC):
         'images': Setting(Options.OPT_IMGSETTING, ImagesCBValidator(), 'Invalid images option \'%s\'!'),
         'parchi': Setting(Options.OPT_PARCHISETTING, ParchiCBValidator(), 'Invalid parchi option \'%s\'!'),
         'threads': Setting(Options.OPT_THREADSETTING, ThreadsCBValidator(), 'Invalid threads option \'%s\'!'),
-        'idmin': Setting(Options.OPT_IDMIN, PositiveIdValidator(), 'Invalid idmin value \'%s\'!'),
-        'idmax': Setting(Options.OPT_IDMAX, IdValidator(), 'Invalid idmax value \'%s\'!'),
-        'datemin': Setting(Options.OPT_DATEAFTER, DateValidator(), 'Invalid date value \'%s\'!'),
-        'datemax': Setting(Options.OPT_DATEBEFORE, DateValidator(), 'Invalid date value \'%s\'!'),
+        'datemin': Setting(Options.OPT_DATEMIN, DateValidator(), 'Invalid date value \'%s\'!'),
+        'datemax': Setting(Options.OPT_DATEMAX, DateValidator(), 'Invalid date value \'%s\'!'),
         'headers': Setting(Options.OPT_HEADER_ADD_STR, JsonValidator(), 'Invalid headers json \'%s\'!'),
         'cookies': Setting(Options.OPT_COOKIE_ADD_STR, JsonValidator(), 'Invalid cookies json \'%s\'!'),
         'socks': Setting(Options.OPT_PROXY_SOCKS, BoolStrValidator(), 'Invalid socks bool value \'%s\'!'),
@@ -571,37 +567,6 @@ def prepare_cmdline() -> List[str]:
         setrootconf(Options.OPT_TAGS, tags_line)
     parse_suc, tags_list = parse_tags(tags_line)
     # append id boundaries tags if present in id fields and not in tags
-    re_id_eq = re_id_eq_rx if ProcModule.is_rx() else re_id_eq_rn
-    re_id_ge = re_id_ge_rx if ProcModule.is_rx() else re_id_ge_rn
-    re_id_le = re_id_le_rx if ProcModule.is_rx() else re_id_le_rn
-    s_id_post_eq = re_id_post_eq_rx if ProcModule.is_rx() else re_id_post_eq_rn
-    s_id_post_ge = re_id_post_ge_rx if ProcModule.is_rx() else re_id_post_ge_rn
-    s_id_post_le = re_id_post_le_rx if ProcModule.is_rx() else re_id_post_le_rn
-    if parse_suc:
-        try:
-            idmin = int(getrootconf(Options.OPT_IDMIN))
-            idmax = int(getrootconf(Options.OPT_IDMAX))
-            idmaxn = idmax if idmax >= 0 else idmin + abs(idmax)
-            if idmin + idmaxn > 0:
-                ab_in_tags = not (idmin == idmax > 0)
-                lb_in_tags = not (idmin > 0)
-                ub_in_tags = not (idmaxn > 0)
-                for idtag in tags_list:
-                    if ab_in_tags and lb_in_tags and ub_in_tags:
-                        break
-                    if idtag.startswith('id') is False:
-                        continue
-                    ab_in_tags = ab_in_tags or not not re_id_eq.fullmatch(idtag)
-                    lb_in_tags = lb_in_tags or not not re_id_ge.fullmatch(idtag)
-                    ub_in_tags = ub_in_tags or not not re_id_le.fullmatch(idtag)
-                if ab_in_tags is False:
-                    tags_list.append(f'{s_id_post_eq}{idmin:d}')
-                if lb_in_tags is False:
-                    tags_list.append(f'{s_id_post_ge}{idmin:d}')
-                if ub_in_tags is False:
-                    tags_list.append(f'{s_id_post_le}{idmaxn:d}')
-        except Exception:
-            pass
     tags_str = ' '.join(normalize_tag(tag) for tag in tags_list)
     newstr.append(tags_str)
     # + module
@@ -627,49 +592,20 @@ def prepare_cmdline() -> List[str]:
     if len(addstr) > 0:
         newstr.append(OPTION_CMD_THREADING_CMD)
         newstr.append(addstr)
-    addstr = str(getrootconf(Options.OPT_IDMIN))
-    try:
-        if int(addstr) > 0:
-            newstr.append(OPTION_CMD_IDMIN)
-            newstr.append(addstr)
-    except Exception:
-        setrootconf(Options.OPT_IDMIN, 0)
-    # max id
-    while True:
-        try:
-            idmax = int(getrootconf(Options.OPT_IDMAX))
-            if idmax == 0:
-                break
-            if idmax < 0:
-                idmin = int(getrootconf(Options.OPT_IDMIN))
-                if int(idmin) >= 0:
-                    # setrootconf(Options.OPT_IDMAX, str(int(idmin) + abs(idmax)))
-                    addstr = str(idmin + abs(idmax))
-                else:
-                    raise ValueError
-            else:
-                addstr = str(getrootconf(Options.OPT_IDMAX))
-            if len(addstr) > 0 and int(addstr) > 0:
-                newstr.append(OPTION_CMD_IDMAX)
-                newstr.append(addstr)
-            break
-        except Exception:
-            setrootconf(Options.OPT_IDMAX, 0)
     # date min / max
-    for datestr in ((Options.OPT_DATEAFTER, OPTION_CMD_DATEAFTER), (Options.OPT_DATEBEFORE, OPTION_CMD_DATEBEFORE)):
+    for datestr in ((Options.OPT_DATEMIN, OPTION_CMD_DATEAFTER), (Options.OPT_DATEMAX, OPTION_CMD_DATEBEFORE)):
         while True:
             try:
                 addstr = str(datetime.strptime(str(getrootconf(datestr[0])), FMT_DATE).date())
                 if (
-                        (datestr[0] == Options.OPT_DATEAFTER and addstr != DATE_MIN_DEFAULT) or
-                        (datestr[0] == Options.OPT_DATEBEFORE and addstr != datetime.today().strftime(FMT_DATE_DEFAULT))
+                        (datestr[0] == Options.OPT_DATEMIN and addstr != DATE_MIN_DEFAULT) or
+                        (datestr[0] == Options.OPT_DATEMAX and addstr != datetime.today().strftime(FMT_DATE_DEFAULT))
                 ):
                     newstr.append(datestr[1])
                     newstr.append(addstr)
                 break
             except Exception:
-                setrootconf(datestr[0], DATE_MIN_DEFAULT_REV if datestr[0] == Options.OPT_DATEAFTER else
-                            datetime.today().strftime(FMT_DATE))
+                setrootconf(datestr[0], DATE_MIN_DEFAULT_REV if datestr[0] == Options.OPT_DATEMIN else datetime.today().strftime(FMT_DATE))
     # headers
     addstr = window_hcookiesm().get_json_h()
     if len(addstr) > 2 and addstr != DEFAULT_HEADERS:  # != "'{}'"
@@ -731,10 +667,7 @@ def prepare_cmdline() -> List[str]:
 
 def update_frame_cmdline() -> None:
     cant_update = False
-    for gidx in {Globals.GOBJECT_FIELD_DATEBEFORE,
-                 Globals.GOBJECT_FIELD_DATEAFTER,
-                 Globals.GOBJECT_FIELD_IDMIN,
-                 Globals.GOBJECT_FIELD_IDMAX}:
+    for gidx in {Globals.GOBJECT_FIELD_DATEMAX, Globals.GOBJECT_FIELD_DATEMIN}:
         cant_update |= is_focusing(gidx)
 
     if not cant_update:
@@ -846,27 +779,19 @@ def recheck_args() -> Tuple[bool, str]:
     datebefore_str = '""'
     # date after
     try:
-        dateafter_str = str(getrootconf(Options.OPT_DATEAFTER))
+        dateafter_str = str(getrootconf(Options.OPT_DATEMIN))
         datetime.strptime(dateafter_str, FMT_DATE)
     except Exception:
         return False, f'{dateafter_str} is not a valid date format'
     # date before
     try:
-        datebefore_str = str(getrootconf(Options.OPT_DATEBEFORE))
+        datebefore_str = str(getrootconf(Options.OPT_DATEMAX))
         datetime.strptime(datebefore_str, FMT_DATE)
     except Exception:
         return False, f'{datebefore_str} is not a valid date format'
     # dates minmax compare
     if datetime.strptime(datebefore_str, FMT_DATE) < datetime.strptime(dateafter_str, FMT_DATE):
         return False, 'Maximum date cannot be lower than minimum date'
-    # ID minmax compare
-    try:
-        idmin_int = int(getrootconf(Options.OPT_IDMIN))
-        idmax_int = int(getrootconf(Options.OPT_IDMAX))
-        if idmin_int > 0 and 0 < idmax_int < idmin_int:
-            return False, 'Maximum ID cannot be lower than minimum ID'
-    except Exception:
-        return False, 'Unknown ID range error'
     # Not downloading anything
     if str(getrootconf(Options.OPT_IMGSETTING)) == OPTION_VALUES_IMAGES[0] and \
             str(getrootconf(Options.OPT_VIDSETTING)) == OPTION_VALUES_VIDEOS[0] and \
@@ -997,10 +922,8 @@ def load_id_list() -> None:
         if success:
             setrootconf(Options.OPT_TAGS, file_tags)
             # reset settings for immediate downloading
-            setrootconf(Options.OPT_DATEAFTER, DATE_MIN_DEFAULT_REV)
-            setrootconf(Options.OPT_DATEBEFORE, datetime.today().strftime(FMT_DATE))
-            setrootconf(Options.OPT_IDMIN, 0)
-            setrootconf(Options.OPT_IDMAX, 0)
+            setrootconf(Options.OPT_DATEMIN, DATE_MIN_DEFAULT_REV)
+            setrootconf(Options.OPT_DATEMAX, datetime.today().strftime(FMT_DATE))
         else:
             messagebox.showwarning(message=f'Unable to load ids from {filepath[filepath.rfind("/") + 1:]}!')
 

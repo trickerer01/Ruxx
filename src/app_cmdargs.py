@@ -15,14 +15,12 @@ from typing import Sequence
 from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, DEFAULT_HEADERS, ACTION_STORE_TRUE, DMODE_DEFAULT, DMODE_CHOICES
 from app_help import (
     HELP_ARG_MODULE, HELP_ARG_DOWNLOAD_MODE, HELP_ARG_DOWNLOAD_LIMIT, HELP_ARG_SKIP_IMAGES, HELP_ARG_SKIP_VIDEOS,
-    HELP_ARG_PREFER_WEBM, HELP_ARG_PREFER_LOWRES, HELP_ARG_LOWER_BOUND, HELP_ARG_UPPER_BOUND, HELP_ARG_MINDATE, HELP_ARG_MAXDATE,
+    HELP_ARG_PREFER_WEBM, HELP_ARG_PREFER_LOWRES, HELP_ARG_MINDATE, HELP_ARG_MAXDATE,
     HELP_ARG_JOBS, HELP_ARG_PATH, HELP_ARG_PROXY, HELP_ARG_NOPROXY, HELP_ARG_PROXYNODOWN, HELP_ARG_PROXYSOCKS, HELP_ARG_HEADERS,
     HELP_ARG_COOKIES, HELP_ARG_PREFIX, HELP_ARG_DUMP_TAGS, HELP_ARG_DUMP_SOURCES, HELP_ARG_APPEND_SOURCE_AND_TAGS, HELP_ARG_TAGS,
     HELP_ARG_WARN_NON_EMPTY_FOLDER, HELP_ARG_INCLUDE_PARCHI,
 )
-from app_validators import (
-    valid_int, valid_thread_count, valid_date, valid_path, valid_json, valid_download_mode, valid_proxy, valid_positive_int
-)
+from app_validators import valid_thread_count, valid_date, valid_path, valid_json, valid_download_mode, valid_proxy, valid_positive_int
 
 __all__ = ('prepare_arglist',)
 
@@ -40,8 +38,6 @@ def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser.add_argument('-skip_vid', action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_VIDEOS)
     parser.add_argument('-webm', action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_WEBM)
     parser.add_argument('-lowres', action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_LOWRES)
-    parser.add_argument('-low', metavar='#NUMBER', help=HELP_ARG_LOWER_BOUND, type=valid_int)
-    parser.add_argument('-high', metavar='#NUMBER', help=HELP_ARG_UPPER_BOUND, type=valid_int)
     parser.add_argument('-mindate', metavar='#YYYY-MM-DD', help=HELP_ARG_MINDATE, type=valid_date)
     parser.add_argument('-maxdate', metavar='#YYYY-MM-DD', help=HELP_ARG_MAXDATE, type=valid_date)
     parser.add_argument('-threads', metavar='1..8', help=HELP_ARG_JOBS, type=valid_thread_count)

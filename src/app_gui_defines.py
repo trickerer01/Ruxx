@@ -111,8 +111,6 @@ OPTION_CMD_SAVE_TAGS = ('', '-dump_tags')
 OPTION_CMD_SAVE_SOURCES = ('', '-dump_sources')
 OPTION_CMD_APPEND_SOURCE_AND_TAGS = ('', '-append_info')
 OPTION_CMD_WARN_NONEMPTY_DEST = ('', '-warn_nonempty')
-OPTION_CMD_IDMIN = '-low'
-OPTION_CMD_IDMAX = '-high'
 OPTION_CMD_DATEAFTER = '-mindate'
 OPTION_CMD_DATEBEFORE = '-maxdate'
 OPTION_CMD_PATH = '-path'
@@ -169,10 +167,8 @@ class Options(IntEnum):
     OPT_THREADSETTING = auto()
     OPT_DOWNLOAD_MODE = auto()
     OPT_DOWNLOAD_LIMIT = auto()
-    OPT_DATEAFTER = auto()
-    OPT_DATEBEFORE = auto()
-    OPT_IDMIN = auto()
-    OPT_IDMAX = auto()
+    OPT_DATEMIN = auto()
+    OPT_DATEMAX = auto()
     OPT_TAGS = auto()
     OPT_PATH = auto()
     OPT_LASTPATH = auto()  # unbound, internal
@@ -215,10 +211,8 @@ CVARS = {
     Options.OPT_THREADSETTING: 'threadsetting',
     Options.OPT_DOWNLOAD_MODE: 'downloadmode',
     Options.OPT_DOWNLOAD_LIMIT: 'downloadlimit',
-    Options.OPT_DATEAFTER: 'dateafter',
-    Options.OPT_DATEBEFORE: 'datebefore',
-    Options.OPT_IDMIN: 'idmin',
-    Options.OPT_IDMAX: 'idmax',
+    Options.OPT_DATEMIN: 'dateafter',
+    Options.OPT_DATEMAX: 'datebefore',
     Options.OPT_TAGS: 'tags',
     Options.OPT_PATH: 'path',
     Options.OPT_LASTPATH: 'curpath',
@@ -254,10 +248,8 @@ class Globals(IntEnum):
     GOBJECT_COMBOBOX_IMAGES = auto()
     GOBJECT_COMBOBOX_PARCHI = auto()
     GOBJECT_COMBOBOX_THREADING = auto()
-    GOBJECT_FIELD_DATEAFTER = auto()
-    GOBJECT_FIELD_DATEBEFORE = auto()
-    GOBJECT_FIELD_IDMIN = auto()
-    GOBJECT_FIELD_IDMAX = auto()
+    GOBJECT_FIELD_DATEMIN = auto()
+    GOBJECT_FIELD_DATEMAX = auto()
     GOBJECT_FIELD_TAGS = auto()
     GOBJECT_BUTTON_CLEARTAGS = auto()
     GOBJECT_BUTTON_CHECKTAGS = auto()
@@ -276,10 +268,8 @@ gobjects = {
     Globals.GOBJECT_COMBOBOX_IMAGES: None,
     Globals.GOBJECT_COMBOBOX_PARCHI: None,
     Globals.GOBJECT_COMBOBOX_THREADING: None,
-    Globals.GOBJECT_FIELD_DATEAFTER: None,
-    Globals.GOBJECT_FIELD_DATEBEFORE: None,
-    Globals.GOBJECT_FIELD_IDMIN: None,
-    Globals.GOBJECT_FIELD_IDMAX: None,
+    Globals.GOBJECT_FIELD_DATEMIN: None,
+    Globals.GOBJECT_FIELD_DATEMAX: None,
     Globals.GOBJECT_FIELD_TAGS: None,
     Globals.GOBJECT_BUTTON_CLEARTAGS: None,
     Globals.GOBJECT_BUTTON_CHECKTAGS: None,
@@ -294,10 +284,8 @@ gobject_orig_states = {
     Globals.GOBJECT_COMBOBOX_IMAGES: STATE_READONLY,
     Globals.GOBJECT_COMBOBOX_PARCHI: STATE_READONLY,
     Globals.GOBJECT_COMBOBOX_THREADING: STATE_READONLY,
-    Globals.GOBJECT_FIELD_DATEAFTER: STATE_NORMAL,
-    Globals.GOBJECT_FIELD_DATEBEFORE: STATE_NORMAL,
-    Globals.GOBJECT_FIELD_IDMIN: STATE_NORMAL,
-    Globals.GOBJECT_FIELD_IDMAX: STATE_NORMAL,
+    Globals.GOBJECT_FIELD_DATEMIN: STATE_NORMAL,
+    Globals.GOBJECT_FIELD_DATEMAX: STATE_NORMAL,
     Globals.GOBJECT_FIELD_TAGS: STATE_NORMAL,
     Globals.GOBJECT_BUTTON_CLEARTAGS: STATE_NORMAL,
     Globals.GOBJECT_BUTTON_CHECKTAGS: STATE_NORMAL,
@@ -366,20 +354,6 @@ hotkeys = {
 }
 # end hotkeys
 # rex
-re_id_eq_rx = re_compile(r'^.*id:(?:<=?|>=?|=).*?$')
-re_id_ge_rx = re_compile(r'^.*id:(?:>=?|=).*?$')
-re_id_le_rx = re_compile(r'^.*id:(?:<=?|=).*?$')
-re_id_eq_rn = re_compile(r'^.*id(?:<=?|>=?|=).*?$')
-re_id_ge_rn = re_compile(r'^.*id(?:>=?|=).*?$')
-re_id_le_rn = re_compile(r'^.*id(?:<=?|=).*?$')
-
-re_id_post_eq_rx = 'id:='
-re_id_post_ge_rx = 'id:>='
-re_id_post_le_rx = 'id:<='
-re_id_post_eq_rn = 'id='
-re_id_post_ge_rn = 'id>='
-re_id_post_le_rn = 'id<='
-
 re_space_mult = re_compile(r' {2,}')
 re_uscore_mult = re_compile(r'_{2,}')
 re_or_meta_group = re_compile(r'\([^: ]+:.*?')
@@ -394,8 +368,6 @@ TOOLTIP_IMAGES = (' Selected file type will be preferred during search.',
 TOOLTIP_PARCHI = (' Download parent posts / child posts even if they don\'t match provided tags.',)
 TOOLTIP_THREADING = (' Number of threads affects scan and download speed.',)
 TOOLTIP_DATE = (' Date must be in \'dd-mm-yyyy\' format.',)
-TOOLTIP_IDMIN = (' Minimum ID must be a positive number.',)
-TOOLTIP_IDMAX = (' If maximum ID is negative it will act as count.',)
 TOOLTIP_TAGS_CHECK = (' Validate tags (live).',)
 TOOLTIP_HCOOKIE_DELETE = (' Delete selected (Del works too)',)
 TOOLTIP_HCOOKIE_ADD_ENTRY = (' Must be in on of the valid formats:',

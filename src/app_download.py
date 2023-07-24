@@ -25,7 +25,7 @@ from iteration_utilities import unique_everseen
 
 # internal
 from app_defines import (
-    ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, PageFilterType, ItemInfo, DATE_MIN_DEFAULT,
+    ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, ItemInfo, DATE_MIN_DEFAULT,
     CONNECT_DELAY_PAGE, CONNECT_RETRIES_ITEM, BR, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE_DEFAULT,
 )
 from app_gui_defines import UNDERSCORE, NEWLINE
@@ -58,8 +58,6 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.append_info = False
         self.download_mode = DownloadModes.DOWNLOAD_FULL
         self.download_limit = 0
-        self.lower_bound = 0
-        self.upper_bound = 0
         self.maxthreads_items = 1
         self.include_parchi = False
         self.skip_images = False
@@ -296,24 +294,15 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _process_item(self, raw: str) -> None:
         ...
 
-    def _get_page_boundary(self, minpage: bool, mode: PageFilterType) -> int:
+    def _get_page_boundary_by_date(self, minpage: bool) -> int:
         if 1 <= self._num_pages() <= 2:
             trace('Only a page or two! Skipping')
             pnum = self.minpage if minpage else self.maxpage
-        elif mode == PageFilterType.MODE_DATE and minpage is True and as_date(self.date_max) >= datetime.today().date():
+        elif minpage is True and as_date(self.date_max) >= datetime.today().date():
             trace('Min page: max date irrelevant! Skipping')
             pnum = self.minpage
-        elif mode == PageFilterType.MODE_DATE and minpage is False and as_date(self.date_min) <= as_date(DATE_MIN_DEFAULT):
+        elif minpage is False and as_date(self.date_min) <= as_date(DATE_MIN_DEFAULT):
             trace('Max page: min date irrelevant! Skipping')
-            pnum = self.maxpage
-        elif mode == PageFilterType.MODE_ID and self.has_gui():  # handled in prepare_cmdline
-            trace('Id filter is already handled! Skipping')
-            pnum = self.minpage if minpage is True else self.maxpage
-        elif mode == PageFilterType.MODE_ID and minpage is True and self.upper_bound == 0:
-            trace('Min page: no Id limit! Skipping')
-            pnum = self.minpage
-        elif mode == PageFilterType.MODE_ID and minpage is False and self.lower_bound == 0:
-            trace('Max page: no Id limit! Skipping')
             pnum = self.maxpage
         else:
             p_chks = list()
@@ -383,69 +372,36 @@ class DownloaderBase(ThreadedHtmlWorker):
 
                 cur_step_dir = step_dir
 
-                if mode == PageFilterType.MODE_ID:
-                    if minpage is True:
-                        assert self.upper_bound > 0
-                        if 0 < self.upper_bound < int(item_id):
-                            if half_div and (p_chks[lim_forw + 1].first or p_chks[pnum + 1].last):
-                                dofinal = True
-                            else:
-                                trace(f'Info: TagProc: id > upper bound at {item_id} - stepping forward...')
-                                lim_backw, step_dir = forward()
-                        else:
-                            if half_div and (p_chks[lim_backw + 1].last or p_chks[pnum + 1].first):
-                                dofinal = True
-                            else:
-                                trace(f'Info: TagProc: id <= upper bound at {item_id} - stepping backwards...')
-                                lim_forw, step_dir = backward()
-                    else:
-                        assert self.lower_bound > 0
-                        if 0 < int(item_id) < self.lower_bound:
-                            if half_div and (p_chks[lim_backw + 1].last or p_chks[pnum + 1].first):
-                                dofinal = True
-                            else:
-                                trace(f'Info: TagProc: id < lower bound at {item_id} - stepping backwards...')
-                                lim_forw, step_dir = backward()
-                        else:
-                            if half_div and (p_chks[lim_forw + 1].first or p_chks[pnum + 1].last):
-                                dofinal = True
-                            else:
-                                trace(f'Info: TagProc: id >= lower bound at {item_id} - stepping forward...')
-                                lim_backw, step_dir = forward()
+                raw_html_item = self._get_item_html(h)
+                if raw_html_item is None:
+                    thread_exit(f'ERROR: TagProc: unable to retreive html for {item_id}! Stopping search', -18)
 
-                elif mode == PageFilterType.MODE_DATE:
-                    raw_html_item = self._get_item_html(h)
-                    if raw_html_item is None:
-                        thread_exit(f'ERROR: TagProc: unable to retreive html for {item_id}! Stopping search', -18)
-
-                    if minpage is True:
-                        if as_date(self._extract_post_date(raw_html_item)) > as_date(self.date_max):
-                            if half_div and (p_chks[lim_forw + 1].first or p_chks[pnum + 1].last):
-                                dofinal = True
-                            else:
-                                trace(f'Info: TagProc: > maxdate at {item_id} - stepping forward...')
-                                lim_backw, step_dir = forward()
+                if minpage is True:
+                    if as_date(self._extract_post_date(raw_html_item)) > as_date(self.date_max):
+                        if half_div and (p_chks[lim_forw + 1].first or p_chks[pnum + 1].last):
+                            dofinal = True
                         else:
-                            if half_div and (p_chks[lim_backw + 1].last or p_chks[pnum + 1].first):
-                                dofinal = True
-                            else:
-                                trace(f'Info: TagProc: <= maxdate at {item_id} - stepping backwards...')
-                                lim_forw, step_dir = backward()
+                            trace(f'Info: TagProc: > maxdate at {item_id} - stepping forward...')
+                            lim_backw, step_dir = forward()
                     else:
-                        if as_date(self._extract_post_date(raw_html_item)) < as_date(self.date_min):
-                            if half_div and (p_chks[lim_backw + 1].last or p_chks[pnum + 1].first):
-                                dofinal = True
-                            else:
-                                trace(f'Info: TagProc: < mindate at {item_id} - stepping backwards...')
-                                lim_forw, step_dir = backward()
+                        if half_div and (p_chks[lim_backw + 1].last or p_chks[pnum + 1].first):
+                            dofinal = True
                         else:
-                            if half_div and (p_chks[lim_forw + 1].first or p_chks[pnum + 1].last):
-                                dofinal = True
-                            else:
-                                trace(f'Info: TagProc: >= mindate at {item_id} - stepping forward...')
-                                lim_backw, step_dir = forward()
+                            trace(f'Info: TagProc: <= maxdate at {item_id} - stepping backwards...')
+                            lim_forw, step_dir = backward()
                 else:
-                    assert False
+                    if as_date(self._extract_post_date(raw_html_item)) < as_date(self.date_min):
+                        if half_div and (p_chks[lim_backw + 1].last or p_chks[pnum + 1].first):
+                            dofinal = True
+                        else:
+                            trace(f'Info: TagProc: < mindate at {item_id} - stepping backwards...')
+                            lim_forw, step_dir = backward()
+                    else:
+                        if half_div and (p_chks[lim_forw + 1].first or p_chks[pnum + 1].last):
+                            dofinal = True
+                        else:
+                            trace(f'Info: TagProc: >= mindate at {item_id} - stepping forward...')
+                            lim_backw, step_dir = forward()
 
                 if cur_step_dir == 1:
                     p_chks[pnum + 1].first = True
@@ -502,7 +458,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         # Filter out all trailing items if needed (last page)
         trace('Filtering trailing back items...')
 
-        if (self.has_gui() or self.lower_bound == 0) and as_date(self.date_min) <= as_date(DATE_MIN_DEFAULT):
+        if self.has_gui() and as_date(self.date_min) <= as_date(DATE_MIN_DEFAULT):
             trace('last items filter is irrelevant! Skipping')
             return
 
@@ -510,7 +466,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('less than 2 items: skipping')
             return
 
-        trace(f'mindate at {self.date_min}, lower bound at {self.lower_bound:d}, filtering')
+        trace(f'mindate at {self.date_min}, filtering')
         items_tofilter = self.items_raw_all[-(min(len(self.items_raw_all), self._get_items_per_page() * 2)):]
         self.items_raw_all = self.items_raw_all[:-len(items_tofilter)]  # type: List[str]
         trace(f'Items to potentially remove: {len(items_tofilter):d}')
@@ -570,23 +526,19 @@ class DownloaderBase(ThreadedHtmlWorker):
             raw_html_item = self._get_item_html(h) if as_date(self.date_min) > as_date(DATE_MIN_DEFAULT) else None
             post_date = self._extract_post_date(raw_html_item) if raw_html_item is not None else None
             exceed_date = (as_date(post_date) < as_date(self.date_min)) if post_date is not None else False
-            exceed_id = (0 < int(item_id) < self.lower_bound) if self.lower_bound > 0 else False
 
             if exceed_date:
                 trace(f'Info: TagProc_filter: {item_id} exceeds min date ({post_date} < {self.date_min}), shuffling backwards...')
                 forward_lim, step_direction = backward()
-            elif exceed_id:
-                trace(f'Info: TagProc_filter: id < lower bound at {item_id} - stepping backwards...')
-                forward_lim, step_direction = backward()
             else:
-                trace(f'Info: TagProc_filter: id >= lower bound at {item_id} and not exceed min date - stepping forward...')
+                trace(f'Info: TagProc_filter: {item_id} does not exceed min date - stepping forward...')
                 backward_lim, step_direction = forward()
 
     def _filter_first_items(self) -> None:
         # Filter out all trailing items if needed (front page)
         trace('Filtering trailing front items...')
 
-        if (self.has_gui() or self.upper_bound == 0) and as_date(self.date_max) >= datetime.today().date():
+        if self.has_gui() and as_date(self.date_max) >= datetime.today().date():
             trace('first items filter is irrelevant! Skipping')
             return
 
@@ -594,7 +546,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('less than 2 items: skipping')
             return
 
-        trace(f'maxdate at {self.date_max}, upper bound at {self.upper_bound:d}, filtering')
+        trace(f'maxdate at {self.date_max}, filtering')
         items_tofilter = self.items_raw_all[:(min(len(self.items_raw_all), self._get_items_per_page() * 2))]
         self.items_raw_all = self.items_raw_all[len(items_tofilter):]  # type: List[str]
 
@@ -655,23 +607,19 @@ class DownloaderBase(ThreadedHtmlWorker):
             raw_html_item = self._get_item_html(h) if as_date(self.date_max) < datetime.today().date() else None
             post_date = self._extract_post_date(raw_html_item) if raw_html_item is not None else None
             exceed_date = (as_date(post_date) > as_date(self.date_max)) if post_date is not None else False
-            exceed_id = (0 < self.upper_bound < int(item_id)) if self.upper_bound > 0 else False
 
             if exceed_date:
                 trace(f'Info: TagProc_filter: {item_id} exceeds max date ({post_date} > {self.date_max}), stepping forward...')
                 backward_lim, step_direction = forward()
-            elif exceed_id:
-                trace(f'Info: TagProc_filter: id > upper bound at {item_id} - stepping forward...')
-                backward_lim, step_direction = forward()
             else:
-                trace(f'Info: TagProc_filter: id <= upper bound at {item_id} and not exceed max date - stepping backwards...')
+                trace(f'Info: TagProc_filter: {item_id} does not exceed max date - stepping backwards...')
                 forward_lim, step_direction = backward()
 
     def _filter_items_by_type(self) -> None:
         trace('Filtering items by type...')
 
         if self.skip_images is False and self.skip_videos is False:
-            trace('Both types are enabled! skipped.')
+            trace('Both types are enabled! Skipping')
             return
 
         total_count_temp = self.total_count
@@ -744,7 +692,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
 
     def _process_tags(self, tag_str: str, skip_custom_filters: bool) -> None:
-        self.current_state = DownloaderStates.STATE_SCANNING_PAGES1
+        self.current_state = DownloaderStates.STATE_SEARCHING
         self.url = self.form_tags_search_address(tag_str)
 
         page_size = self._get_items_per_page()
@@ -767,23 +715,18 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             self.total_pages = self._num_pages()
 
-            pageargs = [
-                (DownloaderStates.STATE_SCANNING_PAGES2, True, PageFilterType.MODE_ID),
-                (DownloaderStates.STATE_SCANNING_PAGES3, False, PageFilterType.MODE_ID),
-                (DownloaderStates.STATE_SCANNING_PAGES4, True, PageFilterType.MODE_DATE),
-                (DownloaderStates.STATE_SCANNING_PAGES5, False, PageFilterType.MODE_DATE)
-            ]
+            pageargs = ((DownloaderStates.STATE_SCANNING_PAGES1, True), (DownloaderStates.STATE_SCANNING_PAGES2, False))
 
-            def page_filter(st: DownloaderStates, di: bool, ft: PageFilterType) -> int:
+            def page_filter(st: DownloaderStates, di: bool) -> int:
                 self.current_state = st
-                trace(f'Looking for {"min" if di else "max"} page by: {ft.value}...')
-                return self._get_page_boundary(di, ft)
+                trace(f'Looking for {"min" if di else "max"} page by date...')
+                return self._get_page_boundary_by_date(di)
 
-            for fstate, direction, ftype in pageargs:
+            for fstate, direction in pageargs:  # type: DownloaderStates, bool
                 if direction is True:
-                    self.minpage = page_filter(fstate, direction, ftype)
+                    self.minpage = page_filter(fstate, direction)
                 else:
-                    self.maxpage = page_filter(fstate, direction, ftype)
+                    self.maxpage = page_filter(fstate, direction)
                 self.total_pages = self._num_pages()
 
             self.total_count = min(self._num_pages() * page_size, self.total_count)
@@ -794,7 +737,6 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             self.total_count_old = self.total_count
             self.total_count = 0  # type: Union[int, BeautifulSoup]
-            self.current_state = DownloaderStates.STATE_SCANNING_PAGES6
 
             if self.maxthreads_items > 1 and self._num_pages() > 1:
                 trace(f'  ...using {self.maxthreads_items:d} threads...')
@@ -1004,8 +946,6 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.append_info = args.append_info or self.append_info
         self.download_mode = args.dmode or self.download_mode
         self.download_limit = args.dlimit or self.download_limit
-        self.lower_bound = args.low or self.lower_bound
-        self.upper_bound = args.high or self.upper_bound
         self.maxthreads_items = args.threads or self.maxthreads_items
         self.include_parchi = args.include_parchi or self.include_parchi
         self.skip_images = args.skip_img or self.skip_images
