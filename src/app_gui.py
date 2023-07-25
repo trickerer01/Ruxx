@@ -22,7 +22,7 @@ from typing import Optional, Union, Callable, List, Tuple, Iterable
 # internal
 from app_cmdargs import prepare_arglist
 from app_defines import (
-    DownloaderStates, DownloadModes, STATE_WORK_START, SUPPORTED_PLATFORMS, PROXY_SOCKS5, PROXY_HTTP, MODULE_ABBR_RX, MODULE_ABBR_RN,
+    DownloaderStates, DownloadModes, STATE_WORK_START, SUPPORTED_PLATFORMS, MODULE_ABBR_RX, MODULE_ABBR_RN,
     DEFAULT_ENCODING, KNOWN_EXTENSIONS_STR, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD,
     DEFAULT_HEADERS, DATE_MIN_DEFAULT, FMT_DATE_DEFAULT,
     max_progress_value_for_state,
@@ -43,7 +43,7 @@ from app_gui_defines import (
     OPTION_CMD_VIDEOS, OPTION_CMD_IMAGES, OPTION_CMD_THREADING_CMD, OPTION_CMD_THREADING,
     OPTION_CMD_FNAMEPREFIX, OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS,
     OPTION_CMD_SAVE_SOURCES, OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH,
-    OPTION_CMD_COOKIES, OPTION_CMD_HEADERS, OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_SOCKS,
+    OPTION_CMD_COOKIES, OPTION_CMD_HEADERS, OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY,
     OPTION_CMD_PROXY_NO_DOWNLOAD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, FMT_DATE, DATE_MIN_DEFAULT_REV, SLASH,
     OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, BUTTONS_TO_UNFOCUS,
     OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI, BUT_ALT_F4,
@@ -57,7 +57,7 @@ from app_tags_parser import reset_last_tags, parse_tags
 from app_utils import normalize_path, confirm_yes_no
 from app_validators import (
     StrValidator, IntValidator, ValidatorAlwaysTrue, ModuleValidator, VideosCBValidator, ImagesCBValidator, VALIDATORS_DICT,
-    ThreadsCBValidator, JsonValidator, BoolStrValidator, ProxyValidator, DateValidator, ParchiCBValidator,
+    ThreadsCBValidator, JsonValidator, BoolStrValidator, ProxyValidator, ProxyTypeValidator, DateValidator, ParchiCBValidator,
 )
 
 __all__ = ()
@@ -162,7 +162,7 @@ class Settings(ABC):
         'datemax': Setting(Options.OPT_DATEMAX, DateValidator(), 'Invalid date value \'%s\'!'),
         'headers': Setting(Options.OPT_HEADER_ADD_STR, JsonValidator(), 'Invalid headers json \'%s\'!'),
         'cookies': Setting(Options.OPT_COOKIE_ADD_STR, JsonValidator(), 'Invalid cookies json \'%s\'!'),
-        'socks': Setting(Options.OPT_PROXY_SOCKS, BoolStrValidator(), 'Invalid socks bool value \'%s\'!'),
+        'proxytype': Setting(Options.OPT_PROXYTYPE, ProxyTypeValidator(), 'Invalid proxy type value \'%s\'!'),
         'proxy': Setting(Options.OPT_PROXYSTRING, ProxyValidator(), 'Invalid proxy value \'%s\'!'),
         'ignoreproxy': Setting(Options.OPT_IGNORE_PROXY, BoolStrValidator(), 'Invalid ignoreproxy bool value \'%s\'!'),
         'ignoreproxydwn': Setting(Options.OPT_PROXY_NO_DOWNLOAD, BoolStrValidator(), 'Invalid ignoreproxydwn bool value \'%s\'!'),
@@ -257,6 +257,8 @@ class Settings(ABC):
                     int_vars.get(CVARS.get(conf)).set(val + 1)
                 elif conf == Options.OPT_PROXYSTRING:
                     setrootconf(Options.OPT_PROXYSTRING_TEMP, val)
+                elif conf == Options.OPT_PROXYTYPE:
+                    setrootconf(Options.OPT_PROXYTYPE_TEMP, val)
                 elif conf in Settings.combobox_setting_arrays:
                     setrootconf(conf, Settings.combobox_setting_arrays.get(conf)[val])
                 else:
@@ -617,11 +619,10 @@ def prepare_cmdline() -> List[str]:
         newstr.append(OPTION_CMD_COOKIES)
         newstr.append(addstr)
     # proxy
-    addstr = OPTION_CMD_PROXY_SOCKS[int(getrootconf(Options.OPT_PROXY_SOCKS))]
-    if len(addstr) > 0:
-        newstr.append(addstr)
     addstr = str(getrootconf(Options.OPT_PROXYSTRING))
     if len(addstr) > 0:
+        ptype = str(getrootconf(Options.OPT_PROXYTYPE))
+        addstr = f'{ptype}://{addstr}'
         newstr.append(OPTION_CMD_PROXY)
         newstr.append(addstr)
     addstr = OPTION_CMD_IGNORE_PROXY[int(getrootconf(Options.OPT_IGNORE_PROXY))]
@@ -705,10 +706,9 @@ def check_tags_direct() -> None:
 
         full_addr = mydwn.form_tags_search_address(tags_str, 1)
         # init proxy / headers & cookies if needed
-        prox_type = PROXY_SOCKS5 if bool(int(getrootconf(Options.OPT_PROXY_SOCKS))) else PROXY_HTTP
         proxstr = str(getrootconf(Options.OPT_PROXYSTRING))
         if len(proxstr) > 0 and len(OPTION_CMD_IGNORE_PROXY[int(getrootconf(Options.OPT_IGNORE_PROXY))]) == 0:
-            mydwn.proxies = {'all': f'{prox_type}{proxstr}'}
+            mydwn.proxies = {'all': f'{str(getrootconf(Options.OPT_PROXYTYPE))}://{proxstr}'}
         else:
             mydwn.proxies = None
         headstr = window_hcookiesm().get_json_h()

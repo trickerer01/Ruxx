@@ -162,8 +162,6 @@ TAG_LENGTH_MAX_RX = 9
 TAG_LENGTH_MAX_RN = 21
 TAGS_STRING_LENGTH_MAX_RX = 3300  # longer tags string will always return empty result
 TAGS_STRING_LENGTH_MAX_RN = 300  # tested up to 2400 but longer strings take forever to process serverside
-PROXY_HTTP = 'http://'
-PROXY_SOCKS5 = 'socks5://'
 
 ACTION_STORE_TRUE = 'store_true'
 

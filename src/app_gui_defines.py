@@ -92,6 +92,7 @@ OPTION_VALUES_VIDEOS = ('Don\'t download', 'Prefer MP4', 'Prefer Webm')
 OPTION_VALUES_IMAGES = ('Don\'t download', 'Prefer low res', 'Prefer high res')
 OPTION_VALUES_PARCHI = ('Don\'t download', 'Download everything')
 OPTION_VALUES_THREADING = ('1 Thread', '2 Threads', '3 Threads', '4 Threads', '5 Threads', '6 Threads', '7 Threads', '8 Threads')
+OPTION_VALUES_PROXYTYPE = ('http', 'socks5')
 OPTION_CMD_VIDEOS = ('-skip_vid', '', '-webm')
 OPTION_CMD_IMAGES = ('-skip_img', '-lowres', '')
 OPTION_CMD_PARCHI = ('', '-include_parchi')
@@ -101,7 +102,6 @@ OPTION_CMD_COOKIES = '-cookies'
 OPTION_CMD_HEADERS = '-headers'
 OPTION_CMD_PROXY = '-proxy'
 OPTION_CMD_IGNORE_PROXY = ('', '-noproxy')
-OPTION_CMD_PROXY_SOCKS = ('', '-socks')
 OPTION_CMD_PROXY_NO_DOWNLOAD = ('', '-proxynodown')
 OPTION_CMD_FNAMEPREFIX = ('', '-prefix')
 OPTION_CMD_DOWNMODE_CMD = '-dmode'
@@ -178,10 +178,10 @@ class Options(IntEnum):
     OPT_ISPROXYOPEN = auto()
     OPT_PROXYSTRING = auto()
     OPT_PROXYSTRING_TEMP = auto()
+    OPT_PROXYTYPE = auto()
+    OPT_PROXYTYPE_TEMP = auto()
     OPT_MODULE = auto()
     OPT_IGNORE_PROXY = auto()
-    OPT_PROXY_SOCKS = auto()
-    OPT_PROXY_SOCKS_TEMP = auto()
     OPT_PROXY_NO_DOWNLOAD = auto()
     OPT_ISHCOOKIESOPEN = auto()
     OPT_COOKIE_ADD_STR = auto()
@@ -222,10 +222,10 @@ CVARS = {
     Options.OPT_ISPROXYOPEN: 'isProxyOpen',
     Options.OPT_PROXYSTRING: 'proxyString',
     Options.OPT_PROXYSTRING_TEMP: 'proxyStringTemp',
+    Options.OPT_PROXYTYPE: 'proxyType',
+    Options.OPT_PROXYTYPE_TEMP: 'proxyTypeTemp',
     Options.OPT_MODULE: 'module',
     Options.OPT_IGNORE_PROXY: 'ingoreProxy',
-    Options.OPT_PROXY_SOCKS: 'proxyTypeSocks',
-    Options.OPT_PROXY_SOCKS_TEMP: 'proxyTypeSocksTemp',
     Options.OPT_PROXY_NO_DOWNLOAD: 'proxyDownload',
     Options.OPT_ISHCOOKIESOPEN: 'isCookiesOpen',
     Options.OPT_COOKIE_ADD_STR: 'cookieAddStr',

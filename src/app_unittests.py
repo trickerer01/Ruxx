@@ -26,11 +26,11 @@ CUR_PATH = normalize_path(path.abspath(curdir))
 
 args_argparse_str1 = (
     'sfw asd ned -nds -proxr '
-    '-dmode 0 -skip_img -skip_vid -webm -lowres -noproxy -proxynodown -socks -prefix -dump_tags -dump_sources -append_info'
+    '-dmode 0 -skip_img -skip_vid -webm -lowres -noproxy -proxynodown -prefix -dump_tags -dump_sources -append_info'
 )
 args_argparse_str2 = (
     'sfw asd ned -nds -proxt '
-    '-mindate 1950-12-31 -maxdate 2038-01-01 -threads 8 -proxy 8.8.8.8:65333 '
+    '-mindate 1950-12-31 -maxdate 2038-01-01 -threads 8 -proxy http://8.8.8.8:65333 '
     '-headers {"name1":"value1"} -cookies {"name2":"value2"} '
     '-path ' + CUR_PATH
 )
@@ -42,7 +42,8 @@ class ArgParseTests(TestCase):
         args = args_argparse_str1
         arglist = prepare_arglist(args.split())
         self.assertIsNotNone(arglist.tags)
-        self.assertEqual(len(arglist.tags), 5)
+        print(str(arglist.tags))
+        self.assertEqual(5, len(arglist.tags))
         print('test_argparse1 passed')
 
     def test_argparse2(self) -> None:
@@ -50,7 +51,7 @@ class ArgParseTests(TestCase):
         args = args_argparse_str2
         arglist = prepare_arglist(args.split())
         self.assertIsNotNone(arglist.tags)
-        self.assertEqual(len(arglist.tags), 5)
+        self.assertEqual(5, len(arglist.tags))
         self.assertIsNotNone(arglist.mindate)
         self.assertIsNotNone(arglist.maxdate)
         self.assertIsNotNone(arglist.threads)
@@ -75,7 +76,6 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual(dwn.low_res, True)
             self.assertEqual(dwn.ignore_proxy, True)
             self.assertEqual(dwn.ignore_proxy_dwn, True)
-            self.assertEqual(dwn.socks, True)
             self.assertEqual(dwn.add_filename_prefix, True)
             self.assertEqual(dwn.dump_tags, True)
             self.assertEqual(dwn.dump_source, True)

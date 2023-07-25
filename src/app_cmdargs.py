@@ -16,7 +16,7 @@ from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, DEFAULT_HEADERS, ACTION_
 from app_help import (
     HELP_ARG_MODULE, HELP_ARG_DOWNLOAD_MODE, HELP_ARG_DOWNLOAD_LIMIT, HELP_ARG_SKIP_IMAGES, HELP_ARG_SKIP_VIDEOS,
     HELP_ARG_PREFER_WEBM, HELP_ARG_PREFER_LOWRES, HELP_ARG_MINDATE, HELP_ARG_MAXDATE,
-    HELP_ARG_JOBS, HELP_ARG_PATH, HELP_ARG_PROXY, HELP_ARG_NOPROXY, HELP_ARG_PROXYNODOWN, HELP_ARG_PROXYSOCKS, HELP_ARG_HEADERS,
+    HELP_ARG_THREADS, HELP_ARG_PATH, HELP_ARG_PROXY, HELP_ARG_NOPROXY, HELP_ARG_PROXYNODOWN, HELP_ARG_HEADERS,
     HELP_ARG_COOKIES, HELP_ARG_PREFIX, HELP_ARG_DUMP_TAGS, HELP_ARG_DUMP_SOURCES, HELP_ARG_APPEND_SOURCE_AND_TAGS, HELP_ARG_TAGS,
     HELP_ARG_WARN_NON_EMPTY_FOLDER, HELP_ARG_INCLUDE_PARCHI,
 )
@@ -38,12 +38,11 @@ def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser.add_argument('-lowres', action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_LOWRES)
     parser.add_argument('-mindate', metavar='#YYYY-MM-DD', help=HELP_ARG_MINDATE, type=valid_date)
     parser.add_argument('-maxdate', metavar='#YYYY-MM-DD', help=HELP_ARG_MAXDATE, type=valid_date)
-    parser.add_argument('-threads', metavar='1..8', help=HELP_ARG_JOBS, type=valid_thread_count)
+    parser.add_argument('-threads', metavar='1..8', help=HELP_ARG_THREADS, type=valid_thread_count)
     parser.add_argument('-path', metavar='#PATH', default=valid_path(path.curdir), help=HELP_ARG_PATH, type=valid_path)
-    parser.add_argument('-proxy', metavar='#X.X.X.X:Y', help=HELP_ARG_PROXY, type=valid_proxy)
+    parser.add_argument('-proxy', metavar='#type://a.d.d.r:port', help=HELP_ARG_PROXY, type=valid_proxy)
     parser.add_argument('-noproxy', action=ACTION_STORE_TRUE, help=HELP_ARG_NOPROXY)
     parser.add_argument('-proxynodown', action=ACTION_STORE_TRUE, help=HELP_ARG_PROXYNODOWN)
-    parser.add_argument('-socks', action=ACTION_STORE_TRUE, help=HELP_ARG_PROXYSOCKS)
     parser.add_argument('-headers', metavar='#JSON', help=HELP_ARG_HEADERS, type=valid_json, default=DEFAULT_HEADERS)
     parser.add_argument('-cookies', metavar='#JSON', help=HELP_ARG_COOKIES, type=valid_json)
     parser.add_argument('-prefix', action=ACTION_STORE_TRUE, help=HELP_ARG_PREFIX)

@@ -17,7 +17,7 @@ from os import curdir, path
 from re import compile as re_compile
 from tkinter import (
     Menu, Toplevel, messagebox, ttk, Text, Scrollbar, StringVar, Button, Entry, Widget, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT,
-    TOP, INSERT, BooleanVar, Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, S, X, Y, NO, YES
+    TOP, INSERT, Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, S, X, Y, NO, YES
 )
 from typing import Optional, Callable, List, Union, Dict, Iterable
 
@@ -30,7 +30,7 @@ from app_gui_defines import (
     BUT_DELETE, WINDOW_MINSIZE, PADDING_ROOTFRAME_I, Menus, menu_items, IMG_SAVE_DATA, IMG_PROC_RX_DATA, IMG_PROC_RN_DATA,
     IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL, PADDING_DEFAULT,
     OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, Globals, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
-    FMT_DATE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
+    OPTION_VALUES_PROXYTYPE, FMT_DATE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
     STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, DATE_MIN_DEFAULT_REV, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, gobjects, Icons,
 )
 from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME
@@ -129,7 +129,7 @@ class AppRoot(Tk):
         global rootMenu
 
         x = self.winfo_screenwidth() / 2 - WINDOW_MINSIZE[0] / 2
-        y = self.winfo_screenheight() / 2 - WINDOW_MINSIZE[1] / 2 + self.winfo_screenheight() / (4 if __RUXX_DEBUG__ else 8)
+        y = self.winfo_screenheight() / 2 - WINDOW_MINSIZE[1] / 2 + self.winfo_screenheight() / (3.5 if __RUXX_DEBUG__ else 8)
 
         self.geometry(f'+{x:.0f}+{y:.0f}')
         self.title(f'{APP_NAME} {APP_VERSION}')
@@ -421,10 +421,8 @@ class LogWindow(BaseWindow):
 
 class ProxyWindow(BaseWindow):
     def __init__(self, parent) -> None:
-        self.entry = None  # type: Optional[Entry]
-        self.opchb_socks_var_fake = None  # type: Optional[BooleanVar]
-        self.opchb_socks_var = None  # type: Optional[BooleanVar] # need to store variable so it doesn't get purged later
-        self.cb_socks = None  # type: Optional[Checkbutton]
+        self.ptype_var = None  # type: Optional[StringVar]
+        self.entry_addr = None  # type: Optional[Entry]
         self.but_ok = None  # type: Optional[Button]
         self.but_cancel = None  # type: Optional[Button]
         self.err_message = None  # type: Optional[WidgetToolTip]
@@ -439,35 +437,32 @@ class ProxyWindow(BaseWindow):
         downframe = BaseFrame(upframe)
         downframe.grid(padx=12, pady=12, row=1)
 
-        proxyhint = Label(downframe, font=FONT_SANS_SMALL, text='for example 101.100.100.10:65335')
+        proxyhint = Label(downframe, font=FONT_SANS_SMALL, text='for example: 101.100.100.10:65335')
         proxyhint.config(state=STATE_DISABLED)
-        proxyhint.grid(row=0, column=0, columnspan=12)
+        proxyhint.grid(row=0, column=0, columnspan=15)
 
-        disentry = Entry(downframe, font=FONT_SANS_MEDIUM, width=5)
-        disentry.insert(END, 'http://')
-        disentry.config(state=STATE_DISABLED)
-        disentry.grid(row=1, column=0, columnspan=1)
+        ptype_index = len(OPTION_VALUES_PROXYTYPE) - 1 if __RUXX_DEBUG__ else 0
+        self.ptype_var = StringVar(rootm(), OPTION_VALUES_PROXYTYPE[ptype_index], CVARS.get(Options.OPT_PROXYTYPE))
+        cbtype = ttk.Combobox(downframe, values=OPTION_VALUES_PROXYTYPE, state=STATE_READONLY, width=6,
+                              textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PROXYTYPE_TEMP)))
+        cbtype.current(ptype_index)
+        cbtype.grid(row=1, column=0, columnspan=5)
+        cbtype.config(state=STATE_READONLY)
         _ = Entry(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS.get(Options.OPT_PROXYSTRING)))
-        self.entry = Entry(downframe, font=FONT_SANS_MEDIUM, width=23,
-                           textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PROXYSTRING_TEMP)))
+        self.entry_addr = Entry(downframe, font=FONT_SANS_MEDIUM, width=21,
+                                textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PROXYSTRING_TEMP)))
         if __RUXX_DEBUG__:
-            self.entry.insert(END, PROXY_DEFAULT_STR)
-        self.err_message = attach_tooltip(self.entry, TOOLTIP_INVALID_SYNTAX, 5000, timed=True)
-        self.entry.grid(row=1, column=1, columnspan=6)
+            self.entry_addr.insert(END, PROXY_DEFAULT_STR)
+        self.err_message = attach_tooltip(self.entry_addr, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
+        self.entry_addr.grid(row=1, column=5, columnspan=10)
 
         # BaseFrame(downframe, height=16).grid(row=2, columnspan=COLUMNSPAN_MAX)
-        BaseFrame(downframe, height=16).grid(row=4, columnspan=COLUMNSPAN_MAX)
-
-        self.opchb_socks_var_fake = BooleanVar(rootm(), __RUXX_DEBUG__, CVARS.get(Options.OPT_PROXY_SOCKS_TEMP))
-        self.opchb_socks_var = BooleanVar(rootm(), __RUXX_DEBUG__, CVARS.get(Options.OPT_PROXY_SOCKS))
-        self.cb_socks = Checkbutton(downframe, text='Use SOCKS5 instead', variable=self.opchb_socks_var_fake)
-        # register_global(Globals.GOBJECT_CHECK_SOCKS, self.cb_socks)
-        self.cb_socks.grid(row=3, column=0, columnspan=COLUMNSPAN_MAX)
+        BaseFrame(downframe, height=16).grid(row=4, columnspan=15)
 
         self.but_ok = Button(downframe, width=8, text='Ok', command=lambda: self.ok())
         self.but_cancel = Button(downframe, width=8, text='Cancel', command=lambda: self.cancel())
-        self.but_ok.grid(row=5, column=1, columnspan=1)
-        self.but_cancel.grid(row=5, column=2, columnspan=1)
+        self.but_ok.grid(row=5, column=3, columnspan=5)
+        self.but_cancel.grid(row=5, column=8, columnspan=5)
 
         self.window.config(bg=self.parent.default_bg_color)
 
@@ -486,9 +481,9 @@ class ProxyWindow(BaseWindow):
 
     def select_all(self) -> None:
         if self.visible is True:
-            self.entry.focus_set()
-            self.entry.selection_range(0, END)
-            self.entry.icursor(END)
+            self.entry_addr.focus_set()
+            self.entry_addr.selection_range(0, END)
+            self.entry_addr.icursor(END)
 
     def ok(self) -> None:
         # Address validation
@@ -496,7 +491,7 @@ class ProxyWindow(BaseWindow):
 
         # moved to cmdargs, wrapped here
         try:
-            newval = valid_proxy(newval)
+            newval = valid_proxy(newval, False)
             adr_valid = True
         except Exception:
             adr_valid = False
@@ -505,12 +500,11 @@ class ProxyWindow(BaseWindow):
             self.err_message.showtip()
         else:
             setrootconf(Options.OPT_PROXYSTRING, newval)
-            setrootconf(Options.OPT_PROXY_SOCKS, bool(int(getrootconf(Options.OPT_PROXY_SOCKS_TEMP))))
+            setrootconf(Options.OPT_PROXYTYPE, getrootconf(Options.OPT_PROXYTYPE_TEMP))
             self.hide()
 
     def cancel(self) -> None:
         setrootconf(Options.OPT_PROXYSTRING_TEMP, str(getrootconf(Options.OPT_PROXYSTRING)))
-        setrootconf(Options.OPT_PROXY_SOCKS_TEMP, bool(int(getrootconf(Options.OPT_PROXY_SOCKS))))
         self.hide()
 
     def ask(self) -> None:

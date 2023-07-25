@@ -24,7 +24,7 @@ from requests import Session, HTTPError, Response, adapters
 
 # internal
 from app_defines import (
-    PROXY_HTTP, PROXY_SOCKS5, CONNECT_RETRIES_PAGE, CONNECT_DELAY_PAGE, ThreadInterruptException, DownloadModes, CONNECT_RETRIES_ITEM,
+    CONNECT_RETRIES_PAGE, CONNECT_DELAY_PAGE, ThreadInterruptException, DownloadModes, CONNECT_RETRIES_ITEM,
     CONNECT_DELAY_ITEM, WRITE_CHUNK_SIZE, DOWNLOAD_CHUNK_SIZE, CONNECT_RETRIES_CHUNK,
 )
 from app_gui_defines import SLASH
@@ -79,7 +79,6 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
         self.add_cookies = dict()  # type: Dict[str, str]
         self.ignore_proxy = False
         self.ignore_proxy_dwn = False
-        self.socks = False
         self.proxies = None  # type: Optional[Dict[str, str]]
         self.etags = dict()  # type: Dict[str, str]
         self.session = None  # type: Optional[Session]
@@ -107,8 +106,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
         self.add_cookies = args.cookies or self.add_cookies
         self.ignore_proxy = args.noproxy or self.ignore_proxy
         self.ignore_proxy_dwn = args.proxynodown or self.ignore_proxy_dwn
-        self.socks = args.socks or self.socks
-        self.proxies = {'all': f'{PROXY_SOCKS5 if self.socks else PROXY_HTTP}{args.proxy}'} if args.proxy else None
+        self.proxies = {'all': args.proxy} if args.proxy else None
         self.session = self.make_session()
 
     # threaded

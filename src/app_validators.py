@@ -18,21 +18,37 @@ from typing import Union
 # internal
 from app_defines import FMT_DATE_DEFAULT, THREADS_MAX_ITEMS, DownloadModes
 from app_gui_defines import (
-    SLASH, ProcModule, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_PARCHI
+    SLASH, ProcModule, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_PARCHI, OPTION_VALUES_PROXYTYPE,
 )
 from app_utils import Protocol, normalize_path
 
 __all__ = (
     'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int',
     'StrValidator', 'IntValidator', 'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator', 'VALIDATORS_DICT',
-    'ThreadsCBValidator', 'JsonValidator', 'BoolStrValidator', 'ProxyValidator', 'DateValidator', 'ParchiCBValidator',
+    'ThreadsCBValidator', 'JsonValidator', 'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator', 'ParchiCBValidator',
 )
 
 
-def valid_proxy(prox: str) -> str:
+def valid_proxy_type(ptype: str) -> str:
+    try:
+        assert ptype in OPTION_VALUES_PROXYTYPE
+        return ptype
+    except Exception:
+        raise ArgumentError
+
+
+def valid_proxy(prox: str, check_type=True) -> str:
     if len(prox) == 0:
         return prox
     try:
+        if check_type is True:
+            from urllib.parse import urlparse
+            url = urlparse(prox)
+            pv, pp = tuple(url.netloc.split(':', 1))
+            pt, pva, ppi = valid_proxy_type(url.scheme), IPv4Address(pv), int(pp)
+            assert 20 < ppi < 65535
+            return f'{pt}://{str(pva)}:{ppi:d}'
+
         pv, pp = tuple(prox.split(':', 1))
         pva, ppi = IPv4Address(pv), int(pp)
         assert 20 < ppi < 65535
@@ -186,7 +202,16 @@ class BoolStrValidator(StrValidator):
 class ProxyValidator(StrValidator):
     def __call__(self, val: str) -> bool:
         try:
-            _ = valid_proxy(val)
+            _ = valid_proxy(val, False)
+            return True
+        except Exception:
+            return False
+
+
+class ProxyTypeValidator(StrValidator):
+    def __call__(self, val: str) -> bool:
+        try:
+            _ = valid_proxy_type(val)
             return True
         except Exception:
             return False
