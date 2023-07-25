@@ -16,7 +16,7 @@ from os import path
 from typing import Union
 
 # internal
-from app_defines import FMT_DATE_DEFAULT, THREADS_MAX_ITEMS, DownloadModes
+from app_defines import FMT_DATE, THREADS_MAX_ITEMS, DownloadModes
 from app_gui_defines import (
     SLASH, ProcModule, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_PARCHI, OPTION_VALUES_PROXYTYPE,
 )
@@ -24,8 +24,8 @@ from app_utils import Protocol, normalize_path
 
 __all__ = (
     'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int',
-    'StrValidator', 'IntValidator', 'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator', 'VALIDATORS_DICT',
-    'ThreadsCBValidator', 'JsonValidator', 'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator', 'ParchiCBValidator',
+    'Validator', 'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator',
+    'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator', 'ParchiCBValidator',
 )
 
 
@@ -57,9 +57,9 @@ def valid_proxy(prox: str, check_type=True) -> str:
         raise ArgumentError
 
 
-def valid_date(date: str, rev=False) -> str:
+def valid_date(date: str) -> str:
     try:
-        _ = datetime.strptime(date, '-'.join(reversed(FMT_DATE_DEFAULT.split('-'))) if rev else FMT_DATE_DEFAULT)
+        _ = datetime.strptime(date, FMT_DATE)
         return date
     except Exception:
         raise ArgumentError
@@ -179,7 +179,7 @@ class ThreadsCBValidator(IntValidator):
 class DateValidator(StrValidator):
     def __call__(self, val: str) -> bool:
         try:
-            _ = valid_date(val, True)
+            _ = valid_date(val)
             return True
         except Exception:
             return False
@@ -215,12 +215,6 @@ class ProxyTypeValidator(StrValidator):
             return True
         except Exception:
             return False
-
-
-VALIDATORS_DICT = {
-    int: IntValidator,
-    str: StrValidator,
-}
 
 #
 #

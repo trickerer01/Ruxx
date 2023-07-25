@@ -134,8 +134,6 @@ FONT_LUCIDA_MEDIUM = ('Lucida Grande', 10)
 FONT_SANS_SMALL = ('Microsoft Sans Serif', 8)
 FONT_SANS_MEDIUM = ('Microsoft Sans Serif', 10)
 # Formats & patterns
-FMT_DATE = '%d-%m-%Y'
-DATE_MIN_DEFAULT_REV = '01-01-1970'
 SLASH = '/'
 UNDERSCORE = '_'
 NEWLINE = '\n'

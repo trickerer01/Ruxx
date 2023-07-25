@@ -22,7 +22,7 @@ from tkinter import (
 from typing import Optional, Callable, List, Union, Dict, Iterable
 
 # internal
-from app_defines import PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS
+from app_defines import PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, FMT_DATE
 from app_file_sorter import FileTypeFilter
 from app_gui_defines import (
     BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, Options, STATE_NORMAL,
@@ -30,8 +30,8 @@ from app_gui_defines import (
     BUT_DELETE, WINDOW_MINSIZE, PADDING_ROOTFRAME_I, Menus, menu_items, IMG_SAVE_DATA, IMG_PROC_RX_DATA, IMG_PROC_RN_DATA,
     IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL, PADDING_DEFAULT,
     OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, Globals, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
-    OPTION_VALUES_PROXYTYPE, FMT_DATE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
-    STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, DATE_MIN_DEFAULT_REV, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, gobjects, Icons,
+    OPTION_VALUES_PROXYTYPE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
+    STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, gobjects, Icons,
 )
 from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME
 from app_tooltips import WidgetToolTip
@@ -897,7 +897,7 @@ def create_base_window_widgets() -> None:
                          sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_datemin_t = Entry(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMIN)))
     register_global(Globals.GOBJECT_FIELD_DATEMIN, op_datemin_t)
-    op_datemin_t.insert(0, DATE_MIN_DEFAULT_REV)
+    op_datemin_t.insert(0, DATE_MIN_DEFAULT)
     op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if sys.platform == PLATFORM_WINDOWS else 1))
     attach_tooltip(op_datemin_t, TOOLTIP_DATE)
     #  Date max

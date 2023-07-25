@@ -18,7 +18,7 @@ except Exception:
     from typing_extensions import Protocol
 
 # internal
-from app_defines import FMT_DATE_DEFAULT
+from app_defines import FMT_DATE
 from app_gui_defines import SLASH, re_uscore_mult
 
 __all__ = ('Protocol', 'Comparable', 'as_date', 'confirm_yes_no', 'normalize_path', 'trim_undersores', 'format_score', 'find_first_not_of')
@@ -46,7 +46,7 @@ def find_first_not_of(s: str, chars: str) -> int:
 
 
 def as_date(date_s: str) -> date:
-    return datetime.strptime(date_s, FMT_DATE_DEFAULT).date()
+    return datetime.strptime(date_s, FMT_DATE).date()
 
 
 def confirm_yes_no(title: str, msg: str) -> bool:

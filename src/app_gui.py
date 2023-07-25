@@ -24,7 +24,7 @@ from app_cmdargs import prepare_arglist
 from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, SUPPORTED_PLATFORMS, MODULE_ABBR_RX, MODULE_ABBR_RN,
     DEFAULT_ENCODING, KNOWN_EXTENSIONS_STR, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD,
-    DEFAULT_HEADERS, DATE_MIN_DEFAULT, FMT_DATE_DEFAULT,
+    DEFAULT_HEADERS, DATE_MIN_DEFAULT, FMT_DATE,
     max_progress_value_for_state,
 )
 from app_download_rn import DownloaderRn
@@ -44,7 +44,7 @@ from app_gui_defines import (
     OPTION_CMD_FNAMEPREFIX, OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS,
     OPTION_CMD_SAVE_SOURCES, OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH,
     OPTION_CMD_COOKIES, OPTION_CMD_HEADERS, OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY,
-    OPTION_CMD_PROXY_NO_DOWNLOAD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, FMT_DATE, DATE_MIN_DEFAULT_REV, SLASH,
+    OPTION_CMD_PROXY_NO_DOWNLOAD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH,
     OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, BUTTONS_TO_UNFOCUS,
     OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI, BUT_ALT_F4,
     ProcModule, menu_items, menu_item_orig_states, gobjects, gobject_orig_states, Options, Globals, Menus, Icons, CVARS,
@@ -56,8 +56,8 @@ from app_revision import APP_NAME, __RUXX_DEBUG__
 from app_tags_parser import reset_last_tags, parse_tags
 from app_utils import normalize_path, confirm_yes_no
 from app_validators import (
-    StrValidator, IntValidator, ValidatorAlwaysTrue, ModuleValidator, VideosCBValidator, ImagesCBValidator, VALIDATORS_DICT,
-    ThreadsCBValidator, JsonValidator, BoolStrValidator, ProxyValidator, ProxyTypeValidator, DateValidator, ParchiCBValidator,
+    Validator, ValidatorAlwaysTrue, ModuleValidator, VideosCBValidator, ImagesCBValidator, ThreadsCBValidator, JsonValidator,
+    BoolStrValidator, ProxyValidator, ProxyTypeValidator, DateValidator, ParchiCBValidator,
 )
 
 __all__ = ()
@@ -136,12 +136,11 @@ class Settings(ABC):
         ...
 
     class Setting:
-        def __init__(self, sconf: Options, check: Union[IntValidator, StrValidator], check_fail_message: str = None) -> None:
+        def __init__(self, sconf: Options, check: Validator, check_fail_message: str = None) -> None:
             self.conf = sconf
             self.type = check.get_value_type()
             self.check = check
             self.check_fail_message = check_fail_message or f'Invalid value \'%s\' for config id \'{self.conf.value:d}\''
-            assert issubclass(type(self.check), (VALIDATORS_DICT.get(self.type), ValidatorAlwaysTrue))
             assert self.check_fail_message.count('%s') == 1
 
         def validate(self, val: Union[int, str]) -> bool:
@@ -581,7 +580,7 @@ def prepare_cmdline() -> List[str]:
     newstr.append(OPTION_CMD_PATH)
     newstr.append(f'\'{pathstr}\'')
     # + options
-    addstr = OPTION_CMD_VIDEOS[OPTION_VALUES_VIDEOS.index(str(getrootconf(Options.OPT_VIDSETTING)))]
+    addstr = OPTION_CMD_VIDEOS[OPTION_VALUES_VIDEOS.index(str(getrootconf(Options.OPT_VIDSETTING)))]  # type: str
     if len(addstr) > 0:
         newstr.append(addstr)
     addstr = OPTION_CMD_IMAGES[OPTION_VALUES_IMAGES.index(str(getrootconf(Options.OPT_IMGSETTING)))]
@@ -595,19 +594,21 @@ def prepare_cmdline() -> List[str]:
         newstr.append(OPTION_CMD_THREADING_CMD)
         newstr.append(addstr)
     # date min / max
+    today_str = datetime.today().strftime(FMT_DATE)
     for datestr in ((Options.OPT_DATEMIN, OPTION_CMD_DATEAFTER), (Options.OPT_DATEMAX, OPTION_CMD_DATEBEFORE)):
         while True:
             try:
-                addstr = str(datetime.strptime(str(getrootconf(datestr[0])), FMT_DATE).date())
+                addstr = str(getrootconf(datestr[0]))
+                assert DateValidator()(addstr)
                 if (
                         (datestr[0] == Options.OPT_DATEMIN and addstr != DATE_MIN_DEFAULT) or
-                        (datestr[0] == Options.OPT_DATEMAX and addstr != datetime.today().strftime(FMT_DATE_DEFAULT))
+                        (datestr[0] == Options.OPT_DATEMAX and addstr != today_str)
                 ):
                     newstr.append(datestr[1])
                     newstr.append(addstr)
                 break
             except Exception:
-                setrootconf(datestr[0], DATE_MIN_DEFAULT_REV if datestr[0] == Options.OPT_DATEMIN else datetime.today().strftime(FMT_DATE))
+                setrootconf(datestr[0], DATE_MIN_DEFAULT if datestr[0] == Options.OPT_DATEMIN else today_str)
     # headers
     addstr = window_hcookiesm().get_json_h()
     if len(addstr) > 2 and addstr != DEFAULT_HEADERS:  # != "'{}'"
@@ -922,7 +923,7 @@ def load_id_list() -> None:
         if success:
             setrootconf(Options.OPT_TAGS, file_tags)
             # reset settings for immediate downloading
-            setrootconf(Options.OPT_DATEMIN, DATE_MIN_DEFAULT_REV)
+            setrootconf(Options.OPT_DATEMIN, DATE_MIN_DEFAULT)
             setrootconf(Options.OPT_DATEMAX, datetime.today().strftime(FMT_DATE))
         else:
             messagebox.showwarning(message=f'Unable to load ids from {filepath[filepath.rfind("/") + 1:]}!')

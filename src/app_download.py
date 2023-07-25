@@ -26,7 +26,7 @@ from iteration_utilities import unique_everseen
 # internal
 from app_defines import (
     ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, ItemInfo, DATE_MIN_DEFAULT,
-    CONNECT_DELAY_PAGE, CONNECT_RETRIES_ITEM, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE_DEFAULT, PLATFORM_WINDOWS
+    CONNECT_DELAY_PAGE, CONNECT_RETRIES_ITEM, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE, PLATFORM_WINDOWS
 )
 from app_gui_defines import UNDERSCORE, NEWLINE
 from app_network import ThreadedHtmlWorker, thread_exit, DownloadInterruptException
@@ -70,7 +70,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.prefer_webm = False
         self.low_res = False
         self.date_min = DATE_MIN_DEFAULT
-        self.date_max = datetime.today().strftime(FMT_DATE_DEFAULT)
+        self.date_max = datetime.today().strftime(FMT_DATE)
         self.dest_base = normalize_path(path.abspath(curdir))
         self.warn_nonempty = False
         self.tags_str_arr = list()  # type: List[str]
