@@ -709,7 +709,8 @@ def check_tags_direct() -> None:
         # init proxy / headers & cookies if needed
         proxstr = str(getrootconf(Options.OPT_PROXYSTRING))
         if len(proxstr) > 0 and len(OPTION_CMD_IGNORE_PROXY[int(getrootconf(Options.OPT_IGNORE_PROXY))]) == 0:
-            mydwn.proxies = {'all': f'{str(getrootconf(Options.OPT_PROXYTYPE))}://{proxstr}'}
+            proxy = f'{str(getrootconf(Options.OPT_PROXYTYPE))}://{proxstr}'
+            mydwn.proxies = {'http': proxy, 'https': proxy}
         else:
             mydwn.proxies = None
         headstr = window_hcookiesm().get_json_h()

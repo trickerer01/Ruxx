@@ -93,6 +93,9 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
 
     def make_session(self) -> Session:
         s = Session()
+        s.adapters.clear()
+        s.mount('http://', adapters.HTTPAdapter(pool_maxsize=1, max_retries=0))
+        s.mount('https://', adapters.HTTPAdapter(pool_maxsize=1, max_retries=0))
         s.keep_alive = True
         s.headers.update(self.add_headers.copy())
         s.headers['Referer'] = self._get_sitename()
@@ -106,7 +109,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
         self.add_cookies = args.cookies or self.add_cookies
         self.ignore_proxy = args.noproxy or self.ignore_proxy
         self.ignore_proxy_dwn = args.proxynodown or self.ignore_proxy_dwn
-        self.proxies = {'all': args.proxy} if args.proxy else None
+        self.proxies = {'http': args.proxy, 'https': args.proxy} if args.proxy else None
         self.session = self.make_session()
 
     # threaded
@@ -128,8 +131,8 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
             with Session() as s:
                 # do not pool connections
                 s.adapters.clear()
-                s.mount('http://', adapters.HTTPAdapter(1, 1))
-                s.mount('https://', adapters.HTTPAdapter(1, 1))
+                s.mount('http://', adapters.HTTPAdapter(pool_maxsize=1, max_retries=0))
+                s.mount('https://', adapters.HTTPAdapter(pool_maxsize=1, max_retries=0))
                 s.keep_alive = True
                 s.stream = True
                 s.headers.update(self.add_headers.copy())

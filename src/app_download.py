@@ -463,7 +463,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         # Filter out all trailing items if needed (last page)
         trace('Filtering trailing back items...')
 
-        if self.has_gui() and as_date(self.date_min) <= as_date(DATE_MIN_DEFAULT):
+        if as_date(self.date_min) <= as_date(DATE_MIN_DEFAULT):
             trace('last items filter is irrelevant! Skipping')
             return
 
@@ -543,7 +543,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         # Filter out all trailing items if needed (front page)
         trace('Filtering trailing front items...')
 
-        if self.has_gui() and as_date(self.date_max) >= datetime.today().date():
+        if as_date(self.date_max) >= datetime.today().date():
             trace('first items filter is irrelevant! Skipping')
             return
 
