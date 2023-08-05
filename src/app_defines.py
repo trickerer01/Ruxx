@@ -120,9 +120,9 @@ STATUSBAR_INFO_MAP = {
 }  # type: Dict[DownloaderStates, Tuple[str, Optional[str], Optional[str], Optional[str]]]
 
 
-CONNECT_DELAY_PAGE = 30
+CONNECT_DELAY_PAGE = 20
 CONNECT_RETRIES_PAGE = 10
-CONNECT_DELAY_ITEM = 30
+CONNECT_DELAY_ITEM = 20
 CONNECT_RETRIES_ITEM = 10
 CONNECT_RETRIES_CHUNK = 5
 
@@ -137,7 +137,7 @@ MESSAGE_EMPTY_SEARCH_RESULT_RN = 'Tm8gaW1hZ2VzIHdlcmUgZm91bmQgdG8gbWF0Y2ggdGhlIH
 SOURCE_DEFAULT = 'Unknown'
 FILE_NAME_FULL_MAX_LEN = 240
 # USER_AGENT = 'Ruxx / 1.1'
-USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.2 Firefox/102.0 PaleMoon/32.2.0'
+USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.2 Firefox/102.0 PaleMoon/32.3.1'
 DEFAULT_HEADERS = f'{{"User-Agent": "{USER_AGENT}"}}'
 PROXY_DEFAULT_STR = '127.0.0.1:222'
 ENCODING_UTF8 = 'utf-8'

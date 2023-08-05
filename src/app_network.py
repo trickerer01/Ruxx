@@ -128,18 +128,8 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                 pass
         elif mode == DownloadModes.DOWNLOAD_FULL:
             expected_size = 0
-            with Session() as s:
-                # do not pool connections
-                s.adapters.clear()
-                s.mount('http://', adapters.HTTPAdapter(pool_maxsize=1, max_retries=0))
-                s.mount('https://', adapters.HTTPAdapter(pool_maxsize=1, max_retries=0))
-                s.keep_alive = True
+            with self.make_session() as s:
                 s.stream = True
-                s.headers.update(self.add_headers.copy())
-                if len(self.add_cookies) > 0:
-                    s.cookies.update(self.add_cookies.copy())
-                if self.proxies and not self.ignore_proxy and not self.ignore_proxy_dwn:
-                    s.proxies.update(self.proxies.copy())
                 while (not (path.isfile(dest) and result.file_size > 0)) and result.retries < CONNECT_RETRIES_ITEM:
                     if self.is_killed():
                         trace(f'{result.result_str} interrupted', True)

@@ -8,7 +8,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from base64 import b64decode
-from re import compile as re_compile
 from typing import Tuple, Optional, Pattern
 
 # requirements
@@ -22,18 +21,16 @@ from app_defines import (
 from app_download import DownloaderBase
 from app_logger import trace
 from app_network import thread_exit
-from app_re import re_tags_to_process_rx, re_tags_exclude_rx
+from app_re import (
+    re_tags_to_process_rx, re_tags_exclude_rx, re_item_info_part_rx, re_post_date_rx, re_orig_file_link, re_sample_file_link,
+
+)
 
 __all__ = ('DownloaderRx',)
 
 SITENAME = b64decode(SITENAME_B_RX).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RX
 MAX_SEARCH_DEPTH = 200000 + ITEMS_PER_PAGE - 1  # set by site devs
-
-re_item_info_part_rx = re_compile(r'([\w5_]+=\"[^"]+\")[> ]')
-re_post_date_rx = re_compile(r'^\w{3} (\w{3}) (\d\d) \d{2}:\d{2}:\d{2} \+\d{4} (\d{4})$')
-re_orig_file_link = re_compile(r'file_url=\"([^"]+)\"')
-re_sample_file_link = re_compile(r'file_url=\"([^"]+)\"')
 
 item_info_fields = {'file_url': 'ext'}
 

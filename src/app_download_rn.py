@@ -8,7 +8,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from base64 import b64decode
-from re import compile as re_compile
 from typing import Tuple, Optional, Pattern, Union
 
 # requirements
@@ -22,18 +21,16 @@ from app_defines import (
 from app_download import DownloaderBase
 from app_logger import trace
 from app_network import thread_exit
-from app_re import re_tags_to_process_rn, re_tags_exclude_rn
+from app_re import (
+    re_tags_to_process_rn, re_tags_exclude_rn, re_item_info_part_rn, re_shimmie_image_href, re_shimmie_thumb, re_shimmie_orig_source,
+    re_shimmie_image_href_full
+)
 
 __all__ = ('DownloaderRn',)
 
 SITENAME = b64decode(SITENAME_B_RN).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RN
 MAX_SEARCH_DEPTH = 0
-
-re_item_info_part_rn = re_compile(r'([\w\-]+=\"[^"]+\")[/> ]')
-re_shimmie_image_href = re_compile(r'/_images/[^/]+/\d+?')
-re_shimmie_thumb = re_compile(r'^thumb shm-thumb.+?$')
-re_shimmie_orig_source = re_compile('^overflow:.+?$')
 
 item_info_fields = {'data-post-id': 'id', 'data-tags': 'tags', 'title': 'ext'}
 
@@ -66,10 +63,9 @@ class DownloaderRn(DownloaderBase):
     def _form_item_string_manually(self, raw_html_page: BeautifulSoup) -> None:
         assert isinstance(raw_html_page, BeautifulSoup)
         # extract id
-        iid_url_re = re_compile(r'/_images/[^/]+/(\d+)%20-%20([^">]+)')
-        iid_url = str(raw_html_page.find('a', attrs={'download': '', 'href': iid_url_re}))
+        iid_url = str(raw_html_page.find('a', attrs={'download': '', 'href': re_shimmie_image_href_full}))
         try:
-            iall = iid_url_re.search(iid_url)
+            iall = re_shimmie_image_href_full.search(iid_url)
             iid = iall.group(1)
             itagsext = iall.group(2)
             itags = ' '.join(itagsext[:itagsext.rfind('.')].split('%20'))
