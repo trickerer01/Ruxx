@@ -447,7 +447,7 @@ def open_download_folder() -> None:
             return
 
     try:
-        res = system(f'start "" "{cur_path}"')
+        res = system(f'start "" "{path.abspath(cur_path)}"')
         if res != 0:
             Logger.log(f'Couldn\'t open \'{cur_path}\', error: {res:d}.', False, False)
     except Exception:
