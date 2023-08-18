@@ -73,7 +73,7 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
     Separates tags string into fully formed tags and negative tag patterns\n
     Ex. 'a b (+c+~+d+) -(ff,gg)' => (['a', 'b' , '(+c+~+d+)'], [[re_compile(r'^ff$'), re_compile(r'^gg$')]])\n
     :param tags_str: provided string of tags separated by space
-    :return: 1) list of fully-formed tags without negative groups, 2) zero or more tag pattern lists
+    :return: 1) list of fully-formed tags without negative groups, 2) list of zero or more tag pattern lists
     """
     def form_plist(neg_tags_group: str) -> Optional[List[Pattern]]:
         def esc(s: str) -> str:
@@ -96,7 +96,7 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
 
     total_len = len(tags_list) - 1  # concat chars count
     for t in tags_list:  # + length of each tag
-        total_len += max(len(ogt) for ogt in t.split('+~+')) if t.startswith('(+') and ProcModule.is_rn() else len(t)
+        total_len += max(len(ogt) for ogt in t.split('+~+')) if ProcModule.is_rn() and t.startswith('(+') else len(t)
     max_string_len = TAGS_STRING_LENGTH_MAX_RX if ProcModule.is_rx() else TAGS_STRING_LENGTH_MAX_RN
     if total_len > max_string_len:
         trace('Warning (W1): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')

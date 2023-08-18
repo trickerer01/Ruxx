@@ -295,9 +295,9 @@ gobject_orig_states = {
 
 
 # buttons to unfocus
-BUTTONS_TO_UNFOCUS = [
+BUTTONS_TO_UNFOCUS = (
     Globals.GOBJECT_BUTTON_DOWNLOAD,
-]
+)
 # end buttons to unfocus
 
 
@@ -337,7 +337,6 @@ menu_item_orig_states = {
     Menus.MENU_DEBUG: [STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL],
 }
 # end global static
-# text cache
 # hotkeys
 hotkeys = {
     Options.OPT_ISABOUTOPEN: BUT_F1,
@@ -374,7 +373,6 @@ TOOLTIP_HCOOKIE_ADD_ENTRY = (' Must be in on of the valid formats:',
                              '  3) [name],[value]')
 TOOLTIP_INVALID_SYNTAX = ('Invalid syntax.',)
 # end tooltips
-# end text cache
 
 # images cache
 #  gif

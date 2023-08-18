@@ -8,9 +8,10 @@ version_info.txt
 *.pyc
 *.cfg
 src/curr.py
+src/app_genrev.py
+src/app_grab_tags_*.py
 src/app_release.py
 src/app_versioninfo.py
-src/app_genrev.py
 
 # IDE
 /.idea/*

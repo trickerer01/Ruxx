@@ -70,7 +70,7 @@ class ToolTipBase(ABC):
             tw.destroy()
 
     @abstractmethod
-    def _showcontents(self) -> ...:
+    def _showcontents(self) -> None:
         ...
 
 
