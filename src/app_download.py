@@ -84,19 +84,18 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.failed_items = list()  # type: List[str]
         self.total_count = 0
         self.total_count_old = 0
+        self.total_count_all = 0
         self.processed_count = 0
         self.total_pages = 0
         self.orig_tasks_count = 0
         self.current_state = DownloaderStates.STATE_IDLE
+        self.items_raw_per_task = list()  # type: List[str]
+        self.items_raw_per_page = dict()  # type: Dict[int, List[str]]
         self.items_raw_all = list()  # type: List[str]
-        self.items_raw_all_dict = dict()  # type: Dict[int, List[str]]
-        self.item_info_dict = dict()  # type: Dict[str, ItemInfo]
+        self.item_info_dict_per_task = dict()  # type: Dict[str, ItemInfo]
+        self.item_info_dict_all = dict()  # type: Dict[str, ItemInfo]
         self.neg_and_groups = list()  # type: List[List[Pattern[str]]]
         self.known_parents = set()  # type: Set[str]
-        # resilts_all
-        self.total_count_all = 0
-        self.success_count_all = 0
-        self.fail_count_all = 0
 
     def __del__(self) -> None:
         self.__cleanup()
@@ -223,18 +222,6 @@ class DownloaderBase(ThreadedHtmlWorker):
         if item_id not in self.known_parents:
             parents.add(item_id)
 
-    def _reset_after_task(self, task_num: int) -> None:
-        if __RUXX_DEBUG__:
-            trace(f'\ntask {task_num:d}:\n total:  {self.total_count:d}\n succed: {self.success_count:d}\n failed: {self.fail_count:d}')
-        self.total_count_all += self.total_count
-        self.success_count_all += self.success_count
-        self.fail_count_all += self.fail_count
-        if task_num < self._tasks_count():
-            self.processed_count = 0
-            self.total_count = 0
-            self.success_count = 0
-            self.fail_count = 0
-
     def _try_append_extra_info(self, item_abbrname: str, maxlen: int) -> str:
         if not self.append_info:
             return item_abbrname
@@ -242,7 +229,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         if maxlen <= 0:
             return item_abbrname
 
-        info = self.item_info_dict.get(item_abbrname)
+        info = self.item_info_dict_all.get(item_abbrname)
         if info is None:
             return item_abbrname
 
@@ -452,11 +439,11 @@ class DownloaderBase(ThreadedHtmlWorker):
                 continue
 
         # convert to pure strings
-        self.items_raw_all_dict[n] = [str(item) for item in items_raw_temp]
+        self.items_raw_per_page[n] = [str(item) for item in items_raw_temp]
         with self.items_all_lock:
             total_count_temp = 0
-            for k in self.items_raw_all_dict:
-                total_count_temp += len(self.items_raw_all_dict[k])
+            for k in self.items_raw_per_page:
+                total_count_temp += len(self.items_raw_per_page[k])
             self.total_count = total_count_temp
 
     def _filter_last_items(self) -> None:
@@ -467,13 +454,13 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('last items filter is irrelevant! Skipping')
             return
 
-        if len(self.items_raw_all) < 2:
+        if len(self.items_raw_per_task) < 2:
             trace('less than 2 items: skipping')
             return
 
         trace(f'mindate at {self.date_min}, filtering')
-        items_tofilter = self.items_raw_all[-(min(len(self.items_raw_all), self._get_items_per_page() * 2)):]
-        self.items_raw_all = self.items_raw_all[:-len(items_tofilter)]  # type: List[str]
+        items_tofilter = self.items_raw_per_task[-(min(len(self.items_raw_per_task), self._get_items_per_page() * 2)):]
+        self.items_raw_per_task = self.items_raw_per_task[:-len(items_tofilter)]  # type: List[str]
         trace(f'Items to potentially remove: {len(items_tofilter):d}')
 
         divider = 1
@@ -496,11 +483,11 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             if cur_index < backward_lim:
                 trace('Error: cur_index < backward_lim, aborting filter!')
-                self.items_raw_all += items_tofilter
+                self.items_raw_per_task += items_tofilter
                 break
             if cur_index > forward_lim:
                 trace('Error: cur_index > forward_lim, aborting filter!')
-                self.items_raw_all += items_tofilter
+                self.items_raw_per_task += items_tofilter
                 break
 
             # last steps
@@ -516,7 +503,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             if dofinal is True:
                 items_tofilter = items_tofilter[:cur_index]
                 trace(f'Items after filter: {len(items_tofilter):d}')
-                self.items_raw_all += items_tofilter
+                self.items_raw_per_task += items_tofilter
                 break
 
             h = self._local_addr_from_string(str(items_tofilter[cur_index]))
@@ -547,13 +534,13 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('first items filter is irrelevant! Skipping')
             return
 
-        if len(self.items_raw_all) < 2:
+        if len(self.items_raw_per_task) < 2:
             trace('less than 2 items: skipping')
             return
 
         trace(f'maxdate at {self.date_max}, filtering')
-        items_tofilter = self.items_raw_all[:(min(len(self.items_raw_all), self._get_items_per_page() * 2))]
-        self.items_raw_all = self.items_raw_all[len(items_tofilter):]  # type: List[str]
+        items_tofilter = self.items_raw_per_task[:(min(len(self.items_raw_per_task), self._get_items_per_page() * 2))]
+        self.items_raw_per_task = self.items_raw_per_task[len(items_tofilter):]  # type: List[str]
 
         trace(f'Items to potentially remove: {len(items_tofilter):d}')
 
@@ -577,11 +564,11 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             if cur_index < backward_lim:
                 trace('Error: cur_index < backward_lim, aborting filter!')
-                self.items_raw_all = items_tofilter + self.items_raw_all
+                self.items_raw_per_task = items_tofilter + self.items_raw_per_task
                 break
             if cur_index > forward_lim:
                 trace('Error: cur_index > forward_lim, aborting filter!')
-                self.items_raw_all = items_tofilter + self.items_raw_all
+                self.items_raw_per_task = items_tofilter + self.items_raw_per_task
                 break
 
             # last steps
@@ -597,7 +584,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             if dofinal is True:
                 items_tofilter = items_tofilter[cur_index:]
                 trace(f'Items after filter: {len(items_tofilter):d}')
-                self.items_raw_all = items_tofilter + self.items_raw_all  # type: List[str]
+                self.items_raw_per_task = items_tofilter + self.items_raw_per_task  # type: List[str]
                 break
 
             h = self._local_addr_from_string(str(items_tofilter[cur_index]))
@@ -629,13 +616,13 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         total_count_temp = self.total_count
 
-        for idx in reversed(range(len(self.items_raw_all))):  # type: int
+        for idx in reversed(range(len(self.items_raw_per_task))):  # type: int
             self.catch_cancel_or_ctrl_c()
-            h = str(self.items_raw_all[idx])
+            h = str(self.items_raw_per_task[idx])
             is_vid = self._is_video(h)
             if self.skip_videos if is_vid else self.skip_images:
                 # trace(f'Info: TagProc_filter: removing {"video" if _is_video else "image"} {_extract_id(extract_local_addr(h))}!')
-                del self.items_raw_all[idx]
+                del self.items_raw_per_task[idx]
                 self.total_count -= 1
 
         if total_count_temp != self.total_count:
@@ -653,16 +640,16 @@ class DownloaderBase(ThreadedHtmlWorker):
         if len(curdirfiles) == 0:
             return
 
-        for idx in reversed(range(len(self.items_raw_all))):  # type: int
+        for idx in reversed(range(len(self.items_raw_per_task))):  # type: int
             self.catch_cancel_or_ctrl_c()
-            h = self._local_addr_from_string(str(self.items_raw_all[idx]))
+            h = self._local_addr_from_string(str(self.items_raw_per_task[idx]))
             item_id = self._extract_id(h)
             rex_cdfile = re_compile(fr'^(?:{self._get_module_abbr_p()})?{item_id}[._].*?$')
             for f_idx in reversed(range(len(curdirfiles))):
                 if rex_cdfile.fullmatch(curdirfiles[f_idx]) is not None:
                     # trace(f'Info: TagProc_filter: {item_id} already exists!')
                     del curdirfiles[f_idx]
-                    del self.items_raw_all[idx]
+                    del self.items_raw_per_task[idx]
                     self.total_count -= 1
                     break
 
@@ -676,27 +663,27 @@ class DownloaderBase(ThreadedHtmlWorker):
             return
 
         abbrp = self._get_module_abbr_p()
-        total_count_old = len(self.items_raw_all)
+        total_count_old = len(self.items_raw_per_task)
         removed_count = 0
         for idx in reversed(range(total_count_old)):  # type: int
-            h = self._local_addr_from_string(str(self.items_raw_all[idx]))
+            h = self._local_addr_from_string(str(self.items_raw_per_task[idx]))
             item_id = self._extract_id(h)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'
-            item_info = self.item_info_dict.get(idstring)
+            item_info = self.item_info_dict_per_task.get(idstring)
             tags_list = item_info.tags.split(' ')
             if any(all(any(p.fullmatch(tag) is not None for tag in tags_list) for p in plist) for plist in self.neg_and_groups):
                 if item_id in parents:
                     parents.remove(item_id)
                 if item_info.parent_id in parents:
                     parents.remove(item_info.parent_id)
-                del self.item_info_dict[idstring]
-                del self.items_raw_all[idx]
+                del self.item_info_dict_per_task[idstring]
+                del self.items_raw_per_task[idx]
                 removed_count += 1
 
         if removed_count > 0:
             trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
 
-    def _process_tags(self, tag_str: str, skip_custom_filters: bool) -> None:
+    def _process_tags(self, tag_str: str, task_num: int, is_extra_task: bool) -> None:
         self.current_state = DownloaderStates.STATE_SEARCHING
         self.url = self.form_tags_search_address(tag_str)
 
@@ -770,18 +757,18 @@ class DownloaderBase(ThreadedHtmlWorker):
                     self._get_page_items(n, c_page, self.maxpage)
 
             # move out async result into a linear array
-            self.items_raw_all = [''] * self.total_count
+            self.items_raw_per_task = [''] * self.total_count
             cur_idx = 0
             for k in range(self.minpage, self.maxpage + 1):
-                cur_l = self.items_raw_all_dict.get(k)
+                cur_l = self.items_raw_per_page.get(k)
                 assert cur_l is not None
                 for i in range(len(cur_l)):
-                    self.items_raw_all[cur_idx] = cur_l[i]
+                    self.items_raw_per_task[cur_idx] = cur_l[i]
                     cur_idx += 1
 
-            self.items_raw_all_dict.clear()
+            self.items_raw_per_page.clear()
 
-            self.items_raw_all = list(unique_everseen(self.items_raw_all))  # type: List[str]
+            self.items_raw_per_task = list(unique_everseen(self.items_raw_per_task))  # type: List[str]
         else:
             # we have been redirected to a page with our single result! compose item string manually
             if __RUXX_DEBUG__:
@@ -789,17 +776,17 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             self._form_item_string_manually(total_count_or_html)
 
-        def after_filter(sleep_time: float = 0.2) -> None:
-            self.total_count = len(self.items_raw_all)
+        def after_filter(sleep_time: float) -> None:
+            self.total_count = len(self.items_raw_per_task)
             trace(f'new totalcount: {self.total_count:d}')
             thread_sleep(sleep_time)
 
-        def apply_filter(state: DownloaderStates, func: Callable[..., None], *args, sleep_time: float = 0.1) -> None:
+        def apply_filter(state: DownloaderStates, func: Callable[..., None], *args, sleep_time: float = 0.025) -> None:
             self.current_state = state
             func(*args)
             after_filter(sleep_time)
 
-        after_filter()
+        after_filter(0.1)
 
         apply_filter(DownloaderStates.STATE_FILTERING_ITEMS1, self._filter_last_items)
         apply_filter(DownloaderStates.STATE_FILTERING_ITEMS2, self._filter_first_items)
@@ -809,10 +796,16 @@ class DownloaderBase(ThreadedHtmlWorker):
         # store items info for future processing
         # custom filters may exclude certain items from the infos dict
         task_parents = set()  # type: Set[str]
-        self._extract_all_infos(task_parents)
+        self._extract_cur_task_infos(task_parents)
 
-        if not skip_custom_filters:
+        if not is_extra_task:
             apply_filter(DownloaderStates.STATE_FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
+
+        self.items_raw_all = list(unique_everseen(self.items_raw_all + self.items_raw_per_task))  # type: List[str]
+        self.total_count_all = len(self.items_raw_all)
+        self.item_info_dict_all.update(self.item_info_dict_per_task)
+        if task_num > 1:
+            trace(f'overall totalcount: {self.total_count_all:d}')
 
         if len(task_parents) > 0:
             trace(f'\nParent post(s) detected! Scheduling {len(task_parents):d} extra task(s)!')
@@ -822,26 +815,29 @@ class DownloaderBase(ThreadedHtmlWorker):
                 self.tags_str_arr.append(new_task_str)
             self.known_parents.update(task_parents)
 
-        if self.total_count <= 0:
-            trace('\nNothing to process: queue is empty')
+    def _download_all(self) -> None:
+        if self.total_count_all <= 0:
+            trace('\nNothing to download: queue is empty')
             return
+
+        self.items_raw_all = sorted(self.items_raw_all, key=lambda x: self._extract_id(x), reverse=True)  # type: List[str]
 
         if self.download_limit > 0:
             if len(self.items_raw_all) > self.download_limit:
                 trace(f'\nShrinking queue down to {self.download_limit:d} items...')
                 self.items_raw_all = self.items_raw_all[self.download_limit * -1:]
-                self.total_count = len(self.items_raw_all)
+                self.total_count_all = len(self.items_raw_all)
             else:
                 trace('\nShrinking queue down is not required!')
 
         item_front = self._extract_item_info(self.items_raw_all[0]).id
         item_end = self._extract_item_info(self.items_raw_all[-1]).id
         # front item is always >= end item
-        trace(f'\nProcessing {self.total_count:d} items, bound {item_end} to {item_front}')
+        trace(f'\nProcessing {self.total_count_all:d} items, bound {item_end} to {item_front}')
 
         self.items_raw_all.reverse()
         self.current_state = DownloaderStates.STATE_DOWNLOADING
-        trace(f'{self.total_count:d} item(s) scheduled, {self.maxthreads_items:d} thread(s) max\nWorking...\n')
+        trace(f'{self.total_count_all:d} item(s) scheduled, {self.maxthreads_items:d} thread(s) max\nWorking...\n')
 
         if self.maxthreads_items > 1 and len(self.items_raw_all) > 1:
             ress = list()
@@ -856,10 +852,11 @@ class DownloaderBase(ThreadedHtmlWorker):
                         ress.pop(0)
                     thread_sleep(0.2)
         else:
-            for i in range(self.total_count):
+            for i in range(self.total_count_all):
                 self._process_item(self.items_raw_all[i])
 
-        trace(f'\nAll {"skipped" if self.download_mode == DownloadModes.DOWNLOAD_SKIP else "processed"} ({self.total_count:d} items)...')
+        skip_all = self.download_mode == DownloadModes.DOWNLOAD_SKIP
+        trace(f'\nAll {"skipped" if skip_all else "processed"} ({self.total_count_all:d} items)...')
 
     def _parse_tags(self, tags_base_arr: Iterable[str]) -> None:
         cc = self.get_tags_concat_char()
@@ -889,34 +886,38 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace(f'\n{len(self.neg_and_groups):d} \'excluded tags combination\' custom filter(s) parsed')
         trace(f'{self._tasks_count():d} task(s) scheduled:\n{NEWLINE.join(self.tags_str_arr)}\n\n{BR}')
         i = 0
-        while i < self._tasks_count():
+        while i < self._tasks_count():  # tasks count may increase during this loop
             i += 1
             cut_task_tags = self.tags_str_arr[i - 1]
             is_extra = i > self.orig_tasks_count
             trace(f'\n{f"[extra {i - self.orig_tasks_count:d}] " if is_extra else ""}task {i:d} in progress...\n{cut_task_tags}\n')
             try:
-                self._process_tags(cut_task_tags, is_extra)
-                trace(f'task {i:d} completed...')
+                self._process_tags(cut_task_tags, i, is_extra)
             except ThreadInterruptException:
                 trace(f'task {i:d} aborted...')
                 raise
             except Exception:
                 trace(f'task {i:d} failed...')
                 raise
-            finally:
-                self._reset_after_task(i)
-                trace(BR)
-        self.item_info_dict = {
-            k: v for k, v in sorted(sorted(self.item_info_dict.items(), key=lambda item: item[0]), key=lambda item: int(item[1].id))
+        try:
+            self._download_all()
+        except ThreadInterruptException:
+            trace('download aborted...')
+            raise
+        except Exception:
+            trace('download failed...')
+            raise
+        self.item_info_dict_all = {
+            k: v for k, v in sorted(sorted(self.item_info_dict_all.items(), key=lambda item: item[0]), key=lambda item: int(item[1].id))
         }  # type: Dict[str, ItemInfo]
-        if len(self.item_info_dict) > 0 and (self.dump_tags is True or self.dump_source is True):
+        if len(self.item_info_dict_all) > 0 and (self.dump_tags is True or self.dump_source is True):
             if self.dump_tags is True:
                 self._dump_all_tags()
             if self.dump_source is True:
                 self._dump_all_sources()
             trace(BR)
-        total_files = min(self.success_count_all + self.fail_count_all, self.total_count_all)
-        success_files = min(self.success_count_all, self.total_count_all - self.fail_count)
+        total_files = min(self.success_count + self.fail_count, self.total_count_all)
+        success_files = min(self.success_count, self.total_count_all - self.fail_count)
         trace(f'\n{self._tasks_count():d} task(s) completed, {success_files:d} / {total_files:d} item(s) succeded', False, True)
         if len(self.failed_items) > 0:
             trace(f'{len(self.failed_items):d} failed items:')
@@ -936,7 +937,9 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace(f'\nInterrupted by {str(sys.exc_info()[0])}!\n', True)
             self.my_root_thread.killed = True
         except Exception:
-            trace(f'Unhandled {str(sys.exc_info()[0])}: {str(sys.exc_info()[1])}', True)
+            trace(f'Unhandled exception: {str(sys.exc_info()[0])}!', True)
+            import traceback
+            traceback.print_exc()
         finally:
             self.current_state = DownloaderStates.STATE_IDLE
 
@@ -963,9 +966,9 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.warn_nonempty = args.warn_nonempty or self.warn_nonempty
         self._parse_tags(args.tags)
 
-    def _extract_all_infos(self, parents: MutableSet[str]) -> None:
+    def _extract_cur_task_infos(self, parents: MutableSet[str]) -> None:
         abbrp = self._get_module_abbr_p()
-        for item in self.items_raw_all:
+        for item in self.items_raw_per_task:
             item_info = self._extract_item_info(item)
             if self.include_parchi is True:
                 if item_info.has_children == 'true':
@@ -973,7 +976,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 if item_info.parent_id.isnumeric():
                     self._register_parent_post(parents, item_info.parent_id)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_info.id}'
-            self.item_info_dict[idstring] = item_info
+            self.item_info_dict_per_task[idstring] = item_info
             # debug
             if __RUXX_DEBUG__:
                 for key in item_info.__slots__:
@@ -984,8 +987,9 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     def _dump_all_tags(self) -> None:
         trace('\nSaving tags...')
-        id_begin = self.item_info_dict[list(self.item_info_dict)[0]].id
-        id_end = self.item_info_dict[list(self.item_info_dict)[-1]].id
+        item_info_list = sorted(list(self.item_info_dict_all.values()), key=lambda x: x.id)  # type: List[ItemInfo]
+        id_begin = item_info_list[0].id
+        id_end = item_info_list[-1].id
         abbrp = self._get_module_abbr_p()
 
         # rx_!tags_00000-00000.txt
@@ -993,7 +997,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         if self.has_gui() and path.isfile(filename):
             if not confirm_yes_no(title='Save tags', msg=f'File \'{filename}\' already exists. Overwrite?'):
-                trace('Error.\n')
+                trace('Skipped.')
                 return
 
         if not path.isdir(self.dest_base):
@@ -1003,7 +1007,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 thread_exit('ERROR: Unable to create subfolder!')
 
         with open(filename, 'wt', encoding=DEFAULT_ENCODING) as dump:
-            for item_info in self.item_info_dict.values():
+            for item_info in item_info_list:
                 item_line = f'{abbrp}{item_info.id}: {format_score(item_info.score)} {item_info.tags.strip()}\n'
                 dump.write(item_line)
 
@@ -1011,8 +1015,9 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     def _dump_all_sources(self) -> None:
         trace('\nSaving sources...')
-        id_begin = self.item_info_dict[list(self.item_info_dict)[0]].id
-        id_end = self.item_info_dict[list(self.item_info_dict)[-1]].id
+        item_info_list = sorted(list(self.item_info_dict_all.values()), key=lambda x: x.id)  # type: List[ItemInfo]
+        id_begin = item_info_list[0].id
+        id_end = item_info_list[-1].id
         abbrp = self._get_module_abbr_p()
 
         # rx_!sources_00000-00000.txt
@@ -1020,7 +1025,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         if self.has_gui() and path.isfile(filename):
             if not confirm_yes_no(title='Save sources', msg=f'File \'{filename}\' already exists. Overwrite?'):
-                trace('Error.\n')
+                trace('Skipped.')
                 return
 
         if not path.isdir(self.dest_base):
@@ -1030,7 +1035,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 thread_exit('ERROR: Unable to create subfolder!')
 
         with open(filename, 'wt', encoding=DEFAULT_ENCODING) as dump:
-            for item_info in self.item_info_dict.values():
+            for item_info in item_info_list:
                 if len(item_info.source) < 2:
                     item_info.source = SOURCE_DEFAULT
                 item_line = f'{abbrp}{item_info.id}: {item_info.source.strip()}\n'

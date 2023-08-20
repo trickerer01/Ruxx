@@ -116,7 +116,7 @@ STATUSBAR_INFO_MAP = {
     DownloaderStates.STATE_FILTERING_ITEMS2: ('Filtering files (2/4)... ', 'total_count', None, None),
     DownloaderStates.STATE_FILTERING_ITEMS3: ('Filtering files (3/4)... ', 'total_count', None, None),
     DownloaderStates.STATE_FILTERING_ITEMS4: ('Filtering files (4/4)... ', 'total_count', None, None),
-    DownloaderStates.STATE_DOWNLOADING: ('Downloading... ', 'processed_count', ' / ', 'total_count')
+    DownloaderStates.STATE_DOWNLOADING: ('Downloading... ', 'processed_count', ' / ', 'total_count_all')
 }  # type: Dict[DownloaderStates, Tuple[str, Optional[str], Optional[str], Optional[str]]]
 
 

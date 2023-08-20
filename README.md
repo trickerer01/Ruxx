@@ -48,7 +48,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
     - **by size** - sort by file size (you'll have to provide a threshold, in Megabytes). You can use multiple thesholds, separated by space: `0.5 10 3.0 5.00`
     - **by score** - sort by post score. Make sure that selected files include score in their names or this won't work. You can use multiple thesholds, separated by space: `100 250 50 500`
 - **Help -> Tags** - a quick list of tag types and how to use them (for selected module)
-- **Tags checking** - there is a small button near the **Tags** field. When pressed, Ruxx will try to connect to the website to see if this search yields any results. As a result the **Tags** field will briefly flash green / red. Additionally, if result is positive, a window will appear with exact amount of results found
+- **Tags checking** - there is a small button near the **Tags** field. When pressed, Ruxx will try to connect to the website to see if this search yields any results. As a result the **Tags** field will briefly flash green / red. Additionally, if result is positive, a window will appear with exact number of results found
 
 ### Tags syntax
 Ruxx normally allows most symbols for tags search, there are some specifics though:  

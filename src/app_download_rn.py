@@ -74,7 +74,7 @@ class DownloaderRn(DownloaderBase):
             trace('ERROR: re fails while forming item id string')
             raise ValueError
         # form string
-        self.items_raw_all = [f'<a data-post-id="{iid}" href="/post/view/{iid}" data-tags="{itags.lower()}" title="{itags} {iext}"> ']
+        self.items_raw_per_task = [f'<a data-post-id="{iid}" href="/post/view/{iid}" data-tags="{itags.lower()}" title="{itags} {iext}"> ']
 
     def _is_search_overload_page(self, *ignored) -> bool:
         return False
@@ -204,16 +204,16 @@ class DownloaderRn(DownloaderBase):
                 return
 
             full_item_id = f'{self._get_module_abbr_p()}{item_id}'
-            if full_item_id in self.item_info_dict:
+            if full_item_id in self.item_info_dict_per_task:
                 orig_source_div = raw_html.find('div', style=re_shimmie_orig_source)
                 if orig_source_div:
-                    self.item_info_dict[full_item_id].source = orig_source_div.text
+                    self.item_info_dict_per_task[full_item_id].source = orig_source_div.text
                 # we can't extract actual score without account credentials AND cf_clearance, but favorites will do just fine
                 favorited_by_div = raw_html.find('h3', string='Favorited By')
                 if favorited_by_div:
                     fav_sib = favorited_by_div.findNextSibling()
                     score_text = fav_sib.text[:max(fav_sib.text.find(' '), 0)]
-                    self.item_info_dict[full_item_id].score = score_text
+                    self.item_info_dict_per_task[full_item_id].score = score_text
 
         if self.download_mode == DownloadModes.DOWNLOAD_SKIP:
             self._inc_proc_count()

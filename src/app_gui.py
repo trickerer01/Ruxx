@@ -516,8 +516,8 @@ def update_progressbar() -> None:
 
             if dwnm().current_state == DownloaderStates.STATE_DOWNLOADING:
                 progress_value = PROGRESS_VALUE_NO_DOWNLOAD
-                if dwnm().total_count > 0 and dwnm().processed_count > 0:
-                    progress_value += int((PROGRESS_VALUE_DOWNLOAD / dwnm().total_count) * dwnm().processed_count)
+                if dwnm().total_count_all > 0 and dwnm().processed_count > 0:
+                    progress_value += int((PROGRESS_VALUE_DOWNLOAD / dwnm().total_count_all) * dwnm().processed_count)
             else:
                 progress_value = 0
                 state = STATE_WORK_START
