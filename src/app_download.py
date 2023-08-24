@@ -26,7 +26,7 @@ from iteration_utilities import unique_everseen
 # internal
 from app_defines import (
     ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, ItemInfo, DATE_MIN_DEFAULT,
-    CONNECT_DELAY_PAGE, CONNECT_RETRIES_ITEM, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE, PLATFORM_WINDOWS
+    CONNECT_TIMEOUT_BASE, CONNECT_RETRIES_ITEM, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE, PLATFORM_WINDOWS
 )
 from app_gui_defines import UNDERSCORE, NEWLINE
 from app_network import ThreadedHtmlWorker, thread_exit, DownloadInterruptException
@@ -435,7 +435,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 return
             except KeyError:
                 items_raw_temp = list()
-                thread_sleep(CONNECT_DELAY_PAGE / 2)
+                thread_sleep(min(10.0, max(CONNECT_TIMEOUT_BASE / 4, self.timeout / 2)))
                 continue
 
         # convert to pure strings

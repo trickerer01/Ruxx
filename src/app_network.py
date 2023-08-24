@@ -24,8 +24,8 @@ from requests import Session, HTTPError, Response, adapters
 
 # internal
 from app_defines import (
-    CONNECT_RETRIES_PAGE, CONNECT_DELAY_PAGE, ThreadInterruptException, DownloadModes, CONNECT_RETRIES_ITEM,
-    CONNECT_DELAY_ITEM, WRITE_CHUNK_SIZE, DOWNLOAD_CHUNK_SIZE, CONNECT_RETRIES_CHUNK,
+    ThreadInterruptException, DownloadModes, CONNECT_TIMEOUT_BASE, CONNECT_RETRIES_PAGE, CONNECT_RETRIES_ITEM, CONNECT_RETRIES_CHUNK,
+    WRITE_CHUNK_SIZE, DOWNLOAD_CHUNK_SIZE,
 )
 from app_gui_defines import SLASH
 from app_logger import trace
@@ -80,6 +80,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
         self.ignore_proxy = False
         self.ignore_proxy_dwn = False
         self.proxies = None  # type: Optional[Dict[str, str]]
+        self.timeout = CONNECT_TIMEOUT_BASE
         self.etags = dict()  # type: Dict[str, str]
         self.session = None  # type: Optional[Session]
 
@@ -110,6 +111,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
         self.ignore_proxy = args.noproxy or self.ignore_proxy
         self.ignore_proxy_dwn = args.proxynodown or self.ignore_proxy_dwn
         self.proxies = {'http': args.proxy, 'https': args.proxy} if args.proxy else None
+        self.timeout = args.timeout or self.timeout
         self.session = self.make_session()
 
     # threaded
@@ -145,7 +147,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
                             if not single_chunk:
                                 headers['Range'] = f'bytes={start:d}-{end:d}'
                             headers.update(self.add_headers.copy())
-                            req = s.request('GET', link, timeout=CONNECT_DELAY_ITEM, stream=True, headers=headers, allow_redirects=False)
+                            req = s.request('GET', link, timeout=self.timeout, stream=True, headers=headers, allow_redirects=False)
                             req.raise_for_status()
                             temp = bytes()
                             for chunk_w in req.iter_content(WRITE_CHUNK_SIZE):
@@ -270,7 +272,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
         while retries < tries:
             self.catch_cancel_or_ctrl_c()
             try:
-                r = self.session.request('GET', url, timeout=CONNECT_DELAY_PAGE, stream=False, allow_redirects=True)
+                r = self.session.request('GET', url, timeout=self.timeout, stream=False, allow_redirects=True)
                 r.raise_for_status()
                 break
             except (KeyboardInterrupt, ThreadInterruptException):

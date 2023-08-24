@@ -26,11 +26,11 @@ CUR_PATH = normalize_path(path.abspath(curdir))
 
 args_argparse_str1 = (
     'sfw asd ned -nds -proxr '
-    '-dmode 0 -skip_img -skip_vid -webm -lowres -noproxy -proxynodown -prefix -dump_tags -dump_sources -append_info'
+    '-timeout 13 -dmode 0 -skip_img -skip_vid -webm -lowres -noproxy -proxynodown -prefix -dump_tags -dump_sources -append_info'
 )
 args_argparse_str2 = (
     'sfw asd ned -nds -proxt '
-    '-mindate 1950-12-31 -maxdate 2038-01-01 -threads 8 -proxy http://8.8.8.8:65333 '
+    '-mindate 31-12-1950 -maxdate 01-01-2038 -threads 8 -proxy http://8.8.8.8:65333 '
     '-headers {"name1":"value1"} -cookies {"name2":"value2"} '
     '-path ' + CUR_PATH
 )
@@ -43,7 +43,7 @@ class ArgParseTests(TestCase):
         arglist = prepare_arglist(args.split())
         self.assertIsNotNone(arglist.tags)
         print(str(arglist.tags))
-        self.assertEqual(5, len(arglist.tags))
+        self.assertEqual(len(arglist.tags), 5)
         print('test_argparse1 passed')
 
     def test_argparse2(self) -> None:
@@ -51,7 +51,7 @@ class ArgParseTests(TestCase):
         args = args_argparse_str2
         arglist = prepare_arglist(args.split())
         self.assertIsNotNone(arglist.tags)
-        self.assertEqual(5, len(arglist.tags))
+        self.assertEqual(len(arglist.tags), 5)
         self.assertIsNotNone(arglist.mindate)
         self.assertIsNotNone(arglist.maxdate)
         self.assertIsNotNone(arglist.threads)
@@ -68,18 +68,19 @@ class DownloaderBaseTests(TestCase):
         arglist = prepare_arglist(args.split())
         with DownloaderRx() as dwn:
             dwn.parse_args(arglist)
-            self.assertEqual(dwn.get_tags_count(), 5)
-            self.assertEqual(dwn.download_mode, DownloadModes.DOWNLOAD_FULL)
-            self.assertEqual(dwn.skip_images, True)
-            self.assertEqual(dwn.skip_videos, True)
-            self.assertEqual(dwn.prefer_webm, True)
-            self.assertEqual(dwn.low_res, True)
-            self.assertEqual(dwn.ignore_proxy, True)
-            self.assertEqual(dwn.ignore_proxy_dwn, True)
-            self.assertEqual(dwn.add_filename_prefix, True)
-            self.assertEqual(dwn.dump_tags, True)
-            self.assertEqual(dwn.dump_source, True)
-            self.assertEqual(dwn.append_info, True)
+            self.assertEqual(5, dwn.get_tags_count())
+            self.assertEqual(13, dwn.timeout)
+            self.assertEqual(DownloadModes.DOWNLOAD_FULL, dwn.download_mode)
+            self.assertEqual(True, dwn.skip_images)
+            self.assertEqual(True, dwn.skip_videos)
+            self.assertEqual(True, dwn.prefer_webm)
+            self.assertEqual(True, dwn.low_res)
+            self.assertEqual(True, dwn.ignore_proxy)
+            self.assertEqual(True, dwn.ignore_proxy_dwn)
+            self.assertEqual(True, dwn.add_filename_prefix)
+            self.assertEqual(True, dwn.dump_tags)
+            self.assertEqual(True, dwn.dump_source)
+            self.assertEqual(True, dwn.append_info)
         print('test_cmdline1 passed')
 
     def test_cmdline2(self) -> None:
@@ -87,14 +88,15 @@ class DownloaderBaseTests(TestCase):
         arglist = prepare_arglist(args.split())
         with DownloaderRx() as dwn:
             dwn.parse_args(arglist)
-            self.assertEqual(dwn.get_tags_count(), 5)
-            self.assertEqual(dwn.date_min, '1950-12-31')
-            self.assertEqual(dwn.date_max, '2038-01-01')
-            self.assertEqual(dwn.maxthreads_items, 8)
-            self.assertEqual(dwn.dest_base, CUR_PATH)
-            self.assertEqual(dwn.proxies.get('all'), 'http://8.8.8.8:65333')
-            self.assertEqual(dwn.add_headers.get('name1'), 'value1')
-            self.assertEqual(dwn.add_cookies.get('name2'), 'value2')
+            self.assertEqual(5, dwn.get_tags_count())
+            self.assertEqual('31-12-1950', dwn.date_min)
+            self.assertEqual('01-01-2038', dwn.date_max)
+            self.assertEqual(8, dwn.maxthreads_items)
+            self.assertEqual(CUR_PATH, dwn.dest_base)
+            self.assertEqual('http://8.8.8.8:65333', dwn.proxies.get('http'))
+            self.assertEqual('http://8.8.8.8:65333', dwn.proxies.get('https'))
+            self.assertEqual('value1', dwn.add_headers.get('name1'))
+            self.assertEqual('value2', dwn.add_cookies.get('name2'))
         print('test_cmdline2 passed')
 
 
@@ -111,7 +113,7 @@ class ConnTests(TestCase):
             dwn.parse_args(arglist)
             dwn.url = dwn.form_tags_search_address(dwn.tags_str_arr[0])
             dwn.total_count = dwn.get_items_query_size_or_html(dwn.url)
-            self.assertEqual(dwn.total_count, 1)
+            self.assertEqual(1, dwn.total_count)
         print('test_connect_rx1 passed')
 
 

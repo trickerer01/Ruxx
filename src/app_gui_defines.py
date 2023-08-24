@@ -65,6 +65,7 @@ BUT_F1 = '<F1>'
 BUT_F2 = '<F2>'
 BUT_F3 = '<F3>'
 BUT_F4 = '<F4>'
+BUT_F5 = '<F5>'
 BUT_ALT_F4 = '<Alt-F4>'
 # Colors
 #  Color enum
@@ -103,6 +104,7 @@ OPTION_CMD_HEADERS = '-headers'
 OPTION_CMD_PROXY = '-proxy'
 OPTION_CMD_IGNORE_PROXY = ('', '-noproxy')
 OPTION_CMD_PROXY_NO_DOWNLOAD = ('', '-proxynodown')
+OPTION_CMD_TIMEOUT = '-timeout'
 OPTION_CMD_FNAMEPREFIX = ('', '-prefix')
 OPTION_CMD_DOWNMODE_CMD = '-dmode'
 OPTION_CMD_DOWNLIMIT_CMD = '-dlimit'
@@ -178,6 +180,9 @@ class Options(IntEnum):
     OPT_PROXYSTRING_TEMP = auto()
     OPT_PROXYTYPE = auto()
     OPT_PROXYTYPE_TEMP = auto()
+    OPT_ISTIMEOUTOPEN = auto()
+    OPT_TIMEOUTSTRING = auto()
+    OPT_TIMEOUTSTRING_TEMP = auto()
     OPT_MODULE = auto()
     OPT_IGNORE_PROXY = auto()
     OPT_PROXY_NO_DOWNLOAD = auto()
@@ -222,6 +227,9 @@ CVARS = {
     Options.OPT_PROXYSTRING_TEMP: 'proxyStringTemp',
     Options.OPT_PROXYTYPE: 'proxyType',
     Options.OPT_PROXYTYPE_TEMP: 'proxyTypeTemp',
+    Options.OPT_ISTIMEOUTOPEN: 'isTimeoutOpen',
+    Options.OPT_TIMEOUTSTRING: 'timeoutString',
+    Options.OPT_TIMEOUTSTRING_TEMP: 'timeoutStringTemp',
     Options.OPT_MODULE: 'module',
     Options.OPT_IGNORE_PROXY: 'ingoreProxy',
     Options.OPT_PROXY_NO_DOWNLOAD: 'proxyDownload',
@@ -343,6 +351,7 @@ hotkeys = {
     Options.OPT_ISLOGOPEN: BUT_F2,
     Options.OPT_ISHCOOKIESOPEN: BUT_F3,
     Options.OPT_ISPROXYOPEN: BUT_F4,
+    Options.OPT_ISTIMEOUTOPEN: BUT_F5,
     Options.OPT_ISSAVESETTINGSOPEN: BUT_CTRL_S,
     Options.OPT_ISLOADSETTINGSOPEN: BUT_CTRL_O,
     Options.OPT_ACTION_DOWNLOAD: BUT_CTRL_SHIFT_D,

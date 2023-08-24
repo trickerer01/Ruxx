@@ -36,6 +36,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Edit -> Warn if donwload folder is not empty** - in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
 - **Connection -> Headers / Cookies** \<F3> - solely to work with cloudflare protected websites (RN). You'll have to provide your `cf_clearance` cookie, and the `user-agent` header has to match the one used in your web browser for target wesite - to find it while browsing said website open `Web Developer tools -> Network`, reload the page and check `request headers`
 - **Connection -> Set proxy** \<F4> - you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
+- **Connection -> Set timeout** \<F5> - override connection timeout if need be
 - **Connection -> Download without proxy** - you can use this option for RX if only the main domain is blocked in your country
 - **Connection -> Ignore proxy** - this is just a switch to disable proxy temporarily without wiping it
 - **Actions -> Download** \<Ctrl+Shift+D> - same as download button

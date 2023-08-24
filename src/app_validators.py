@@ -25,7 +25,7 @@ from app_utils import Protocol, normalize_path
 __all__ = (
     'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int',
     'Validator', 'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator',
-    'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator', 'ParchiCBValidator',
+    'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator', 'ParchiCBValidator', 'TimeoutValidator',
 )
 
 
@@ -72,10 +72,11 @@ def valid_json(json: str) -> dict:
         raise ArgumentError
 
 
-def valid_positive_int(val: str) -> int:
+def valid_positive_int(val: str, *, lb=0, ub=4294967295) -> int:
     try:
         val = int(val)
-        assert val >= 0
+        assert val >= lb
+        assert val <= ub
         return val
     except Exception:
         raise ArgumentError
@@ -212,6 +213,15 @@ class ProxyTypeValidator(StrValidator):
     def __call__(self, val: str) -> bool:
         try:
             _ = valid_proxy_type(val)
+            return True
+        except Exception:
+            return False
+
+
+class TimeoutValidator(StrValidator):
+    def __call__(self, val: str) -> bool:
+        try:
+            _ = valid_positive_int(val, lb=3, ub=300)
             return True
         except Exception:
             return False

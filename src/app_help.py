@@ -30,6 +30,7 @@ HELP_ARG_PATH = 'full path to the destination folder, default is current locatio
 HELP_ARG_PROXY = 'proxy server address'
 HELP_ARG_NOPROXY = 'ignore proxy during this run'
 HELP_ARG_PROXYNODOWN = 'do not use proxy for downloads, only for search'
+HELP_ARG_TIMEOUT = 'set connection timeout (in seconds)'
 HELP_ARG_HEADERS = 'append additional headers: \'{"name": "value"}\''
 HELP_ARG_COOKIES = 'append additional cookies: \'{"name": "value"}\''
 HELP_ARG_PREFIX = 'name files using module prefix'

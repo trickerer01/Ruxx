@@ -120,9 +120,8 @@ STATUSBAR_INFO_MAP = {
 }  # type: Dict[DownloaderStates, Tuple[str, Optional[str], Optional[str], Optional[str]]]
 
 
-CONNECT_DELAY_PAGE = 20
+CONNECT_TIMEOUT_BASE = 10
 CONNECT_RETRIES_PAGE = 10
-CONNECT_DELAY_ITEM = 20
 CONNECT_RETRIES_ITEM = 10
 CONNECT_RETRIES_CHUNK = 5
 

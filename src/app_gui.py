@@ -34,7 +34,7 @@ from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_si
 from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
     AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, LogWindow,
-    setrootconf, int_vars, rootm, getrootconf, window_hcookiesm, c_menum, window_proxym, c_submenum, register_menu,
+    setrootconf, int_vars, rootm, getrootconf, window_hcookiesm, window_proxym, window_timeoutm, c_menum, c_submenum, register_menu,
     register_submenu, GetRoot, create_base_window_widgets, text_cmdm, get_icon, init_additional_windows,
 )
 from app_gui_defines import (
@@ -43,8 +43,8 @@ from app_gui_defines import (
     OPTION_CMD_VIDEOS, OPTION_CMD_IMAGES, OPTION_CMD_THREADING_CMD, OPTION_CMD_THREADING,
     OPTION_CMD_FNAMEPREFIX, OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS,
     OPTION_CMD_SAVE_SOURCES, OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH,
-    OPTION_CMD_COOKIES, OPTION_CMD_HEADERS, OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY,
-    OPTION_CMD_PROXY_NO_DOWNLOAD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH,
+    OPTION_CMD_COOKIES, OPTION_CMD_HEADERS, OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD,
+    OPTION_CMD_TIMEOUT, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH,
     OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, BUTTONS_TO_UNFOCUS,
     OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI, BUT_ALT_F4,
     ProcModule, menu_items, menu_item_orig_states, gobjects, gobject_orig_states, Options, Globals, Menus, Icons, CVARS,
@@ -57,7 +57,7 @@ from app_tags_parser import reset_last_tags, parse_tags
 from app_utils import normalize_path, confirm_yes_no
 from app_validators import (
     Validator, ValidatorAlwaysTrue, ModuleValidator, VideosCBValidator, ImagesCBValidator, ThreadsCBValidator, JsonValidator,
-    BoolStrValidator, ProxyValidator, ProxyTypeValidator, DateValidator, ParchiCBValidator,
+    BoolStrValidator, ProxyValidator, ProxyTypeValidator, DateValidator, ParchiCBValidator, TimeoutValidator,
 )
 
 __all__ = ()
@@ -165,6 +165,7 @@ class Settings(ABC):
         'proxy': Setting(Options.OPT_PROXYSTRING, ProxyValidator(), 'Invalid proxy value \'%s\'!'),
         'ignoreproxy': Setting(Options.OPT_IGNORE_PROXY, BoolStrValidator(), 'Invalid ignoreproxy bool value \'%s\'!'),
         'ignoreproxydwn': Setting(Options.OPT_PROXY_NO_DOWNLOAD, BoolStrValidator(), 'Invalid ignoreproxydwn bool value \'%s\'!'),
+        'timeout': Setting(Options.OPT_TIMEOUTSTRING, TimeoutValidator(), 'Invalid timeout value \'%s\'!'),
         'prefix': Setting(Options.OPT_FNAMEPREFIX, BoolStrValidator(), 'Invalid prefix bool value \'%s\'!'),
         'savetags': Setting(Options.OPT_SAVE_TAGS, BoolStrValidator(), 'Invalid savetags bool value \'%s\'!'),
         'savesources': Setting(Options.OPT_SAVE_SOURCES, BoolStrValidator(), 'Invalid savesources bool value \'%s\'!'),
@@ -255,9 +256,14 @@ class Settings(ABC):
                     setrootconf(conf, ProcModule.get_cur_module_name())
                     int_vars.get(CVARS.get(conf)).set(val + 1)
                 elif conf == Options.OPT_PROXYSTRING:
+                    setrootconf(Options.OPT_PROXYSTRING, val)
                     setrootconf(Options.OPT_PROXYSTRING_TEMP, val)
                 elif conf == Options.OPT_PROXYTYPE:
+                    setrootconf(Options.OPT_PROXYTYPE, val)
                     setrootconf(Options.OPT_PROXYTYPE_TEMP, val)
+                elif conf == Options.OPT_TIMEOUTSTRING:
+                    setrootconf(Options.OPT_TIMEOUTSTRING, val)
+                    setrootconf(Options.OPT_TIMEOUTSTRING_TEMP, val)
                 elif conf in Settings.combobox_setting_arrays:
                     setrootconf(conf, Settings.combobox_setting_arrays.get(conf)[val])
                 else:
@@ -632,6 +638,11 @@ def prepare_cmdline() -> List[str]:
     addstr = OPTION_CMD_PROXY_NO_DOWNLOAD[int(getrootconf(Options.OPT_PROXY_NO_DOWNLOAD))]
     if len(addstr) > 0:
         newstr.append(addstr)
+    # timeout
+    addstr = str(getrootconf(Options.OPT_TIMEOUTSTRING))
+    if len(addstr) > 0:
+        newstr.append(OPTION_CMD_TIMEOUT)
+        newstr.append(addstr)
     # prefix
     addstr = OPTION_CMD_FNAMEPREFIX[int(getrootconf(Options.OPT_FNAMEPREFIX))]
     if len(addstr) > 0:
@@ -721,6 +732,9 @@ def check_tags_direct() -> None:
         if len(cookstr) > 4:  # != "'{}'"
             cj = json_loads(cookstr)
             mydwn.add_cookies.update(cj)
+        timeoutstr = str(getrootconf(Options.OPT_TIMEOUTSTRING))
+        if len(timeoutstr) > 0:
+            mydwn.timeout = int(timeoutstr)
         mydwn.session = mydwn.make_session()
 
         try:
@@ -991,6 +1005,7 @@ def finalize_additional_windows() -> None:
     Logger.wnd.finalize()
     window_proxym().finalize()
     window_hcookiesm().finalize()
+    window_timeoutm().finalize()
     Logger.print_pending_strings()
 
 
@@ -1027,6 +1042,7 @@ def init_menus() -> None:
     register_menu('Connection', Menus.MENU_CONNECTION)
     register_menu_command('Headers / Cookies...', window_hcookiesm().toggle_visibility, Options.OPT_ISHCOOKIESOPEN)
     register_menu_command('Set proxy...', window_proxym().ask, Options.OPT_ISPROXYOPEN)
+    register_menu_command('Set timeout...', window_timeoutm().ask, Options.OPT_ISTIMEOUTOPEN)
     register_menu_checkbutton('Download without proxy', CVARS.get(Options.OPT_PROXY_NO_DOWNLOAD))
     register_menu_checkbutton('Ignore proxy', CVARS.get(Options.OPT_IGNORE_PROXY))
     # 6) Action
@@ -1073,10 +1089,12 @@ def init_gui() -> None:
     rootm().bind_all(hotkeys.get(Options.OPT_ISLOGOPEN), func=lambda _: Logger.wnd.toggle_visibility())
     rootm().bind_all(hotkeys.get(Options.OPT_ISPROXYOPEN), func=lambda e: window_proxym().ask() if e.state != 0x20000 else None)
     rootm().bind_all(hotkeys.get(Options.OPT_ISHCOOKIESOPEN), func=lambda _: window_hcookiesm().toggle_visibility())
+    rootm().bind_all(hotkeys.get(Options.OPT_ISTIMEOUTOPEN), func=lambda e: window_timeoutm().ask() if e.state != 0x20000 else None)
     rootm().bind(BUT_ALT_F4, func=lambda _: rootm().destroy())
     Logger.wnd.window.bind(BUT_ALT_F4, func=lambda _: Logger.wnd.hide() if Logger.wnd.visible else None)
     window_hcookiesm().window.bind(BUT_ALT_F4, func=lambda _: window_hcookiesm().hide() if window_hcookiesm().visible else None)
     window_proxym().window.bind(BUT_ALT_F4, func=lambda _: window_proxym().cancel() if window_proxym().visible else None)
+    window_timeoutm().window.bind(BUT_ALT_F4, func=lambda _: window_timeoutm().cancel() if window_timeoutm().visible else None)
     # Main menu
     init_menus()
 

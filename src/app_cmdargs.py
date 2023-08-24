@@ -18,7 +18,7 @@ from app_help import (
     HELP_ARG_PREFER_WEBM, HELP_ARG_PREFER_LOWRES, HELP_ARG_MINDATE, HELP_ARG_MAXDATE,
     HELP_ARG_THREADS, HELP_ARG_PATH, HELP_ARG_PROXY, HELP_ARG_NOPROXY, HELP_ARG_PROXYNODOWN, HELP_ARG_HEADERS,
     HELP_ARG_COOKIES, HELP_ARG_PREFIX, HELP_ARG_DUMP_TAGS, HELP_ARG_DUMP_SOURCES, HELP_ARG_APPEND_SOURCE_AND_TAGS, HELP_ARG_TAGS,
-    HELP_ARG_WARN_NON_EMPTY_FOLDER, HELP_ARG_INCLUDE_PARCHI,
+    HELP_ARG_WARN_NON_EMPTY_FOLDER, HELP_ARG_INCLUDE_PARCHI, HELP_ARG_TIMEOUT,
 )
 from app_validators import valid_thread_count, valid_date, valid_path, valid_json, valid_download_mode, valid_proxy, valid_positive_int
 
@@ -43,6 +43,7 @@ def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser.add_argument('-proxy', metavar='#type://a.d.d.r:port', help=HELP_ARG_PROXY, type=valid_proxy)
     parser.add_argument('-noproxy', action=ACTION_STORE_TRUE, help=HELP_ARG_NOPROXY)
     parser.add_argument('-proxynodown', action=ACTION_STORE_TRUE, help=HELP_ARG_PROXYNODOWN)
+    parser.add_argument('-timeout', metavar='#NUMBER', help=HELP_ARG_TIMEOUT, type=valid_positive_int)
     parser.add_argument('-headers', metavar='#JSON', help=HELP_ARG_HEADERS, type=valid_json, default=DEFAULT_HEADERS)
     parser.add_argument('-cookies', metavar='#JSON', help=HELP_ARG_COOKIES, type=valid_json)
     parser.add_argument('-prefix', action=ACTION_STORE_TRUE, help=HELP_ARG_PREFIX)

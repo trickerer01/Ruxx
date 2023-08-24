@@ -22,7 +22,7 @@ from tkinter import (
 from typing import Optional, Callable, List, Union, Dict, Iterable
 
 # internal
-from app_defines import PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, FMT_DATE
+from app_defines import PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE
 from app_file_sorter import FileTypeFilter
 from app_gui_defines import (
     BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, Options, STATE_NORMAL,
@@ -36,12 +36,12 @@ from app_gui_defines import (
 from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME
 from app_tooltips import WidgetToolTip
 from app_utils import normalize_path
-from app_validators import valid_proxy
+from app_validators import valid_proxy, valid_positive_int
 
 __all__ = (
     'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'LogWindow',
-    'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'c_menum', 'window_proxym', 'c_submenum', 'register_menu',
-    'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows'
+    'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm', 'c_menum',  'c_submenum',
+    'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows'
 )
 
 # globals
@@ -52,6 +52,7 @@ rootMenu = None  # type: Optional[Menu]
 # windows
 window_proxy = None  # type: Optional[ProxyWindow]
 window_hcookies = None  # type: Optional[HeadersAndCookiesWindow]
+window_timeout = None  # type: Optional[ConnectionTimeoutWindow]
 # counters
 c_menu = None  # type: Optional[BaseMenu]
 c_submenu = None  # type: Optional[BaseMenu]
@@ -741,13 +742,97 @@ class HeadersAndCookiesWindow(BaseWindow):
         setrootconf(Options.OPT_ISHCOOKIESOPEN, False)
 
 
+class ConnectionTimeoutWindow(BaseWindow):
+    def __init__(self, parent) -> None:
+        self.timeout_var = None  # type: Optional[IntVar]
+        self.entry_timeout = None  # type: Optional[Entry]
+        self.but_ok = None  # type: Optional[Button]
+        self.but_cancel = None  # type: Optional[Button]
+        self.err_message = None  # type: Optional[WidgetToolTip]
+        super().__init__(parent)
+
+    def config(self) -> None:
+        self.window.title('Timeout')
+
+        upframe = BaseFrame(self.window)
+        upframe.pack()
+
+        downframe = BaseFrame(upframe)
+        downframe.grid(padx=12, pady=12, row=1)
+
+        proxyhint = Label(downframe, font=FONT_SANS_SMALL, text='3 .. 300, in seconds')
+        proxyhint.config(state=STATE_DISABLED)
+        proxyhint.grid(row=0, column=0, columnspan=15)
+
+        _ = Entry(textvariable=StringVar(rootm(), str(CONNECT_TIMEOUT_BASE), CVARS.get(Options.OPT_TIMEOUTSTRING)))
+        self.entry_timeout = Entry(downframe, font=FONT_SANS_MEDIUM, width=19,
+                                   textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_TIMEOUTSTRING_TEMP)))
+        self.entry_timeout.insert(END, str(CONNECT_TIMEOUT_BASE))
+        self.err_message = attach_tooltip(self.entry_timeout, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
+        self.entry_timeout.grid(row=1, column=3, columnspan=10)
+
+        BaseFrame(downframe, height=16).grid(row=4, columnspan=15)
+
+        self.but_ok = Button(downframe, width=8, text='Ok', command=lambda: self.ok())
+        self.but_cancel = Button(downframe, width=8, text='Cancel', command=lambda: self.cancel())
+        self.but_ok.grid(row=5, column=3, columnspan=5)
+        self.but_cancel.grid(row=5, column=8, columnspan=5)
+
+        self.window.config(bg=self.parent.default_bg_color)
+
+    def finalize(self) -> None:
+        x = self.parent.winfo_x() + (self.parent.winfo_width() - self.window.winfo_reqwidth()) / 2
+        y = self.parent.winfo_y() + 50
+        self.window.geometry(f'+{x:.0f}+{y:.0f}')
+        self.window.update()
+        self.window.transient(self.parent)
+        self.window.minsize(self.window.winfo_reqwidth(), self.window.winfo_reqheight())
+        self.window.resizable(0, 0)
+
+        self.window.bind(BUT_RETURN, lambda _: self.ok())
+        self.window.bind(BUT_ESCAPE, lambda _: self.cancel())
+        self.window.bind(BUT_CTRL_A, lambda _: self.select_all())
+
+    def select_all(self) -> None:
+        if self.visible is True:
+            self.entry_timeout.focus_set()
+            self.entry_timeout.selection_range(0, END)
+            self.entry_timeout.icursor(END)
+
+    def ok(self) -> None:
+        # Value validation
+        newval = str(getrootconf(Options.OPT_TIMEOUTSTRING_TEMP))
+
+        try:
+            newval = str(valid_positive_int(newval, lb=3, ub=300))
+            setrootconf(Options.OPT_TIMEOUTSTRING, newval)
+            self.hide()
+        except Exception:
+            self.err_message.showtip()
+
+    def cancel(self) -> None:
+        setrootconf(Options.OPT_TIMEOUTSTRING_TEMP, str(getrootconf(Options.OPT_TIMEOUTSTRING)))
+        self.hide()
+
+    def ask(self) -> None:
+        if self.visible is False:
+            self.show()
+            self.select_all()
+
+    def on_destroy(self) -> None:
+        self.cancel()
+
+
 def init_additional_windows() -> None:
     global window_proxy
     global window_hcookies
+    global window_timeout
     window_proxy = ProxyWindow(root)
     window_proxy.window.wm_protocol('WM_DELETE_WINDOW', window_proxy.on_destroy)
     window_hcookies = HeadersAndCookiesWindow(root)
     window_hcookies.window.wm_protocol('WM_DELETE_WINDOW', window_hcookies.on_destroy)
+    window_timeout = ConnectionTimeoutWindow(root)
+    window_timeout.window.wm_protocol('WM_DELETE_WINDOW', window_timeout.on_destroy)
 
 
 def register_menu(label: str, menu_id: Menus = None) -> Menu:
@@ -811,6 +896,11 @@ def window_proxym() -> ProxyWindow:
 def window_hcookiesm() -> HeadersAndCookiesWindow:
     assert window_hcookies is not None
     return window_hcookies
+
+
+def window_timeoutm() -> ConnectionTimeoutWindow:
+    assert window_timeout is not None
+    return window_timeout
 
 
 def text_cmdm() -> Text:
