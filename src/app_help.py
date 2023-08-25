@@ -63,7 +63,7 @@ HELP_TAGS_MSG_RN = (
     '\'tag=value\'      \tmeta tags (id<999999, score>=1337, etc.)\n'
 )
 ABOUT_MSG = (
-    f'{APP_NAME} version {APP_VERSION} ({APP_REV_DATE}) {APP_BUILD_TYPE_STR}\n© {APP_YEARS} {APP_AUTHOR} <{APP_ADDRESS}>'
+    f'{APP_NAME} version {APP_VERSION} ({APP_REV_DATE}) {APP_BUILD_TYPE_STR}\n© {APP_YEARS} {APP_AUTHOR}\n<{APP_ADDRESS}>'
 )
 # end help messages
 
