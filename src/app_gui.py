@@ -1123,6 +1123,11 @@ def init_gui() -> None:
 
     finalize_additional_windows()
 
+    # OS-specific
+    #  Linux
+    rootm().option_add('Dialog.msg.width', 0)
+    rootm().option_add('Dialog.msg.wrapLength', 0)
+
     Settings.try_pick_autoconfig()
     Settings.save_initial_settings()
 
