@@ -12,7 +12,7 @@ from os import path
 from typing import Sequence
 
 # internal
-from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, DEFAULT_HEADERS, ACTION_STORE_TRUE, DMODE_DEFAULT, DMODE_CHOICES
+from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, DEFAULT_HEADERS, ACTION_STORE_TRUE, DMODE_DEFAULT, DMODE_CHOICES, THREADS_MAX_ITEMS
 from app_help import (
     HELP_ARG_MODULE, HELP_ARG_DOWNLOAD_MODE, HELP_ARG_DOWNLOAD_LIMIT, HELP_ARG_SKIP_IMAGES, HELP_ARG_SKIP_VIDEOS,
     HELP_ARG_PREFER_WEBM, HELP_ARG_PREFER_LOWRES, HELP_ARG_MINDATE, HELP_ARG_MAXDATE,
@@ -38,7 +38,7 @@ def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser.add_argument('-lowres', action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_LOWRES)
     parser.add_argument('-mindate', metavar='#DD-MM-YYYY', help=HELP_ARG_MINDATE, type=valid_date)
     parser.add_argument('-maxdate', metavar='#DD-MM-YYYY', help=HELP_ARG_MAXDATE, type=valid_date)
-    parser.add_argument('-threads', metavar='1..8', help=HELP_ARG_THREADS, type=valid_thread_count)
+    parser.add_argument('-threads', metavar=f'1..{THREADS_MAX_ITEMS:d}', help=HELP_ARG_THREADS, type=valid_thread_count)
     parser.add_argument('-path', metavar='#PATH', default=valid_path(path.curdir), help=HELP_ARG_PATH, type=valid_path)
     parser.add_argument('-proxy', metavar='#type://a.d.d.r:port', help=HELP_ARG_PROXY, type=valid_proxy)
     parser.add_argument('-noproxy', action=ACTION_STORE_TRUE, help=HELP_ARG_NOPROXY)

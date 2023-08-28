@@ -17,39 +17,39 @@ Ruxx is a content downloader with a lot of filters for maximum search precision 
 Note that Ruxx does not restrict your searches to a couple pages or something. You may even search for something like *id:>=0* (everything), this won't work though as websites actually put a limit on maximum search results returned. For something stupid like this you'll have to split your searches using id filter. Plus you may still get banned for abusing the resource. **Ruxx is not a scraping tool**
 
 #### Filters
-- *Videos* - some websites serve videos in multiple formats, here you can select a prefered one. **Redundant since 01.05.2021 (RX internal changes)**. You may also exclude videos altogether
-- *Images* - some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you can also filter all the images out
-- *Parent posts / child posts* - this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX only
-- *Threading* - the number of threads to use for downloading. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
-- *Date min / max* - applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset do default
+- *Videos* ‒ some websites serve videos in multiple formats, here you can select a prefered one. **Redundant since 01.05.2021 (RX internal changes)**. You may also exclude videos altogether
+- *Images* ‒ some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you can also filter all the images out
+- *Parent posts / child posts* ‒ this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX only
+- *Threading* ‒ the number of threads to use for downloading. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
+- *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset do default
 
 #### Misc & Tools
-- **File -> Save settings...** \<Ctrl+S> - allows you to save current run parameters to a config file for later or as a template
-- **File -> Load settings...** \<Ctrl+O> - load run parameters from previously saved config file. You can also put a `.cfg` file folder with executable and Ruxx will automatically pick it and configure itself. You have to use one of the following names: ['ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg']
-- **File -> Reset all settings** - resets all settings to initial ones. If autoconfigured this will reset to those parameters
-- **File -> Open download folder** \<Ctrl+L> - open currently selected destination folder (**Path**), Windows only
-- **View -> Log** - open a log window, if you want some readable output
-- **Edit -> Prefix file names with \<prefix>** - all downloaded files will be named accordingly and not as just numbers. This option is enabled by default
-- **Edit -> Save tags** - an additional (text) file will be created containing tags for every file. Row format is `<file>: <score> <tags>`
-- **Edit -> Save source links** - an additional (text) file will be created containing source (if present) for every file. Row format is `<file>: <source>`
-- **Edit -> Extend file names with extra info** - all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
-- **Edit -> Warn if donwload folder is not empty** - in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
-- **Connection -> Headers / Cookies** \<F3> - solely to work with cloudflare protected websites (RN). You'll have to provide your `cf_clearance` cookie, and the `user-agent` header has to match the one used in your web browser for target wesite - to find it while browsing said website open `Web Developer tools -> Network`, reload the page and check `request headers`
-- **Connection -> Set proxy** \<F4> - you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
-- **Connection -> Set timeout** \<F5> - override connection timeout if need be
-- **Connection -> Download without proxy** - you can use this option for RX if only the main domain is blocked in your country
-- **Connection -> Ignore proxy** - this is just a switch to disable proxy temporarily without wiping it
-- **Actions -> Download** \<Ctrl+Shift+D> - same as download button
-- **Actions -> Check tags** \<Ctrl+Shift+C> - same as check tags button
-- **Tools -> Load from ID list** - Allows you to load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group expression, effectively allowing you to search for those ids. ~~Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details.~~ Re-enabled since version `1.1.284` for both RX and RN using a workaround, but doesn't run in parallel so be aware of that
-- **Tools -> Un-tag files...** - renames selected Ruxx-downloaded media files, stripping file names of all extra info
-- **Tools -> Re-tag files...** - renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)
-- **Tools -> Sort files into subfolders...** - a set of tools to separate downloaded files if need be:
-    - **by type** - sort by file type (checking file extension). You can separate files by `videos`/`images`/`flash (RN)` or by extension itself. Note that both `jpeg` and `jpg` files will be moved into **jpg** folder
-    - **by size** - sort by file size (you'll have to provide a threshold, in Megabytes). You can use multiple thesholds, separated by space: `0.5 10 3.0 5.00`
-    - **by score** - sort by post score. Make sure that selected files include score in their names or this won't work. You can use multiple thesholds, separated by space: `100 250 50 500`
-- **Help -> Tags** - a quick list of tag types and how to use them (for selected module)
-- **Tags checking** - there is a small button near the **Tags** field. When pressed, Ruxx will try to connect to the website to see if this search yields any results. As a result the **Tags** field will briefly flash green / red. Additionally, if result is positive, a window will appear with exact number of results found
+- **File -> Save settings...** \<Ctrl+S> ‒ allows you to save current run parameters to a config file for later or as a template
+- **File -> Load settings...** \<Ctrl+O> ‒ load run parameters from previously saved config file. You can also put a `.cfg` file folder with executable and Ruxx will automatically pick it and configure itself. You have to use one of the following names: ['ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg']
+- **File -> Reset all settings** ‒ resets all settings to initial ones. If autoconfigured this will reset to those parameters
+- **File -> Open download folder** \<Ctrl+L> ‒ open currently selected destination folder (**Path**), Windows only
+- **View -> Log** ‒ open a log window, if you want some readable output
+- **Edit -> Prefix file names with \<prefix>** ‒ all downloaded files will be named accordingly and not as just numbers. This option is enabled by default
+- **Edit -> Save tags** ‒ an additional (text) file will be created containing tags for every file. Row format is `<file>: <score> <tags>`
+- **Edit -> Save source links** ‒ an additional (text) file will be created containing source (if present) for every file. Row format is `<file>: <source>`
+- **Edit -> Extend file names with extra info** ‒ all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
+- **Edit -> Warn if donwload folder is not empty** ‒ in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
+- **Connection -> Headers / Cookies** \<F3> ‒ solely to work with cloudflare protected websites (RN). You'll have to provide your `cf_clearance` cookie, and the `user-agent` header has to match the one used in your web browser for target wesite ‒ to find it while browsing said website open `Web Developer tools -> Network`, reload the page and check `request headers`
+- **Connection -> Set proxy** \<F4> ‒ you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
+- **Connection -> Set timeout** \<F5> ‒ override connection timeout if need be
+- **Connection -> Download without proxy** ‒ you can use this option for RX if only the main domain is blocked in your country
+- **Connection -> Ignore proxy** ‒ this is just a switch to disable proxy temporarily without wiping it
+- **Actions -> Download** \<Ctrl+Shift+D> ‒ same as download button
+- **Actions -> Check tags** \<Ctrl+Shift+C> ‒ same as check tags button
+- **Tools -> Load from ID list** ‒ Allows you to load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group expression, effectively allowing you to search for those ids. ~~Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details.~~ Re-enabled since version `1.1.284` for both RX and RN using a workaround, but doesn't run in parallel so be aware of that
+- **Tools -> Un-tag files...** ‒ renames selected Ruxx-downloaded media files, stripping file names of all extra info
+- **Tools -> Re-tag files...** ‒ renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)
+- **Tools -> Sort files into subfolders...** ‒ a set of tools to separate downloaded files if need be:
+    - **by type** ‒ sort by file type (checking file extension). You can separate files by `videos`/`images`/`flash (RN)` or by extension itself. Note that both `jpeg` and `jpg` files will be moved into **jpg** folder
+    - **by size** ‒ sort by file size (you'll have to provide a threshold, in Megabytes). You can use multiple thesholds, separated by space: `0.5 10 3.0 5.00`
+    - **by score** ‒ sort by post score. Make sure that selected files include score in their names or this won't work. You can use multiple thesholds, separated by space: `100 250 50 500`
+- **Help -> Tags** ‒ a quick list of tag types and how to use them (for selected module)
+- **Tags checking** ‒ there is a small button near the **Tags** field. When pressed, Ruxx will try to connect to the website to see if this search yields any results. As a result the **Tags** field will briefly flash green / red. Additionally, if result is positive, a window will appear with exact number of results found
 
 ### Tags syntax
 Ruxx normally allows most symbols for tags search, there are some specifics though:  
@@ -109,7 +109,7 @@ Ruxx doesn't provide a method of authentication natively on either of supported 
     - RN: `cf_clearance`, `shm_user`, `shm_session`
 
 #### Using from console
-It is possible to use Ruxx as a cmdline tool. In main window you will find a `Cmd` section - it generates your cmdline arguments every time you make a change - use those arguments as an example. In console window you may need to escape some of them (path, 'or' groups, tags containing dot(s), etc.). Most arguments are optional though - the only ones required are `module` and `tags`  
+It is possible to use Ruxx as a cmdline tool. In main window you will find a `Cmd` section ‒ it generates your cmdline arguments every time you make a change ‒ use those arguments as an example. In console window you may need to escape some of them (path, 'or' groups, tags containing dot(s), etc.). Most arguments are optional though ‒ the only ones required are `tags` (default module is RX)  
 Invoke `Ruxx --help` for full help
 
 #### Logging
