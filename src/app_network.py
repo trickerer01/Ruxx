@@ -260,7 +260,7 @@ class ThreadedHtmlWorker(ABC, ThreadWorker):
         return result
 
     # threaded
-    def fetch_html(self, url: str, tries: Optional[int] = None, do_cache=False) -> Optional[BeautifulSoup]:
+    def fetch_html(self, url: str, tries: int = None, do_cache=False) -> Optional[BeautifulSoup]:
         cached = self.raw_html_cache.get(url)
         if cached:
             return BeautifulSoup(cached, 'html.parser')

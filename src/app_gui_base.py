@@ -606,8 +606,8 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.window.transient(self.parent)
 
         # initial values just for convenience
-        self.lbox_h.insert(0, f'user-agent:{USER_AGENT}')
-        self.entry_h.insert(0, 'user-agent:')
+        self.lbox_h.insert(0, f'User-Agent:{USER_AGENT}')
+        self.entry_h.insert(0, 'User-Agent:')
         self.entry_c.insert(0, 'cf_clearance:')
 
         # configure required width (needed if we change default useragent in the future)
@@ -929,6 +929,7 @@ def create_base_window_widgets() -> None:
     icons[Icons.ICON_RUXX] = PhotoImage(data=b64decode(IMG_PROC_RUXX_DATA))
     icons[Icons.ICON_RX] = PhotoImage(data=b64decode(IMG_PROC_RX_DATA))
     icons[Icons.ICON_RN] = PhotoImage(data=b64decode(IMG_PROC_RN_DATA))
+    icons[Icons.ICON_RS] = PhotoImage(data=b64decode(IMG_PROC_RX_DATA))  # TODO
     icons[Icons.ICON_OPEN] = PhotoImage(data=b64decode(IMG_OPEN_DATA))
     icons[Icons.ICON_SAVE] = PhotoImage(data=b64decode(IMG_SAVE_DATA))
     icons[Icons.ICON_DELETE] = PhotoImage(data=b64decode(IMG_DELETE_DATA))

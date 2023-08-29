@@ -21,7 +21,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - *Images* ‒ some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you can also filter all the images out
 - *Parent posts / child posts* ‒ this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX only
 - *Threading* ‒ the number of threads to use for downloading. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
-- *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset do default
+- *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset do default. RX and RN only
 
 #### Misc & Tools
 - **File -> Save settings...** \<Ctrl+S> ‒ allows you to save current run parameters to a config file for later or as a template
@@ -54,14 +54,15 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 ### Tags syntax
 Ruxx normally allows most symbols for tags search, there are some specifics though:  
 1. Wildcards
-- Both RX and RN support asterisk symbol `*` as wildcard in tags (any number of any symbols). You can use any number of wildcards in tags in any place: `b*m*_cit*`
+- All modules support asterisk symbol `*` as wildcard in tags (any number of any symbols). You can use any number of wildcards in tags in any place: `b*m*_cit*`
   - Note that there is a bug in RX search engine which breaks frontal wildcards: `*_city` will work for RN but RX will return default result (all)
 2. Meta tags
 - Meta tags describe not the posted artwork but the post itself. Both RX and RN support meta tags
   - RX syntax: _name_**:**_value_ OR _name_**:=**_value_
   - RN syntax: _name_**=**_value_
+  - RS syntax: _name_**:**_value_
 - Meta `-tags` can be used for exclusion: `-rating:explicit`
-- Some meta tags support wildcards. Rules are very strict so this feature is yet to be enabled in Ruxx
+- Some meta tags support wildcards. Rules are very strict so this feature is yet to be enabled
 - Some meta tags support inequality. These metatags can be used to set a range, ex. `id:>X id:<Y`. See below for more syntax
   - Note that meta `-tags` cannot be used with inequality, like `-score:<0`. Flip the comparison instead: `score:>=0`.
 - Although 'ordering' meta tags exist for both RX and RN (`sort` and `order` respectively), you can't use them. Posts are always sorted by id
@@ -87,9 +88,20 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
     - user: `user=X`. `X` = `<uploader name>`
     - rating: `rating:X`. `X` = `<rating letter>`, ex. `q`, `s`, etc.
     - ~~order~~:
+- RX meta tags:
+  - **id**: `id:X` (or `id:=X`), `id:>X`, `id:<Y`, `id:>=X`, `id:<=Y`. `X`,`Y` = `<post ID>`
+  - **score**: `score:X` (or `score:=X`), `score:>X`, `score:<Y`, `score:>=X`, `score:<=Y`. `X`,`Y` = `<number>`
+  - Rarely used ones:
+    - width: `width:X` (or `width:=X`), `width:>X`, `width:<Y`, `width:>=X`, `width:<=Y`. `X`,`Y` = `<number>`
+    - height: `height:X` (or `height:=X`), `height:>X`, `height:<Y`, `height:>=X`, `height:<=Y`. `X`,`Y` = `<number>`
+    - user: `user:X`. `X` = `<uploader name>`
+    - rating: `rating:X`. `X` = `<rating name>`, ex. `safe`, `questionable`, `explicit`.
+    - ~~sort~~:
 3. `OR` groups
 - Ruxx syntax for `OR` is simplified compared to what you would normally use for RX: `(tag1~tag2~...~tagN)` instead of `( tag1 ~ tag2 ~ ... ~ tagN )`
 - Ruxx allows using `OR` groups for RN too
+- The syntax is same for all modules, don't use curvy brackets for RS
+- `OR` group can't be negative and needs to be unwrapped: `-(tag1~tag2~tag3)` = `-tag1 -tag2 -tag3`
 - Although using meta tags in `OR` groups is broken currently `(id:=X~score:=Y)`, Ruxx will circumvent this problem and process them properly
 4. Negative groups
 - Syntax: `-(tag1,tag2,...,tagN)`. Ruxx allows to filter out tag combinations (posts where all tags in group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for 'any symbol' and 'any number of any symbols' repectively. You can also use pipe symbol `|` for direct regex `or` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regexes `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
@@ -107,6 +119,7 @@ Ruxx doesn't provide a method of authentication natively on either of supported 
   - Cookies:
     - RX: `cf_clearance`, `user_id`, `pass_hash`
     - RN: `cf_clearance`, `shm_user`, `shm_session`
+    - RS: `user_id`, `pass_hash`
 
 #### Using from console
 It is possible to use Ruxx as a cmdline tool. In main window you will find a `Cmd` section ‒ it generates your cmdline arguments every time you make a change ‒ use those arguments as an example. In console window you may need to escape some of them (path, 'or' groups, tags containing dot(s), etc.). Most arguments are optional though ‒ the only ones required are `tags` (default module is RX)  

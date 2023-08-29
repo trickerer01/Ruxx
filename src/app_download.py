@@ -28,7 +28,7 @@ from app_defines import (
     ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, ItemInfo, DATE_MIN_DEFAULT,
     CONNECT_TIMEOUT_BASE, CONNECT_RETRIES_ITEM, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE, PLATFORM_WINDOWS
 )
-from app_gui_defines import UNDERSCORE, NEWLINE
+from app_gui_defines import UNDERSCORE, NEWLINE, ProcModule
 from app_network import ThreadedHtmlWorker, thread_exit, DownloadInterruptException
 from app_logger import trace
 from app_revision import __RUXX_DEBUG__, APP_NAME, APP_VERSION
@@ -865,7 +865,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         # join by ' ' is required by tests, although normally len(args.tags) == 1
         tags_list, self.neg_and_groups = extract_neg_and_groups(' '.join(tags_base_arr))
         for t in tags_list:
-            if t.startswith('(') and t.endswith(')') and not (t.startswith(f'({cc}') and t.endswith(f'{cc})')):
+            if f'{t[0]}{t[-1]}' == '()' and f'{t[:2]}{t[-2:]}' != f'({cc}{cc})':
                 thread_exit(f'Invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated with \'{cc}\'.')
         self.tags_str_arr = split_tags_into_tasks(tags_list, cc, sc, split_always)
         self.orig_tasks_count = self._tasks_count()
@@ -965,6 +965,24 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.dest_base = normalize_path(args.path) if args.path else self.dest_base
         self.warn_nonempty = args.warn_nonempty or self.warn_nonempty
         self._parse_tags(args.tags)
+        if self._solve_argument_conflicts():
+            thread_sleep(2.0)
+
+    def _solve_argument_conflicts(self) -> bool:
+        ret = False
+        if ProcModule.is_rn():
+            if self.include_parchi:
+                trace('Warning (W1): RN module is unable to collect parent posts. Disabled!')
+                ret = True
+        if ProcModule.is_rs():
+            if self.dump_source:
+                trace('Warning (W1): RS module is unable to collect sources. Disabled!')
+                ret = True
+            if self.date_min != DATE_MIN_DEFAULT or self.date_max != datetime.today().strftime(FMT_DATE):
+                self.date_min, self.date_max = DATE_MIN_DEFAULT, datetime.today().strftime(FMT_DATE)
+                trace('Warning (W1): RS module is unable to filter by date. Disabled')
+                ret = True
+        return ret
 
     def _extract_cur_task_infos(self, parents: MutableSet[str]) -> None:
         abbrp = self._get_module_abbr_p()

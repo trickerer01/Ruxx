@@ -27,9 +27,13 @@ META_COUNT_RX = r':(?:[<>]=?|=)?[a-z\d_]+?'
 # language=PythonRegExp
 META_COUNT_RN = r'(?:[<>]=?|=)[a-z\d_]+?'
 # language=PythonRegExp
+META_COUNT_RS = r':(?:[<>]=?|=)?[a-z\d_]+?'
+# language=PythonRegExp
 RE_ORGR_PART_RX = fr'{TAG_CHAR}+?(?:{META_COUNT_RX})?'
 # language=PythonRegExp
 RE_ORGR_PART_RN = fr'{TAG_CHAR}+?(?:{META_COUNT_RN})?'
+# language=PythonRegExp
+RE_ORGR_PART_RS = fr'{TAG_CHAR}+?(?:{META_COUNT_RS})?'
 
 # language=PythonRegExp
 ANDGR_CHAR = r'[a-zÀ-ʯ\d_+\-/!()*\'.|?]'
@@ -39,18 +43,22 @@ RE_ANDGR_PART_U = fr'{ANDGR_CHAR}+?'
 re_plains = {
     ProcModule.PROC_RX: re_compile(fr'^-?{TAG_CHAR}+?$'),
     ProcModule.PROC_RN: re_compile(fr'^-?{TAG_CHAR}+?$'),
+    ProcModule.PROC_RS: re_compile(fr'^-?{TAG_CHAR}+?$'),
 }
 re_metas = {
     ProcModule.PROC_RX: re_compile(fr'^{META_CHAR}+?{META_COUNT_RX}$'),
     ProcModule.PROC_RN: re_compile(fr'^{META_CHAR}+?{META_COUNT_RN}$'),
+    ProcModule.PROC_RS: re_compile(fr'^{META_CHAR}+?{META_COUNT_RS}$'),
 }
 re_orgrs_full = {
     ProcModule.PROC_RX: re_compile(fr'^\((?:{RE_ORGR_PART_RX})(?:~{RE_ORGR_PART_RX})+?\)$'),
     ProcModule.PROC_RN: re_compile(fr'^\((?:{RE_ORGR_PART_RN})(?:~{RE_ORGR_PART_RN})+?\)$'),
+    ProcModule.PROC_RS: re_compile(fr'^\((?:{RE_ORGR_PART_RS})(?:~{RE_ORGR_PART_RS})+?\)$'),
 }
 re_orgrs_full_s = {
     ProcModule.PROC_RX: re_compile(fr'^\( (?:{RE_ORGR_PART_RX})(?: ~ {RE_ORGR_PART_RX})+? \)$'),
     ProcModule.PROC_RN: re_compile(fr'^\( (?:{RE_ORGR_PART_RN})(?: ~ {RE_ORGR_PART_RN})+? \)$'),
+    ProcModule.PROC_RS: re_compile(fr'^\( (?:{RE_ORGR_PART_RS})(?: ~ {RE_ORGR_PART_RS})+? \)$'),
 }
 re_andgr_full = re_compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$')
 
@@ -118,7 +126,7 @@ def parse_tags(tags: str) -> Tuple[bool, List[str]]:
 
     fulltags = list()
     for tag in unique_everseen(tags.split(' ')):  # type: str
-        if ProcModule.is_rx() and tag.startswith('sort:'):
+        if (ProcModule.is_rx() or ProcModule.is_rs()) and tag.startswith('sort:'):
             return fail()
         if ProcModule.is_rn() and tag.startswith('order='):
             return fail()

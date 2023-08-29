@@ -22,13 +22,14 @@ from typing import Optional, Union, Callable, List, Tuple, Iterable
 # internal
 from app_cmdargs import prepare_arglist
 from app_defines import (
-    DownloaderStates, DownloadModes, STATE_WORK_START, SUPPORTED_PLATFORMS, MODULE_ABBR_RX, MODULE_ABBR_RN,
+    DownloaderStates, DownloadModes, STATE_WORK_START, SUPPORTED_PLATFORMS, MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS,
     DEFAULT_ENCODING, KNOWN_EXTENSIONS_STR, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD,
     DEFAULT_HEADERS, DATE_MIN_DEFAULT, FMT_DATE,
     max_progress_value_for_state,
 )
 from app_download_rn import DownloaderRn
 from app_download_rx import DownloaderRx
+from app_download_rs import DownloaderRs
 from app_file_parser import prepare_tags_list
 from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_size, sort_files_by_score
 from app_file_tagger import untag_files, retag_files
@@ -50,7 +51,7 @@ from app_gui_defines import (
     ProcModule, menu_items, menu_item_orig_states, gobjects, gobject_orig_states, Options, Globals, Menus, Icons, CVARS,
     re_space_mult, re_or_meta_group,
 )
-from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, ABOUT_MSG
+from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, ABOUT_MSG
 from app_logger import Logger
 from app_revision import APP_NAME, __RUXX_DEBUG__
 from app_tags_parser import reset_last_tags, parse_tags
@@ -75,14 +76,16 @@ CAN_MANIPULATE_CONSOLE = HAS_OWN_CONSOLE and not IS_RAW
 # end loaded
 
 # MODULES
-dwn = None  # type: Union[None, DownloaderRn, DownloaderRx]
+dwn = None  # type: Union[None, DownloaderRn, DownloaderRx, DownloaderRs]
 DOWNLOADERS_BY_PROC_MODULE = {
     ProcModule.PROC_RX: DownloaderRx,
     ProcModule.PROC_RN: DownloaderRn,
+    ProcModule.PROC_RS: DownloaderRs,
 }
 PROC_MODULES_BY_ABBR = {
     MODULE_ABBR_RX: ProcModule.PROC_RX,
     MODULE_ABBR_RN: ProcModule.PROC_RN,
+    MODULE_ABBR_RS: ProcModule.PROC_RS,
 }
 # END MODULES
 
@@ -460,7 +463,7 @@ def open_download_folder() -> None:
         Logger.log(f'Couldn\'t open \'{cur_path}\'.', False, False)
 
 
-def get_new_proc_module() -> Union[DownloaderRn, DownloaderRx]:
+def get_new_proc_module() -> Union[DownloaderRn, DownloaderRx, DownloaderRs]:
     return DOWNLOADERS_BY_PROC_MODULE[ProcModule.CUR_PROC_MODULE]()
 
 
@@ -476,7 +479,8 @@ def set_proc_module(dwnmodule: int) -> None:
     if GetRoot() is not None:
         menu_items.get(Menus.MENU_EDIT)[0].entryconfig(0, label=prefix_opt_text)
         # icon
-        config_global(Globals.GOBJECT_MODULE_ICON, image=get_icon(Icons.ICON_RX) if ProcModule.is_rx() else get_icon(Icons.ICON_RN))
+        icons = {ProcModule.PROC_RX: Icons.ICON_RX, ProcModule.PROC_RN: Icons.ICON_RN, ProcModule.PROC_RS: Icons.ICON_RS}
+        config_global(Globals.GOBJECT_MODULE_ICON, image=get_icon(icons.get(ProcModule.get())))
         # enable/disable features specific to the module
         update_widget_enabled_states()
 
@@ -492,6 +496,10 @@ def config_global(index: Globals, **kwargs) -> None:
     get_global(index).config(kwargs)
 
 
+def is_global_disabled(index: Globals) -> bool:
+    return str(get_global(index).cget('state')) == STATE_DISABLED
+
+
 def update_widget_enabled_states() -> None:
     downloading = is_downloading()
     for i in [m for m in Menus.__members__.values() if m < Menus.MAX_MENUS]:  # type: Menus
@@ -505,6 +513,8 @@ def update_widget_enabled_states() -> None:
     for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:  # type: Globals
         if gi == Globals.GOBJECT_COMBOBOX_PARCHI:
             config_global(gi, state=(STATE_DISABLED if not ProcModule.is_rx() else gobject_orig_states[gi]))
+        elif gi in {Globals.GOBJECT_FIELD_DATEMIN, Globals.GOBJECT_FIELD_DATEMAX}:
+            config_global(gi, state=(STATE_DISABLED if ProcModule.is_rs() else gobject_orig_states[gi]))
 
 
 def is_focusing(gidx: Globals) -> bool:
@@ -587,34 +597,35 @@ def prepare_cmdline() -> List[str]:
     newstr.append(f'\'{pathstr}\'')
     # + options
     addstr = OPTION_CMD_VIDEOS[OPTION_VALUES_VIDEOS.index(str(getrootconf(Options.OPT_VIDSETTING)))]  # type: str
-    if len(addstr) > 0:
+    if len(addstr) > 0 and not is_global_disabled(Globals.GOBJECT_COMBOBOX_VIDEOS):
         newstr.append(addstr)
     addstr = OPTION_CMD_IMAGES[OPTION_VALUES_IMAGES.index(str(getrootconf(Options.OPT_IMGSETTING)))]
-    if len(addstr) > 0:
+    if len(addstr) > 0 and not is_global_disabled(Globals.GOBJECT_COMBOBOX_IMAGES):
         newstr.append(addstr)
     addstr = OPTION_CMD_PARCHI[OPTION_VALUES_PARCHI.index(str(getrootconf(Options.OPT_PARCHISETTING)))]
-    if len(addstr) > 0:
+    if len(addstr) > 0 and not is_global_disabled(Globals.GOBJECT_COMBOBOX_PARCHI):
         newstr.append(addstr)
     addstr = OPTION_CMD_THREADING[OPTION_VALUES_THREADING.index(str(getrootconf(Options.OPT_THREADSETTING)))]
-    if len(addstr) > 0:
+    if len(addstr) > 0 and not is_global_disabled(Globals.GOBJECT_COMBOBOX_THREADING):
         newstr.append(OPTION_CMD_THREADING_CMD)
         newstr.append(addstr)
     # date min / max
-    today_str = datetime.today().strftime(FMT_DATE)
-    for datestr in ((Options.OPT_DATEMIN, OPTION_CMD_DATEAFTER), (Options.OPT_DATEMAX, OPTION_CMD_DATEBEFORE)):
-        while True:
-            try:
-                addstr = str(getrootconf(datestr[0]))
-                assert DateValidator()(addstr)
-                if (
-                        (datestr[0] == Options.OPT_DATEMIN and addstr != DATE_MIN_DEFAULT) or
-                        (datestr[0] == Options.OPT_DATEMAX and addstr != today_str)
-                ):
-                    newstr.append(datestr[1])
-                    newstr.append(addstr)
-                break
-            except Exception:
-                setrootconf(datestr[0], DATE_MIN_DEFAULT if datestr[0] == Options.OPT_DATEMIN else today_str)
+    if not is_global_disabled(Globals.GOBJECT_FIELD_DATEMIN) and not is_global_disabled(Globals.GOBJECT_FIELD_DATEMAX):
+        today_str = datetime.today().strftime(FMT_DATE)
+        for datestr in ((Options.OPT_DATEMIN, OPTION_CMD_DATEAFTER), (Options.OPT_DATEMAX, OPTION_CMD_DATEBEFORE)):
+            while True:
+                try:
+                    addstr = str(getrootconf(datestr[0]))
+                    assert DateValidator()(addstr)
+                    if (
+                            (datestr[0] == Options.OPT_DATEMIN and addstr != DATE_MIN_DEFAULT) or
+                            (datestr[0] == Options.OPT_DATEMAX and addstr != today_str)
+                    ):
+                        newstr.append(datestr[1])
+                        newstr.append(addstr)
+                    break
+                except Exception:
+                    setrootconf(datestr[0], DATE_MIN_DEFAULT if datestr[0] == Options.OPT_DATEMIN else today_str)
     # headers
     addstr = window_hcookiesm().get_json_h()
     if len(addstr) > 2 and addstr != DEFAULT_HEADERS:  # != "'{}'"
@@ -708,7 +719,7 @@ def check_tags_direct() -> None:
     cur_tags = str(getrootconf(Options.OPT_TAGS))
 
     count = 0
-    mydwn = None  # type: Union[None, DownloaderRn, DownloaderRx]
+    mydwn = None  # type: Union[None, DownloaderRn, DownloaderRx, DownloaderRs]
     res, tags_list = parse_tags(cur_tags)
     if re_or_meta_group.match(cur_tags):  # `or` group with meta tag
         Logger.log('Error: cannot check tags with meta tag(s) within \'or\' group', False, False)
@@ -923,7 +934,7 @@ def unfocus_buttons_once() -> None:
 
 
 def help_tags(title: str = 'Tags') -> None:
-    message = HELP_TAGS_MSG_RX if ProcModule.is_rx() else HELP_TAGS_MSG_RN
+    message = HELP_TAGS_MSG_RX if ProcModule.is_rx() else HELP_TAGS_MSG_RN if ProcModule.is_rn() else HELP_TAGS_MSG_RS
     messagebox.showinfo(title=title, message=message, icon='info')
 
 
@@ -1038,6 +1049,7 @@ def init_menus() -> None:
     register_menu('Module', Menus.MENU_MODULE)
     register_menu_radiobutton('rx', CVARS.get(Options.OPT_MODULE), ProcModule.PROC_RX, lambda: set_proc_module(ProcModule.PROC_RX))
     register_menu_radiobutton('rn', CVARS.get(Options.OPT_MODULE), ProcModule.PROC_RN, lambda: set_proc_module(ProcModule.PROC_RN))
+    register_menu_radiobutton('rs', CVARS.get(Options.OPT_MODULE), ProcModule.PROC_RS, lambda: set_proc_module(ProcModule.PROC_RS))
     # 5) Connection
     register_menu('Connection', Menus.MENU_CONNECTION)
     register_menu_command('Headers / Cookies...', window_hcookiesm().toggle_visibility, Options.OPT_ISHCOOKIESOPEN)
@@ -1141,12 +1153,10 @@ def download_threadm() -> Thread:
     return download_thread
 
 
-def dwnm() -> Union[DownloaderRn, DownloaderRx]:
+def dwnm() -> Union[DownloaderRn, DownloaderRx, DownloaderRs]:
     global dwn
-
     if dwn is None:
         dwn = DOWNLOADERS_BY_PROC_MODULE.get(ProcModule.CUR_PROC_MODULE)()
-
     return dwn
 
 # End Helper funcs

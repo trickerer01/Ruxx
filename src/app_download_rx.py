@@ -208,7 +208,7 @@ class DownloaderRx(DownloaderBase):
         orig_item = re_orig_file_link.search(h)
 
         if self.add_filename_prefix is True:
-            item_id = f'{FILE_NAME_PREFIX_RX}{item_id}'
+            item_id = f'{self._get_module_abbr_p()}{item_id}'
 
         if orig_item:
             if len(orig_item.groupdict()) > 1:

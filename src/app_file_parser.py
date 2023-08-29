@@ -14,7 +14,10 @@ from typing import List, Tuple, Pattern
 from iteration_utilities import unique_everseen
 
 # internal
-from app_defines import DEFAULT_ENCODING, FILE_NAME_PREFIX_RX, FILE_NAME_PREFIX_RN, ID_VALUE_SEPARATOR_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RN
+from app_defines import (
+    DEFAULT_ENCODING, FILE_NAME_PREFIX_RX, FILE_NAME_PREFIX_RN, FILE_NAME_PREFIX_RS,
+    ID_VALUE_SEPARATOR_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RS,
+)
 from app_gui_defines import ProcModule
 
 __all__ = ('prepare_tags_list',)
@@ -25,18 +28,22 @@ re_separators = re_compile(r'(?:, *| +)')
 prefixes = {
     ProcModule.PROC_RX: FILE_NAME_PREFIX_RX,
     ProcModule.PROC_RN: FILE_NAME_PREFIX_RN,
+    ProcModule.PROC_RS: FILE_NAME_PREFIX_RS,
 }
 idval_eq_separators = {
     ProcModule.PROC_RX: ID_VALUE_SEPARATOR_CHAR_RX,
     ProcModule.PROC_RN: ID_VALUE_SEPARATOR_CHAR_RN,
+    ProcModule.PROC_RS: ID_VALUE_SEPARATOR_CHAR_RS,
 }
 idstring_patterns = {
     ProcModule.PROC_RX: re_compile(r'^(?:rx_?)?\d+?(?:(?:, *?| +?)(?:rx_?)?\d+?)*$'),
     ProcModule.PROC_RN: re_compile(r'^(?:rn_?)?\d+?(?:(?:, *?| +?)(?:rn_?)?\d+?)*$'),
+    ProcModule.PROC_RS: re_compile(r'^(?:rs_?)?\d+?(?:(?:, *?| +?)(?:rs_?)?\d+?)*$'),
 }
 prefix_optional_patterns = {
     ProcModule.PROC_RX: re_compile(fr'{prefixes.get(ProcModule.PROC_RX)}?'),
     ProcModule.PROC_RN: re_compile(fr'{prefixes.get(ProcModule.PROC_RN)}?'),
+    ProcModule.PROC_RS: re_compile(fr'{prefixes.get(ProcModule.PROC_RS)}?'),
 }
 
 

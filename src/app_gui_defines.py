@@ -14,19 +14,24 @@ from re import compile as re_compile
 class ProcModule(object):
     PROC_RX = 1
     PROC_RN = 2
+    PROC_RS = 3
 
     PROC_MODULE_DEFAULT = PROC_RX
     CUR_PROC_MODULE = PROC_MODULE_DEFAULT
     PROC_MODULE_MIN = PROC_RX
-    PROC_MODULE_MAX = PROC_RN
+    PROC_MODULE_MAX = PROC_RS
 
     @staticmethod
     def get_cur_module_name() -> str:
-        return 'rx' if ProcModule.is_rx() else 'rn' if ProcModule.is_rn() else 'unk'
+        return 'rx' if ProcModule.is_rx() else 'rn' if ProcModule.is_rn() else 'rs' if ProcModule.is_rs() else 'unk'
 
     @staticmethod
     def set_cur_module_by_name(name: str) -> None:
-        ProcModule.CUR_PROC_MODULE = ProcModule.PROC_RX if name == 'rx' else ProcModule.PROC_RN if name == 'rn' else ProcModule.PROC_RX
+        ProcModule.CUR_PROC_MODULE = (
+            ProcModule.PROC_RX if name == 'rx' else
+            ProcModule.PROC_RN if name == 'rn' else
+            ProcModule.PROC_RS if name == 'rs' else ProcModule.PROC_RX
+        )
 
     @staticmethod
     def is_rx() -> bool:
@@ -35,6 +40,10 @@ class ProcModule(object):
     @staticmethod
     def is_rn() -> bool:
         return ProcModule.CUR_PROC_MODULE is ProcModule.PROC_RN
+
+    @staticmethod
+    def is_rs() -> bool:
+        return ProcModule.CUR_PROC_MODULE is ProcModule.PROC_RS
 
     @staticmethod
     def set(dwnmodule: int) -> None:
@@ -147,6 +156,7 @@ class Icons(IntEnum):
     ICON_RUXX = 0
     ICON_RX = auto()
     ICON_RN = auto()
+    ICON_RS = auto()
     ICON_OPEN = auto()
     ICON_SAVE = auto()
     ICON_DELETE = auto()

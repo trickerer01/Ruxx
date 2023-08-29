@@ -12,7 +12,7 @@ from os import path
 from typing import Sequence
 
 # internal
-from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, DEFAULT_HEADERS, ACTION_STORE_TRUE, DMODE_DEFAULT, DMODE_CHOICES, THREADS_MAX_ITEMS
+from app_defines import MODULE_ABBR_RX, MODULE_CHOICES, DEFAULT_HEADERS, ACTION_STORE_TRUE, DMODE_DEFAULT, DMODE_CHOICES, THREADS_MAX_ITEMS
 from app_help import (
     HELP_ARG_MODULE, HELP_ARG_DOWNLOAD_MODE, HELP_ARG_DOWNLOAD_LIMIT, HELP_ARG_SKIP_IMAGES, HELP_ARG_SKIP_VIDEOS,
     HELP_ARG_PREFER_WEBM, HELP_ARG_PREFER_LOWRES, HELP_ARG_MINDATE, HELP_ARG_MAXDATE,
@@ -30,7 +30,7 @@ DMODES_STR = str(DMODE_CHOICES).replace(' ', '')
 def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser = ArgumentParser(add_help=False)
     parser.add_argument('--help', action='help')
-    parser.add_argument('-module', default=MODULE_ABBR_RX, help=HELP_ARG_MODULE, choices=(MODULE_ABBR_RX, MODULE_ABBR_RN))
+    parser.add_argument('-module', default=MODULE_ABBR_RX, help=HELP_ARG_MODULE, choices=MODULE_CHOICES)
     parser.add_argument('-include_parchi', action=ACTION_STORE_TRUE, help=HELP_ARG_INCLUDE_PARCHI)
     parser.add_argument('-skip_img', action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_IMAGES)
     parser.add_argument('-skip_vid', action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_VIDEOS)

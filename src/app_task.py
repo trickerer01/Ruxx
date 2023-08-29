@@ -11,7 +11,7 @@ from re import compile as re_compile
 from typing import Tuple, List, Pattern, Optional, Iterable
 
 # internal
-from app_defines import TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN
+from app_defines import TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN, TAGS_STRING_LENGTH_MAX_RS
 from app_gui_defines import ProcModule
 from app_network import thread_exit
 from app_logger import trace
@@ -97,7 +97,12 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
     total_len = len(tags_list) - 1  # concat chars count
     for t in tags_list:  # + length of each tag
         total_len += max(len(ogt) for ogt in t.split('+~+')) if ProcModule.is_rn() and t.startswith('(+') else len(t)
-    max_string_len = TAGS_STRING_LENGTH_MAX_RX if ProcModule.is_rx() else TAGS_STRING_LENGTH_MAX_RN
+    max_string_lengths = {
+        ProcModule.PROC_RX: TAGS_STRING_LENGTH_MAX_RX,
+        ProcModule.PROC_RN: TAGS_STRING_LENGTH_MAX_RN,
+        ProcModule.PROC_RS: TAGS_STRING_LENGTH_MAX_RS,
+    }
+    max_string_len = max_string_lengths.get(ProcModule.get())
     if total_len > max_string_len:
         trace('Warning (W1): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
         neg_tags_list = list()  # type: List[str]

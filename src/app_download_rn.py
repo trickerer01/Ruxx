@@ -230,7 +230,7 @@ class DownloaderRn(DownloaderBase):
         swfs = len(swf_items) != 0
 
         if self.add_filename_prefix is True:
-            item_id = f'{FILE_NAME_PREFIX_RN}{item_id}'
+            item_id = f'{self._get_module_abbr_p()}{item_id}'
 
         if imgs or mp4s or wbms or swfs:
             if len(img_items) > 1:

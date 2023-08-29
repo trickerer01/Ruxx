@@ -37,6 +37,7 @@ re_tags_to_process_rn = re_compile(
     r'[^(]+\([^)]+\).*?|[a-z_\-]+\d+?|\d{2,4}[a-z_\-]+?|[a-z_]{2,15}sfm|[^_]+_pov|fu[a-z]{2}_on_[a-z]{4}|'
     fr'[a-z][a-z_]{{{TAG_LENGTH_MIN - 1:d},{TAG_LENGTH_MAX_RN - 1:d}}}|[a-g]ea?st[a-z]{{6}}|[lapymg]{{3}})$'
 )
+re_tags_to_process_rs = re_tags_to_process_rx
 
 re_tags_exclude_major1 = re_compile(
     r'^(?:(?:digital|original|traditional)_(?:content|media|painting)|[234]d|h(?:d|ero_outfit)|level_up|p(?:ainting|rotagonist)|tagme|'
@@ -55,7 +56,6 @@ re_tags_exclude_major2 = re_compile(
 re_tags_exclude_rx = re_compile(
     fr'^(?:{re_tags_exclude_rx_a_i}|{re_tags_exclude_rx_j_r}|{re_tags_exclude_rx_s_z_ex})$'
 )
-
 re_tags_exclude_rn = re_compile(
     r'^(?:'
     r'a(?:nimated|u(?:d(?:io(?:dude|elk|gman|noob)?|r(?:arius|ix))|todesk(?:_.+?)?))|'  # a
@@ -78,6 +78,7 @@ re_tags_exclude_rn = re_compile(
     r'[^_]+_comi(?:cs?|x)|(?:[^_]+_){2,}[^w_][^_]*?'
     r')$'
 )
+re_tags_exclude_rs = re_tags_exclude_rx
 
 re_item_info_part_rx = re_compile(r'([\w5_]+=\"[^"]+\")[> ]')
 re_post_date_rx = re_compile(r'^\w{3} (\w{3}) (\d\d) \d{2}:\d{2}:\d{2} \+\d{4} (\d{4})$')
@@ -89,6 +90,9 @@ re_shimmie_image_href = re_compile(r'/_images/[^/]+/\d+?')
 re_shimmie_thumb = re_compile(r'^thumb shm-thumb.+?$')
 re_shimmie_orig_source = re_compile('^overflow:.+?$')
 re_shimmie_image_href_full = re_compile(r'/_images/[^/]+/(\d+)%20-%20([^">]+)')
+
+re_post_style_rs = re_compile(r'^border-radius: 3px;.+?$')
+re_post_dims_rs = re_compile(r'^Size: (\d+)w x (\d+)h$')
 
 #
 #
