@@ -22,7 +22,7 @@ from app_download import DownloaderBase
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
-    re_tags_to_process_rs, re_tags_exclude_rs, re_post_style_rs, re_post_dims_rs
+    re_tags_to_process_rs, re_tags_exclude_rs, re_post_style_rs, re_post_dims_rs, re_tag_video_rs
 
 )
 
@@ -80,7 +80,12 @@ class DownloaderRs(DownloaderBase):
         return h
 
     def _is_video(self, h: str) -> bool:
-        return h[h.rfind('.') + 1:] in {'mp4', 'webm', 'swf'}
+        # relying on tags for now
+        idx1 = h.find('title="') + len('title="')
+        taglist = h[idx1:h.find('"', idx1 + 1)].strip(', ').split(', ')
+        for tag in taglist:
+            if re_tag_video_rs.fullmatch(tag):
+                return True
 
     def _get_item_html(self, h: str) -> Optional[BeautifulSoup]:
         return self.fetch_html(h, do_cache=True)
@@ -176,6 +181,9 @@ class DownloaderRs(DownloaderBase):
 
     def _split_or_group_into_tasks_always(self) -> bool:
         return True
+
+    def _can_etract_item_info_without_fetch(self) -> bool:
+        return False
 
     def _send_to_download(self, raw: str, item_id: str, is_video: bool) -> None:
         address, fmt = self._get_video_address(raw) if is_video else self._get_image_address(raw)

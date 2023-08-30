@@ -169,7 +169,7 @@ TAG_LENGTH_MAX_RN = 21
 TAG_LENGTH_MAX_RS = 9
 TAGS_STRING_LENGTH_MAX_RX = 3300  # longer tags string will always return empty result
 TAGS_STRING_LENGTH_MAX_RN = 300  # tested up to 2400 but longer strings take forever to process serverside
-TAGS_STRING_LENGTH_MAX_RS = 3300  # longer tags string will always return empty result
+TAGS_STRING_LENGTH_MAX_RS = 7000  # actual value is unknown, last tested: 6600
 
 ACTION_STORE_TRUE = 'store_true'
 

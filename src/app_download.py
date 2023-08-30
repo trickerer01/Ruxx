@@ -215,6 +215,10 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _split_or_group_into_tasks_always(self) -> bool:
         ...
 
+    @abstractmethod
+    def _can_etract_item_info_without_fetch(self) -> bool:
+        ...
+
     def get_tags_count(self, offset=0) -> int:
         return len(self.tags_str_arr[offset].split(self.get_tags_concat_char()))
 
@@ -311,7 +315,6 @@ class DownloaderBase(ThreadedHtmlWorker):
             pnum = self.minpage
 
             while True:
-
                 self.catch_cancel_or_ctrl_c()
 
                 if dofinal is True:
@@ -970,24 +973,24 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     def _solve_argument_conflicts(self) -> bool:
         ret = False
-        if ProcModule.is_rn():
+        if ProcModule.is_rn() or ProcModule.is_rs():
             if self.include_parchi:
                 trace('Warning (W1): RN module is unable to collect parent posts. Disabled!')
+                self.include_parchi = False
                 ret = True
         if ProcModule.is_rs():
             if self.dump_source:
                 trace('Warning (W1): RS module is unable to collect sources. Disabled!')
+                self.dump_source = False
                 ret = True
             if self.date_min != DATE_MIN_DEFAULT or self.date_max != datetime.today().strftime(FMT_DATE):
-                self.date_min, self.date_max = DATE_MIN_DEFAULT, datetime.today().strftime(FMT_DATE)
                 trace('Warning (W1): RS module is unable to filter by date. Disabled')
+                self.date_min, self.date_max = DATE_MIN_DEFAULT, datetime.today().strftime(FMT_DATE)
                 ret = True
         return ret
 
     def _extract_cur_task_infos(self, parents: MutableSet[str]) -> None:
-        abbrp = self._get_module_abbr_p()
-        for item in self.items_raw_per_task:
-            item_info = self._extract_item_info(item)
+        def put_info(item_info: ItemInfo) -> None:
             if self.include_parchi is True:
                 if item_info.has_children == 'true':
                     self._register_parent_post(parents, item_info.id)
@@ -995,13 +998,32 @@ class DownloaderBase(ThreadedHtmlWorker):
                     self._register_parent_post(parents, item_info.parent_id)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_info.id}'
             self.item_info_dict_per_task[idstring] = item_info
-            # debug
             if __RUXX_DEBUG__:
                 for key in item_info.__slots__:
                     if key in ItemInfo.optional_slots:
                         continue
                     if item_info.__getattribute__(key) == '':
                         trace(f'Info: extract info {abbrp}{item_info.id}: not initialized field \'{key}\'!')
+
+        abbrp = self._get_module_abbr_p()
+        if self._can_etract_item_info_without_fetch() or self.maxthreads_items < 2 or len(self.items_raw_per_task) < 2:
+            for item in self.items_raw_per_task:
+                self.catch_cancel_or_ctrl_c()
+                res = self._extract_item_info(item)
+                put_info(res)
+        else:  # RS
+            arr_temp = [(elem,) for elem in self.items_raw_per_task]
+            ress = list()
+            with Pool(self.maxthreads_items) as active_pool:  # type: ThreadPool
+                for larr in arr_temp:
+                    ress.append(active_pool.apply_async(self._extract_item_info, args=larr))
+                active_pool.close()
+                while len(ress) > 0:
+                    self.catch_cancel_or_ctrl_c()
+                    while len(ress) > 0 and ress[0].ready():
+                        res = ress.pop(0).get()
+                        put_info(res)
+                    thread_sleep(0.2)
 
     def _dump_all_tags(self) -> None:
         trace('\nSaving tags...')
