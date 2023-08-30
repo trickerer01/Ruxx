@@ -81,8 +81,8 @@ class DownloaderRs(DownloaderBase):
 
     def _is_video(self, h: str) -> bool:
         # relying on tags for now
-        idx1 = h.find('title="') + len('title="')
-        taglist = h[idx1:h.find('"', idx1 + 1)].strip(', ').split(', ')
+        idx1 = h.find('title=') + len('title=') + 1
+        taglist = h[idx1:h.find('/>', idx1 + 1) - 1].strip(', ').split(', ')
         for tag in taglist:
             if re_tag_video_rs.fullmatch(tag):
                 return True
@@ -145,9 +145,7 @@ class DownloaderRs(DownloaderBase):
         if keywords_meta:
             tags_list = str(keywords_meta.get('content')).strip(', ').split(', ')
             item_info.tags = ' '.join(tag.replace(' ', '_') for tag in tags_list)
-        orig_li = raw_html.find('li', string='Original')
-        orig_a = orig_li.parent if orig_li else None
-        orig_href = str(orig_a.get('href')) if orig_a else ''
+        orig_href = self._extract_orig_link(raw_html)
         ext = orig_href[orig_href.rfind('.'):] if orig_href else ''
         item_info.ext = ext[1:]
         lis = raw_html.find_all('li', class_='general-tag', style='display: block; padding: 5px;')
@@ -211,12 +209,10 @@ class DownloaderRs(DownloaderBase):
         if self.add_filename_prefix is True:
             item_id = f'{self._get_module_abbr_p()}{item_id}'
 
-        orig_li = raw_html.find('li', string='Original')
-        orig_a = orig_li.parent if orig_li else None
-        orig_href = str(orig_a.get('href')) if orig_a else ''
+        orig_href = self._extract_orig_link(raw_html)
 
         if orig_href:
-            if self._is_video(orig_href):
+            if self._is_video(raw):
                 self._process_image(orig_href, item_id)
             else:
                 self._process_video(orig_href, item_id)
@@ -233,6 +229,16 @@ class DownloaderRs(DownloaderBase):
         idx1 = raw.find('href="') + len('href="')
         h = raw[idx1:raw.find('"', idx1 + 1)]
         return h.replace('&amp;', '&')
+
+    @staticmethod
+    def _extract_orig_link(raw_html: BeautifulSoup) -> str:
+        content_div = raw_html.find('div', class_='content_push')
+        link_img = content_div.find('img') if content_div else None
+        link_mp4 = content_div.find('source', type='video/mp4') if content_div else None
+        link_wbm = content_div.find('source', type='video/webm') if content_div else None
+        link = link_mp4 or link_wbm or link_img
+        orig_href = str(link.get('src')) if link else ''
+        return orig_href
 
 #
 #
