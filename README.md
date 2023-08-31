@@ -55,7 +55,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 Ruxx normally allows most symbols for tags search, there are some specifics though:  
 1. Wildcards
 - All modules support asterisk symbol `*` as wildcard in tags (any number of any symbols). You can use any number of wildcards in tags in any place: `b*m*_cit*`
-  - Note that there is a bug in RX search engine which breaks frontal wildcards: `*_city` will work for RN but RX will return default result (all)
+  - Note that there is a bug in RX search engine which breaks frontal wildcards: `*_city` will work for RN and RS, but RX will return default result (all)
 2. Meta tags
 - Meta tags describe not the posted artwork but the post itself. Both RX and RN support meta tags
   - RX syntax: _name_**:**_value_ OR _name_**:=**_value_

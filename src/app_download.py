@@ -164,7 +164,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def _extract_id(self, h) -> str:
+    def _extract_id(self, h: str) -> str:
         ...
 
     @abstractmethod
@@ -823,7 +823,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('\nNothing to download: queue is empty')
             return
 
-        self.items_raw_all = sorted(self.items_raw_all, key=lambda x: self._extract_id(x), reverse=True)  # type: List[str]
+        self.items_raw_all = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)), reverse=True)  # type: List[str]
 
         if self.download_limit > 0:
             if len(self.items_raw_all) > self.download_limit:
