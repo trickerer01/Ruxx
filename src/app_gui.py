@@ -16,44 +16,42 @@ from multiprocessing.dummy import current_process
 from os import path, curdir, system, makedirs, stat
 from threading import Thread
 from time import sleep as thread_sleep
-from tkinter import messagebox, filedialog, BooleanVar, IntVar, Entry, Button, PhotoImage, END, LEFT
-from typing import Optional, Union, Callable, List, Tuple, Iterable
+from tkinter import messagebox, filedialog, END
+from typing import Optional, Union, List, Tuple, Iterable, Sequence
 
 # internal
 from app_cmdargs import prepare_arglist
 from app_defines import (
-    DownloaderStates, DownloadModes, STATE_WORK_START, SUPPORTED_PLATFORMS, MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS,
-    DEFAULT_ENCODING, KNOWN_EXTENSIONS_STR, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD,
-    DEFAULT_HEADERS, DATE_MIN_DEFAULT, FMT_DATE,
+    DownloaderStates, DownloadModes, STATE_WORK_START, MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, DEFAULT_HEADERS, DATE_MIN_DEFAULT,
+    DEFAULT_ENCODING, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, FMT_DATE,
     max_progress_value_for_state,
 )
 from app_download_rn import DownloaderRn
 from app_download_rx import DownloaderRx
 from app_download_rs import DownloaderRs
-from app_file_parser import prepare_tags_list
 from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_size, sort_files_by_score
 from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
-    AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, LogWindow,
-    setrootconf, int_vars, rootm, getrootconf, window_hcookiesm, window_proxym, window_timeoutm, c_menum, c_submenum, register_menu,
-    register_submenu, GetRoot, create_base_window_widgets, text_cmdm, get_icon, init_additional_windows,
+    AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow,
+    setrootconf, int_vars, rootm, getrootconf, window_hcookiesm, window_proxym, window_timeoutm, c_menum, register_menu,
+    register_submenu, GetRoot, create_base_window_widgets, text_cmdm, get_icon, init_additional_windows, get_global, config_global,
+    is_global_disabled, is_focusing, toggle_console, ensure_compatibility, hotkey_text, get_curdir, set_console_shown, unfocus_buttons_once,
+    help_tags, help_about, load_id_list, ask_filename, browse_path, register_menu_command, register_submenu_command,
+    register_menu_checkbutton, register_menu_radiobutton, register_menu_separator, get_all_media_files_in_cur_dir,
 )
 from app_gui_defines import (
-    STATE_DISABLED, STATE_NORMAL, hotkeys,
-    COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING,
-    OPTION_CMD_VIDEOS, OPTION_CMD_IMAGES, OPTION_CMD_THREADING_CMD, OPTION_CMD_THREADING,
-    OPTION_CMD_FNAMEPREFIX, OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS,
-    OPTION_CMD_SAVE_SOURCES, OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH,
-    OPTION_CMD_COOKIES, OPTION_CMD_HEADERS, OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD,
-    OPTION_CMD_TIMEOUT, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH,
-    OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, BUTTONS_TO_UNFOCUS,
-    OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI, BUT_ALT_F4,
-    ProcModule, menu_items, menu_item_orig_states, gobjects, gobject_orig_states, Options, Globals, Menus, Icons, CVARS,
-    re_space_mult, re_or_meta_group,
+    STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
+    OPTION_VALUES_THREADING, OPTION_CMD_VIDEOS, OPTION_CMD_IMAGES, OPTION_CMD_THREADING_CMD, OPTION_CMD_THREADING, OPTION_CMD_FNAMEPREFIX,
+    OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS, OPTION_CMD_SAVE_SOURCES,
+    OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH, OPTION_CMD_COOKIES, OPTION_CMD_HEADERS, OPTION_CMD_PROXY,
+    OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT,
+    SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, OPTION_CMD_PARCHI,
+    OPTION_VALUES_PARCHI,
+    ProcModule, menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, Icons, CVARS,
+    re_space_mult, re_or_meta_group, hotkeys,
 )
-from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, ABOUT_MSG
 from app_logger import Logger
-from app_revision import APP_NAME, __RUXX_DEBUG__
+from app_revision import __RUXX_DEBUG__
 from app_tags_parser import reset_last_tags, parse_tags
 from app_utils import normalize_path, confirm_yes_no
 from app_validators import (
@@ -67,7 +65,6 @@ __all__ = ()
 download_thread = None  # type: Optional[Thread]
 tags_check_thread = None  # type: Optional[Thread]
 prev_download_state = True
-console_shown = True
 IS_RAW = '_sitebuiltins' in sys.modules  # ran from console (shell or IDE)
 IS_IDE = '_virtualenv' in sys.modules  # ran from IDE
 CONSOLEVAL = ctypes.windll.kernel32.GetConsoleProcessList(ctypes.byref(ctypes.c_int(0)), 1) if sys.platform == PLATFORM_WINDOWS else -1
@@ -91,41 +88,6 @@ PROC_MODULES_BY_ABBR = {
 
 
 # static methods
-def toggle_console() -> None:
-    global console_shown
-    ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), not console_shown)
-    console_shown = not console_shown
-
-
-def ensure_compatibility(is_gui: bool) -> None:
-    assert sys.version_info >= (3, 7), 'Minimum python version required is 3.7!'
-    if sys.platform not in SUPPORTED_PLATFORMS:
-        if is_gui:
-            messagebox.showinfo('', f'Unsupported OS \'{sys.platform}\'')
-        else:
-            Logger.log(f'Unsupported OS \'{sys.platform}\'', False, False)
-        sys.exit(-1)
-
-
-def hotkey_text(option: Options) -> str:
-    return (
-        hotkeys.get(option).upper().replace('CONTROL', 'Ctrl').replace('SHIFT', 'Shift').replace('-', '+').replace('<', '').replace('>', '')
-    )
-
-
-# def niy() -> None:
-#     messagebox.showinfo('', 'NIY!')
-
-
-def get_curdir(prioritize_last_path=True) -> str:
-    lastloc = str(getrootconf(Options.OPT_LASTPATH))
-    curloc = str(getrootconf(Options.OPT_PATH))
-    if prioritize_last_path:
-        return lastloc if len(lastloc) > 0 else curloc if path.isdir(curloc) else path.abspath(curdir)
-    else:
-        return curloc if path.isdir(curloc) else lastloc if len(lastloc) > 0 else path.abspath(curdir)
-
-
 class Settings(ABC):
     """
     Settings !Static!
@@ -303,10 +265,7 @@ class Settings(ABC):
 
 
 def untag_files_do() -> None:
-    filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),)
-    )  # type: Tuple[str]
-
+    filelist = get_all_media_files_in_cur_dir()
     if len(filelist) == 0:
         return
 
@@ -321,10 +280,7 @@ def untag_files_do() -> None:
 
 
 def retag_files_do() -> None:
-    filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),)
-    )  # type: Tuple[str]
-
+    filelist = get_all_media_files_in_cur_dir()
     if len(filelist) == 0:
         return
 
@@ -340,10 +296,7 @@ def retag_files_do() -> None:
 
 
 def sort_files_by_type_do() -> None:
-    filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),)
-    )  # type: Tuple[str]
-
+    filelist = get_all_media_files_in_cur_dir()
     if len(filelist) == 0:
         return
 
@@ -366,10 +319,7 @@ def sort_files_by_type_do() -> None:
 
 
 def sort_files_by_size_do() -> None:
-    filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),)
-    )  # type: Tuple[str]
-
+    filelist = get_all_media_files_in_cur_dir()
     if len(filelist) == 0:
         return
 
@@ -392,10 +342,7 @@ def sort_files_by_size_do() -> None:
 
 
 def sort_files_by_score_do() -> None:
-    filelist = filedialog.askopenfilenames(
-        initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),)
-    )  # type: Tuple[str]
-
+    filelist = get_all_media_files_in_cur_dir()
     if len(filelist) == 0:
         return
 
@@ -488,18 +435,6 @@ def set_proc_module(dwnmodule: int) -> None:
     reset_last_tags()
 
 
-def get_global(index: Globals) -> Union[Entry, Button]:
-    return gobjects[index]
-
-
-def config_global(index: Globals, **kwargs) -> None:
-    get_global(index).config(kwargs)
-
-
-def is_global_disabled(index: Globals) -> bool:
-    return str(get_global(index).cget('state')) == STATE_DISABLED
-
-
 def update_widget_enabled_states() -> None:
     downloading = is_downloading()
     for i in [m for m in Menus.__members__.values() if m < Menus.MAX_MENUS]:  # type: Menus
@@ -515,13 +450,6 @@ def update_widget_enabled_states() -> None:
             config_global(gi, state=(STATE_DISABLED if not ProcModule.is_rx() else gobject_orig_states[gi]))
         elif gi in {Globals.GOBJECT_FIELD_DATEMIN, Globals.GOBJECT_FIELD_DATEMAX}:
             config_global(gi, state=(STATE_DISABLED if ProcModule.is_rs() else gobject_orig_states[gi]))
-
-
-def is_focusing(gidx: Globals) -> bool:
-    try:
-        return rootm().focus_get() == get_global(gidx)
-    except Exception:
-        return False
 
 
 def update_progressbar() -> None:
@@ -915,96 +843,6 @@ def start_download_thread(cmdline: List[str]) -> None:
     with get_new_proc_module() as dwn:
         dwn.launch(arg_list)
 
-
-def unfocus_buttons() -> None:
-    unfocus_buttons_once()
-    rootm().after(GUI2_UPDATE_DELAY_DEFAULT // 3, unfocus_buttons)
-
-
-def unfocus_buttons_once() -> None:
-    for g in BUTTONS_TO_UNFOCUS:
-        if is_focusing(g):
-            rootm().focus_set()
-            break
-
-
-# def quit_with_msg(title='Exit', message='Really?') -> None:
-#     if messagebox.askokcancel(title=title, message=message, icon='warning'):
-#         sys.exit()
-
-
-def help_tags(title: str = 'Tags') -> None:
-    message = HELP_TAGS_MSG_RX if ProcModule.is_rx() else HELP_TAGS_MSG_RN if ProcModule.is_rn() else HELP_TAGS_MSG_RS
-    messagebox.showinfo(title=title, message=message, icon='info')
-
-
-def help_about(title: str = f'About {APP_NAME}', message: str = ABOUT_MSG) -> None:
-    messagebox.showinfo(title=title, message=message, icon='info')
-
-
-def load_id_list() -> None:
-    filepath = ask_filename((('Text files', '*.txt'), ('All files', '*.*')))
-    if filepath:
-        success, file_tags = prepare_tags_list(filepath)
-        if success:
-            setrootconf(Options.OPT_TAGS, file_tags)
-            # reset settings for immediate downloading
-            setrootconf(Options.OPT_DATEMIN, DATE_MIN_DEFAULT)
-            setrootconf(Options.OPT_DATEMAX, datetime.today().strftime(FMT_DATE))
-        else:
-            messagebox.showwarning(message=f'Unable to load ids from {filepath[filepath.rfind("/") + 1:]}!')
-
-
-def ask_filename(ftypes: Iterable[Tuple[str, str]]) -> str:
-    fullpath = filedialog.askopenfilename(filetypes=ftypes, initialdir=get_curdir())
-    if fullpath and len(fullpath) > 0:
-        setrootconf(Options.OPT_LASTPATH, fullpath[:normalize_path(fullpath, False).rfind(SLASH) + 1])  # not bound
-    return fullpath
-
-
-def browse_path() -> None:
-    loc = str(filedialog.askdirectory(initialdir=get_curdir()))
-    if len(loc) > 0:
-        setrootconf(Options.OPT_PATH, loc)
-        setrootconf(Options.OPT_LASTPATH, loc[:normalize_path(loc, False).rfind(SLASH) + 1])  # not bound
-
-
-def register_menu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind: bool = False,
-                          icon: PhotoImage = None) -> None:
-    try:
-        accelerator = hotkey_text(hotkey_opt)
-    except Exception:
-        accelerator = None
-    c_menum().add_command(label=label, image=icon, compound=LEFT, command=command, accelerator=accelerator)
-    if accelerator and (do_bind is True):
-        rootm().bind(hotkeys.get(hotkey_opt), func=lambda _: command())
-
-
-def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind: bool = False,
-                             icon: PhotoImage = None) -> None:
-    try:
-        accelerator = hotkey_text(hotkey_opt)
-    except Exception:
-        accelerator = None
-    c_submenum().add_command(label=label, image=icon, compound=LEFT, command=command, accelerator=accelerator)
-    if accelerator and (do_bind is True):
-        rootm().bind(hotkeys.get(hotkey_opt), func=lambda _: command())
-
-
-def register_menu_checkbutton(label: str, variablename: str, command: Callable = None, hotkey_str: str = None) -> None:
-    BooleanVar(rootm(), False, variablename)
-    c_menum().add_checkbutton(label=label, command=command, variable=variablename, accelerator=hotkey_str)
-
-
-def register_menu_radiobutton(label: str, variablename: str, value: int, command: Callable = None, hotkey_str: str = None) -> None:
-    if variablename not in int_vars:
-        int_vars[variablename] = IntVar(rootm(), value=value, name=variablename)  # needed so it won't be discarded
-    c_menum().add_radiobutton(label=label, command=command, variable=int_vars.get(variablename), value=value, accelerator=hotkey_str)
-
-
-def register_menu_separator() -> None:
-    c_menum().add_separator()
-
 # end static methods
 
 #########################################
@@ -1091,13 +929,10 @@ def init_menus() -> None:
 
 def init_gui() -> None:
     global tags_check_thread
-
+    # Create all app windows
     create_base_window_widgets()
-
-    # additional windows
-    Logger.wnd = LogWindow(rootm())
-    Logger.wnd.window.wm_protocol('WM_DELETE_WINDOW', Logger.wnd.on_destroy)
     init_additional_windows()
+    # Window hotkeys in order
     rootm().bind_all(hotkeys.get(Options.OPT_ISLOGOPEN), func=lambda _: Logger.wnd.toggle_visibility())
     rootm().bind_all(hotkeys.get(Options.OPT_ISPROXYOPEN), func=lambda e: window_proxym().ask() if e.state != 0x20000 else None)
     rootm().bind_all(hotkeys.get(Options.OPT_ISHCOOKIESOPEN), func=lambda _: window_hcookiesm().toggle_visibility())
@@ -1109,11 +944,10 @@ def init_gui() -> None:
     window_timeoutm().window.bind(BUT_ALT_F4, func=lambda _: window_timeoutm().cancel() if window_timeoutm().visible else None)
     # Main menu
     init_menus()
-
+    # Menu hotkeys
     get_global(Globals.GOBJECT_BUTTON_CHECKTAGS).config(command=check_tags_direct_do)
     get_global(Globals.GOBJECT_BUTTON_OPENFOLDER).config(command=browse_path)
     get_global(Globals.GOBJECT_BUTTON_DOWNLOAD).config(command=do_download)
-
     # Init settings if needed
     setrootconf(Options.OPT_TAGS, 'sfw')
     setrootconf(Options.OPT_DOWNLOAD_LIMIT, 0)
@@ -1123,31 +957,28 @@ def init_gui() -> None:
     setrootconf(Options.OPT_SAVE_TAGS, not IS_IDE)
     setrootconf(Options.OPT_SAVE_SOURCES, not IS_IDE)
     setrootconf(Options.OPT_WARN_NONEMPTY_DEST, not IS_IDE)
-
     # Background looping tasks
     update_frame_cmdline()
     update_progressbar()
     update_statusbar()
     update_download_state()
-    # unfocus_buttons
-
+    # Clamp main window and make non-resizable
     rootm().adjust_size()
-
+    # Update window geometry and set own widget bindings
     finalize_additional_windows()
-
     # OS-specific
     #  Linux
+    #   Allow os to automatically adjust the size of message windows
     rootm().option_add('Dialog.msg.width', 0)
     rootm().option_add('Dialog.msg.wrapLength', 0)
-
+    # Init Settings system
     Settings.try_pick_autoconfig()
     Settings.save_initial_settings()
-
-    # Init finish
+    # Main window binding, BG fix-ups and main loop
     rootm().finalize()
 
 
-# Helper funcs: solve unnecessary NoneType warnings
+# Helper wrappers: solve unnecessary NoneType warnings
 def download_threadm() -> Thread:
     assert download_thread
     return download_thread
@@ -1159,42 +990,51 @@ def dwnm() -> Union[DownloaderRn, DownloaderRx, DownloaderRs]:
         dwn = DOWNLOADERS_BY_PROC_MODULE.get(ProcModule.CUR_PROC_MODULE)()
     return dwn
 
-# End Helper funcs
+# End Helper wrappers
 
 
 #########################################
-#         PROGRAM WORKFLOW END          #
+#        PROGRAM WORKFLOW END           #
 #########################################
 
 #########################################
 #             PROGRAM ENTRY             #
 #########################################
 
+def run_ruxx(args: Sequence[str]) -> None:
+    Logger.init(True)
+    ensure_compatibility(False)
+
+    current_process().killed = False
+    arglist = prepare_arglist(args)
+    set_proc_module(PROC_MODULES_BY_ABBR[arglist.module])
+    with get_new_proc_module() as cdwn:
+        cdwn.launch(arglist)
+
+
+def run_ruxx_gui() -> None:
+    Logger.init(False)
+    ensure_compatibility(True)
+
+    if CAN_MANIPULATE_CONSOLE:
+        Logger.pending_strings.append('[Launcher] Hiding own console...')
+        ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
+        ctypes.windll.user32.DeleteMenu(
+            ctypes.windll.user32.GetSystemMenu(ctypes.windll.kernel32.GetConsoleWindow(), 0), 0xF060, ctypes.c_ulong(0)
+        )
+        set_console_shown(False)
+    init_gui()
+
+
 if __name__ == '__main__':
-    running_in_gui = len(sys.argv) < 2
-    Logger.init(not running_in_gui)
-    ensure_compatibility(running_in_gui)
-
-    if not running_in_gui:
-        current_process().killed = False
-        arglist = prepare_arglist(sys.argv[1:])
-        set_proc_module(PROC_MODULES_BY_ABBR[arglist.module])
-        with get_new_proc_module() as dwn:
-            dwn.launch(arglist)
+    if len(sys.argv) >= 2:
+        run_ruxx(sys.argv[1:])
     else:
-        if CAN_MANIPULATE_CONSOLE:
-            Logger.pending_strings.append('[Launcher] Hiding own console...')
-            ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
-            ctypes.windll.user32.DeleteMenu(
-                ctypes.windll.user32.GetSystemMenu(ctypes.windll.kernel32.GetConsoleWindow(), 0), 0xF060, ctypes.c_ulong(0)
-            )
-            console_shown = False
-        init_gui()
-
+        run_ruxx_gui()
     sys.exit(0)
 
 #########################################
-#              PROGRAM END              #
+#             PROGRAM END               #
 #########################################
 
 #

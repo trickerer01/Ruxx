@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # app_gui, app_cmdargs
 
 # native
+import ctypes
 import sys
 from abc import ABC, abstractmethod
 from base64 import b64decode
@@ -17,12 +18,16 @@ from os import curdir, path
 from re import compile as re_compile
 from tkinter import (
     Menu, Toplevel, messagebox, ttk, Text, Scrollbar, StringVar, Button, Entry, Widget, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT,
-    TOP, INSERT, Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, S, X, Y, NO, YES
+    TOP, INSERT, Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, S, X, Y, NO, YES, filedialog, BooleanVar
 )
-from typing import Optional, Callable, List, Union, Dict, Iterable
+from typing import Optional, Callable, List, Union, Dict, Iterable, Tuple
 
 # internal
-from app_defines import PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE
+from app_defines import (
+    PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE,
+    SUPPORTED_PLATFORMS, KNOWN_EXTENSIONS_STR,
+)
+from app_file_parser import prepare_tags_list
 from app_file_sorter import FileTypeFilter
 from app_gui_defines import (
     BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, Options, STATE_NORMAL,
@@ -32,7 +37,10 @@ from app_gui_defines import (
     OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, Globals, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
     OPTION_VALUES_PROXYTYPE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
     STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, gobjects, Icons, Menus, menu_items,
+    hotkeys, BUTTONS_TO_UNFOCUS, ProcModule, SLASH,
 )
+from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, ABOUT_MSG
+from app_logger import Logger
 from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME
 from app_tooltips import WidgetToolTip
 from app_utils import normalize_path
@@ -41,7 +49,11 @@ from app_validators import valid_proxy, valid_positive_int
 __all__ = (
     'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'LogWindow',
     'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm', 'c_menum', 'c_submenum',
-    'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows'
+    'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows',
+    'get_global', 'config_global', 'is_global_disabled', 'is_focusing', 'toggle_console', 'ensure_compatibility', 'hotkey_text',
+    'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list', 'ask_filename', 'browse_path',
+    'register_menu_command', 'register_submenu_command', 'register_menu_checkbutton', 'register_menu_radiobutton',
+    'register_menu_separator', 'get_all_media_files_in_cur_dir',
 )
 
 # globals
@@ -61,6 +73,7 @@ string_vars = dict()  # type: Dict[str, StringVar]
 # end globals
 
 # loaded
+console_shown = True
 text_cmd = None  # type: Optional[Text]
 # end loaded
 
@@ -73,6 +86,11 @@ re_json_entry_value = re_compile(r'^([^: ,]+)[: ,](.+)$')
 
 c_col = None  # type: Optional[int]
 c_row = None  # type: Optional[int]
+
+
+def set_console_shown(shown: bool) -> None:
+    global console_shown
+    console_shown = shown
 
 
 def get_icon(index: Icons) -> Optional[PhotoImage]:
@@ -833,6 +851,8 @@ def init_additional_windows() -> None:
     window_hcookies.window.wm_protocol('WM_DELETE_WINDOW', window_hcookies.on_destroy)
     window_timeout = ConnectionTimeoutWindow(root)
     window_timeout.window.wm_protocol('WM_DELETE_WINDOW', window_timeout.on_destroy)
+    Logger.wnd = LogWindow(root)
+    Logger.wnd.window.wm_protocol('WM_DELETE_WINDOW', Logger.wnd.on_destroy)
 
 
 def register_menu(label: str, menu_id: Menus = None) -> Menu:
@@ -1066,6 +1086,151 @@ def create_base_window_widgets() -> None:
     # Safety precautions
     if len(gobjects) < int(Globals.MAX_GOBJECTS):
         messagebox.showinfo('', 'Not all GOBJECTS were registered')
+
+
+def get_global(index: Globals) -> Union[Entry, Button]:
+    return gobjects[index]
+
+
+def config_global(index: Globals, **kwargs) -> None:
+    get_global(index).config(kwargs)
+
+
+def is_global_disabled(index: Globals) -> bool:
+    return str(get_global(index).cget('state')) == STATE_DISABLED
+
+
+def is_focusing(gidx: Globals) -> bool:
+    try:
+        return rootm().focus_get() == get_global(gidx)
+    except Exception:
+        return False
+
+
+def toggle_console() -> None:
+    global console_shown
+    ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), not console_shown)
+    console_shown = not console_shown
+
+
+def ensure_compatibility(is_gui: bool) -> None:
+    assert sys.version_info >= (3, 7), 'Minimum python version required is 3.7!'
+    if sys.platform not in SUPPORTED_PLATFORMS:
+        if is_gui:
+            messagebox.showinfo('', f'Unsupported OS \'{sys.platform}\'')
+        else:
+            Logger.log(f'Unsupported OS \'{sys.platform}\'', False, False)
+        sys.exit(-1)
+
+
+def hotkey_text(option: Options) -> str:
+    return (
+        hotkeys.get(option).upper()
+                           .replace('CONTROL', 'Ctrl')
+                           .replace('SHIFT', 'Shift')
+                           .replace('-', '+')
+                           .replace('<', '')
+                           .replace('>', '')
+    )
+
+
+def get_curdir(prioritize_last_path=True) -> str:
+    lastloc = str(getrootconf(Options.OPT_LASTPATH))
+    curloc = str(getrootconf(Options.OPT_PATH))
+    if prioritize_last_path:
+        return lastloc if len(lastloc) > 0 else curloc if path.isdir(curloc) else path.abspath(curdir)
+    else:
+        return curloc if path.isdir(curloc) else lastloc if len(lastloc) > 0 else path.abspath(curdir)
+
+
+# def unfocus_buttons() -> None:
+#     unfocus_buttons_once()
+#     rootm().after(GUI2_UPDATE_DELAY_DEFAULT // 3, unfocus_buttons)
+
+
+def unfocus_buttons_once() -> None:
+    for g in BUTTONS_TO_UNFOCUS:
+        if is_focusing(g):
+            rootm().focus_set()
+            break
+
+
+def help_tags(title: str = 'Tags') -> None:
+    message = HELP_TAGS_MSG_RX if ProcModule.is_rx() else HELP_TAGS_MSG_RN if ProcModule.is_rn() else HELP_TAGS_MSG_RS
+    messagebox.showinfo(title=title, message=message, icon='info')
+
+
+def help_about(title: str = f'About {APP_NAME}', message: str = ABOUT_MSG) -> None:
+    messagebox.showinfo(title=title, message=message, icon='info')
+
+
+def load_id_list() -> None:
+    filepath = ask_filename((('Text files', '*.txt'), ('All files', '*.*')))
+    if filepath:
+        success, file_tags = prepare_tags_list(filepath)
+        if success:
+            setrootconf(Options.OPT_TAGS, file_tags)
+            # reset settings for immediate downloading
+            setrootconf(Options.OPT_DATEMIN, DATE_MIN_DEFAULT)
+            setrootconf(Options.OPT_DATEMAX, datetime.today().strftime(FMT_DATE))
+        else:
+            messagebox.showwarning(message=f'Unable to load ids from {filepath[filepath.rfind("/") + 1:]}!')
+
+
+def ask_filename(ftypes: Iterable[Tuple[str, str]]) -> str:
+    fullpath = filedialog.askopenfilename(filetypes=ftypes, initialdir=get_curdir())
+    if fullpath and len(fullpath) > 0:
+        setrootconf(Options.OPT_LASTPATH, fullpath[:normalize_path(fullpath, False).rfind(SLASH) + 1])  # not bound
+    return fullpath
+
+
+def browse_path() -> None:
+    loc = str(filedialog.askdirectory(initialdir=get_curdir()))
+    if len(loc) > 0:
+        setrootconf(Options.OPT_PATH, loc)
+        setrootconf(Options.OPT_LASTPATH, loc[:normalize_path(loc, False).rfind(SLASH) + 1])  # not bound
+
+
+def register_menu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind: bool = False,
+                          icon: PhotoImage = None) -> None:
+    try:
+        accelerator = hotkey_text(hotkey_opt)
+    except Exception:
+        accelerator = None
+    c_menum().add_command(label=label, image=icon, compound=LEFT, command=command, accelerator=accelerator)
+    if accelerator and (do_bind is True):
+        rootm().bind(hotkeys.get(hotkey_opt), func=lambda _: command())
+
+
+def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind: bool = False,
+                             icon: PhotoImage = None) -> None:
+    try:
+        accelerator = hotkey_text(hotkey_opt)
+    except Exception:
+        accelerator = None
+    c_submenum().add_command(label=label, image=icon, compound=LEFT, command=command, accelerator=accelerator)
+    if accelerator and (do_bind is True):
+        rootm().bind(hotkeys.get(hotkey_opt), func=lambda _: command())
+
+
+def register_menu_checkbutton(label: str, variablename: str, command: Callable = None, hotkey_str: str = None) -> None:
+    BooleanVar(rootm(), False, variablename)
+    c_menum().add_checkbutton(label=label, command=command, variable=variablename, accelerator=hotkey_str)
+
+
+def register_menu_radiobutton(label: str, variablename: str, value: int, command: Callable = None, hotkey_str: str = None) -> None:
+    if variablename not in int_vars:
+        int_vars[variablename] = IntVar(rootm(), value=value, name=variablename)  # needed so it won't be discarded
+    c_menum().add_radiobutton(label=label, command=command, variable=int_vars.get(variablename), value=value, accelerator=hotkey_str)
+
+
+def register_menu_separator() -> None:
+    c_menum().add_separator()
+
+
+def get_all_media_files_in_cur_dir() -> Tuple[str]:
+    flist = filedialog.askopenfilenames(initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),))  # type: Tuple[str]
+    return flist
 
 #
 #
