@@ -40,7 +40,7 @@ from app_validators import valid_proxy, valid_positive_int
 
 __all__ = (
     'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'LogWindow',
-    'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm', 'c_menum',  'c_submenum',
+    'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm', 'c_menum', 'c_submenum',
     'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows'
 )
 

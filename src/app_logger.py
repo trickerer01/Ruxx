@@ -15,7 +15,6 @@ from tkinter import END, INSERT
 
 # internal
 from app_defines import DEFAULT_ENCODING
-from app_gui_base import LogWindow
 from app_gui_defines import STATE_NORMAL, STATE_DISABLED
 from app_utils import find_first_not_of
 
@@ -28,7 +27,7 @@ class Logger:
     pending_strings = []  # type: List[str]
     is_cmdline = False
     is_disabled = False
-    wnd = None  # type: Optional[LogWindow]
+    wnd = None  # type: Optional['LogWindow']  # noqa F821
 
     @staticmethod
     def init(is_cmd: bool, is_disabled=False) -> None:
@@ -47,7 +46,6 @@ class Logger:
         Logger.wnd.text.config(state=STATE_DISABLED)
 
         # scroll to bottom if was at the bottom
-        # todo: add tests
         if old_pos[1] >= 1.0:
             Logger.wnd.text.mark_set(INSERT, END)
             Logger.wnd.text.see(END)
