@@ -969,8 +969,8 @@ def init_gui() -> None:
     # OS-specific
     #  Linux
     #   Allow os to automatically adjust the size of message windows
-    rootm().option_add('Dialog.msg.width', 0)
-    rootm().option_add('Dialog.msg.wrapLength', 0)
+    rootm().option_add('*Dialog.msg.width', 0)
+    rootm().option_add('*Dialog.msg.wrapLength', 0)
     # Init Settings system
     Settings.try_pick_autoconfig()
     Settings.save_initial_settings()
