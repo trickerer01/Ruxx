@@ -88,7 +88,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
     - user: `user=X`. `X` = `<uploader name>`
     - rating: `rating:X`. `X` = `<rating letter>`, ex. `q`, `s`, etc.
     - ~~order~~:
-- RX meta tags:
+- RS meta tags:
   - **id**: `id:X` (or `id:=X`), `id:>X`, `id:<Y`, `id:>=X`, `id:<=Y`. `X`,`Y` = `<post ID>`
   - **score**: `score:X` (or `score:=X`), `score:>X`, `score:<Y`, `score:>=X`, `score:<=Y`. `X`,`Y` = `<number>`
   - Rarely used ones:
