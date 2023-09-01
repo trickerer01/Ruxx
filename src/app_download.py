@@ -39,7 +39,7 @@ from app_utils import as_date, confirm_yes_no, normalize_path, trim_undersores, 
 __all__ = ('DownloaderBase',)
 
 
-LINE_BREAKS_AT = 104 if sys.platform == PLATFORM_WINDOWS else 90
+LINE_BREAKS_AT = 100 if sys.platform == PLATFORM_WINDOWS else 90
 BR = "=" * LINE_BREAKS_AT
 """line breaker"""
 
@@ -48,7 +48,6 @@ class DownloaderBase(ThreadedHtmlWorker):
     """
     DownloaderBase !Abstract!
     """
-
     @abstractmethod
     def ___this_class_has_virtual_methods___(self) -> ...:
         ...
@@ -181,6 +180,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     @abstractmethod
     def get_items_query_size_or_html(self, url: str, tries: int = None) -> Union[int, BeautifulSoup]:
+        """Public, needed by tagging tests"""
         ...
 
     @abstractmethod
@@ -197,14 +197,16 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     @abstractmethod
     def get_re_tags_to_process(self) -> Pattern:
+        """Public, needed by tagging tools"""
         ...
 
     @abstractmethod
     def get_re_tags_to_exclude(self) -> Pattern:
+        """Public, needed by tagging tools"""
         ...
 
     @abstractmethod
-    def get_tags_concat_char(self) -> str:
+    def _get_tags_concat_char(self) -> str:
         ...
 
     @abstractmethod
@@ -220,7 +222,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     def get_tags_count(self, offset=0) -> int:
-        return len(self.tags_str_arr[offset].split(self.get_tags_concat_char()))
+        """Public, needed by tests"""
+        return len(self.tags_str_arr[offset].split(self._get_tags_concat_char()))
 
     def _register_parent_post(self, parents: MutableSet[str], item_id: str) -> None:
         if item_id not in self.known_parents:
@@ -862,7 +865,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace(f'\nAll {"skipped" if skip_all else "processed"} ({self.total_count_all:d} items)...')
 
     def _parse_tags(self, tags_base_arr: Iterable[str]) -> None:
-        cc = self.get_tags_concat_char()
+        cc = self._get_tags_concat_char()
         sc = self._get_idval_equal_seaparator()
         split_always = self._split_or_group_into_tasks_always()
         # join by ' ' is required by tests, although normally len(args.tags) == 1
@@ -875,7 +878,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     def _process_all_tags(self) -> None:
         if self.warn_nonempty:
-            if self.has_gui():
+            if self._has_gui():
                 if path.isdir(self.dest_base) and len(listdir(self.dest_base)) > 0:
                     if not confirm_yes_no(title='Download', msg=f'Destination folder \'{self.dest_base}\' is not empty. Continue anyway?'):
                         return
@@ -891,11 +894,11 @@ class DownloaderBase(ThreadedHtmlWorker):
         i = 0
         while i < self._tasks_count():  # tasks count may increase during this loop
             i += 1
-            cut_task_tags = self.tags_str_arr[i - 1]
+            cur_task_tags = self.tags_str_arr[i - 1]
             is_extra = i > self.orig_tasks_count
-            trace(f'\n{f"[extra {i - self.orig_tasks_count:d}] " if is_extra else ""}task {i:d} in progress...\n{cut_task_tags}\n')
+            trace(f'\n{f"[extra {i - self.orig_tasks_count:d}] " if is_extra else ""}task {i:d} in progress...\n{cur_task_tags}\n')
             try:
-                self._process_tags(cut_task_tags, i, is_extra)
+                self._process_tags(cur_task_tags, i, is_extra)
             except ThreadInterruptException:
                 trace(f'task {i:d} aborted...')
                 raise
@@ -926,16 +929,25 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace(f'{len(self.failed_items):d} failed items:')
             trace('\n'.join(self.failed_items))
 
+    def _check_tags(self) -> None:
+        if self._tasks_count() != 1:
+            raise ThreadInterruptException(f'Cannot check tags: more than 1 task is required')
+        cur_tags = self.tags_str_arr[0]
+        # trace(f'\ntags check in progress:\n{cur_tags}\n')
+        self.url = self.form_tags_search_address(cur_tags)
+        total_count_or_html = self.get_items_query_size_or_html(self.url)
+        self.total_count = total_count_or_html if isinstance(total_count_or_html, int) else 1
+
     @abstractmethod
     def form_tags_search_address(self, tags: str, maxlim: Optional[int] = None) -> str:
+        """Public, needed by tests"""
         ...
 
-    def launch(self, args: Namespace) -> None:
+    def _launch(self, args: Namespace, thiscall: Callable[[], None]) -> None:
         self.reset_root_thread(current_process())
-
         try:
             self.parse_args(args)
-            self._process_all_tags()
+            thiscall()
         except (KeyboardInterrupt, ThreadInterruptException):
             trace(f'\nInterrupted by {str(sys.exc_info()[0])}!\n', True)
             self.my_root_thread.killed = True
@@ -946,7 +958,16 @@ class DownloaderBase(ThreadedHtmlWorker):
         finally:
             self.current_state = DownloaderStates.STATE_IDLE
 
+    def launch_download(self, args: Namespace) -> None:
+        """Public, needed by core"""
+        self._launch(args, self._process_all_tags)
+
+    def launch_check_tags(self, args: Namespace) -> None:
+        """Public, needed by core"""
+        self._launch(args, self._check_tags)
+
     def parse_args(self, args: Namespace) -> None:
+        """Public, needed by tests"""
         assert hasattr(args, 'tags') and type(args.tags) == list
 
         ThreadedHtmlWorker.parse_args(self, args)
@@ -1035,7 +1056,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         # rx_!tags_00000-00000.txt
         filename = f'{self.dest_base}{abbrp}!tags{UNDERSCORE}{id_begin}-{id_end}.txt'
 
-        if self.has_gui() and path.isfile(filename):
+        if self._has_gui() and path.isfile(filename):
             if not confirm_yes_no(title='Save tags', msg=f'File \'{filename}\' already exists. Overwrite?'):
                 trace('Skipped.')
                 return
@@ -1063,7 +1084,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         # rx_!sources_00000-00000.txt
         filename = f'{self.dest_base}{abbrp}!sources{UNDERSCORE}{id_begin}-{id_end}.txt'
 
-        if self.has_gui() and path.isfile(filename):
+        if self._has_gui() and path.isfile(filename):
             if not confirm_yes_no(title='Save sources', msg=f'File \'{filename}\' already exists. Overwrite?'):
                 trace('Skipped.')
                 return
@@ -1083,7 +1104,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         trace('Done.')
 
-    def has_gui(self) -> bool:
+    def _has_gui(self) -> bool:
         return hasattr(self.my_root_thread, 'gui')
 
 #

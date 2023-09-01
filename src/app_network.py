@@ -54,7 +54,7 @@ def thread_exit(err_str='', code=-1) -> None:
     raise ThreadInterruptException(str(code))
 
 
-class ThreadWorker:
+class ThreadedWorker:
     def __init__(self) -> None:
         self.my_root_thread = None  # type: Optional[Thread]
         self.item_lock = ThreadLock()
@@ -71,7 +71,7 @@ class ThreadWorker:
         return self.my_root_thread and hasattr(self.my_root_thread, 'killed') and getattr(self.my_root_thread, 'killed') is True
 
 
-class ThreadedHtmlWorker(ABC, ThreadWorker):
+class ThreadedHtmlWorker(ABC, ThreadedWorker):
     def __init__(self) -> None:
         super().__init__()
         self.raw_html_cache = dict()  # type: Dict[str, bytes]

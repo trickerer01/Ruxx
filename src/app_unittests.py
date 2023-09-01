@@ -125,7 +125,7 @@ class DownloadTests(TestCase):
         argslist = ('id:=2000000', '-overflow', '-dmode', '1', '-threads', '2', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with DownloaderRx() as dwn:
-            dwn.launch(arglist)
+            dwn.launch_download(arglist)
             self.assertTrue(dwn.fail_count == 0, f'dwn.failCount {dwn.fail_count:d} == 0')
             self.assertTrue(dwn.processed_count == 1, f'dwn.processed_count {dwn.fail_count:d} == 1')
         print('test_down_rx1 passed')
@@ -140,7 +140,7 @@ class DownloadTests(TestCase):
         argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', gettempdir())
         arglist = prepare_arglist(argslist)
         with DownloaderRx() as dwn:
-            dwn.launch(arglist)
+            dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
         print('test_down_rx2 passed')

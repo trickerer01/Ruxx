@@ -11,7 +11,6 @@ import ctypes
 import sys
 from abc import ABC, abstractmethod
 from datetime import datetime
-from json import loads as json_loads
 from multiprocessing.dummy import current_process
 from os import path, curdir, system, makedirs, stat
 from threading import Thread
@@ -47,8 +46,7 @@ from app_gui_defines import (
     OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT,
     SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, OPTION_CMD_PARCHI,
     OPTION_VALUES_PARCHI,
-    ProcModule, menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, Icons, CVARS,
-    re_space_mult, re_or_meta_group, hotkeys,
+    ProcModule, menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, Icons, CVARS, re_space_mult, hotkeys,
 )
 from app_logger import Logger
 from app_revision import __RUXX_DEBUG__
@@ -635,58 +633,53 @@ def update_frame_cmdline() -> None:
     rootm().after(int(GUI2_UPDATE_DELAY_DEFAULT * 3), update_frame_cmdline)
 
 
-def check_tags_direct() -> None:
+def start_check_tags_thread(cmdline: List[str]) -> None:
+    global dwn
+    arg_list = prepare_arglist(cmdline[1:])
+    with get_new_proc_module() as dwn:
+        dwn.launch_check_tags(arg_list)
+
+
+def check_tags_direct_do() -> None:
     global tags_check_thread
+    unfocus_buttons_once()
+    if menu_items.get(Menus.MENU_ACTIONS)[0].entrycget(menu_items.get(Menus.MENU_ACTIONS)[1][1], 'state') == STATE_DISABLED:
+        return
 
-    def normalize_tag(tag: str) -> str:
-        return tag.replace('+', '%2b').replace(' ', '+')
+    suc, msg = recheck_args()
+    if not suc:
+        Thread(target=lambda: messagebox.showwarning('Nope', msg)).start()
+        return
 
+    update_frame_cmdline()
+    # hide modifyable windows
+    window_proxym().hide()
+    window_hcookiesm().hide()
+
+    # reset temporarily modified elements/widgets
+    config_global(Globals.GOBJECT_FIELD_TAGS, bg=COLOR_WHITE)
     config_global(Globals.GOBJECT_BUTTON_CHECKTAGS, state=STATE_DISABLED)
     menu_items.get(Menus.MENU_ACTIONS)[0].entryconfig(menu_items.get(Menus.MENU_ACTIONS)[1][1], state=STATE_DISABLED)
 
-    cur_tags = str(getrootconf(Options.OPT_TAGS))
+    # launch
+    cmdline = prepare_cmdline()
+    unfocus_buttons_once()
+    try:
+        tags_check_thread = Thread(target=start_check_tags_thread, args=(cmdline,))
+        tags_check_threadm().killed = False
+        tags_check_threadm().gui = True
+        tags_check_threadm().start()
+        tags_check_threadm().join()
+    except Exception:
+        return
+    finally:
+        tags_check_thread = None
 
-    count = 0
-    mydwn = None  # type: Union[None, DownloaderRn, DownloaderRx, DownloaderRs]
-    res, tags_list = parse_tags(cur_tags)
-    if re_or_meta_group.match(cur_tags):  # `or` group with meta tag
-        Logger.log('Error: cannot check tags with meta tag(s) within \'or\' group', False, False)
-    elif res:
-        mydwn = get_new_proc_module()
-        tags_str = mydwn.get_tags_concat_char().join(normalize_tag(tag) for tag in tags_list)
-
-        full_addr = mydwn.form_tags_search_address(tags_str, 1)
-        # init proxy / headers & cookies if needed
-        proxstr = str(getrootconf(Options.OPT_PROXYSTRING))
-        if len(proxstr) > 0 and len(OPTION_CMD_IGNORE_PROXY[int(getrootconf(Options.OPT_IGNORE_PROXY))]) == 0:
-            proxy = f'{str(getrootconf(Options.OPT_PROXYTYPE))}://{proxstr}'
-            mydwn.proxies = {'http': proxy, 'https': proxy}
-        else:
-            mydwn.proxies = None
-        headstr = window_hcookiesm().get_json_h()
-        if len(headstr) > 4:  # != "'{}'"
-            hj = json_loads(headstr)
-            mydwn.add_headers.update(hj)
-        cookstr = window_hcookiesm().get_json_c()
-        if len(cookstr) > 4:  # != "'{}'"
-            cj = json_loads(cookstr)
-            mydwn.add_cookies.update(cj)
-        timeoutstr = str(getrootconf(Options.OPT_TIMEOUTSTRING))
-        if len(timeoutstr) > 0:
-            mydwn.timeout = int(timeoutstr)
-        mydwn.session = mydwn.make_session()
-
-        try:
-            count = mydwn.get_items_query_size_or_html(full_addr, 1)
-            if not isinstance(count, int):
-                count = 1
-        except (Exception, SystemExit):
-            pass
-
+    count = dwnm().total_count
     downloading = is_downloading()
     if downloading is False:
         config_global(Globals.GOBJECT_FIELD_TAGS, bg=COLOR_PALEGREEN if count > 0 else COLOR_BROWN1)
-        if mydwn and count > 0:
+        if count > 0:
             Thread(target=lambda: messagebox.showinfo(title='', message=f'Found {count:d} results!', icon='info')).start()
 
     thread_sleep(1.5)
@@ -697,19 +690,9 @@ def check_tags_direct() -> None:
         menu_items.get(Menus.MENU_ACTIONS)[0].entryconfig(
             menu_items.get(Menus.MENU_ACTIONS)[1][1], state=menu_item_orig_states[Menus.MENU_ACTIONS][2])
 
-    tags_check_thread = None
 
-
-def check_tags_direct_do() -> None:
-    global tags_check_thread
-
-    if menu_items.get(Menus.MENU_ACTIONS)[0].entrycget(menu_items.get(Menus.MENU_ACTIONS)[1][1], 'state') == STATE_DISABLED:
-        return
-
-    assert tags_check_thread is None
-
-    tags_check_thread = Thread(target=check_tags_direct)
-    tags_check_thread.start()
+def check_tags_direct() -> None:
+    Thread(target=check_tags_direct_do).start()
 
 
 def parse_tags_field(tags: str) -> bool:
@@ -837,11 +820,9 @@ def do_download() -> None:
 
 def start_download_thread(cmdline: List[str]) -> None:
     global dwn
-    global download_thread
-
     arg_list = prepare_arglist(cmdline[1:])
     with get_new_proc_module() as dwn:
-        dwn.launch(arg_list)
+        dwn.launch_download(arg_list)
 
 # end static methods
 
@@ -899,7 +880,7 @@ def init_menus() -> None:
     register_menu('Actions', Menus.MENU_ACTIONS)
     register_menu_command('Download', do_download, Options.OPT_ACTION_DOWNLOAD, True)
     register_menu_separator()
-    register_menu_command('Check tags', check_tags_direct_do, Options.OPT_ACTION_CHECKTAGS, True)
+    register_menu_command('Check tags', check_tags_direct, Options.OPT_ACTION_CHECKTAGS, True)
     # 7) Tools
     register_menu('Tools', Menus.MENU_TOOLS)
     register_menu_command('Load from ID list...', load_id_list)
@@ -945,7 +926,7 @@ def init_gui() -> None:
     # Main menu
     init_menus()
     # Menu hotkeys
-    get_global(Globals.GOBJECT_BUTTON_CHECKTAGS).config(command=check_tags_direct_do)
+    get_global(Globals.GOBJECT_BUTTON_CHECKTAGS).config(command=check_tags_direct)
     get_global(Globals.GOBJECT_BUTTON_OPENFOLDER).config(command=browse_path)
     get_global(Globals.GOBJECT_BUTTON_DOWNLOAD).config(command=do_download)
     # Init settings if needed
@@ -984,6 +965,11 @@ def download_threadm() -> Thread:
     return download_thread
 
 
+def tags_check_threadm() -> Thread:
+    assert tags_check_thread
+    return tags_check_thread
+
+
 def dwnm() -> Union[DownloaderRn, DownloaderRx, DownloaderRs]:
     global dwn
     if dwn is None:
@@ -1009,7 +995,7 @@ def run_ruxx(args: Sequence[str]) -> None:
     arglist = prepare_arglist(args)
     set_proc_module(PROC_MODULES_BY_ABBR[arglist.module])
     with get_new_proc_module() as cdwn:
-        cdwn.launch(arglist)
+        cdwn.launch_download(arglist)
 
 
 def run_ruxx_gui() -> None:

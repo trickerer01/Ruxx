@@ -173,7 +173,7 @@ class DownloaderRs(DownloaderBase):
     def get_re_tags_to_exclude(self) -> Pattern:
         return re_tags_exclude_rs
 
-    def get_tags_concat_char(self) -> str:
+    def _get_tags_concat_char(self) -> str:
         return TAGS_CONCAT_CHAR_RS
 
     def _get_idval_equal_seaparator(self) -> str:
