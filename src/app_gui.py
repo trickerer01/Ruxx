@@ -995,7 +995,10 @@ def run_ruxx(args: Sequence[str]) -> None:
     arglist = prepare_arglist(args)
     set_proc_module(PROC_MODULES_BY_ABBR[arglist.module])
     with get_new_proc_module() as cdwn:
-        cdwn.launch_download(arglist)
+        if arglist.get_maxid:
+            cdwn.launch_get_max_id(arglist)
+        else:
+            cdwn.launch_download(arglist)
 
 
 def run_ruxx_gui() -> None:

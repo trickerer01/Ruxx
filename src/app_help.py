@@ -21,6 +21,7 @@ HELP_ARG_DOWNLOAD_LIMIT = '[Debug] maximum number of files to download, default 
 HELP_ARG_SKIP_IMAGES = 'skip all images'
 HELP_ARG_SKIP_VIDEOS = 'skip all videos'
 HELP_ARG_INCLUDE_PARCHI = 'include all parent posts and all child posts (recursive, downloads whole chain, no filters)'
+HELP_ARG_GET_MAXID = 'print maximum id (for module) and exit'
 HELP_ARG_PREFER_WEBM = '[DEPRECATED] prefer webm over mp4 when possible'
 HELP_ARG_PREFER_LOWRES = 'prefer low resolution images over the original'
 HELP_ARG_MINDATE = 'skip everything posted before this date, default is \'01-01-1970\''

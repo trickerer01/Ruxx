@@ -107,7 +107,8 @@ class DownloaderRs(DownloaderBase):
             last = max(last, 1 + int(href[href.rfind('=') + 1:]))
 
         if last > self._get_max_search_depth() // self._get_items_per_page():
-            trace('Error: items count got past search depth!')
+            if not self.get_max_id:
+                trace('Error: items count got past search depth!')
             return last * self._get_items_per_page()
         elif last > 1:
             raw_html = self.fetch_html(f'{url}&page={last - 1:d}', do_cache=True)

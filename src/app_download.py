@@ -73,6 +73,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.dest_base = normalize_path(path.abspath(curdir))
         self.warn_nonempty = False
         self.tags_str_arr = list()  # type: List[str]
+        # extra
+        self.get_max_id = False
 
         # results
         self.url = ''
@@ -95,6 +97,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.item_info_dict_all = dict()  # type: Dict[str, ItemInfo]
         self.neg_and_groups = list()  # type: List[List[Pattern[str]]]
         self.known_parents = set()  # type: Set[str]
+        # extra
+        self._max_id = 0
 
     def __del__(self) -> None:
         self.__cleanup()
@@ -415,7 +419,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         prev_c = (c_page - 1) * items_per_page
         curmax_c = min(c_page * items_per_page, self.total_count_old)
 
-        trace(f'page: {pnum:d} / {page_max + 1:d}\t({prev_c + 1:d}-{curmax_c:d} / {self.total_count_old:d})', True)
+        if not self.get_max_id:
+            trace(f'page: {pnum:d} / {page_max + 1:d}\t({prev_c + 1:d}-{curmax_c:d} / {self.total_count_old:d})', True)
 
         while True:
             try:
@@ -871,7 +876,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         # join by ' ' is required by tests, although normally len(args.tags) == 1
         tags_list, self.neg_and_groups = extract_neg_and_groups(' '.join(tags_base_arr))
         for t in tags_list:
-            if f'{t[0]}{t[-1]}' == '()' and f'{t[:2]}{t[-2:]}' != f'({cc}{cc})':
+            if len(t) > 2 and f'{t[0]}{t[-1]}' == '()' and f'{t[:2]}{t[-2:]}' != f'({cc}{cc})':
                 thread_exit(f'Invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated with \'{cc}\'.')
         self.tags_str_arr = split_tags_into_tasks(tags_list, cc, sc, split_always)
         self.orig_tasks_count = self._tasks_count()
@@ -938,6 +943,21 @@ class DownloaderBase(ThreadedHtmlWorker):
         total_count_or_html = self.get_items_query_size_or_html(self.url)
         self.total_count = total_count_or_html if isinstance(total_count_or_html, int) else 1
 
+    def _get_max_id(self) -> None:
+        self.get_max_id = True
+        self.include_parchi = False
+        self.url = self.form_tags_search_address('', 1)
+        count_or_html = self.get_items_query_size_or_html(self.url)
+        if isinstance(count_or_html, int):
+            self.total_count = count_or_html
+            self._get_page_items(0, 1, self.maxpage)
+            self.items_raw_per_task = self.items_raw_per_page.get(0)[:1]
+        else:
+            self.total_count = 1
+            self._form_item_string_manually(count_or_html)
+        self._max_id = self._extract_id(self.items_raw_per_task[0])
+        trace(f'{self._get_module_abbr().upper()}: {self._max_id}')
+
     @abstractmethod
     def form_tags_search_address(self, tags: str, maxlim: Optional[int] = None) -> str:
         """Public, needed by tests"""
@@ -966,12 +986,14 @@ class DownloaderBase(ThreadedHtmlWorker):
         """Public, needed by core"""
         self._launch(args, self._check_tags)
 
+    def launch_get_max_id(self, args: Namespace) -> None:
+        """Public, needed by core"""
+        self._launch(args, self._get_max_id)
+
     def parse_args(self, args: Namespace) -> None:
         """Public, needed by tests"""
         assert hasattr(args, 'tags') and type(args.tags) == list
-
         ThreadedHtmlWorker.parse_args(self, args)
-
         self.add_filename_prefix = args.prefix or self.add_filename_prefix
         self.dump_tags = args.dump_tags or self.dump_tags
         self.dump_source = args.dump_sources or self.dump_source

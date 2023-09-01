@@ -89,7 +89,9 @@ class DownloaderRn(DownloaderBase):
         return self.extract_local_addr(h)
 
     def _extract_id(self, addr: str) -> str:
-        h = addr[addr.find('view/') + len('view/'):]
+        idx1 = addr.find('view/') + len('view/')
+        idx2 = addr.find('"', idx1 + 1)
+        h = addr[idx1:idx2 if idx2 > idx1 else None]
         return h
 
     def _is_video(self, h: str) -> bool:
