@@ -88,6 +88,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.total_count_all = 0
         self.processed_count = 0
         self.total_pages = 0
+        self.current_task_num = 0
         self.orig_tasks_count = 0
         self.current_state = DownloaderStates.STATE_IDLE
         self.items_raw_per_task = list()  # type: List[str]
@@ -639,6 +640,23 @@ class DownloaderBase(ThreadedHtmlWorker):
         if total_count_temp != self.total_count:
             trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')
 
+    def _filter_items_by_previous_tasks(self) -> None:
+        trace('Filtering items by previous tasks...')
+
+        if self.current_task_num <= 1:
+            return
+
+        total_count_temp = self.total_count
+
+        for idx in reversed(range(len(self.items_raw_per_task))):  # type: int
+            self.catch_cancel_or_ctrl_c()
+            if self.items_raw_per_task[idx] in self.items_raw_all:
+                del self.items_raw_per_task[idx]
+                self.total_count -= 1
+
+        if total_count_temp != self.total_count:
+            trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')
+
     def _filter_existing_items(self) -> None:
         trace('Filtering out existing items...')
 
@@ -694,7 +712,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         if removed_count > 0:
             trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
 
-    def _process_tags(self, tag_str: str, task_num: int, is_extra_task: bool) -> None:
+    def _process_tags(self, tag_str: str) -> None:
         self.current_state = DownloaderStates.STATE_SEARCHING
         self.url = self.form_tags_search_address(tag_str)
 
@@ -802,6 +820,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         apply_filter(DownloaderStates.STATE_FILTERING_ITEMS1, self._filter_last_items)
         apply_filter(DownloaderStates.STATE_FILTERING_ITEMS2, self._filter_first_items)
         apply_filter(DownloaderStates.STATE_FILTERING_ITEMS3, self._filter_items_by_type)
+        apply_filter(DownloaderStates.STATE_FILTERING_ITEMS4, self._filter_items_by_previous_tasks)
         apply_filter(DownloaderStates.STATE_FILTERING_ITEMS4, self._filter_existing_items)
 
         # store items info for future processing
@@ -809,13 +828,13 @@ class DownloaderBase(ThreadedHtmlWorker):
         task_parents = set()  # type: Set[str]
         self._extract_cur_task_infos(task_parents)
 
-        if not is_extra_task:
+        if self.current_task_num <= self.orig_tasks_count:
             apply_filter(DownloaderStates.STATE_FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
 
         self.items_raw_all = list(unique_everseen(self.items_raw_all + self.items_raw_per_task))  # type: List[str]
         self.total_count_all = len(self.items_raw_all)
         self.item_info_dict_all.update(self.item_info_dict_per_task)
-        if task_num > 1:
+        if self.current_task_num > 1:
             trace(f'overall totalcount: {self.total_count_all:d}')
 
         if len(task_parents) > 0:
@@ -896,19 +915,20 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace(f'Starting {self._get_module_abbr()}_manual', False, True)
         trace(f'\n{len(self.neg_and_groups):d} \'excluded tags combination\' custom filter(s) parsed')
         trace(f'{self._tasks_count():d} task(s) scheduled:\n{NEWLINE.join(self.tags_str_arr)}\n\n{BR}')
-        i = 0
-        while i < self._tasks_count():  # tasks count may increase during this loop
-            i += 1
-            cur_task_tags = self.tags_str_arr[i - 1]
-            is_extra = i > self.orig_tasks_count
-            trace(f'\n{f"[extra {i - self.orig_tasks_count:d}] " if is_extra else ""}task {i:d} in progress...\n{cur_task_tags}\n')
+        self.current_task_num = 0
+        while self.current_task_num < self._tasks_count():  # tasks count may increase during this loop
+            self.current_task_num += 1
+            cur_task_tags = self.tags_str_arr[self.current_task_num - 1]
+            extra_task_num = self.current_task_num - self.orig_tasks_count
+            is_extra = extra_task_num > 0
+            trace(f'\n{f"[extra {extra_task_num:d}] " if is_extra else ""}task {self.current_task_num:d} in progress...\n{cur_task_tags}\n')
             try:
-                self._process_tags(cur_task_tags, i, is_extra)
+                self._process_tags(cur_task_tags)
             except ThreadInterruptException:
-                trace(f'task {i:d} aborted...')
+                trace(f'task {self.current_task_num:d} aborted...')
                 raise
             except Exception:
-                trace(f'task {i:d} failed...')
+                trace(f'task {self.current_task_num:d} failed...')
                 raise
         try:
             self._download_all()
