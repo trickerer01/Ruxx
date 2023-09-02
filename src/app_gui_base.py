@@ -25,7 +25,7 @@ from typing import Optional, Callable, List, Union, Dict, Iterable, Tuple
 # internal
 from app_defines import (
     PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE,
-    SUPPORTED_PLATFORMS, KNOWN_EXTENSIONS_STR,
+    KNOWN_EXTENSIONS_STR,
 )
 from app_file_parser import prepare_tags_list
 from app_file_sorter import FileTypeFilter
@@ -50,7 +50,7 @@ __all__ = (
     'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'LogWindow',
     'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm', 'c_menum', 'c_submenum',
     'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows',
-    'get_global', 'config_global', 'is_global_disabled', 'is_focusing', 'toggle_console', 'ensure_compatibility', 'hotkey_text',
+    'get_global', 'config_global', 'is_global_disabled', 'is_focusing', 'toggle_console', 'hotkey_text',
     'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list', 'ask_filename', 'browse_path',
     'register_menu_command', 'register_submenu_command', 'register_menu_checkbutton', 'register_menu_radiobutton',
     'register_menu_separator', 'get_all_media_files_in_cur_dir',
@@ -1111,16 +1111,6 @@ def toggle_console() -> None:
     global console_shown
     ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), not console_shown)
     console_shown = not console_shown
-
-
-def ensure_compatibility(is_gui: bool) -> None:
-    assert sys.version_info >= (3, 7), 'Minimum python version required is 3.7!'
-    if sys.platform not in SUPPORTED_PLATFORMS:
-        if is_gui:
-            messagebox.showinfo('', f'Unsupported OS \'{sys.platform}\'')
-        else:
-            Logger.log(f'Unsupported OS \'{sys.platform}\'', False, False)
-        sys.exit(-1)
 
 
 def hotkey_text(option: Options) -> str:

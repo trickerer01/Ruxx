@@ -7,6 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+import sys
 from abc import abstractmethod
 from datetime import datetime, date
 from tkinter import messagebox
@@ -18,10 +19,13 @@ except Exception:
     from typing_extensions import Protocol
 
 # internal
-from app_defines import FMT_DATE
+from app_defines import FMT_DATE, SUPPORTED_PLATFORMS
 from app_gui_defines import SLASH, re_uscore_mult
 
-__all__ = ('Protocol', 'Comparable', 'as_date', 'confirm_yes_no', 'normalize_path', 'trim_undersores', 'format_score', 'find_first_not_of')
+__all__ = (
+    'Comparable', 'ensure_compatibility', 'as_date', 'confirm_yes_no', 'normalize_path', 'trim_undersores', 'format_score',
+    'find_first_not_of',
+)
 
 
 class Comparable(Protocol):
@@ -30,6 +34,16 @@ class Comparable(Protocol):
 
     @abstractmethod
     def __eq__(self, other) -> bool: ...
+
+
+def ensure_compatibility(is_gui: bool) -> None:
+    assert sys.version_info >= (3, 7), 'Minimum python version required is 3.7!'
+    if sys.platform not in SUPPORTED_PLATFORMS:
+        if is_gui:
+            messagebox.showinfo('', f'Unsupported OS \'{sys.platform}\'')
+        else:
+            print(f'Unsupported OS \'{sys.platform}\'')
+        sys.exit(-1)
 
 
 # def is_sorted(c: Iterable) -> bool:

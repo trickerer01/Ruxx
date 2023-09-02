@@ -34,7 +34,7 @@ from app_gui_base import (
     AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow,
     setrootconf, int_vars, rootm, getrootconf, window_hcookiesm, window_proxym, window_timeoutm, c_menum, register_menu,
     register_submenu, GetRoot, create_base_window_widgets, text_cmdm, get_icon, init_additional_windows, get_global, config_global,
-    is_global_disabled, is_focusing, toggle_console, ensure_compatibility, hotkey_text, get_curdir, set_console_shown, unfocus_buttons_once,
+    is_global_disabled, is_focusing, toggle_console, hotkey_text, get_curdir, set_console_shown, unfocus_buttons_once,
     help_tags, help_about, load_id_list, ask_filename, browse_path, register_menu_command, register_submenu_command,
     register_menu_checkbutton, register_menu_radiobutton, register_menu_separator, get_all_media_files_in_cur_dir,
 )
@@ -51,13 +51,13 @@ from app_gui_defines import (
 from app_logger import Logger
 from app_revision import __RUXX_DEBUG__
 from app_tags_parser import reset_last_tags, parse_tags
-from app_utils import normalize_path, confirm_yes_no
+from app_utils import normalize_path, confirm_yes_no, ensure_compatibility
 from app_validators import (
     Validator, ValidatorAlwaysTrue, ModuleValidator, VideosCBValidator, ImagesCBValidator, ThreadsCBValidator, JsonValidator,
     BoolStrValidator, ProxyValidator, ProxyTypeValidator, DateValidator, ParchiCBValidator, TimeoutValidator,
 )
 
-__all__ = ()
+__all__ = ('run_ruxx', 'run_ruxx_gui')
 
 # loaded
 download_thread = None  # type: Optional[Thread]
