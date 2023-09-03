@@ -650,7 +650,8 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         for idx in reversed(range(len(self.items_raw_per_task))):  # type: int
             self.catch_cancel_or_ctrl_c()
-            if self.items_raw_per_task[idx] in self.items_raw_all:
+            full_itemid = f'{self._get_module_abbr_p()}{self._extract_id(self.items_raw_per_task[idx])}'
+            if full_itemid in self.item_info_dict_all:
                 del self.items_raw_per_task[idx]
                 self.total_count -= 1
 
