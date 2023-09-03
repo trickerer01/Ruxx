@@ -15,14 +15,14 @@ from bs4 import BeautifulSoup
 
 # internal
 from app_defines import (
-    SITENAME_B_RS, FILE_NAME_PREFIX_RS, MODULE_ABBR_RS, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RS, DownloadModes, ItemInfo,
-    TAGS_CONCAT_CHAR_RS, ID_VALUE_SEPARATOR_CHAR_RS, DATE_MIN_DEFAULT
+    SITENAME_B_RS, FILE_NAME_PREFIX_RS, MODULE_ABBR_RS, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RS, DownloadModes, ItemInfo, Comment,
+    TAGS_CONCAT_CHAR_RS, ID_VALUE_SEPARATOR_CHAR_RS, DATE_MIN_DEFAULT,
 )
 from app_download import DownloaderBase
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
-    re_tags_to_process_rs, re_tags_exclude_rs, re_post_style_rs, re_post_dims_rs, re_tag_video_rs
+    re_tags_to_process_rs, re_tags_exclude_rs, re_post_style_rs, re_post_dims_rs, re_tag_video_rs, re_comment_page_rs, re_comment_a_rs
 
 )
 
@@ -199,13 +199,17 @@ class DownloaderRs(DownloaderBase):
         h = self.extract_local_addr(raw)
         item_id = self._extract_id(h)
 
-        if self.download_mode == DownloadModes.DOWNLOAD_SKIP:
-            self._inc_proc_count()
-            return
+        raw_html = BeautifulSoup()
+        if self.download_mode != DownloadModes.DOWNLOAD_SKIP or self.dump_comments is True:
+            raw_html = self.fetch_html(h)
+            if raw_html is None:
+                trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
+                self._inc_proc_count()
+                return
+            else:
+                self._extract_comments(raw_html, item_id)
 
-        raw_html = self.fetch_html(h)
-        if raw_html is None:
-            trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
+        if self.download_mode == DownloadModes.DOWNLOAD_SKIP:
             self._inc_proc_count()
             return
 
@@ -227,6 +231,23 @@ class DownloaderRs(DownloaderBase):
     def form_tags_search_address(self, tags: str, *ignored) -> str:
         return f'{self._get_sitename()}index.php?r=posts/index&q={tags}'
 
+    def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
+        # find pagination first
+        full_item_id = f'{self._get_module_abbr_p()}{item_id}'
+        comment_page_as = raw_html.find_all('a', href=re_comment_page_rs)
+        cpages = max(int(a.text) for a in comment_page_as) if comment_page_as else 1
+        for cpage in range(cpages):
+            if cpage > 0:
+                raw_html = self.fetch_html(self._form_comments_search_address(item_id, cpage))
+            comment_divs = raw_html.find_all('div', class_='commentBox')
+            for comment_div in comment_divs:
+                author_a = comment_div.find('a', href=re_comment_a_rs)
+                author = author_a.text  # type: str
+                body = comment_div.text.strip()  # type: str
+                if body.find('  ') != -1:
+                    body = body[body.find('  ') + 2:]
+                self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
+
     @staticmethod
     def extract_local_addr(raw: str) -> str:
         idx1 = raw.find('href="') + len('href="')
@@ -242,6 +263,9 @@ class DownloaderRs(DownloaderBase):
         link = link_mp4 or link_wbm or link_img
         orig_href = str(link.get('src')) if link else ''
         return orig_href
+
+    def _form_comments_search_address(self, post_id: str, page_num: int) -> str:
+        return f'{self._get_sitename()}index.php?r=posts/view&id={post_id}&page={page_num:d}'
 
 #
 #

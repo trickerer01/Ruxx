@@ -79,7 +79,7 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual(True, dwn.ignore_proxy_dwn)
             self.assertEqual(True, dwn.add_filename_prefix)
             self.assertEqual(True, dwn.dump_tags)
-            self.assertEqual(True, dwn.dump_source)
+            self.assertEqual(True, dwn.dump_sources)
             self.assertEqual(True, dwn.append_info)
         print('test_cmdline1 passed')
 

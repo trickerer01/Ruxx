@@ -58,7 +58,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         # config
         self.add_filename_prefix = False
         self.dump_tags = False
-        self.dump_source = False
+        self.dump_sources = False
+        self.dump_comments = False
         self.append_info = False
         self.download_mode = DownloadModes.DOWNLOAD_FULL
         self.download_limit = 0
@@ -942,11 +943,13 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.item_info_dict_all = {
             k: v for k, v in sorted(sorted(self.item_info_dict_all.items(), key=lambda item: item[0]), key=lambda item: int(item[1].id))
         }  # type: Dict[str, ItemInfo]
-        if len(self.item_info_dict_all) > 0 and (self.dump_tags is True or self.dump_source is True):
+        if len(self.item_info_dict_all) > 0 and True in (self.dump_tags, self.dump_sources, self.dump_comments):
             if self.dump_tags is True:
                 self._dump_all_tags()
-            if self.dump_source is True:
+            if self.dump_sources is True:
                 self._dump_all_sources()
+            if self.dump_comments is True:
+                self._dump_all_comments()
             trace(BR)
         total_files = min(self.success_count + self.fail_count, self.total_count_all)
         success_files = min(self.success_count, self.total_count_all - self.fail_count)
@@ -1017,7 +1020,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         ThreadedHtmlWorker.parse_args(self, args)
         self.add_filename_prefix = args.prefix or self.add_filename_prefix
         self.dump_tags = args.dump_tags or self.dump_tags
-        self.dump_source = args.dump_sources or self.dump_source
+        self.dump_sources = args.dump_sources or self.dump_sources
+        self.dump_comments = args.dump_comments or self.dump_comments
         self.append_info = args.append_info or self.append_info
         self.download_mode = args.dmode or self.download_mode
         self.download_limit = args.dlimit or self.download_limit
@@ -1043,9 +1047,9 @@ class DownloaderBase(ThreadedHtmlWorker):
                 self.include_parchi = False
                 ret = True
         if ProcModule.is_rs():
-            if self.dump_source:
+            if self.dump_sources:
                 trace('Warning (W1): RS module is unable to collect sources. Disabled!')
-                self.dump_source = False
+                self.dump_sources = False
                 ret = True
             if self.date_min != DATE_MIN_DEFAULT or self.date_max != datetime.today().strftime(FMT_DATE):
                 trace('Warning (W1): RS module is unable to filter by date. Disabled')
@@ -1143,6 +1147,35 @@ class DownloaderBase(ThreadedHtmlWorker):
                 if len(item_info.source) < 2:
                     item_info.source = SOURCE_DEFAULT
                 item_line = f'{abbrp}{item_info.id}: {item_info.source.strip()}\n'
+                dump.write(item_line)
+
+        trace('Done.')
+
+    def _dump_all_comments(self) -> None:
+        trace('\nSaving comments...')
+        item_info_list = sorted(list(self.item_info_dict_all.values()), key=lambda x: x.id)  # type: List[ItemInfo]
+        id_begin = item_info_list[0].id
+        id_end = item_info_list[-1].id
+        abbrp = self._get_module_abbr_p()
+
+        # rx_!comments_00000-00000.txt
+        filename = f'{self.dest_base}{abbrp}!comments{UNDERSCORE}{id_begin}-{id_end}.txt'
+
+        if self._has_gui() and path.isfile(filename):
+            if not confirm_yes_no(title='Save comments', msg=f'File \'{filename}\' already exists. Overwrite?'):
+                trace('Skipped.')
+                return
+
+        if not path.isdir(self.dest_base):
+            try:
+                makedirs(self.dest_base)
+            except Exception:
+                thread_exit('ERROR: Unable to create subfolder!')
+
+        with open(filename, 'wt', encoding=DEFAULT_ENCODING) as dump:
+            for item_info in item_info_list:
+                comments = f'\n{f"{NEWLINE}{NEWLINE}".join(str(c) for c in item_info.comments)}\n' if item_info.comments else ''
+                item_line = f'{abbrp}{item_info.id}:{comments}\n'
                 dump.write(item_line)
 
         trace('Done.')

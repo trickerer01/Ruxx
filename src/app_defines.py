@@ -15,14 +15,31 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #     return n if (p == 1) else (n * pow_b(n, p - 1)) if (p & 1) else (pow_b(n * n, p // 2))
 
 from enum import IntEnum, auto, unique
-from typing import Dict, Tuple, Optional, Set
+from typing import Dict, Tuple, Optional, Set, List
+
+
+class Comment:
+    """
+    Comment structure (not saving all the info of course)
+    """
+    __slots__ = ('author', 'body')
+
+    def __init__(self, author='', body='') -> None:
+        self.author = author
+        self.body = body
+
+    def __str__(self) -> str:
+        return f'{self.author}:\n{self.body}'
+
+    def __repr__(self) -> str:
+        return str(self)
 
 
 class ItemInfo:
     """
     Used to store universal info for processed item
     """
-    __slots__ = ('id', 'height', 'width', 'tags', 'ext', 'source', 'score', 'has_children', 'parent_id')
+    __slots__ = ('id', 'height', 'width', 'tags', 'ext', 'source', 'comments', 'score', 'has_children', 'parent_id')
     optional_slots = __slots__[__slots__.index('source'):]
 
     def __init__(self) -> None:
@@ -32,6 +49,7 @@ class ItemInfo:
         self.tags = ''
         self.ext = ''
         self.source = ''
+        self.comments = []  # type: List[Comment]
         self.score = ''
         self.has_children = ''
         self.parent_id = ''

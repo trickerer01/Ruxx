@@ -15,8 +15,8 @@ from bs4 import BeautifulSoup
 
 # internal
 from app_defines import (
-    SITENAME_B_RX, FILE_NAME_PREFIX_RX, MODULE_ABBR_RX, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RX, DownloadModes, ItemInfo,
-    TAGS_CONCAT_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RX
+    SITENAME_B_RX, FILE_NAME_PREFIX_RX, MODULE_ABBR_RX, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RX, DownloadModes, ItemInfo, Comment,
+    TAGS_CONCAT_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RX,
 )
 from app_download import DownloaderBase
 from app_logger import trace
@@ -204,6 +204,13 @@ class DownloaderRx(DownloaderBase):
         h = raw
         item_id = self._extract_id(h)
 
+        if self.dump_comments is True:
+            raw_html = self.fetch_html(self._form_comments_search_address(item_id))
+            if raw_html is None:
+                trace(f'Warning (W3): ProcItem: unable to retreive comments for {item_id}!', True)
+            else:
+                self._extract_comments(raw_html, item_id)
+
         if self.download_mode == DownloadModes.DOWNLOAD_SKIP:
             self._inc_proc_count()
             return
@@ -228,7 +235,15 @@ class DownloaderRx(DownloaderBase):
         self._inc_proc_count()
 
     def form_tags_search_address(self, tags: str, maxlim: Optional[int] = None) -> str:
-        return f'{self._get_sitename()}index.php?page=dapi&s=post&q=index&tags={tags}{self.maxlim_str(maxlim)}'
+        return f'{self._get_sitename()}index.php?page=dapi&s=post&q=index&tags={tags}{self._maxlim_str(maxlim)}'
+
+    def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
+        full_item_id = f'{self._get_module_abbr_p()}{item_id}'
+        comment_divs = raw_html.find_all('comment')
+        for comment_div in comment_divs:
+            author = comment_div.get('creator')
+            body = comment_div.get('body')
+            self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
 
     @staticmethod
     def extract_file_url(h: str) -> Tuple[str, str]:
@@ -248,8 +263,11 @@ class DownloaderRx(DownloaderBase):
         file_ext = file_url[file_url.rfind('.') + 1:]
         return file_url, file_ext
 
-    def maxlim_str(self, maxlim: int) -> str:
+    def _maxlim_str(self, maxlim: int) -> str:
         return f'&limit={maxlim or self._get_items_per_page():d}'
+
+    def _form_comments_search_address(self, post_id: str) -> str:
+        return f'{self._get_sitename()}index.php?page=dapi&s=comment&q=index&post_id={post_id}'
 
 #
 #

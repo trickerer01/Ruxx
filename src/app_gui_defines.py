@@ -120,6 +120,7 @@ OPTION_CMD_DOWNLIMIT_CMD = '-dlimit'
 OPTION_CMD_DOWNMODE = ('', '1', '2')
 OPTION_CMD_SAVE_TAGS = ('', '-dump_tags')
 OPTION_CMD_SAVE_SOURCES = ('', '-dump_sources')
+OPTION_CMD_SAVE_COMMENTS = ('', '-dump_comments')
 OPTION_CMD_APPEND_SOURCE_AND_TAGS = ('', '-append_info')
 OPTION_CMD_WARN_NONEMPTY_DEST = ('', '-warn_nonempty')
 OPTION_CMD_DATEAFTER = '-mindate'
@@ -201,6 +202,7 @@ class Options(IntEnum):
     OPT_HEADER_ADD_STR = auto()
     OPT_SAVE_TAGS = auto()
     OPT_SAVE_SOURCES = auto()
+    OPT_SAVE_COMMENTS = auto()
     OPT_ISCONSOLELOGOPEN = auto()
     OPT_APPEND_SOURCE_AND_TAGS = auto()
     OPT_WARN_NONEMPTY_DEST = auto()
@@ -248,6 +250,7 @@ CVARS = {
     Options.OPT_HEADER_ADD_STR: 'headerAddStr',
     Options.OPT_SAVE_TAGS: 'saveTags',
     Options.OPT_SAVE_SOURCES: 'saveSources',
+    Options.OPT_SAVE_COMMENTS: 'saveComments',
     Options.OPT_ISCONSOLELOGOPEN: 'isConsoleOpen',
     Options.OPT_APPEND_SOURCE_AND_TAGS: 'appendSourceAndTags',
     Options.OPT_ISABOUTOPEN: 'isAboutOpen',
@@ -336,23 +339,23 @@ class Menus(IntEnum):
 
 
 menu_items = {
-    Menus.MENU_FILE: [None, [0, 1]],
-    Menus.MENU_EDIT: [None, [0, 1, 2, 3, 4]],
-    Menus.MENU_CONNECTION: [None, [0, 1, 2, 3]],
-    Menus.MENU_TOOLS: [None, [0, 2, 3, 5]],
-    Menus.MENU_MODULE: [None, [0, 1]],
-    Menus.MENU_ACTIONS: [None, [0, 2]],
-    Menus.MENU_DEBUG: [None, [3]],
+    Menus.MENU_FILE: [None, (0, 1, 3)],
+    Menus.MENU_EDIT: [None, (0, 1, 2, 3, 4, 5)],
+    Menus.MENU_MODULE: [None, (0, 1, 2)],
+    Menus.MENU_CONNECTION: [None, (0, 1, 2, 3, 4)],
+    Menus.MENU_ACTIONS: [None, (0, 2)],
+    Menus.MENU_TOOLS: [None, (0, 2, 3, 5)],
+    Menus.MENU_DEBUG: [None, (0, 1, 2, 3, 4)],
 }
 
 menu_item_orig_states = {
-    Menus.MENU_FILE: [STATE_NORMAL, STATE_NORMAL],
-    Menus.MENU_EDIT: [STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL],
-    Menus.MENU_CONNECTION: [STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL],
-    Menus.MENU_TOOLS: [STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL],
-    Menus.MENU_MODULE: [STATE_NORMAL, STATE_NORMAL],
-    Menus.MENU_ACTIONS: [STATE_NORMAL, STATE_NORMAL, STATE_NORMAL],
-    Menus.MENU_DEBUG: [STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL],
+    Menus.MENU_FILE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.MENU_EDIT: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.MENU_MODULE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.MENU_CONNECTION: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.MENU_ACTIONS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.MENU_TOOLS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.MENU_DEBUG: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
 }
 # end global static
 # hotkeys

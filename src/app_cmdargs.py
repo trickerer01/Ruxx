@@ -17,8 +17,8 @@ from app_help import (
     HELP_ARG_MODULE, HELP_ARG_DOWNLOAD_MODE, HELP_ARG_DOWNLOAD_LIMIT, HELP_ARG_SKIP_IMAGES, HELP_ARG_SKIP_VIDEOS,
     HELP_ARG_PREFER_WEBM, HELP_ARG_PREFER_LOWRES, HELP_ARG_MINDATE, HELP_ARG_MAXDATE,
     HELP_ARG_THREADS, HELP_ARG_PATH, HELP_ARG_PROXY, HELP_ARG_NOPROXY, HELP_ARG_PROXYNODOWN, HELP_ARG_HEADERS,
-    HELP_ARG_COOKIES, HELP_ARG_PREFIX, HELP_ARG_DUMP_TAGS, HELP_ARG_DUMP_SOURCES, HELP_ARG_APPEND_SOURCE_AND_TAGS, HELP_ARG_TAGS,
-    HELP_ARG_WARN_NON_EMPTY_FOLDER, HELP_ARG_INCLUDE_PARCHI, HELP_ARG_TIMEOUT, HELP_ARG_GET_MAXID,
+    HELP_ARG_COOKIES, HELP_ARG_PREFIX, HELP_ARG_DUMP_TAGS, HELP_ARG_DUMP_SOURCES, HELP_ARG_DUMP_COMMENTS, HELP_ARG_APPEND_SOURCE_AND_TAGS,
+    HELP_ARG_TAGS, HELP_ARG_WARN_NON_EMPTY_FOLDER, HELP_ARG_INCLUDE_PARCHI, HELP_ARG_TIMEOUT, HELP_ARG_GET_MAXID,
 )
 from app_validators import valid_thread_count, valid_date, valid_path, valid_json, valid_download_mode, valid_proxy, valid_positive_int
 
@@ -51,6 +51,7 @@ def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser.add_argument('-prefix', action=ACTION_STORE_TRUE, help=HELP_ARG_PREFIX)
     parser.add_argument('-dump_tags', action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_TAGS)
     parser.add_argument('-dump_sources', action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_SOURCES)
+    parser.add_argument('-dump_comments', action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_COMMENTS)
     parser.add_argument('-append_info', action=ACTION_STORE_TRUE, help=HELP_ARG_APPEND_SOURCE_AND_TAGS)
     parser.add_argument('-warn_nonempty', action=ACTION_STORE_TRUE, help=HELP_ARG_WARN_NON_EMPTY_FOLDER)
     parser.add_argument('-dmode', metavar=DMODES_STR, default=DMODE_DEFAULT.value, help=HELP_ARG_DOWNLOAD_MODE, type=valid_download_mode)

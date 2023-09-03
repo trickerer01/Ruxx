@@ -42,10 +42,10 @@ from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
     OPTION_VALUES_THREADING, OPTION_CMD_VIDEOS, OPTION_CMD_IMAGES, OPTION_CMD_THREADING_CMD, OPTION_CMD_THREADING, OPTION_CMD_FNAMEPREFIX,
     OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS, OPTION_CMD_SAVE_SOURCES,
-    OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH, OPTION_CMD_COOKIES, OPTION_CMD_HEADERS, OPTION_CMD_PROXY,
-    OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT,
-    SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, OPTION_CMD_PARCHI,
-    OPTION_VALUES_PARCHI,
+    OPTION_CMD_SAVE_COMMENTS, OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH, OPTION_CMD_COOKIES, OPTION_CMD_HEADERS,
+    OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT, GUI2_UPDATE_DELAY_DEFAULT,
+    THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE,
+    OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI,
     ProcModule, menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, Icons, CVARS, re_space_mult, hotkeys,
 )
 from app_logger import Logger
@@ -132,6 +132,7 @@ class Settings(ABC):
         'prefix': Setting(Options.OPT_FNAMEPREFIX, BoolStrValidator(), 'Invalid prefix bool value \'%s\'!'),
         'savetags': Setting(Options.OPT_SAVE_TAGS, BoolStrValidator(), 'Invalid savetags bool value \'%s\'!'),
         'savesources': Setting(Options.OPT_SAVE_SOURCES, BoolStrValidator(), 'Invalid savesources bool value \'%s\'!'),
+        'savecomments': Setting(Options.OPT_SAVE_COMMENTS, BoolStrValidator(), 'Invalid savecomments bool value \'%s\'!'),
         'extendfilename': Setting(Options.OPT_APPEND_SOURCE_AND_TAGS, BoolStrValidator(), 'Invalid extendfilename bool value \'%s\'!'),
         'warndestnonempty': Setting(Options.OPT_WARN_NONEMPTY_DEST, BoolStrValidator(), 'Invalid warndestnonempty bool value \'%s\'!'),
     }
@@ -440,6 +441,8 @@ def update_widget_enabled_states() -> None:
             for j in menu_items.get(i)[1]:
                 if i == Menus.MENU_ACTIONS and j == 1 and is_cheking_tags():  # Check tags, disabled when active
                     newstate = STATE_DISABLED
+                elif i == Menus.MENU_EDIT and j == 2 and ProcModule.is_rs():  # Save sources, disabled for RS
+                    newstate = STATE_DISABLED
                 else:
                     newstate = STATE_DISABLED if downloading else menu_item_orig_states[i][j]
                 menu_items.get(i)[0].entryconfig(j, state=newstate)
@@ -600,8 +603,12 @@ def prepare_cmdline() -> List[str]:
     addstr = OPTION_CMD_SAVE_TAGS[int(getrootconf(Options.OPT_SAVE_TAGS))]
     if len(addstr) > 0:
         newstr.append(addstr)
-    # save sources (dump source)
+    # save sources (dump_sources)
     addstr = OPTION_CMD_SAVE_SOURCES[int(getrootconf(Options.OPT_SAVE_SOURCES))]
+    if len(addstr) > 0:
+        newstr.append(addstr)
+    # save comments (dump_comments)
+    addstr = OPTION_CMD_SAVE_COMMENTS[int(getrootconf(Options.OPT_SAVE_COMMENTS))]
     if len(addstr) > 0:
         newstr.append(addstr)
     # extend name with info
@@ -857,6 +864,7 @@ def init_menus() -> None:
     register_menu_checkbutton('Prefix file names with \'rx_\'', CVARS.get(Options.OPT_FNAMEPREFIX))
     register_menu_checkbutton('Save tags', CVARS.get(Options.OPT_SAVE_TAGS))
     register_menu_checkbutton('Save source links', CVARS.get(Options.OPT_SAVE_SOURCES))
+    register_menu_checkbutton('Save comments', CVARS.get(Options.OPT_SAVE_COMMENTS))
     register_menu_checkbutton('Extend file names with extra info', CVARS.get(Options.OPT_APPEND_SOURCE_AND_TAGS))
     register_menu_checkbutton('Warn if download folder is not empty', CVARS.get(Options.OPT_WARN_NONEMPTY_DEST))
     # 3) View
@@ -937,6 +945,7 @@ def init_gui() -> None:
     setrootconf(Options.OPT_IGNORE_PROXY, IS_IDE)
     setrootconf(Options.OPT_SAVE_TAGS, not IS_IDE)
     setrootconf(Options.OPT_SAVE_SOURCES, not IS_IDE)
+    setrootconf(Options.OPT_SAVE_COMMENTS, not IS_IDE)
     setrootconf(Options.OPT_WARN_NONEMPTY_DEST, not IS_IDE)
     # Background looping tasks
     update_frame_cmdline()
@@ -1013,6 +1022,8 @@ def run_ruxx_gui() -> None:
         )
         set_console_shown(False)
     init_gui()
+    Logger.init(True)
+    cancel_download()
 
 
 if __name__ == '__main__':

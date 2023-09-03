@@ -30,8 +30,9 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **File -> Open download folder** \<Ctrl+L> ‒ open currently selected destination folder (**Path**), Windows only
 - **View -> Log** ‒ open a log window, if you want some readable output
 - **Edit -> Prefix file names with \<prefix>** ‒ all downloaded files will be named accordingly and not as just numbers. This option is enabled by default
-- **Edit -> Save tags** ‒ an additional (text) file will be created containing tags for every file. Row format is `<file>: <score> <tags>`
-- **Edit -> Save source links** ‒ an additional (text) file will be created containing source (if present) for every file. Row format is `<file>: <source>`
+- **Edit -> Save tags** ‒ an additional (text) file will be created containing tags for every post
+- **Edit -> Save source links** ‒ an additional (text) file will be created containing source (if present) for every post
+- **Edit -> Save comments** ‒ an additional (text) file will be created containing comments (if present) for every post
 - **Edit -> Extend file names with extra info** ‒ all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
 - **Edit -> Warn if donwload folder is not empty** ‒ in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
 - **Connection -> Headers / Cookies** \<F3> ‒ solely to work with cloudflare protected websites (RN). You'll have to provide your `cf_clearance` cookie, and the `user-agent` header has to match the one used in your web browser for target wesite ‒ to find it while browsing said website open `Web Developer tools -> Network`, reload the page and check `request headers`
@@ -134,7 +135,7 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 - **ERROR**: if you see this the download process may fail, Ruxx can only retry the failed action, in most cases that's enough
 
 ### Technical info
-Ruxx is written is Python (3.7). Lines of code: 8000+. Executables built using PyInstaller (5.8 for Windows, 3.6 for Linux)
+Ruxx is written is Python (3.7). Lines of code: 8600+. Executables built using PyInstaller (5.8 for Windows, 3.6 for Linux)
 
 ### Support
 Did I help you? Maybe you wish to return the favor  

@@ -94,6 +94,8 @@ re_shimmie_image_href_full = re_compile(r'/_images/[^/]+/(\d+)%20-%20([^">]+)')
 re_post_style_rs = re_compile(r'^border-radius: 3px;.+?$')
 re_post_dims_rs = re_compile(r'^Size: (\d+)w x (\d+)h$')
 re_tag_video_rs = re_compile(r'^\d+fps(?: upscale)?$|video|webm')
+re_comment_page_rs = re_compile(r'^\?r=posts/view&(?:amp;)?id=\d+&(?:amp;)?page=\d+$')
+re_comment_a_rs = re_compile(r'^index\.php\?r=account/profile&(?:amp;)?id=\d+$')
 
 #
 #

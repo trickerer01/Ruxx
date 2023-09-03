@@ -15,8 +15,8 @@ from bs4 import BeautifulSoup
 
 # internal
 from app_defines import (
-    SITENAME_B_RN, FILE_NAME_PREFIX_RN, MODULE_ABBR_RN, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RN, DownloadModes, ItemInfo,
-    TAGS_CONCAT_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RN
+    SITENAME_B_RN, FILE_NAME_PREFIX_RN, MODULE_ABBR_RN, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RN, DownloadModes, ItemInfo, Comment,
+    TAGS_CONCAT_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RN,
 )
 from app_download import DownloaderBase
 from app_logger import trace
@@ -201,15 +201,15 @@ class DownloaderRn(DownloaderBase):
         item_id = self._extract_id(h)
 
         raw_html = BeautifulSoup()
-        if self.download_mode != DownloadModes.DOWNLOAD_SKIP or self.dump_source is True:
+        if self.download_mode != DownloadModes.DOWNLOAD_SKIP or self.dump_sources is True or self.dump_comments is True:
             raw_html = self.fetch_html(f'{self._get_sitename()}{h}')
             if raw_html is None:
                 trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
                 self._inc_proc_count()
                 return
-
-            full_item_id = f'{self._get_module_abbr_p()}{item_id}'
-            if full_item_id in self.item_info_dict_per_task:
+            else:
+                self._extract_comments(raw_html, item_id)
+                full_item_id = f'{self._get_module_abbr_p()}{item_id}'
                 orig_source_div = raw_html.find('div', style=re_shimmie_orig_source)
                 if orig_source_div:
                     self.item_info_dict_per_task[full_item_id].source = orig_source_div.text
@@ -255,6 +255,17 @@ class DownloaderRn(DownloaderBase):
 
     def form_tags_search_address(self, tags: str, *ignored) -> str:
         return f'{self._get_sitename()}post/list/{tags}{self._get_tags_concat_char()}order%253Did_desc/'
+
+    def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
+        # no pagination
+        full_item_id = f'{self._get_module_abbr_p()}{item_id}'
+        comment_divs = raw_html.find_all('div', class_='comment')
+        for comment_div in comment_divs:
+            author_a = comment_div.find('a', class_='username')
+            author = author_a.text  # type: str
+            body = comment_div.text.strip()  # type: str
+            body = body[body.find(f'{author}: ') + len(f'{author}: '):]
+            self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
 
     @staticmethod
     def extract_local_addr(raw: str) -> str:
