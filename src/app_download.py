@@ -960,7 +960,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         cur_tags = self.tags_str_arr[0]
         # trace(f'\ntags check in progress:\n{cur_tags}\n')
         self.url = self.form_tags_search_address(cur_tags)
-        total_count_or_html = self.get_items_query_size_or_html(self.url)
+        total_count_or_html = self.get_items_query_size_or_html(self.url, tries=1)
         self.total_count = total_count_or_html if isinstance(total_count_or_html, int) else 1
 
     def _get_max_id(self) -> None:
