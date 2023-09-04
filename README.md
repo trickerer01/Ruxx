@@ -83,6 +83,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 - RN meta tags:
   - **id**: `id=X`, `id>X`, `id<Y`, `id>=X`, `id<=Y`. `X`,`Y` = `<post ID>`
   - **score**: `score=X`, `score>X`, `score<Y`, `score>=X`, `score<=Y`. `X`,`Y` = `<number>`
+  - **favorited_by**: `favorited_by=X`. `X` = `<user name>`
   - Rarely used ones:
     - width: `width=X`, `width>X`, `width<Y`, `width>=X`, `width<=Y`. `X`,`Y` = `<number>`
     - height: `height=X`, `height>X`, `height<Y`, `height>=X`, `height<=Y`. `X`,`Y` = `<number>`

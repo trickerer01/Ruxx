@@ -39,7 +39,7 @@ from app_utils import as_date, confirm_yes_no, normalize_path, trim_undersores, 
 __all__ = ('DownloaderBase',)
 
 
-LINE_BREAKS_AT = 100 if sys.platform == PLATFORM_WINDOWS else 90
+LINE_BREAKS_AT = 99 if sys.platform == PLATFORM_WINDOWS else 90
 BR = "=" * LINE_BREAKS_AT
 """line breaker"""
 
@@ -940,17 +940,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         except Exception:
             trace('download failed...')
             raise
-        self.item_info_dict_all = {
-            k: v for k, v in sorted(sorted(self.item_info_dict_all.items(), key=lambda item: item[0]), key=lambda item: int(item[1].id))
-        }  # type: Dict[str, ItemInfo]
-        if len(self.item_info_dict_all) > 0 and True in (self.dump_tags, self.dump_sources, self.dump_comments):
-            if self.dump_tags is True:
-                self._dump_all_tags()
-            if self.dump_sources is True:
-                self._dump_all_sources()
-            if self.dump_comments is True:
-                self._dump_all_comments()
-            trace(BR)
+        self._dump_all_info()
         total_files = min(self.success_count + self.fail_count, self.total_count_all)
         success_files = min(self.success_count, self.total_count_all - self.fail_count)
         trace(f'\n{self._tasks_count():d} task(s) completed, {success_files:d} / {total_files:d} item(s) succeded', False, True)
@@ -1066,6 +1056,8 @@ class DownloaderBase(ThreadedHtmlWorker):
                     self._register_parent_post(parents, item_info.parent_id)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_info.id}'
             self.item_info_dict_per_task[idstring] = item_info
+            if len(item_info.source) < 2:
+                item_info.source = SOURCE_DEFAULT
             if __RUXX_DEBUG__:
                 for key in item_info.__slots__:
                     if key in ItemInfo.optional_slots:
@@ -1093,92 +1085,48 @@ class DownloaderBase(ThreadedHtmlWorker):
                         put_info(res)
                     thread_sleep(0.2)
 
-    def _dump_all_tags(self) -> None:
-        trace('\nSaving tags...')
-        item_info_list = sorted(list(self.item_info_dict_all.values()), key=lambda x: x.id)  # type: List[ItemInfo]
-        id_begin = item_info_list[0].id
-        id_end = item_info_list[-1].id
-        abbrp = self._get_module_abbr_p()
-
-        # rx_!tags_00000-00000.txt
-        filename = f'{self.dest_base}{abbrp}!tags{UNDERSCORE}{id_begin}-{id_end}.txt'
-
-        if self._has_gui() and path.isfile(filename):
-            if not confirm_yes_no(title='Save tags', msg=f'File \'{filename}\' already exists. Overwrite?'):
-                trace('Skipped.')
-                return
+    def _dump_all_info(self) -> None:
+        if len(self.item_info_dict_all) == 0 or True not in (self.dump_tags, self.dump_sources, self.dump_comments):
+            return
 
         if not path.isdir(self.dest_base):
             try:
                 makedirs(self.dest_base)
             except Exception:
-                thread_exit('ERROR: Unable to create subfolder!')
+                thread_exit(f'ERROR: Unable to create folder {self.dest_base}!')
 
-        with open(filename, 'wt', encoding=DEFAULT_ENCODING) as dump:
-            for item_info in item_info_list:
-                item_line = f'{abbrp}{item_info.id}: {format_score(item_info.score)} {item_info.tags.strip()}\n'
-                dump.write(item_line)
-
-        trace('Done.')
-
-    def _dump_all_sources(self) -> None:
-        trace('\nSaving sources...')
+        self.item_info_dict_all = {
+            k: v for k, v in sorted(sorted(self.item_info_dict_all.items(), key=lambda item: item[0]), key=lambda item: int(item[1].id))
+        }  # type: Dict[str, ItemInfo]
         item_info_list = sorted(list(self.item_info_dict_all.values()), key=lambda x: x.id)  # type: List[ItemInfo]
         id_begin = item_info_list[0].id
         id_end = item_info_list[-1].id
         abbrp = self._get_module_abbr_p()
 
-        # rx_!sources_00000-00000.txt
-        filename = f'{self.dest_base}{abbrp}!sources{UNDERSCORE}{id_begin}-{id_end}.txt'
+        def proc_tags(item_info: ItemInfo) -> str:
+            return f'{abbrp}{item_info.id}: {format_score(item_info.score)} {item_info.tags.strip()}\n'
 
-        if self._has_gui() and path.isfile(filename):
-            if not confirm_yes_no(title='Save sources', msg=f'File \'{filename}\' already exists. Overwrite?'):
-                trace('Skipped.')
-                return
+        def proc_sources(item_info: ItemInfo) -> str:
+            return f'{abbrp}{item_info.id}: {item_info.source.strip()}\n'
 
-        if not path.isdir(self.dest_base):
-            try:
-                makedirs(self.dest_base)
-            except Exception:
-                thread_exit('ERROR: Unable to create subfolder!')
+        def proc_comments(item_info: ItemInfo) -> str:
+            comments = f'\n{f"{NEWLINE}{NEWLINE}".join(str(c) for c in item_info.comments)}\n' if item_info.comments else ''
+            return f'{abbrp}{item_info.id}:{comments}\n'
 
-        with open(filename, 'wt', encoding=DEFAULT_ENCODING) as dump:
-            for item_info in item_info_list:
-                if len(item_info.source) < 2:
-                    item_info.source = SOURCE_DEFAULT
-                item_line = f'{abbrp}{item_info.id}: {item_info.source.strip()}\n'
-                dump.write(item_line)
-
-        trace('Done.')
-
-    def _dump_all_comments(self) -> None:
-        trace('\nSaving comments...')
-        item_info_list = sorted(list(self.item_info_dict_all.values()), key=lambda x: x.id)  # type: List[ItemInfo]
-        id_begin = item_info_list[0].id
-        id_end = item_info_list[-1].id
-        abbrp = self._get_module_abbr_p()
-
-        # rx_!comments_00000-00000.txt
-        filename = f'{self.dest_base}{abbrp}!comments{UNDERSCORE}{id_begin}-{id_end}.txt'
-
-        if self._has_gui() and path.isfile(filename):
-            if not confirm_yes_no(title='Save comments', msg=f'File \'{filename}\' already exists. Overwrite?'):
-                trace('Skipped.')
-                return
-
-        if not path.isdir(self.dest_base):
-            try:
-                makedirs(self.dest_base)
-            except Exception:
-                thread_exit('ERROR: Unable to create subfolder!')
-
-        with open(filename, 'wt', encoding=DEFAULT_ENCODING) as dump:
-            for item_info in item_info_list:
-                comments = f'\n{f"{NEWLINE}{NEWLINE}".join(str(c) for c in item_info.comments)}\n' if item_info.comments else ''
-                item_line = f'{abbrp}{item_info.id}:{comments}\n'
-                dump.write(item_line)
-
-        trace('Done.')
+        for name, proc in (
+           ('tags', proc_tags), ('sources', proc_sources), ('comments', proc_comments)
+        ):  # type: str, Callable[[ItemInfo], str]
+            trace(f'\nSaving {name}...')
+            filename = f'{self.dest_base}{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
+            if self._has_gui() and path.isfile(filename):
+                if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{filename}\' already exists. Overwrite?'):
+                    trace('Skipped.')
+                    continue
+            with open(filename, 'wt', encoding=DEFAULT_ENCODING) as dump:
+                for iteminfo in item_info_list:
+                    dump.write(proc(iteminfo))
+            trace('Done.')
+        trace(BR)
 
     def _has_gui(self) -> bool:
         return hasattr(self.my_root_thread, 'gui')
