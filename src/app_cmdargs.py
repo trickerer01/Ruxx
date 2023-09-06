@@ -20,6 +20,7 @@ from app_help import (
     HELP_ARG_COOKIES, HELP_ARG_PREFIX, HELP_ARG_DUMP_TAGS, HELP_ARG_DUMP_SOURCES, HELP_ARG_DUMP_COMMENTS, HELP_ARG_APPEND_SOURCE_AND_TAGS,
     HELP_ARG_TAGS, HELP_ARG_WARN_NON_EMPTY_FOLDER, HELP_ARG_INCLUDE_PARCHI, HELP_ARG_TIMEOUT, HELP_ARG_GET_MAXID,
 )
+from app_revision import APP_NAME, APP_VERSION
 from app_validators import valid_thread_count, valid_date, valid_path, valid_json, valid_download_mode, valid_proxy, valid_positive_int
 
 __all__ = ('prepare_arglist',)
@@ -29,6 +30,7 @@ DMODES_STR = str(DMODE_CHOICES).replace(' ', '')
 
 def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser = ArgumentParser(add_help=False)
+    parser.add_argument('--version', action='version', version=f'{APP_NAME} {APP_VERSION}')
     parser.add_argument('--help', action='help')
     parser.add_argument('-module', default=MODULE_ABBR_RX, help=HELP_ARG_MODULE, choices=MODULE_CHOICES)
     ex1 = parser.add_mutually_exclusive_group(required=False)
