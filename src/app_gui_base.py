@@ -53,7 +53,7 @@ __all__ = (
     'get_global', 'config_global', 'is_global_disabled', 'is_focusing', 'toggle_console', 'hotkey_text',
     'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list', 'ask_filename', 'browse_path',
     'register_menu_command', 'register_submenu_command', 'register_menu_checkbutton', 'register_menu_radiobutton',
-    'register_menu_separator', 'get_all_media_files_in_cur_dir',
+    'register_menu_separator', 'get_all_media_files_in_cur_dir', 'update_lastpath',
 )
 
 # globals
@@ -1221,6 +1221,10 @@ def register_menu_separator() -> None:
 def get_all_media_files_in_cur_dir() -> Tuple[str]:
     flist = filedialog.askopenfilenames(initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),))  # type: Tuple[str]
     return flist
+
+
+def update_lastpath(filefullpath: str) -> None:
+    setrootconf(Options.OPT_LASTPATH, filefullpath[:normalize_path(filefullpath, False).rfind(SLASH) + 1])
 
 #
 #

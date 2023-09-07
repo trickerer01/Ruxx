@@ -34,6 +34,7 @@ from app_gui_base import (
     text_cmdm, get_icon, init_additional_windows, get_global, config_global, is_global_disabled, is_focusing, toggle_console, hotkey_text,
     set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list, browse_path, register_menu_command,
     register_submenu_command, register_menu_checkbutton, register_menu_radiobutton, register_menu_separator, get_all_media_files_in_cur_dir,
+    update_lastpath,
 )
 from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
@@ -81,117 +82,88 @@ PROC_MODULES_BY_ABBR = {
 
 
 # static methods
+def file_worker_report(succ_count: int, total_count: int, word1: str) -> None:
+    if succ_count == total_count:
+        Logger.log(f'Successfully {word1}ed {total_count:d} file(s).', False, False)
+    elif succ_count > 0:
+        Logger.log(f'Warning: only {succ_count:d} / {total_count:d} files were {word1}ed.', False, False)
+    else:
+        Logger.log(f'An error occured while {word1}ing {total_count:d} files.', False, False)
+
+
 def untag_files_do() -> None:
     filelist = get_all_media_files_in_cur_dir()
     if len(filelist) == 0:
         return
-
-    setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
+    update_lastpath(filelist[0])
     untagged_count = untag_files(filelist)
-    if untagged_count == len(filelist):
-        Logger.log(f'Successfully un-tagged {len(filelist):d} file(s).', False, False)
-    elif untagged_count > 0:
-        Logger.log(f'Warning: only {untagged_count:d} / {len(filelist):d} files were un-tagged.', False, False)
-    else:
-        Logger.log(f'An error occured while un-tagging {len(filelist):d} files.', False, False)
+    file_worker_report(untagged_count, len(filelist), 'un-tagg')
 
 
 def retag_files_do() -> None:
     filelist = get_all_media_files_in_cur_dir()
     if len(filelist) == 0:
         return
-
-    setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
+    update_lastpath(filelist[0])
     module = get_new_proc_module()
     retagged_count = retag_files(filelist, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
-    if retagged_count == len(filelist):
-        Logger.log(f'Successfully re-tagged {len(filelist):d} file(s).', False, False)
-    elif retagged_count > 0:
-        Logger.log(f'Warning: only {retagged_count:d} / {len(filelist):d} files were re-tagged.', False, False)
-    else:
-        Logger.log(f'An error occured while re-tagging {len(filelist):d} files.', False, False)
+    file_worker_report(retagged_count, len(filelist), 're-tagg')
 
 
 def sort_files_by_type_do() -> None:
     filelist = get_all_media_files_in_cur_dir()
     if len(filelist) == 0:
         return
-
     aw = AskFileTypeFilterWindow(rootm())
     aw.finalize()
     rootm().wait_window(aw.window)
-
     filter_type = aw.value()
     if filter_type == FileTypeFilter.FILTER_INVALID:
         return
-
-    setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
+    update_lastpath(filelist[0])
     result = sort_files_by_type(filelist, filter_type)
-    if result == len(filelist):
-        Logger.log(f'Successfully sorted {len(filelist):d} file(s).', False, False)
-    elif result > 0:
-        Logger.log(f'Warning: only {result:d} / {len(filelist):d} files were sorted.', False, False)
-    else:
-        Logger.log(f'An error occured while sorting {len(filelist):d} files.', False, False)
+    file_worker_report(result, len(filelist), 'sort')
 
 
 def sort_files_by_size_do() -> None:
     filelist = get_all_media_files_in_cur_dir()
     if len(filelist) == 0:
         return
-
     aw = AskFileSizeFilterWindow(rootm())
     aw.finalize()
     rootm().wait_window(aw.window)
-
     thresholds_mb = aw.value()
     if thresholds_mb is None:
         return
-
-    setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
+    update_lastpath(filelist[0])
     result = sort_files_by_size(filelist, thresholds_mb)
-    if result == len(filelist):
-        Logger.log(f'Successfully sorted {len(filelist):d} file(s).', False, False)
-    elif result > 0:
-        Logger.log(f'Warning: only {result:d} / {len(filelist):d} files were sorted.', False, False)
-    else:
-        Logger.log(f'An error occured while sorting {len(filelist):d} files.', False, False)
+    file_worker_report(result, len(filelist), 'sort')
 
 
 def sort_files_by_score_do() -> None:
     filelist = get_all_media_files_in_cur_dir()
     if len(filelist) == 0:
         return
-
     aw = AskFileScoreFilterWindow(rootm())
     aw.finalize()
     rootm().wait_window(aw.window)
-
     thresholds = aw.value()
     if thresholds is None:
         return
-
-    setrootconf(Options.OPT_LASTPATH, filelist[0][:normalize_path(filelist[0], False).rfind(SLASH) + 1])
+    update_lastpath(filelist[0])
     result = sort_files_by_score(filelist, thresholds)
-    if result == len(filelist):
-        Logger.log(f'Successfully sorted {len(filelist):d} file(s).', False, False)
-    elif result > 0:
-        Logger.log(f'Warning: only {result:d} / {len(filelist):d} files were sorted.', False, False)
-    else:
-        Logger.log(f'An error occured while sorting {len(filelist):d} files.', False, False)
+    file_worker_report(result, len(filelist), 'sort')
 
 
 def set_download_limit() -> None:
     aw = AskIntWindow(rootm(), lambda x: x >= 0)
     aw.finalize()
     rootm().wait_window(aw.window)
-
     limit = aw.value()
     if limit is None:
         if aw.variable.get() != '':
             Logger.log(f'Invalid limt value \'{aw.variable.get()}\'', False, False)
         return
-
     setrootconf(Options.OPT_DOWNLOAD_LIMIT, limit)
     menu_items.get(Menus.MENU_DEBUG)[0].entryconfig(3, label=f'Set download limit ({limit})...')
     Logger.log(f'Download limit set to {limit:d} item(s).', False, False)
@@ -317,7 +289,6 @@ def update_statusbar() -> None:
 
 
 def prepare_cmdline() -> List[str]:
-
     def normalize_tag(ntag: str) -> str:
         return ntag.replace('+', '%2b').replace(' ', '+')
 
@@ -723,7 +694,6 @@ def init_menus() -> None:
     register_menu_command('Tags', help_tags)
     register_menu_separator()
     register_menu_command('About...', help_about, Options.OPT_ISABOUTOPEN, True)
-    # register_menu_command('License', help_license)
     # 9) Debug
     if __RUXX_DEBUG__:
         register_menu('Debug', Menus.MENU_DEBUG)
