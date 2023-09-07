@@ -23,7 +23,7 @@ from app_defines import FMT_DATE, SUPPORTED_PLATFORMS
 from app_gui_defines import SLASH, re_uscore_mult
 
 __all__ = (
-    'Comparable', 'ensure_compatibility', 'as_date', 'confirm_yes_no', 'normalize_path', 'trim_undersores', 'format_score',
+    'Comparable', 'Protocol', 'ensure_compatibility', 'as_date', 'confirm_yes_no', 'normalize_path', 'trim_undersores', 'format_score',
     'find_first_not_of',
 )
 

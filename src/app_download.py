@@ -950,7 +950,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     def _check_tags(self) -> None:
         if self._tasks_count() != 1:
-            raise ThreadInterruptException(f'Cannot check tags: more than 1 task is required')
+            raise ThreadInterruptException('Cannot check tags: more than 1 task was formed')
         cur_tags = self.tags_str_arr[0]
         # trace(f'\ntags check in progress:\n{cur_tags}\n')
         self.url = self.form_tags_search_address(cur_tags)
@@ -1114,7 +1114,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             return f'{abbrp}{item_info.id}:{comments}\n'
 
         for name, proc in (
-           ('tags', proc_tags), ('sources', proc_sources), ('comments', proc_comments)
+            ('tags', proc_tags), ('sources', proc_sources), ('comments', proc_comments)
         ):  # type: str, Callable[[ItemInfo], str]
             trace(f'\nSaving {name}...')
             filename = f'{self.dest_base}{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
