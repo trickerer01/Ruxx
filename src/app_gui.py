@@ -44,8 +44,9 @@ from app_gui_defines import (
     OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT, GUI2_UPDATE_DELAY_DEFAULT,
     THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE,
     OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI,
-    ProcModule, menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, Icons, CVARS, re_space_mult, hotkeys,
+    ProcModule, menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, Icons, CVARS, hotkeys,
 )
+from app_re import re_space_mult
 from app_logger import Logger
 from app_revision import __RUXX_DEBUG__
 from app_settings import Settings
@@ -301,7 +302,6 @@ def prepare_cmdline() -> List[str]:
         tags_line = re_space_mult.sub(r' ', tags_line.replace('\n', ' '))
         setrootconf(Options.OPT_TAGS, tags_line)
     parse_suc, tags_list = parse_tags(tags_line)
-    # append id boundaries tags if present in id fields and not in tags
     tags_str = ' '.join(normalize_tag(tag) for tag in tags_list)
     newstr.append(tags_str)
     # + module
@@ -787,8 +787,7 @@ def dwnm() -> Union[DownloaderRn, DownloaderRx, DownloaderRs]:
 
 def run_ruxx(args: Sequence[str]) -> None:
     Logger.init(True)
-    ensure_compatibility(False)
-
+    ensure_compatibility()
     current_process().killed = False
     arglist = prepare_arglist(args)
     set_proc_module(PROC_MODULES_BY_ABBR[arglist.module])
@@ -801,8 +800,7 @@ def run_ruxx(args: Sequence[str]) -> None:
 
 def run_ruxx_gui() -> None:
     Logger.init(False)
-    ensure_compatibility(True)
-
+    ensure_compatibility()
     if CAN_MANIPULATE_CONSOLE:
         Logger.pending_strings.append('[Launcher] Hiding own console...')
         ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)

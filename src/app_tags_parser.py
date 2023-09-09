@@ -14,12 +14,15 @@ from typing import List, Pattern, Tuple, Optional
 from iteration_utilities import unique_everseen
 
 # internal
-from app_gui_defines import ProcModule, re_space_mult
+from app_gui_defines import ProcModule
+from app_re import re_space_mult
+
+__all__ = ('reset_last_tags', 'parse_tags')
 
 DEFAULT_TAGS = ['sfw']
 
 # language=PythonRegExp
-TAG_CHAR = r'[a-zÀ-ʯ\d_+\-/!()*\'.]'
+TAG_CHAR = r'[a-zÀ-ʯА-я\d_+\-/!()*\'.]'
 # language=PythonRegExp
 META_CHAR = r'[a-z\d_]'
 # language=PythonRegExp
@@ -36,7 +39,7 @@ RE_ORGR_PART_RN = fr'{TAG_CHAR}+?(?:{META_COUNT_RN})?'
 RE_ORGR_PART_RS = fr'{TAG_CHAR}+?(?:{META_COUNT_RS})?'
 
 # language=PythonRegExp
-ANDGR_CHAR = r'[a-zÀ-ʯ\d_+\-/!()*\'.|?]'
+ANDGR_CHAR = r'[a-zÀ-ʯА-я\d_+\-/!()*\'.|?]'
 # language=PythonRegExp
 RE_ANDGR_PART_U = fr'{ANDGR_CHAR}+?'
 
@@ -135,12 +138,7 @@ def parse_tags(tags: str) -> Tuple[bool, List[str]]:
                 tag = split_or_group(tag)
             except Exception:
                 return fail()
-        if not (
-                re_orgr_full_s().fullmatch(tag) or
-                re_andgr_full.fullmatch(tag) or
-                re_meta().fullmatch(tag) or
-                re_plain().fullmatch(tag)
-        ):
+        if not (re_orgr_full_s().fullmatch(tag) or re_andgr_full.fullmatch(tag) or re_meta().fullmatch(tag) or re_plain().fullmatch(tag)):
             return fail()
         fulltags.append(tag)
 

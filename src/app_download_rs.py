@@ -22,8 +22,8 @@ from app_download import DownloaderBase
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
-    re_tags_to_process_rs, re_tags_exclude_rs, re_post_style_rs, re_post_dims_rs, re_tag_video_rs, re_comment_page_rs, re_comment_a_rs
-
+    re_tags_to_process_rs, re_tags_exclude_rs, re_post_style_rs, re_post_dims_rs, re_tag_video_rs, re_comment_page_rs, re_comment_a_rs,
+    re_post_page_rs,
 )
 
 __all__ = ('DownloaderRs',)
@@ -100,8 +100,7 @@ class DownloaderRs(DownloaderBase):
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
         last = 1
-        from re import compile as re_compile
-        last_page_buttons = raw_html.find_all('a', href=re_compile(r'^\?r=posts/index&.+?$'))
+        last_page_buttons = raw_html.find_all('a', href=re_post_page_rs)
         for but in last_page_buttons:
             href = str(but.get('href', '=0'))
             last = max(last, 1 + int(href[href.rfind('=') + 1:]))

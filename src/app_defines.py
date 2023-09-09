@@ -24,7 +24,7 @@ class Comment:
     """
     __slots__ = ('author', 'body')
 
-    def __init__(self, author='', body='') -> None:
+    def __init__(self, author: str, body: str) -> None:
         self.author = author
         self.body = body
 
@@ -40,7 +40,7 @@ class ItemInfo:
     Used to store universal info for processed item
     """
     __slots__ = ('id', 'height', 'width', 'tags', 'ext', 'source', 'comments', 'score', 'has_children', 'parent_id')
-    optional_slots = __slots__[__slots__.index('source'):]
+    optional_slots = frozenset(__slots__[__slots__.index('source'):])
 
     def __init__(self) -> None:
         self.id = ''
@@ -57,8 +57,8 @@ class ItemInfo:
 
 class PageCheck:
     """
-    PageCheck
-    Used to store page items check info for binary page search subchecks
+    PageCheck\n
+    Used to store page items check info for binary page search subchecks\n
     first x ... x last
     """
     __slots__ = ('first', 'last')
@@ -66,6 +66,12 @@ class PageCheck:
     def __init__(self) -> None:
         self.first = False
         self.last = False
+
+    def __str__(self) -> str:
+        return f'{self.first} <--> {self.last}'
+
+    def __repr__(self) -> str:
+        return str(self)
 
 
 @unique
@@ -156,7 +162,7 @@ MESSAGE_EMPTY_SEARCH_RESULT_RS = MESSAGE_EMPTY_SEARCH_RESULT_RX
 SOURCE_DEFAULT = 'Unknown'
 FILE_NAME_FULL_MAX_LEN = 240
 # USER_AGENT = 'Ruxx / 1.1'
-USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.2 Firefox/102.0 PaleMoon/32.3.1'
+USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:102.0) Gecko/20100101 Goanna/6.3 Firefox/102.0 PaleMoon/32.4.0'
 DEFAULT_HEADERS = f'{{"User-Agent": "{USER_AGENT}"}}'
 PROXY_DEFAULT_STR = '127.0.0.1:222'
 ENCODING_UTF8 = 'utf-8'

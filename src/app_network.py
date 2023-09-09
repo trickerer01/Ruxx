@@ -20,7 +20,7 @@ from typing import Optional, Dict, IO
 
 # requirements
 from bs4 import BeautifulSoup
-from requests import Session, HTTPError, Response, adapters
+from requests import Session, Response, HTTPError, adapters
 
 # internal
 from app_defines import (
@@ -34,7 +34,6 @@ from app_revision import __RUXX_DEBUG__
 __all__ = ('ThreadedHtmlWorker', 'DownloadInterruptException', 'thread_exit')
 
 re_content_range_str = re_compile(r'bytes (\d+)-(\d+)?(?:/(\d+))?')
-re_link_host = re_compile(r'https?://([^/]+)')
 
 
 class DownloadInterruptException(BaseException):

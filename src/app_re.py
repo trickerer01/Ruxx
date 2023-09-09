@@ -15,6 +15,9 @@ from app_re_1 import re_tags_exclude_rx_a_i
 from app_re_2 import re_tags_exclude_rx_j_r
 from app_re_3 import re_tags_exclude_rx_s_z_ex
 
+re_space_mult = re_compile(r' {2,}')
+re_uscore_mult = re_compile(r'_{2,}')
+
 re_replace_symbols = re_compile(
     r'[^0-9a-zA-Z_+\-\[\]]+'
 )
@@ -93,6 +96,7 @@ re_shimmie_image_href_full = re_compile(r'/_images/[^/]+/(\d+)%20-%20([^">]+)')
 
 re_post_style_rs = re_compile(r'^border-radius: 3px;.+?$')
 re_post_dims_rs = re_compile(r'^Size: (\d+)w x (\d+)h$')
+re_post_page_rs = re_compile(r'^\?r=posts/index&.+?$')
 re_tag_video_rs = re_compile(r'^\d+fps(?: upscale)?$|video|webm')
 re_comment_page_rs = re_compile(r'^\?r=posts/view&(?:amp;)?id=\d+&(?:amp;)?page=\d+$')
 re_comment_a_rs = re_compile(r'^index\.php\?r=account/profile&(?:amp;)?id=\d+$')

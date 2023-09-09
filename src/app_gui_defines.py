@@ -8,7 +8,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from enum import IntEnum, unique, auto
-from re import compile as re_compile
 
 
 class ProcModule(object):
@@ -80,7 +79,7 @@ BUT_ALT_F4 = '<Alt-F4>'
 #  Color enum
 COLOR_WHITE = 'white'
 # COLOR_BLACK = 'black'
-COLOR_GRAY = 'gray'
+# COLOR_GRAY = 'gray'
 COLOR_LIGHTGRAY = 'lightgray'
 COLOR_DARKGRAY = 'darkgray'
 COLOR_BROWN1 = 'brown1'  # red-ish (for warnings)
@@ -372,10 +371,6 @@ hotkeys = {
     Options.OPT_ACTION_OPEN_DWN_FOLDER: BUT_CTRL_L,
 }
 # end hotkeys
-# rex
-re_space_mult = re_compile(r' {2,}')
-re_uscore_mult = re_compile(r'_{2,}')
-re_or_meta_group = re_compile(r'\([^: ]+:.*?')
 # tooltips
 TOOLTIP_VIDEOS = (' Selected file type will be preferred during search.',
                   ' If file is unavailable, alternative type will be',
@@ -395,7 +390,6 @@ TOOLTIP_HCOOKIE_ADD_ENTRY = (' Must be in on of the valid formats:',
                              '  3) [name],[value]')
 TOOLTIP_INVALID_SYNTAX = ('Invalid syntax.',)
 # end tooltips
-
 # images cache
 #  gif
 IMG_OPEN_DATA = (

@@ -671,11 +671,12 @@ class DownloaderBase(ThreadedHtmlWorker):
         if len(curdirfiles) == 0:
             return
 
+        abbrp = self._get_module_abbr_p()
         for idx in reversed(range(len(self.items_raw_per_task))):  # type: int
             self.catch_cancel_or_ctrl_c()
             h = self._local_addr_from_string(str(self.items_raw_per_task[idx]))
             item_id = self._extract_id(h)
-            rex_cdfile = re_compile(fr'^(?:{self._get_module_abbr_p()})?{item_id}[._].*?$')
+            rex_cdfile = re_compile(fr'^(?:{abbrp})?{item_id}[._].*?$')
             for f_idx in reversed(range(len(curdirfiles))):
                 if rex_cdfile.fullmatch(curdirfiles[f_idx]) is not None:
                     # trace(f'Info: TagProc_filter: {item_id} already exists!')
@@ -1113,9 +1114,13 @@ class DownloaderBase(ThreadedHtmlWorker):
             comments = f'\n{f"{NEWLINE}{NEWLINE}".join(str(c) for c in item_info.comments)}\n' if item_info.comments else ''
             return f'{abbrp}{item_info.id}:{comments}\n'
 
-        for name, proc in (
-            ('tags', proc_tags), ('sources', proc_sources), ('comments', proc_comments)
-        ):  # type: str, Callable[[ItemInfo], str]
+        for name, proc, conf in (
+            ('tags', proc_tags, self.dump_tags),
+            ('sources', proc_sources, self.dump_sources),
+            ('comments', proc_comments, self.dump_comments)
+        ):  # type: str, Callable[[ItemInfo], str], bool
+            if conf is False:
+                continue
             trace(f'\nSaving {name}...')
             filename = f'{self.dest_base}{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
             if self._has_gui() and path.isfile(filename):

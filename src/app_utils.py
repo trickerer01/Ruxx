@@ -20,7 +20,8 @@ except Exception:
 
 # internal
 from app_defines import FMT_DATE, SUPPORTED_PLATFORMS
-from app_gui_defines import SLASH, re_uscore_mult
+from app_gui_defines import SLASH
+from app_re import re_uscore_mult
 
 __all__ = (
     'Comparable', 'Protocol', 'ensure_compatibility', 'as_date', 'confirm_yes_no', 'normalize_path', 'trim_undersores', 'format_score',
@@ -36,14 +37,9 @@ class Comparable(Protocol):
     def __eq__(self, other) -> bool: ...
 
 
-def ensure_compatibility(is_gui: bool) -> None:
+def ensure_compatibility() -> None:
     assert sys.version_info >= (3, 7), 'Minimum python version required is 3.7!'
-    if sys.platform not in SUPPORTED_PLATFORMS:
-        if is_gui:
-            messagebox.showinfo('', f'Unsupported OS \'{sys.platform}\'')
-        else:
-            print(f'Unsupported OS \'{sys.platform}\'')
-        sys.exit(-1)
+    assert sys.platform in SUPPORTED_PLATFORMS, f'Unsupported OS \'{sys.platform}\''
 
 
 # def is_sorted(c: Iterable) -> bool:
