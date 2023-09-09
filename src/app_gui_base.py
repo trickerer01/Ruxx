@@ -693,6 +693,8 @@ class HeadersAndCookiesWindow(BaseWindow):
         else:
             self.lbox_h.insert(END, newval)
             self.entry_h.delete(0, END)
+            self.entry_h.insert(0, 'User-Agent:')
+            self.select_all_h()
 
     def delete_selected_h(self) -> None:
         cur = self.lbox_h.curselection()
@@ -701,6 +703,12 @@ class HeadersAndCookiesWindow(BaseWindow):
             self.lbox_h.delete(cur)
             if self.lbox_h.size() != 0:
                 self.lbox_h.selection_set(min(i, self.lbox_h.size() - 1))
+
+    def select_all_h(self) -> None:
+        if self.visible is True:
+            self.entry_h.focus_set()
+            self.entry_h.selection_range(0, END)
+            self.entry_h.icursor(END)
 
     def add_coookie_to_list(self) -> None:
         syntax_valid = True
@@ -726,6 +734,8 @@ class HeadersAndCookiesWindow(BaseWindow):
         else:
             self.lbox_c.insert(END, newval)
             self.entry_c.delete(0, END)
+            self.entry_c.insert(0, 'cf_clearance:')
+            self.select_all_c()
 
     def delete_selected_c(self) -> None:
         cur = self.lbox_c.curselection()

@@ -35,7 +35,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Edit -> Save comments** ‒ an additional (text) file will be created containing comments (if present) for every post
 - **Edit -> Extend file names with extra info** ‒ all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
 - **Edit -> Warn if donwload folder is not empty** ‒ in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
-- **Connection -> Headers / Cookies** \<F3> ‒ solely to work with cloudflare protected websites (RN). You'll have to provide your `cf_clearance` cookie, and the `user-agent` header has to match the one used in your web browser for target wesite ‒ to find it while browsing said website open `Web Developer tools -> Network`, reload the page and check `request headers`
+- **Connection -> Headers / Cookies** \<F3> ‒ solely to work with cloudflare protected websites (RN). You'll have to provide your `cf_clearance` cookie, and the `User-Agent` header has to match the one used in your web browser for target wesite ‒ to find it while browsing said website open `Web Developer tools -> Network`, reload the page and check `request headers`
 - **Connection -> Set proxy** \<F4> ‒ you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
 - **Connection -> Set timeout** \<F5> ‒ override connection timeout if need be
 - **Connection -> Download without proxy** ‒ you can use this option for RX if only the main domain is blocked in your country
@@ -117,11 +117,13 @@ Ruxx doesn't provide a method of authentication natively on either of supported 
 - Log in normally using web browser
 - Open `Web Developer tools -> Network` and reload the page, look for `request headers`
 - Open `Headers / Cookies` window `<F3>` and fill the tables accordingly:
-  - Headers: `user-agent` (remove existing value first)
+  - Headers: `User-Agent` (remove existing value first)
   - Cookies:
     - RX: `cf_clearance`, `user_id`, `pass_hash`
     - RN: `cf_clearance`, `shm_user`, `shm_session`
     - RS: `user_id`, `pass_hash`
+  - Notes:
+    - RN `cf_clearance` cookie duration is **15 minutes**
 
 #### Using from console
 It is possible to use Ruxx as a cmdline tool. In main window you will find a `Cmd` section ‒ it generates your cmdline arguments every time you make a change ‒ use those arguments as an example. In console window you may need to escape some of them (path, 'or' groups, tags containing dot(s), etc.). Most arguments are optional though ‒ the only ones required are `tags` (default module is RX)  
