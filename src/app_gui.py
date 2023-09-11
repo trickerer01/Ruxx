@@ -30,11 +30,11 @@ from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_si
 from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
     AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, setrootconf, rootm, getrootconf,
-    window_hcookiesm, window_proxym, window_timeoutm, c_menum, register_menu, register_submenu, GetRoot, create_base_window_widgets,
-    text_cmdm, get_icon, init_additional_windows, get_global, config_global, is_global_disabled, is_focusing, toggle_console, hotkey_text,
-    set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list, browse_path, register_menu_command,
+    window_hcookiesm, window_proxym, window_timeoutm, register_menu, register_submenu, GetRoot, create_base_window_widgets,
+    text_cmdm, get_icon, init_additional_windows, get_global, config_global, is_global_disabled, is_menu_disabled, is_focusing,
+    set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list, browse_path, register_menu_command, toggle_console,
     register_submenu_command, register_menu_checkbutton, register_menu_radiobutton, register_menu_separator, get_all_media_files_in_cur_dir,
-    update_lastpath,
+    update_lastpath, hotkey_text, config_menu,
 )
 from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
@@ -44,7 +44,7 @@ from app_gui_defines import (
     OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT, GUI2_UPDATE_DELAY_DEFAULT,
     THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE,
     OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI,
-    ProcModule, menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, Icons, CVARS, hotkeys,
+    ProcModule, menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys,
 )
 from app_re import re_space_mult
 from app_logger import Logger
@@ -166,13 +166,13 @@ def set_download_limit() -> None:
             Logger.log(f'Invalid limt value \'{aw.variable.get()}\'', False, False)
         return
     setrootconf(Options.OPT_DOWNLOAD_LIMIT, limit)
-    menu_items.get(Menus.MENU_DEBUG)[0].entryconfig(3, label=f'Set download limit ({limit})...')
+    config_menu(Menus.MENU_DEBUG, SubMenus.DLIMSET, label=f'Set download limit ({limit})...')
     Logger.log(f'Download limit set to {limit:d} item(s).', False, False)
 
 
 def reset_download_limit() -> None:
     setrootconf(Options.OPT_DOWNLOAD_LIMIT, 0)
-    menu_items.get(Menus.MENU_DEBUG)[0].entryconfig(3, label='Set download limit (0)...')
+    config_menu(Menus.MENU_DEBUG, SubMenus.DLIMSET, label='Set download limit (0)...')
     Logger.log('Download limit was reset.', False, False)
 
 
@@ -214,7 +214,7 @@ def set_proc_module(dwnmodule: int) -> None:
     prefix_opt_text = f'Prefix file names with \'{ProcModule.get_cur_module_name()}_\''
 
     if GetRoot() is not None:
-        menu_items.get(Menus.MENU_EDIT)[0].entryconfig(0, label=prefix_opt_text)
+        config_menu(Menus.MENU_EDIT, SubMenus.PREFIX, label=prefix_opt_text)
         # icon
         icons = {ProcModule.PROC_RX: Icons.ICON_RX, ProcModule.PROC_RN: Icons.ICON_RN, ProcModule.PROC_RS: Icons.ICON_RS}
         config_global(Globals.GOBJECT_MODULE_ICON, image=get_icon(icons.get(ProcModule.get())))
@@ -228,15 +228,16 @@ def set_proc_module(dwnmodule: int) -> None:
 def update_widget_enabled_states() -> None:
     downloading = is_downloading()
     for i in [m for m in Menus.__members__.values() if m < Menus.MAX_MENUS]:  # type: Menus
-        if menu_items.get(i)[0] is not None:
-            for j in menu_items.get(i)[1]:
-                if i == Menus.MENU_ACTIONS and j == 1 and is_cheking_tags():  # Check tags, disabled when active
+        menu = menu_items.get(i)
+        if menu:
+            for j in menu.statefuls:
+                if i == Menus.MENU_ACTIONS and j == SubMenus.CHECKTAGS and is_cheking_tags():  # Check tags, disabled when active
                     newstate = STATE_DISABLED
-                elif i == Menus.MENU_EDIT and j == 2 and ProcModule.is_rs():  # Save sources, disabled for RS
+                elif i == Menus.MENU_EDIT and j == SubMenus.SSOURCE and ProcModule.is_rs():  # Save sources, disabled for RS
                     newstate = STATE_DISABLED
                 else:
                     newstate = STATE_DISABLED if downloading else menu_item_orig_states[i][j]
-                menu_items.get(i)[0].entryconfig(j, state=newstate)
+                config_menu(i, j, state=newstate)
     for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:  # type: Globals
         if gi == Globals.GOBJECT_COMBOBOX_PARCHI:
             config_global(gi, state=(STATE_DISABLED if not ProcModule.is_rx() else gobject_orig_states[gi]))
@@ -394,7 +395,7 @@ def prepare_cmdline() -> List[str]:
         newstr.append(addstr)
     # save sources (dump_sources)
     addstr = OPTION_CMD_SAVE_SOURCES[int(getrootconf(Options.OPT_SAVE_SOURCES))]
-    if len(addstr) > 0:
+    if len(addstr) > 0 and not is_menu_disabled(Menus.MENU_EDIT, SubMenus.SSOURCE):
         newstr.append(addstr)
     # save comments (dump_comments)
     addstr = OPTION_CMD_SAVE_COMMENTS[int(getrootconf(Options.OPT_SAVE_COMMENTS))]
@@ -439,7 +440,7 @@ def start_check_tags_thread(cmdline: List[str]) -> None:
 def check_tags_direct_do() -> None:
     global tags_check_thread
     unfocus_buttons_once()
-    if menu_items.get(Menus.MENU_ACTIONS)[0].entrycget(menu_items.get(Menus.MENU_ACTIONS)[1][1], 'state') == STATE_DISABLED:
+    if is_menu_disabled(Menus.MENU_ACTIONS, SubMenus.CHECKTAGS):
         return
 
     suc, msg = recheck_args()
@@ -455,7 +456,7 @@ def check_tags_direct_do() -> None:
     # reset temporarily modified elements/widgets
     config_global(Globals.GOBJECT_FIELD_TAGS, bg=COLOR_WHITE)
     config_global(Globals.GOBJECT_BUTTON_CHECKTAGS, state=STATE_DISABLED)
-    menu_items.get(Menus.MENU_ACTIONS)[0].entryconfig(menu_items.get(Menus.MENU_ACTIONS)[1][1], state=STATE_DISABLED)
+    config_menu(Menus.MENU_ACTIONS, SubMenus.CHECKTAGS, state=STATE_DISABLED)
 
     # launch
     cmdline = prepare_cmdline()
@@ -483,8 +484,7 @@ def check_tags_direct_do() -> None:
     if downloading is False:
         config_global(Globals.GOBJECT_FIELD_TAGS, bg=COLOR_WHITE)
         config_global(Globals.GOBJECT_BUTTON_CHECKTAGS, state=gobject_orig_states[Globals.GOBJECT_BUTTON_CHECKTAGS])
-        menu_items.get(Menus.MENU_ACTIONS)[0].entryconfig(
-            menu_items.get(Menus.MENU_ACTIONS)[1][1], state=menu_item_orig_states[Menus.MENU_ACTIONS][2])
+        config_menu(Menus.MENU_ACTION, SubMenus.CHECKTAGS, state=menu_item_orig_states[Menus.MENU_ACTIONS][2])
 
 
 def check_tags_direct() -> None:
@@ -583,7 +583,7 @@ def cancel_download() -> None:
 def do_download() -> None:
     global download_thread
 
-    if menu_items.get(Menus.MENU_ACTIONS)[0].entrycget(menu_items.get(Menus.MENU_ACTIONS)[1][0], 'state') == STATE_DISABLED:
+    if is_menu_disabled(Menus.MENU_ACTIONS, SubMenus.DOWNLOAD):
         return
 
     suc, msg = recheck_args()
@@ -647,7 +647,7 @@ def init_menus() -> None:
     register_menu_separator()
     register_menu_command('Exit', sys.exit)
     if sys.platform != PLATFORM_WINDOWS:
-        c_menum().entryconfig(5, state=STATE_DISABLED)  # disable 'Open download folder'
+        config_menu(Menus.MENU_FILE, SubMenus.OPENFOLDER, state=STATE_DISABLED)  # disable 'Open download folder'
     # 2) Edit
     register_menu('Edit', Menus.MENU_EDIT)
     register_menu_checkbutton('Prefix file names with \'rx_\'', CVARS.get(Options.OPT_FNAMEPREFIX))

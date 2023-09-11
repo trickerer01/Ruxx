@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from enum import IntEnum, unique, auto
+from typing import Optional, Set
 
 
 class ProcModule(object):
@@ -337,14 +338,36 @@ class Menus(IntEnum):
         return f'{self.__class__.__name__}.{self._name_} ({self.value:d})'
 
 
+class SubMenus(IntEnum):
+    SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
+    PREFIX, STAGS, SSOURCE, SCOMMENTS, EXTEND, WNONEMPTY = 0, 1, 2, 3, 4, 5
+    RX, RN, RS = 0, 1, 2
+    HEADERS, PROXY, TIMEOUT, DWPROXY, IGNOREPROXY = 0, 1, 2, 3, 4
+    DOWNLOAD, CHECKTAGS = 0, 2
+    IDLIST, UNTAG, RETAG, SORT = 0, 2, 3, 5
+    DFULL, DSKIP, DTOUCH, DLIMSET, DLIMRESET = 0, 1, 2, 3, 4
+
+    def __str__(self) -> str:
+        return f'{self.__class__.__name__}.{self._name_} ({self.value:d})'
+
+
+class RuxxMenu:
+    def __init__(self, indecies: Set[SubMenus]) -> None:
+        self.menu = None  # type: Optional["Menu"]  # noqa F821
+        self.statefuls = indecies
+
+    def __bool__(self) -> bool:
+        return not not self.menu
+
+
 menu_items = {
-    Menus.MENU_FILE: [None, (0, 1, 3)],
-    Menus.MENU_EDIT: [None, (0, 1, 2, 3, 4, 5)],
-    Menus.MENU_MODULE: [None, (0, 1, 2)],
-    Menus.MENU_CONNECTION: [None, (0, 1, 2, 3, 4)],
-    Menus.MENU_ACTIONS: [None, (0, 2)],
-    Menus.MENU_TOOLS: [None, (0, 2, 3, 5)],
-    Menus.MENU_DEBUG: [None, (0, 1, 2, 3, 4)],
+    Menus.MENU_FILE: RuxxMenu({SubMenus.SAVE, SubMenus.LOAD, SubMenus.RESET}),
+    Menus.MENU_EDIT: RuxxMenu({SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.EXTEND, SubMenus.WNONEMPTY}),
+    Menus.MENU_MODULE: RuxxMenu({SubMenus.RX, SubMenus.RN, SubMenus.RS}),
+    Menus.MENU_CONNECTION: RuxxMenu({SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.DWPROXY, SubMenus.IGNOREPROXY}),
+    Menus.MENU_ACTIONS: RuxxMenu({SubMenus.DOWNLOAD, SubMenus.CHECKTAGS}),
+    Menus.MENU_TOOLS: RuxxMenu({SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT}),
+    Menus.MENU_DEBUG: RuxxMenu({SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH, SubMenus.DLIMSET, SubMenus.DLIMRESET}),
 }
 
 menu_item_orig_states = {

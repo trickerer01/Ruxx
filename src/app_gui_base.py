@@ -36,8 +36,8 @@ from app_gui_defines import (
     IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL, PADDING_DEFAULT,
     OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, Globals, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
     OPTION_VALUES_PROXYTYPE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
-    STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, gobjects, Icons, Menus, menu_items,
-    hotkeys, BUTTONS_TO_UNFOCUS, ProcModule, SLASH,
+    STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, BUTTONS_TO_UNFOCUS,
+    gobjects, Icons, Menus, SubMenus, menu_items, hotkeys, ProcModule, SLASH,
 )
 from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, ABOUT_MSG
 from app_logger import Logger
@@ -48,12 +48,12 @@ from app_validators import valid_proxy, valid_positive_int
 
 __all__ = (
     'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'LogWindow',
-    'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm', 'c_menum', 'c_submenum',
+    'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm',
     'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows',
-    'get_global', 'config_global', 'is_global_disabled', 'is_focusing', 'toggle_console', 'hotkey_text',
+    'get_global', 'config_global', 'is_global_disabled', 'is_menu_disabled', 'is_focusing', 'toggle_console', 'hotkey_text',
     'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list', 'ask_filename', 'browse_path',
     'register_menu_command', 'register_submenu_command', 'register_menu_checkbutton', 'register_menu_radiobutton',
-    'register_menu_separator', 'get_all_media_files_in_cur_dir', 'update_lastpath',
+    'register_menu_separator', 'get_all_media_files_in_cur_dir', 'update_lastpath', 'config_menu',
 )
 
 # globals
@@ -871,7 +871,7 @@ def register_menu(label: str, menu_id: Menus = None) -> Menu:
     # register in global container for later
     if menu_id is not None:
         if menu_id in menu_items:
-            menu_items[menu_id][0] = menu
+            menu_items[menu_id].menu = menu
     root_menum().add_cascade(menu=menu, label=label)
     c_menu = menu
     return menu
@@ -1108,6 +1108,19 @@ def config_global(index: Globals, **kwargs) -> None:
 
 def is_global_disabled(index: Globals) -> bool:
     return str(get_global(index).cget('state')) == STATE_DISABLED
+
+
+def config_menu(menu: Menus, submenu: SubMenus, **kwargs) -> None:
+    gmenu = menu_items.get(menu)
+    if gmenu:
+        gmenu.menu.entryconfigure(submenu.value, **kwargs)
+
+
+def is_menu_disabled(menu: Menus, submenu: SubMenus) -> bool:
+    gmenu = menu_items.get(menu)
+    if gmenu and submenu in gmenu.statefuls:
+        return gmenu.menu.entrycget(submenu.value, 'state') == STATE_DISABLED
+    return False
 
 
 def is_focusing(gidx: Globals) -> bool:
