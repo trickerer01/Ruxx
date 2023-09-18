@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from base64 import b64decode
+from datetime import datetime
 from typing import Tuple, Optional, Pattern, Union
 
 # requirements
@@ -101,12 +102,14 @@ class DownloaderRn(DownloaderBase):
     def _get_item_html(self, h: str) -> Optional[BeautifulSoup]:
         return self.fetch_html(f'{self._get_sitename()}{h}')
 
-    def _extract_post_date(self, raw_html: BeautifulSoup, short: bool = False) -> str:
-        date_raw = raw_html.find('time')
-        b = str(date_raw).find('datetime=') + len('datetime=') + 1
-        # 2020-01-06
-        d = str(date_raw)[b: b + 4 + 1 + 2 + 1 + 2]
-        return d
+    def _extract_post_date(self, raw_html: BeautifulSoup) -> str:
+        try:
+            # '2017-04-19T11:55:45+00:00' -> '2017-04-19'
+            d_raw = raw_html.find('time').get('datetime')
+            d = datetime.fromisoformat(d_raw)
+            return d.strftime('%Y-%m-%d')
+        except Exception:
+            thread_exit(f'Unable to extract post date from raw: {str(raw_html)}', -446)
 
     def get_items_query_size_or_html(self, url: str, tries: int = None) -> Union[int, BeautifulSoup]:
         raw_html = self.fetch_html(f'{url}{1:d}', tries, do_cache=True)

@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from base64 import b64decode
+from datetime import datetime
 from typing import Tuple, Optional, Pattern
 
 # requirements
@@ -22,7 +23,7 @@ from app_download import DownloaderBase
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
-    re_tags_to_process_rx, re_tags_exclude_rx, re_item_info_part_rx, re_post_date_rx, re_orig_file_link, re_sample_file_link,
+    re_tags_to_process_rx, re_tags_exclude_rx, re_item_info_part_rx, re_orig_file_link, re_sample_file_link,
 
 )
 
@@ -91,21 +92,14 @@ class DownloaderRx(DownloaderBase):
         return h
 
     def _extract_post_date(self, raw: str) -> str:
-        months = {
-            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun': '06',
-            'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-        }
-
-        d_raw = raw[raw.find('created_at="') + len('created_at="'):]
-        d_raw = d_raw[:d_raw.find('"')]
-        # Mon Jan 06 21:51:58 +0000 2020
-        d_re_res = re_post_date_rx.search(d_raw)
-        if not d_re_res:
+        try:
+            # 'Mon Jan 06 21:51:58 +0000 2020' -> '2020-01-06'
+            d_raw = raw[raw.find('created_at="') + 12:]
+            d_raw = d_raw[:d_raw.find('"')]
+            d = datetime.strptime(d_raw, '%a %b %d %X %z %Y')
+            return d.strftime('%Y-%m-%d')
+        except Exception:
             thread_exit(f'Unable to extract post date from raw: {raw}', -446)
-
-        # '2020-01-06'
-        d = f'{d_re_res.group(3)}-{months.get(d_re_res.group(1))}-{d_re_res.group(2)}'
-        return d
 
     def get_items_query_size_or_html(self, url: str, tries: int = None) -> int:
         raw_html = self.fetch_html(f'{url}&pid=0', tries)

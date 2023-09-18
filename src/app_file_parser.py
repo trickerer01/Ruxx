@@ -25,25 +25,20 @@ __all__ = ('prepare_tags_list',)
 re_comments = re_compile(r'^(?:--|//|#).*?$')
 re_separators = re_compile(r'(?:, *| +)')
 
-prefixes = {
-    ProcModule.PROC_RX: FILE_NAME_PREFIX_RX,
-    ProcModule.PROC_RN: FILE_NAME_PREFIX_RN,
-    ProcModule.PROC_RS: FILE_NAME_PREFIX_RS,
-}
 idval_eq_separators = {
     ProcModule.PROC_RX: ID_VALUE_SEPARATOR_CHAR_RX,
     ProcModule.PROC_RN: ID_VALUE_SEPARATOR_CHAR_RN,
     ProcModule.PROC_RS: ID_VALUE_SEPARATOR_CHAR_RS,
 }
 idstring_patterns = {
-    ProcModule.PROC_RX: re_compile(r'^(?:rx_?)?\d+?(?:(?:, *?| +?)(?:rx_?)?\d+?)*$'),
-    ProcModule.PROC_RN: re_compile(r'^(?:rn_?)?\d+?(?:(?:, *?| +?)(?:rn_?)?\d+?)*$'),
-    ProcModule.PROC_RS: re_compile(r'^(?:rs_?)?\d+?(?:(?:, *?| +?)(?:rs_?)?\d+?)*$'),
+    ProcModule.PROC_RX: re_compile(fr'^(?:{FILE_NAME_PREFIX_RX}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RX}?)?\d+?)*$'),
+    ProcModule.PROC_RN: re_compile(fr'^(?:{FILE_NAME_PREFIX_RN}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RN}?)?\d+?)*$'),
+    ProcModule.PROC_RS: re_compile(fr'^(?:{FILE_NAME_PREFIX_RS}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RS}?)?\d+?)*$'),
 }
 prefix_optional_patterns = {
-    ProcModule.PROC_RX: re_compile(fr'{prefixes.get(ProcModule.PROC_RX)}?'),
-    ProcModule.PROC_RN: re_compile(fr'{prefixes.get(ProcModule.PROC_RN)}?'),
-    ProcModule.PROC_RS: re_compile(fr'{prefixes.get(ProcModule.PROC_RS)}?'),
+    ProcModule.PROC_RX: re_compile(fr'{FILE_NAME_PREFIX_RX}?'),
+    ProcModule.PROC_RN: re_compile(fr'{FILE_NAME_PREFIX_RN}?'),
+    ProcModule.PROC_RS: re_compile(fr'{FILE_NAME_PREFIX_RS}?'),
 }
 
 
@@ -82,9 +77,6 @@ def parse_file(filepath: str) -> Tuple[bool, List[str]]:
 
 def prepare_tags_list(filepath: str) -> Tuple[bool, str]:
     suc, id_list = parse_file(filepath)
-    if suc is False or len(id_list) == 0:
-        return False, ''
-
     return suc, f'({"~".join(id_list)})'
 
 #

@@ -23,8 +23,8 @@ from app_gui_defines import (
 from app_utils import Protocol, normalize_path
 
 __all__ = (
-    'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int',
-    'Validator', 'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator',
+    'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int', 'Validator',
+    'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator',
     'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator', 'ParchiCBValidator', 'TimeoutValidator',
 )
 
@@ -75,8 +75,7 @@ def valid_json(json: str) -> dict:
 def valid_positive_int(val: str, *, lb=0, ub=4294967295) -> int:
     try:
         val = int(val)
-        assert val >= lb
-        assert val <= ub
+        assert lb <= val <= ub
         return val
     except Exception:
         raise ArgumentError
