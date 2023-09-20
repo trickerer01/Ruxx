@@ -262,7 +262,7 @@ class DownloaderRn(DownloaderBase):
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
         # no pagination
         full_item_id = f'{self._get_module_abbr_p()}{item_id}'
-        comment_divs = raw_html.find_all('div', class_='comment')
+        comment_divs = raw_html.select('div[class="comment"]')
         for comment_div in comment_divs:
             author_a = comment_div.find('a', class_='username')
             author = author_a.text  # type: str

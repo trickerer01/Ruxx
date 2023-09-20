@@ -484,7 +484,7 @@ def check_tags_direct_do() -> None:
     if downloading is False:
         config_global(Globals.GOBJECT_FIELD_TAGS, bg=COLOR_WHITE)
         config_global(Globals.GOBJECT_BUTTON_CHECKTAGS, state=gobject_orig_states[Globals.GOBJECT_BUTTON_CHECKTAGS])
-        config_menu(Menus.MENU_ACTION, SubMenus.CHECKTAGS, state=menu_item_orig_states[Menus.MENU_ACTIONS][2])
+        config_menu(Menus.MENU_ACTIONS, SubMenus.CHECKTAGS, state=menu_item_orig_states[Menus.MENU_ACTIONS][2])
 
 
 def check_tags_direct() -> None:

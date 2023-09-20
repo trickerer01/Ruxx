@@ -987,9 +987,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace(f'\nInterrupted by {str(sys.exc_info()[0])}!\n', True)
             self.my_root_thread.killed = True
         except Exception:
-            trace(f'Unhandled exception: {str(sys.exc_info()[0])}!', True)
             import traceback
-            traceback.print_exc()
+            trace(f'Unhandled exception: {str(sys.exc_info()[0])}!\n{traceback.format_exc()}', True)
         finally:
             self.current_state = DownloaderStates.STATE_IDLE
 
