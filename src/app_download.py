@@ -1031,6 +1031,9 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     def _solve_argument_conflicts(self) -> bool:
         ret = False
+        if self.prefer_webm:
+            trace('Warning (W1): \'-webm\' option is deprecated and will be removed in near future')
+            ret = True
         if ProcModule.is_rn() or ProcModule.is_rs():
             if self.include_parchi:
                 trace('Warning (W1): RN module is unable to collect parent posts. Disabled!')
