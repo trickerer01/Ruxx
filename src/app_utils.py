@@ -11,7 +11,6 @@ import sys
 from abc import abstractmethod
 from datetime import datetime, date
 from tkinter import messagebox
-# from typing import Iterable
 try:
     from typing import Protocol
 except Exception:

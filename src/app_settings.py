@@ -32,7 +32,6 @@ class Settings(ABC):
     """
     Settings !Static!
     """
-
     INITIAL_SETTINGS = []  # type: List[str]
     AUTOCONFIG_FILENAMES = ('ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg')
     on_proc_module_change_callback = None  # type: Optional[Callable[[int], None]]
@@ -58,7 +57,7 @@ class Settings(ABC):
     settings = {
         'tags': Setting(Options.OPT_TAGS, ValidatorAlwaysTrue()),  # no validation, str
         'module': Setting(Options.OPT_MODULE, ModuleValidator(), 'Invalid module \'%s\'!'),
-        'path': Setting(Options.OPT_PATH, ValidatorAlwaysTrue(), 'Invalid path \'%s\'!'),  # no validation, str
+        'path': Setting(Options.OPT_PATH, ValidatorAlwaysTrue()),  # no validation, str
         'videos': Setting(Options.OPT_VIDSETTING, VideosCBValidator(), 'Invalid videos option \'%s\'!'),
         'images': Setting(Options.OPT_IMGSETTING, ImagesCBValidator(), 'Invalid images option \'%s\'!'),
         'parchi': Setting(Options.OPT_PARCHISETTING, ParchiCBValidator(), 'Invalid parchi option \'%s\'!'),
@@ -128,7 +127,7 @@ class Settings(ABC):
         def to_cfg_line(name: str, value: Union[str, int]) -> str:
             return f'{name}={str(value)}\n'
 
-        settings = ['# Ruxx config settings #\n\n']
+        settings_strlist = ['# Ruxx config settings #\n\n']
         for k in Settings.settings:
             # noinspection PyUnusedLocal
             myval = ...  # type: Union[str, int]
@@ -143,8 +142,8 @@ class Settings(ABC):
                 myval = Settings.combobox_setting_arrays.get(conf).index(getrootconf(conf))
             else:
                 myval = getrootconf(conf)
-            settings.append(to_cfg_line(k, myval))
-        return settings
+            settings_strlist.append(to_cfg_line(k, myval))
+        return settings_strlist
 
     @staticmethod
     def _read_settings(lines: Iterable[str]) -> None:

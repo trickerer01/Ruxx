@@ -73,7 +73,7 @@ class ThreadedWorker:
 class ThreadedHtmlWorker(ABC, ThreadedWorker):
     def __init__(self) -> None:
         super().__init__()
-        self.raw_html_cache = dict()  # type: Dict[str, bytes]
+        self.raw_html_cache = dict()  # type: Dict[str, BeautifulSoup]
         self.add_headers = dict()  # type: Dict[str, str]
         self.add_cookies = dict()  # type: Dict[str, str]
         self.ignore_proxy = False
@@ -259,10 +259,10 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
         return result
 
     # threaded
-    def fetch_html(self, url: str, tries: int = None, do_cache=False) -> Optional[BeautifulSoup]:
+    def fetch_html(self, url: str, tries=0, do_cache=False) -> Optional[BeautifulSoup]:
         cached = self.raw_html_cache.get(url)
         if cached:
-            return BeautifulSoup(cached, 'html.parser')
+            return cached
 
         tries = tries or CONNECT_RETRIES_PAGE
 
@@ -302,11 +302,11 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
             self.add_cookies = r.cookies.copy()
             self.add_cookies.update(t)
 
-        if r is not None and do_cache:
-            self.raw_html_cache[url] = r.content
-            return self.fetch_html(url, tries, do_cache)
+        result = BeautifulSoup(r.content, 'html.parser') if r is not None else None
+        if result and do_cache:
+            self.raw_html_cache[url] = result
 
-        return BeautifulSoup(r.content, 'html.parser') if r is not None else None
+        return result
 
 #
 #

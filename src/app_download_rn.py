@@ -111,7 +111,7 @@ class DownloaderRn(DownloaderBase):
         except Exception:
             thread_exit(f'Unable to extract post date from raw: {str(raw_html)}', -446)
 
-    def get_items_query_size_or_html(self, url: str, tries: int = None) -> Union[int, BeautifulSoup]:
+    def get_items_query_size_or_html(self, url: str, tries=0) -> Union[int, BeautifulSoup]:
         raw_html = self.fetch_html(f'{url}{1:d}', tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
