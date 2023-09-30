@@ -236,9 +236,9 @@ if __UPDATE_TAG_ALIASES__:
     TAG_ALIASES_STR = b64encode(str(TAG_ALIASES).replace('\'', '"').encode()).decode()
 
 
-def append_filtered_tags(add_string: str, tags_str: str, re_tags_to_process: Pattern, re_tags_to_exclude: Pattern) -> str:
+def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pattern, re_tags_to_exclude: Pattern) -> str:
     if len(tags_str) == 0:
-        return add_string
+        return base_string
 
     tags_list = tags_str.split(' ')
     tags_toadd_list = []  # type: List[str]
@@ -297,7 +297,7 @@ def append_filtered_tags(add_string: str, tags_str: str, re_tags_to_process: Pat
                         tag = f'{tag[:i]}{c.upper()}{tag[i + 1:]}'
             tags_toadd_list.append(tag)
 
-    return f'{add_string}{UNDERSCORE}{re_replace_symbols.sub(UNDERSCORE, UNDERSCORE.join(sorted(tags_toadd_list)))}'
+    return f'{base_string}{UNDERSCORE}{re_replace_symbols.sub(UNDERSCORE, UNDERSCORE.join(sorted(tags_toadd_list)))}'
 
 #
 #
