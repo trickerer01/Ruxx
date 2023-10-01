@@ -19,7 +19,7 @@ from app_utils import trim_undersores
 
 __all__ = ('append_filtered_tags',)
 
-re_meta_group = re_compile(r'^([^(]+)\(([^)]+)\).*$')
+re_meta_group = re_compile(r'^([^(]+)\(([^)]+)\).*?$')
 re_not_a_letter = re_compile(r'[^a-z]+')
 
 
