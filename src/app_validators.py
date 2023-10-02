@@ -18,8 +18,9 @@ from typing import Union
 # internal
 from app_defines import FMT_DATE, THREADS_MAX_ITEMS, DownloadModes
 from app_gui_defines import (
-    SLASH, ProcModule, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_PARCHI, OPTION_VALUES_PROXYTYPE,
+    SLASH, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_PARCHI, OPTION_VALUES_PROXYTYPE,
 )
+from app_module import ProcModule
 from app_utils import Protocol, normalize_path
 
 __all__ = (

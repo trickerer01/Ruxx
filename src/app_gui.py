@@ -44,8 +44,9 @@ from app_gui_defines import (
     OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT, GUI2_UPDATE_DELAY_DEFAULT,
     THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE,
     OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI,
-    ProcModule, menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys,
+    menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys,
 )
+from app_module import ProcModule
 from app_re import re_space_mult
 from app_logger import Logger
 from app_revision import __RUXX_DEBUG__

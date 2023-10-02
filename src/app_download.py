@@ -28,7 +28,8 @@ from app_defines import (
     ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, ItemInfo, DATE_MIN_DEFAULT,
     CONNECT_TIMEOUT_BASE, CONNECT_RETRIES_ITEM, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE, PLATFORM_WINDOWS
 )
-from app_gui_defines import UNDERSCORE, NEWLINE, ProcModule
+from app_gui_defines import UNDERSCORE, NEWLINE
+from app_module import ProcModule
 from app_network import ThreadedHtmlWorker, thread_exit, DownloadInterruptException
 from app_logger import trace
 from app_revision import __RUXX_DEBUG__, APP_NAME, APP_VERSION

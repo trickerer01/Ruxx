@@ -12,7 +12,7 @@ from typing import Tuple, List, Pattern, Optional, Iterable
 
 # internal
 from app_defines import TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN, TAGS_STRING_LENGTH_MAX_RS
-from app_gui_defines import ProcModule
+from app_module import ProcModule
 from app_network import thread_exit
 from app_logger import trace
 

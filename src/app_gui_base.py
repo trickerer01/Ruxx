@@ -37,8 +37,9 @@ from app_gui_defines import (
     OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, Globals, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
     OPTION_VALUES_PROXYTYPE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
     STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, BUTTONS_TO_UNFOCUS,
-    gobjects, Icons, Menus, SubMenus, menu_items, hotkeys, ProcModule, SLASH,
+    gobjects, Icons, Menus, SubMenus, menu_items, hotkeys, SLASH,
 )
+from app_module import ProcModule
 from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, ABOUT_MSG
 from app_logger import Logger
 from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME

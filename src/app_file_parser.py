@@ -18,7 +18,7 @@ from app_defines import (
     DEFAULT_ENCODING, FILE_NAME_PREFIX_RX, FILE_NAME_PREFIX_RN, FILE_NAME_PREFIX_RS,
     ID_VALUE_SEPARATOR_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RS,
 )
-from app_gui_defines import ProcModule
+from app_module import ProcModule
 
 __all__ = ('prepare_tags_list',)
 

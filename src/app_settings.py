@@ -16,8 +16,9 @@ from typing import Union, List, Iterable, Callable, Optional
 from app_defines import DEFAULT_ENCODING
 from app_gui_base import window_hcookiesm, getrootconf, setrootconf, int_vars, get_curdir, ask_filename
 from app_gui_defines import (
-    Options, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_PARCHI, OPTION_VALUES_THREADING, ProcModule, CVARS, SLASH,
+    Options, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_PARCHI, OPTION_VALUES_THREADING, CVARS, SLASH,
 )
+from app_module import ProcModule
 from app_logger import Logger
 from app_utils import normalize_path
 from app_validators import (

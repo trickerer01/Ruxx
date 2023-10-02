@@ -14,7 +14,7 @@ from typing import List, Pattern, Tuple, Optional
 from iteration_utilities import unique_everseen
 
 # internal
-from app_gui_defines import ProcModule
+from app_module import ProcModule
 from app_re import re_space_mult
 
 __all__ = ('reset_last_tags', 'parse_tags')
