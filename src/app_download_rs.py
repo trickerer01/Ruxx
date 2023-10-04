@@ -88,6 +88,7 @@ class DownloaderRs(DownloaderBase):
         for tag in taglist:
             if re_tag_video_rs.fullmatch(tag):
                 return True
+        return False
 
     def _get_item_html(self, h: str) -> Optional[BeautifulSoup]:
         return self.fetch_html(h, do_cache=True)
@@ -215,13 +216,14 @@ class DownloaderRs(DownloaderBase):
         if self.add_filename_prefix is True:
             item_id = f'{self._get_module_abbr_p()}{item_id}'
 
-        orig_href = self._extract_orig_link(raw_html)
+        is_vid = self._is_video(raw)
+        href = self._extract_sample_link(raw_html) if (self.low_res and not is_vid) else self._extract_orig_link(raw_html)
 
-        if orig_href:
-            if self._is_video(raw):
-                self._process_image(orig_href, item_id)
+        if href:
+            if is_vid:
+                self._process_video(href, item_id)
             else:
-                self._process_video(orig_href, item_id)
+                self._process_image(href, item_id)
         else:
             trace(f'Warning (W2): ProcItem: no content for {item_id}, seems like post was deleted', True)
 
@@ -262,6 +264,16 @@ class DownloaderRs(DownloaderBase):
         link = link_mp4 or link_wbm or link_img
         orig_href = str(link.get('src')) if link else ''
         return orig_href
+
+    @staticmethod
+    def _extract_sample_link(raw_html: BeautifulSoup) -> str:
+        orig_link = DownloaderRs._extract_orig_link(raw_html)
+        link = orig_link.replace('/images/', '/thumbnails/')
+        lsd_index = link.rfind('.')
+        link = link[:lsd_index] + '.jpg'
+        lsl_index = link.rfind('/')
+        link = link[:lsl_index] + '/thumbnail_' + link[lsl_index + 1:]
+        return link
 
     def _form_comments_search_address(self, post_id: str, page_num: int) -> str:
         return f'{self._get_sitename()}index.php?r=posts/view&id={post_id}&page={page_num:d}'

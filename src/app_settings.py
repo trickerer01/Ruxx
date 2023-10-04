@@ -100,7 +100,7 @@ class Settings(ABC):
                 if not path.isfile(full_path):
                     continue
                 file_size = stat(full_path).st_size
-                if file_size > (16 * 1024):  # 16 Kb
+                if file_size > 16 * 1024:  # 16 Kb
                     Logger.log(f'Skipping \'{filename}\', file is too large ({file_size / 1024:.2f})', False, False)
                     continue
                 Logger.log(f'Trying to autoconfigure using {filename}...', False, False)

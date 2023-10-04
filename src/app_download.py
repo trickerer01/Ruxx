@@ -273,7 +273,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             return
 
         if self.download_mode == DownloadModes.DOWNLOAD_TOUCH or result.file_size > 0:
-            result.result_str = f'{result.result_str}done ({result.file_size / (1024.0 * 1024.0):.2f} Mb)'
+            result.result_str = f'{result.result_str}done ({result.file_size / 1024**2:.2f} Mb)'
             with self.item_lock:
                 self.success_count += 1
         else:

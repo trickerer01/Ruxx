@@ -38,7 +38,7 @@ class Comparable(Protocol):
 
 def ensure_compatibility() -> None:
     assert sys.version_info >= (3, 7), 'Minimum python version required is 3.7!'
-    assert sys.platform in SUPPORTED_PLATFORMS, f'Unsupported OS \'{sys.platform}\''
+    assert sys.platform in SUPPORTED_PLATFORMS, f'Unsupported OS \'{sys.platform}\'!'
 
 
 # def is_sorted(c: Iterable) -> bool:
