@@ -173,8 +173,6 @@ class AppRoot(Tk):
     def finalize(self) -> None:
         self.bind(BUT_ESCAPE, func=lambda _: self.focus_set())  # release focus from any element on `Esc`
         self.config(bg=self.default_bg_color)
-
-        # self.protocol('WM_DELETE_WINDOW', quit_with_msg)
         self.mainloop()
 
 
@@ -476,7 +474,6 @@ class ProxyWindow(BaseWindow):
         self.err_message = attach_tooltip(self.entry_addr, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
         self.entry_addr.grid(row=1, column=5, columnspan=10)
 
-        # BaseFrame(downframe, height=16).grid(row=2, columnspan=COLUMNSPAN_MAX)
         BaseFrame(downframe, height=16).grid(row=4, columnspan=15)
 
         self.but_ok = Button(downframe, width=8, text='Ok', command=lambda: self.ok())

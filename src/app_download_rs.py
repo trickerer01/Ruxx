@@ -134,7 +134,6 @@ class DownloaderRs(DownloaderBase):
             trace(f'FATAL: GetVidAddr could not find anything!\n\nTag:\n\n{h}', True)
             assert False
 
-    # __slots__ = ('id', 'height', 'width', 'tags', 'ext', 'source', 'score', 'has_children', 'parent_id')
     def _extract_item_info(self, item: str) -> ItemInfo:
         item_info = ItemInfo()
         addr = self.extract_local_addr(item)
@@ -161,7 +160,6 @@ class DownloaderRs(DownloaderBase):
                     item_info.height = h
                     item_info.width = w
             elif li_str.startswith('Score:'):
-                # score_span = raw_html.find('span', id=f'psc{item_id}')
                 score_span = li.find('span')
                 if score_span:
                     item_info.score = score_span.text

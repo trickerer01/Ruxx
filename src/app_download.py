@@ -635,7 +635,6 @@ class DownloaderBase(ThreadedHtmlWorker):
             h = str(self.items_raw_per_task[idx])
             is_vid = self._is_video(h)
             if self.skip_videos if is_vid else self.skip_images:
-                # trace(f'Info: TagProc_filter: removing {"video" if _is_video else "image"} {_extract_id(extract_local_addr(h))}!')
                 del self.items_raw_per_task[idx]
                 self.total_count -= 1
 
@@ -680,7 +679,6 @@ class DownloaderBase(ThreadedHtmlWorker):
             rex_cdfile = re_compile(fr'^(?:{abbrp})?{item_id}[._].*?$')
             for f_idx in reversed(range(len(curdirfiles))):
                 if rex_cdfile.fullmatch(curdirfiles[f_idx]) is not None:
-                    # trace(f'Info: TagProc_filter: {item_id} already exists!')
                     del curdirfiles[f_idx]
                     del self.items_raw_per_task[idx]
                     self.total_count -= 1
@@ -756,8 +754,6 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             self.total_count = min(self._num_pages() * page_size, self.total_count)
             trace(f'new totalcount: {self.total_count:d}')
-
-            # list all items on selected pages
             trace(f'Scanning pages {self.minpage + 1:d} - {self.maxpage + 1:d}')
 
             self.total_count_old = self.total_count
@@ -954,7 +950,6 @@ class DownloaderBase(ThreadedHtmlWorker):
         if self._tasks_count() != 1:
             raise ThreadInterruptException('Cannot check tags: more than 1 task was formed')
         cur_tags = self.tags_str_arr[0]
-        # trace(f'\ntags check in progress:\n{cur_tags}\n')
         self.url = self.form_tags_search_address(cur_tags)
         total_count_or_html = self.get_items_query_size_or_html(self.url, tries=1)
         self.total_count = total_count_or_html if isinstance(total_count_or_html, int) else 1

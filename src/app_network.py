@@ -164,7 +164,6 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
                                 valid_chunk = False
                                 errcode = 1
                             elif etag != self.etags.get(item_id):
-                                # trace(f'ETag mismatch at {item_id}:{chunk_num:d}')
                                 valid_chunk = False
                                 errcode = 2
                             elif not single_chunk and not content_range:
@@ -199,7 +198,6 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
                             err_msg = f'Warning (W2): fetched {item_id}({ext_char}) file is empty.'
                             raise ValueError(err_msg)
 
-                        # trace(f'{item_id} expected size: {expected_size:d}')
                         use_chunked = is_video_ext
                         chunks = list(range(0, expected_size, DOWNLOAD_CHUNK_SIZE if use_chunked else expected_size))
                         single_chunk = (len(chunks) == 1)

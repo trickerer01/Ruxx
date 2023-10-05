@@ -58,7 +58,6 @@ class Logger:
             try:
                 print(text)
             except UnicodeError:
-                # print(f'message was: {bytearray(map(ord, text))}')
                 try:
                     print(text.encode(DEFAULT_ENCODING).decode())
                 except Exception:
