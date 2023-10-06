@@ -25,10 +25,10 @@ from iteration_utilities import unique_everseen
 
 # internal
 from app_defines import (
-    ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, ItemInfo, DATE_MIN_DEFAULT,
-    CONNECT_TIMEOUT_BASE, CONNECT_RETRIES_ITEM, DEFAULT_ENCODING, SOURCE_DEFAULT, FMT_DATE, PLATFORM_WINDOWS
+    ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, ItemInfo, Mem, DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE,
+    CONNECT_RETRIES_ITEM, DEFAULT_ENCODING, SOURCE_DEFAULT, PLATFORM_WINDOWS,
 )
-from app_gui_defines import UNDERSCORE, NEWLINE
+from app_gui_defines import UNDERSCORE, NEWLINE, NEWLINE_X2
 from app_module import ProcModule
 from app_network import ThreadedHtmlWorker, thread_exit, DownloadInterruptException
 from app_logger import trace
@@ -225,7 +225,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def _can_etract_item_info_without_fetch(self) -> bool:
+    def _can_extract_item_info_without_fetch(self) -> bool:
         ...
 
     def get_tags_count(self, offset=0) -> int:
@@ -273,7 +273,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             return
 
         if self.download_mode == DownloadModes.DOWNLOAD_TOUCH or result.file_size > 0:
-            result.result_str = f'{result.result_str}done ({result.file_size / 1024**2:.2f} Mb)'
+            result.result_str = f'{result.result_str}done ({result.file_size / Mem.MB:.2f} Mb)'
             with self.item_lock:
                 self.success_count += 1
         else:
@@ -767,12 +767,11 @@ class DownloaderBase(ThreadedHtmlWorker):
                     c_page += 1
                     arr_temp.append((n, c_page, self.maxpage))
 
-                ress = list()
                 with Pool(max(2, self.maxthreads_items // 2)) as active_pool:  # type: ThreadPool
+                    ress = list()
                     for larr in arr_temp:
                         ress.append(active_pool.apply_async(self._get_page_items, args=larr))
                     active_pool.close()
-
                     while len(ress) > 0:
                         self.catch_cancel_or_ctrl_c()
                         while len(ress) > 0 and ress[0].ready():
@@ -870,12 +869,11 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace(f'{self.total_count_all:d} item(s) scheduled, {self.maxthreads_items:d} thread(s) max\nWorking...\n')
 
         if self.maxthreads_items > 1 and len(self.items_raw_all) > 1:
-            ress = list()
             with Pool(self.maxthreads_items) as active_pool:  # type: ThreadPool
+                ress = list()
                 for iarr in self.items_raw_all:
                     ress.append(active_pool.apply_async(self._process_item, args=(iarr,)))
                 active_pool.close()
-
                 while len(ress) > 0:
                     self.catch_cancel_or_ctrl_c()
                     while len(ress) > 0 and ress[0].ready():
@@ -1062,19 +1060,18 @@ class DownloaderBase(ThreadedHtmlWorker):
                     if key in ItemInfo.optional_slots:
                         continue
                     if item_info.__getattribute__(key) == '':
-                        trace(f'Info: extract info {abbrp}{item_info.id}: not initialized field \'{key}\'!')
+                        trace(f'Info: extract info {abbrp}{item_info.id}: uninitialized field \'{key}\'!')
 
         abbrp = self._get_module_abbr_p()
-        if self._can_etract_item_info_without_fetch() or self.maxthreads_items < 2 or len(self.items_raw_per_task) < 2:
+        if self._can_extract_item_info_without_fetch() or self.maxthreads_items < 2 or len(self.items_raw_per_task) < 2:
             for item in self.items_raw_per_task:
                 self.catch_cancel_or_ctrl_c()
                 res = self._extract_item_info(item)
                 put_info(res)
         else:  # RS
-            arr_temp = [(elem,) for elem in self.items_raw_per_task]
-            ress = list()
             with Pool(self.maxthreads_items) as active_pool:  # type: ThreadPool
-                for larr in arr_temp:
+                ress = list()
+                for larr in [(elem,) for elem in self.items_raw_per_task]:
                     ress.append(active_pool.apply_async(self._extract_item_info, args=larr))
                 active_pool.close()
                 while len(ress) > 0:
@@ -1109,7 +1106,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             return f'{abbrp}{item_info.id}: {item_info.source.strip()}\n'
 
         def proc_comments(item_info: ItemInfo) -> str:
-            comments = f'\n{f"{NEWLINE}{NEWLINE}".join(str(c) for c in item_info.comments)}\n' if item_info.comments else ''
+            comments = f'\n{NEWLINE_X2.join(str(c) for c in item_info.comments)}\n' if item_info.comments else ''
             return f'{abbrp}{item_info.id}:{comments}\n'
 
         for name, proc, conf in (

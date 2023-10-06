@@ -13,7 +13,7 @@ from tkinter import filedialog
 from typing import Union, List, Iterable, Callable, Optional
 
 # internal
-from app_defines import DEFAULT_ENCODING
+from app_defines import Mem, DEFAULT_ENCODING
 from app_gui_base import window_hcookiesm, getrootconf, setrootconf, int_vars, get_curdir, ask_filename
 from app_gui_defines import (
     Options, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_PARCHI, OPTION_VALUES_THREADING, CVARS, SLASH,
@@ -100,8 +100,8 @@ class Settings(ABC):
                 if not path.isfile(full_path):
                     continue
                 file_size = stat(full_path).st_size
-                if file_size > 16 * 1024:  # 16 Kb
-                    Logger.log(f'Skipping \'{filename}\', file is too large ({file_size / 1024:.2f})', False, False)
+                if file_size > 16 * Mem.KB:
+                    Logger.log(f'Skipping \'{filename}\', file is too large ({file_size / Mem.KB:.2f})', False, False)
                     continue
                 Logger.log(f'Trying to autoconfigure using {filename}...', False, False)
                 try:

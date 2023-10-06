@@ -200,11 +200,7 @@ PLATFORM_WINDOWS = 'win32'
 PLATFORM_LINUX = 'linux'
 # PLATFORM_DARWIN = 'darwin'  # Mac
 
-SUPPORTED_PLATFORMS = {
-    PLATFORM_WINDOWS,
-    PLATFORM_LINUX,
-    # PLATFORM_DARWIN
-}
+SUPPORTED_PLATFORMS = {PLATFORM_WINDOWS, PLATFORM_LINUX}  # , PLATFORM_DARWIN
 
 KNOWN_EXTENSIONS = ('mp4', 'webm', 'swf', 'png', 'jpg', 'jpeg', 'gif')
 KNOWN_EXTENSIONS_STR = ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)
@@ -212,6 +208,12 @@ KNOWN_EXTENSIONS_STR = ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)
 
 class ThreadInterruptException(Exception):
     pass
+
+
+class Mem:
+    KB = 1024
+    MB = KB * 1024
+    GB = MB * 1024
 
 #
 #

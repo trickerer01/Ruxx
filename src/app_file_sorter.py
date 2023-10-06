@@ -13,6 +13,7 @@ from re import compile as re_compile
 from typing import TypeVar, Collection, Iterable, Sequence
 
 # internal
+from app_defines import Mem
 from app_gui_defines import SLASH
 from app_utils import normalize_path, Comparable
 
@@ -71,7 +72,7 @@ def sort_files_by_size(files: Sequence[str], thresholds_mb: Collection[float]) -
             try:
                 file_size = stat(full_path).st_size
                 full_name = path.split(full_path)[1]
-                my_folder = folder_names[get_threshold_index(thresholds_mb, file_size / 2**20)]
+                my_folder = folder_names[get_threshold_index(thresholds_mb, file_size / Mem.MB)]
                 move_file(full_path, f'{base_path}{SLASH}{my_folder}{SLASH}', full_name)
                 moved_count += 1
             except Exception:

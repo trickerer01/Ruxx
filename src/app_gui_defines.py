@@ -105,6 +105,7 @@ FONT_SANS_MEDIUM = ('Microsoft Sans Serif', 10)
 SLASH = '/'
 UNDERSCORE = '_'
 NEWLINE = '\n'
+NEWLINE_X2 = '\n\n'
 
 
 # icons enum

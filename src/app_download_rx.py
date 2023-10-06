@@ -182,7 +182,7 @@ class DownloaderRx(DownloaderBase):
     def _split_or_group_into_tasks_always(self) -> bool:
         return False
 
-    def _can_etract_item_info_without_fetch(self) -> bool:
+    def _can_extract_item_info_without_fetch(self) -> bool:
         return True
 
     def _send_to_download(self, raw: str, item_id: str, is_video: bool) -> None:

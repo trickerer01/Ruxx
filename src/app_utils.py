@@ -14,7 +14,6 @@ from tkinter import messagebox
 try:
     from typing import Protocol
 except Exception:
-    # noinspection PyUnresolvedReferences
     from typing_extensions import Protocol
 
 # internal
@@ -74,7 +73,7 @@ def trim_undersores(base_str: str) -> str:
 
 
 def format_score(score_str: str) -> str:
-    score_str = score_str if score_str not in {'', None} else '0'
+    score_str = score_str or '0'
     return f'score({"" if score_str[0] in {"0", "-", "u"} else "+"}{score_str})'
 
 #
