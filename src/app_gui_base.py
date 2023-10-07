@@ -864,7 +864,7 @@ class ConnectionTimeoutWindow(ConnectRequestIntWindow):
 class ConnectionRetriesWindow(ConnectRequestIntWindow):
     def __init__(self, parent) -> None:
         super().__init__(parent, Options.OPT_ISRETRIESOPEN, Options.OPT_RETRIESSTRING, Options.OPT_RETRIESSTRING_TEMP,
-                         'Retries', '5 .. 100', CONNECT_RETRIES_BASE, (5, 100))
+                         'Retries', '5 .. inf.', CONNECT_RETRIES_BASE, (5, 2**63))
 
 
 def init_additional_windows() -> None:
