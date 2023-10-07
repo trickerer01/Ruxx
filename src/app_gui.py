@@ -30,7 +30,7 @@ from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_si
 from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
     AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, setrootconf, rootm, getrootconf,
-    window_hcookiesm, window_proxym, window_timeoutm, register_menu, register_submenu, GetRoot, create_base_window_widgets,
+    window_hcookiesm, window_proxym, window_timeoutm, window_retriesm, register_menu, register_submenu, GetRoot, create_base_window_widgets,
     text_cmdm, get_icon, init_additional_windows, get_global, config_global, is_global_disabled, is_menu_disabled, is_focusing,
     set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list, browse_path, register_menu_command, toggle_console,
     register_submenu_command, register_menu_checkbutton, register_menu_radiobutton, register_menu_separator, get_all_media_files_in_cur_dir,
@@ -41,9 +41,9 @@ from app_gui_defines import (
     OPTION_VALUES_THREADING, OPTION_CMD_VIDEOS, OPTION_CMD_IMAGES, OPTION_CMD_THREADING_CMD, OPTION_CMD_THREADING, OPTION_CMD_FNAMEPREFIX,
     OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS, OPTION_CMD_SAVE_SOURCES,
     OPTION_CMD_SAVE_COMMENTS, OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH, OPTION_CMD_COOKIES, OPTION_CMD_HEADERS,
-    OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT, GUI2_UPDATE_DELAY_DEFAULT,
-    THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE,
-    OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI,
+    OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT, OPTION_CMD_RETRIES,
+    GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS,
+    OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI,
     menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys,
 )
 from app_module import ProcModule
@@ -374,6 +374,11 @@ def prepare_cmdline() -> List[str]:
     if len(addstr) > 0:
         newstr.append(OPTION_CMD_TIMEOUT)
         newstr.append(addstr)
+    # retries
+    addstr = str(getrootconf(Options.OPT_RETRIESSTRING))
+    if len(addstr) > 0:
+        newstr.append(OPTION_CMD_RETRIES)
+        newstr.append(addstr)
     # prefix
     addstr = OPTION_CMD_FNAMEPREFIX[int(getrootconf(Options.OPT_FNAMEPREFIX))]
     if len(addstr) > 0:
@@ -633,6 +638,7 @@ def finalize_additional_windows() -> None:
     window_proxym().finalize()
     window_hcookiesm().finalize()
     window_timeoutm().finalize()
+    window_retriesm().finalize()
     Logger.print_pending_strings()
 
 
@@ -672,6 +678,7 @@ def init_menus() -> None:
     register_menu_command('Headers / Cookies...', window_hcookiesm().toggle_visibility, Options.OPT_ISHCOOKIESOPEN)
     register_menu_command('Set proxy...', window_proxym().ask, Options.OPT_ISPROXYOPEN)
     register_menu_command('Set timeout...', window_timeoutm().ask, Options.OPT_ISTIMEOUTOPEN)
+    register_menu_command('Set retries count...', window_retriesm().ask, Options.OPT_ISRETRIESOPEN)
     register_menu_checkbutton('Download without proxy', CVARS.get(Options.OPT_PROXY_NO_DOWNLOAD))
     register_menu_checkbutton('Ignore proxy', CVARS.get(Options.OPT_IGNORE_PROXY))
     # 6) Action
@@ -715,11 +722,13 @@ def init_gui() -> None:
     rootm().bind_all(hotkeys.get(Options.OPT_ISPROXYOPEN), func=lambda e: window_proxym().ask() if e.state != 0x20000 else None)
     rootm().bind_all(hotkeys.get(Options.OPT_ISHCOOKIESOPEN), func=lambda _: window_hcookiesm().toggle_visibility())
     rootm().bind_all(hotkeys.get(Options.OPT_ISTIMEOUTOPEN), func=lambda e: window_timeoutm().ask() if e.state != 0x20000 else None)
+    rootm().bind_all(hotkeys.get(Options.OPT_ISRETRIESOPEN), func=lambda e: window_retriesm().ask() if e.state != 0x20000 else None)
     rootm().bind(BUT_ALT_F4, func=lambda _: rootm().destroy())
     Logger.wnd.window.bind(BUT_ALT_F4, func=lambda _: Logger.wnd.hide() if Logger.wnd.visible else None)
     window_hcookiesm().window.bind(BUT_ALT_F4, func=lambda _: window_hcookiesm().hide() if window_hcookiesm().visible else None)
     window_proxym().window.bind(BUT_ALT_F4, func=lambda _: window_proxym().cancel() if window_proxym().visible else None)
     window_timeoutm().window.bind(BUT_ALT_F4, func=lambda _: window_timeoutm().cancel() if window_timeoutm().visible else None)
+    window_retriesm().window.bind(BUT_ALT_F4, func=lambda _: window_retriesm().cancel() if window_retriesm().visible else None)
     # Main menu
     init_menus()
     # Menu hotkeys

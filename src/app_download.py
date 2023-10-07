@@ -26,7 +26,7 @@ from iteration_utilities import unique_everseen
 # internal
 from app_defines import (
     ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, ItemInfo, Mem, DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE,
-    CONNECT_RETRIES_ITEM, DEFAULT_ENCODING, SOURCE_DEFAULT, PLATFORM_WINDOWS,
+    DEFAULT_ENCODING, SOURCE_DEFAULT, PLATFORM_WINDOWS,
 )
 from app_gui_defines import UNDERSCORE, NEWLINE, NEWLINE_X2
 from app_module import ProcModule
@@ -278,7 +278,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 self.success_count += 1
         else:
             result.result_str = f'{result.result_str}failed'
-            if result.retries >= CONNECT_RETRIES_ITEM:
+            if result.retries >= self.retries:
                 result.result_str = f'{result.result_str} (could not download file after {result.retries:d} tries)'
             with self.item_lock:
                 self.fail_count += 1

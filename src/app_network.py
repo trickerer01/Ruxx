@@ -24,8 +24,8 @@ from requests import Session, Response, HTTPError, adapters
 
 # internal
 from app_defines import (
-    ThreadInterruptException, DownloadModes, CONNECT_TIMEOUT_BASE, CONNECT_RETRIES_PAGE, CONNECT_RETRIES_ITEM, CONNECT_RETRIES_CHUNK,
-    WRITE_CHUNK_SIZE, DOWNLOAD_CHUNK_SIZE,
+    ThreadInterruptException, DownloadModes, CONNECT_TIMEOUT_BASE, CONNECT_RETRIES_BASE, CONNECT_RETRIES_CHUNK, WRITE_CHUNK_SIZE,
+    DOWNLOAD_CHUNK_SIZE,
 )
 from app_gui_defines import SLASH
 from app_logger import trace
@@ -80,6 +80,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
         self.ignore_proxy_dwn = False
         self.proxies = None  # type: Optional[Dict[str, str]]
         self.timeout = CONNECT_TIMEOUT_BASE
+        self.retries = CONNECT_RETRIES_BASE
         self.etags = dict()  # type: Dict[str, str]
         self.session = None  # type: Optional[Session]
 
@@ -111,6 +112,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
         self.ignore_proxy_dwn = args.proxynodown or self.ignore_proxy_dwn
         self.proxies = {'http': args.proxy, 'https': args.proxy} if args.proxy else None
         self.timeout = args.timeout or self.timeout
+        self.retries = args.retries or self.retries
         self.session = self.make_session()
 
     # threaded
@@ -131,7 +133,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
             expected_size = 0
             with self.make_session() as s:
                 s.stream = True
-                while (not (path.isfile(dest) and result.file_size > 0)) and result.retries < CONNECT_RETRIES_ITEM:
+                while (not (path.isfile(dest) and result.file_size > 0)) and result.retries < self.retries:
                     if self.is_killed():
                         trace(f'{result.result_str} interrupted', True)
                         raise DownloadInterruptException
@@ -262,7 +264,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
         if cached:
             return cached
 
-        tries = tries or CONNECT_RETRIES_PAGE
+        tries = tries or self.retries
 
         r = None
         retries = 0

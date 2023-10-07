@@ -31,6 +31,7 @@ BUT_F2 = '<F2>'
 BUT_F3 = '<F3>'
 BUT_F4 = '<F4>'
 BUT_F5 = '<F5>'
+BUT_F6 = '<F6>'
 BUT_ALT_F4 = '<Alt-F4>'
 # Colors
 #  Color enum
@@ -70,6 +71,7 @@ OPTION_CMD_PROXY = '-proxy'
 OPTION_CMD_IGNORE_PROXY = ('', '-noproxy')
 OPTION_CMD_PROXY_NO_DOWNLOAD = ('', '-proxynodown')
 OPTION_CMD_TIMEOUT = '-timeout'
+OPTION_CMD_RETRIES = '-retries'
 OPTION_CMD_FNAMEPREFIX = ('', '-prefix')
 OPTION_CMD_DOWNMODE_CMD = '-dmode'
 OPTION_CMD_DOWNLIMIT_CMD = '-dlimit'
@@ -151,6 +153,9 @@ class Options(IntEnum):
     OPT_ISTIMEOUTOPEN = auto()
     OPT_TIMEOUTSTRING = auto()
     OPT_TIMEOUTSTRING_TEMP = auto()
+    OPT_ISRETRIESOPEN = auto()
+    OPT_RETRIESSTRING = auto()
+    OPT_RETRIESSTRING_TEMP = auto()
     OPT_MODULE = auto()
     OPT_IGNORE_PROXY = auto()
     OPT_PROXY_NO_DOWNLOAD = auto()
@@ -200,6 +205,9 @@ CVARS = {
     Options.OPT_ISTIMEOUTOPEN: 'isTimeoutOpen',
     Options.OPT_TIMEOUTSTRING: 'timeoutString',
     Options.OPT_TIMEOUTSTRING_TEMP: 'timeoutStringTemp',
+    Options.OPT_ISRETRIESOPEN: 'isRetriesOpen',
+    Options.OPT_RETRIESSTRING: 'retriesString',
+    Options.OPT_RETRIESSTRING_TEMP: 'retriesStringTemp',
     Options.OPT_MODULE: 'module',
     Options.OPT_IGNORE_PROXY: 'ingoreProxy',
     Options.OPT_PROXY_NO_DOWNLOAD: 'proxyDownload',
@@ -301,7 +309,7 @@ class SubMenus(IntEnum):
     SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
     PREFIX, STAGS, SSOURCE, SCOMMENTS, EXTEND, WNONEMPTY = 0, 1, 2, 3, 4, 5
     RX, RN, RS = 0, 1, 2
-    HEADERS, PROXY, TIMEOUT, DWPROXY, IGNOREPROXY = 0, 1, 2, 3, 4
+    HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY = 0, 1, 2, 3, 4, 5
     DOWNLOAD, CHECKTAGS = 0, 2
     IDLIST, UNTAG, RETAG, SORT = 0, 2, 3, 5
     DFULL, DSKIP, DTOUCH, DLIMSET, DLIMRESET = 0, 1, 2, 3, 4
@@ -323,7 +331,8 @@ menu_items = {
     Menus.MENU_FILE: RuxxMenu({SubMenus.SAVE, SubMenus.LOAD, SubMenus.RESET}),
     Menus.MENU_EDIT: RuxxMenu({SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.EXTEND, SubMenus.WNONEMPTY}),
     Menus.MENU_MODULE: RuxxMenu({SubMenus.RX, SubMenus.RN, SubMenus.RS}),
-    Menus.MENU_CONNECTION: RuxxMenu({SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.DWPROXY, SubMenus.IGNOREPROXY}),
+    Menus.MENU_CONNECTION: RuxxMenu({SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
+                                     SubMenus.IGNOREPROXY}),
     Menus.MENU_ACTIONS: RuxxMenu({SubMenus.DOWNLOAD, SubMenus.CHECKTAGS}),
     Menus.MENU_TOOLS: RuxxMenu({SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT}),
     Menus.MENU_DEBUG: RuxxMenu({SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH, SubMenus.DLIMSET, SubMenus.DLIMRESET}),
@@ -333,7 +342,7 @@ menu_item_orig_states = {
     Menus.MENU_FILE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_EDIT: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_MODULE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.MENU_CONNECTION: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.MENU_CONNECTION: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_ACTIONS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_TOOLS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_DEBUG: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
@@ -346,6 +355,7 @@ hotkeys = {
     Options.OPT_ISHCOOKIESOPEN: BUT_F3,
     Options.OPT_ISPROXYOPEN: BUT_F4,
     Options.OPT_ISTIMEOUTOPEN: BUT_F5,
+    Options.OPT_ISRETRIESOPEN: BUT_F6,
     Options.OPT_ISSAVESETTINGSOPEN: BUT_CTRL_S,
     Options.OPT_ISLOADSETTINGSOPEN: BUT_CTRL_O,
     Options.OPT_ACTION_DOWNLOAD: BUT_CTRL_SHIFT_D,

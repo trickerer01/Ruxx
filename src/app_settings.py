@@ -23,7 +23,8 @@ from app_logger import Logger
 from app_utils import normalize_path
 from app_validators import (
     Validator, ValidatorAlwaysTrue, ModuleValidator, VideosCBValidator, ImagesCBValidator, ParchiCBValidator, ThreadsCBValidator,
-    DateValidator, JsonValidator, ProxyTypeValidator, ProxyValidator, BoolStrValidator, TimeoutValidator, WindowPosValidator,
+    DateValidator, JsonValidator, ProxyTypeValidator, ProxyValidator, BoolStrValidator, TimeoutValidator, RetriesValidator,
+    WindowPosValidator,
 )
 
 __all__ = ('Settings',)
@@ -72,6 +73,7 @@ class Settings(ABC):
         'ignoreproxy': Setting(Options.OPT_IGNORE_PROXY, BoolStrValidator(), 'Invalid ignoreproxy bool value \'%s\'!'),
         'ignoreproxydwn': Setting(Options.OPT_PROXY_NO_DOWNLOAD, BoolStrValidator(), 'Invalid ignoreproxydwn bool value \'%s\'!'),
         'timeout': Setting(Options.OPT_TIMEOUTSTRING, TimeoutValidator(), 'Invalid timeout value \'%s\'!'),
+        'retries': Setting(Options.OPT_RETRIESSTRING, RetriesValidator(), 'Invalid retries value \'%s\'!'),
         'prefix': Setting(Options.OPT_FNAMEPREFIX, BoolStrValidator(), 'Invalid prefix bool value \'%s\'!'),
         'savetags': Setting(Options.OPT_SAVE_TAGS, BoolStrValidator(), 'Invalid savetags bool value \'%s\'!'),
         'savesources': Setting(Options.OPT_SAVE_SOURCES, BoolStrValidator(), 'Invalid savesources bool value \'%s\'!'),
@@ -179,6 +181,9 @@ class Settings(ABC):
                 elif conf == Options.OPT_TIMEOUTSTRING:
                     setrootconf(Options.OPT_TIMEOUTSTRING, val)
                     setrootconf(Options.OPT_TIMEOUTSTRING_TEMP, val)
+                elif conf == Options.OPT_RETRIESSTRING:
+                    setrootconf(Options.OPT_RETRIESSTRING, val)
+                    setrootconf(Options.OPT_RETRIESSTRING_TEMP, val)
                 elif conf in Settings.combobox_setting_arrays:
                     setrootconf(conf, Settings.combobox_setting_arrays.get(conf)[val])
                 elif conf == Options.OPT_WINDOW_POSITION:

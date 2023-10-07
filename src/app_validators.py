@@ -27,7 +27,7 @@ __all__ = (
     'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int',
     'valid_window_position', 'Validator', 'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator',
     'ThreadsCBValidator', 'JsonValidator', 'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator',
-    'ParchiCBValidator', 'TimeoutValidator', 'WindowPosValidator',
+    'ParchiCBValidator', 'TimeoutValidator', 'RetriesValidator', 'WindowPosValidator',
 )
 
 
@@ -234,6 +234,15 @@ class TimeoutValidator(StrValidator):
     def __call__(self, val: str) -> bool:
         try:
             _ = valid_positive_int(val, lb=3, ub=300)
+            return True
+        except Exception:
+            return False
+
+
+class RetriesValidator(StrValidator):
+    def __call__(self, val: str) -> bool:
+        try:
+            _ = valid_positive_int(val, lb=5, ub=100)
             return True
         except Exception:
             return False

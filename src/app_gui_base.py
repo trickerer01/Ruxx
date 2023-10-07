@@ -25,7 +25,7 @@ from typing import Optional, Callable, List, Union, Dict, Iterable, Tuple
 # internal
 from app_defines import (
     PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE,
-    KNOWN_EXTENSIONS_STR,
+    KNOWN_EXTENSIONS_STR, CONNECT_RETRIES_BASE,
 )
 from app_file_parser import prepare_tags_list
 from app_file_sorter import FileTypeFilter
@@ -49,7 +49,7 @@ from app_validators import valid_proxy, valid_positive_int, valid_window_positio
 
 __all__ = (
     'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'LogWindow',
-    'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm',
+    'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm', 'window_retriesm',
     'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows',
     'get_global', 'config_global', 'is_global_disabled', 'is_menu_disabled', 'is_focusing', 'toggle_console', 'hotkey_text',
     'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list', 'ask_filename', 'browse_path',
@@ -66,6 +66,7 @@ rootMenu = None  # type: Optional[Menu]
 window_proxy = None  # type: Optional[ProxyWindow]
 window_hcookies = None  # type: Optional[HeadersAndCookiesWindow]
 window_timeout = None  # type: Optional[ConnectionTimeoutWindow]
+window_retries = None  # type: Optional[ConnectionRetriesWindow]
 # counters
 c_menu = None  # type: Optional[BaseMenu]
 c_submenu = None  # type: Optional[BaseMenu]
@@ -770,17 +771,23 @@ class HeadersAndCookiesWindow(BaseWindow):
         setrootconf(Options.OPT_ISHCOOKIESOPEN, False)
 
 
-class ConnectionTimeoutWindow(BaseWindow):
-    def __init__(self, parent) -> None:
-        self.timeout_var = None  # type: Optional[IntVar]
-        self.entry_timeout = None  # type: Optional[Entry]
+class ConnectRequestIntWindow(BaseWindow):
+    def __init__(self, parent, conf_open: Options, conf_str: Options, conf_str_temp: Options,
+                 title: str, hint: str, baseval: int, minmax: Tuple[int, int]) -> None:
+        self.title = title
+        self.hint = hint
+        self.baseval = baseval
+        self.minmax = minmax
+        self.conf_open, self.conf_str, self.conf_str_temp = conf_open, conf_str, conf_str_temp
+        self.var = None  # type: Optional[IntVar]
+        self.entry = None  # type: Optional[Entry]
         self.but_ok = None  # type: Optional[Button]
         self.but_cancel = None  # type: Optional[Button]
         self.err_message = None  # type: Optional[WidgetToolTip]
         super().__init__(parent)
 
     def config(self) -> None:
-        self.window.title('Timeout')
+        self.window.title(self.title)
 
         upframe = BaseFrame(self.window)
         upframe.pack()
@@ -788,16 +795,15 @@ class ConnectionTimeoutWindow(BaseWindow):
         downframe = BaseFrame(upframe)
         downframe.grid(padx=12, pady=12, row=1)
 
-        proxyhint = Label(downframe, font=FONT_SANS_SMALL, text='3 .. 300, in seconds')
-        proxyhint.config(state=STATE_DISABLED)
-        proxyhint.grid(row=0, column=0, columnspan=15)
+        hint = Label(downframe, font=FONT_SANS_SMALL, text=self.hint)
+        hint.config(state=STATE_DISABLED)
+        hint.grid(row=0, column=0, columnspan=15)
 
-        _ = Entry(textvariable=StringVar(rootm(), str(CONNECT_TIMEOUT_BASE), CVARS.get(Options.OPT_TIMEOUTSTRING)))
-        self.entry_timeout = Entry(downframe, font=FONT_SANS_MEDIUM, width=19,
-                                   textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_TIMEOUTSTRING_TEMP)))
-        self.entry_timeout.insert(END, str(CONNECT_TIMEOUT_BASE))
-        self.err_message = attach_tooltip(self.entry_timeout, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
-        self.entry_timeout.grid(row=1, column=3, columnspan=10)
+        _ = Entry(textvariable=StringVar(rootm(), str(self.baseval), CVARS.get(self.conf_str)))
+        self.entry = Entry(downframe, font=FONT_SANS_MEDIUM, width=19, textvariable=StringVar(rootm(), '', CVARS.get(self.conf_str_temp)))
+        self.entry.insert(END, str(self.baseval))
+        self.err_message = attach_tooltip(self.entry, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
+        self.entry.grid(row=1, column=3, columnspan=10)
 
         BaseFrame(downframe, height=16).grid(row=4, columnspan=15)
 
@@ -816,30 +822,28 @@ class ConnectionTimeoutWindow(BaseWindow):
         self.window.transient(self.parent)
         self.window.minsize(self.window.winfo_reqwidth(), self.window.winfo_reqheight())
         self.window.resizable(0, 0)
-
         self.window.bind(BUT_RETURN, lambda _: self.ok())
         self.window.bind(BUT_ESCAPE, lambda _: self.cancel())
         self.window.bind(BUT_CTRL_A, lambda _: self.select_all())
 
     def select_all(self) -> None:
         if self.visible is True:
-            self.entry_timeout.focus_set()
-            self.entry_timeout.selection_range(0, END)
-            self.entry_timeout.icursor(END)
+            self.entry.focus_set()
+            self.entry.selection_range(0, END)
+            self.entry.icursor(END)
 
     def ok(self) -> None:
-        # Value validation
-        newval = str(getrootconf(Options.OPT_TIMEOUTSTRING_TEMP))
-
         try:
-            newval = str(valid_positive_int(newval, lb=3, ub=300))
-            setrootconf(Options.OPT_TIMEOUTSTRING, newval)
+            # Value validation
+            newval = str(getrootconf(self.conf_str_temp))
+            newval = str(valid_positive_int(newval, lb=self.minmax[0], ub=self.minmax[1]))
+            setrootconf(self.conf_str, newval)
             self.hide()
         except Exception:
             self.err_message.showtip()
 
     def cancel(self) -> None:
-        setrootconf(Options.OPT_TIMEOUTSTRING_TEMP, str(getrootconf(Options.OPT_TIMEOUTSTRING)))
+        setrootconf(self.conf_str_temp, str(getrootconf(self.conf_str)))
         self.hide()
 
     def ask(self) -> None:
@@ -851,16 +855,31 @@ class ConnectionTimeoutWindow(BaseWindow):
         self.cancel()
 
 
+class ConnectionTimeoutWindow(ConnectRequestIntWindow):
+    def __init__(self, parent) -> None:
+        super().__init__(parent, Options.OPT_ISTIMEOUTOPEN, Options.OPT_TIMEOUTSTRING, Options.OPT_TIMEOUTSTRING_TEMP,
+                         'Timeout', '3 .. 300, in seconds', CONNECT_TIMEOUT_BASE, (3, 300))
+
+
+class ConnectionRetriesWindow(ConnectRequestIntWindow):
+    def __init__(self, parent) -> None:
+        super().__init__(parent, Options.OPT_ISRETRIESOPEN, Options.OPT_RETRIESSTRING, Options.OPT_RETRIESSTRING_TEMP,
+                         'Retries', '5 .. 100', CONNECT_RETRIES_BASE, (5, 100))
+
+
 def init_additional_windows() -> None:
     global window_proxy
     global window_hcookies
     global window_timeout
+    global window_retries
     window_proxy = ProxyWindow(root)
     window_proxy.window.wm_protocol('WM_DELETE_WINDOW', window_proxy.on_destroy)
     window_hcookies = HeadersAndCookiesWindow(root)
     window_hcookies.window.wm_protocol('WM_DELETE_WINDOW', window_hcookies.on_destroy)
     window_timeout = ConnectionTimeoutWindow(root)
     window_timeout.window.wm_protocol('WM_DELETE_WINDOW', window_timeout.on_destroy)
+    window_retries = ConnectionRetriesWindow(root)
+    window_retries.window.wm_protocol('WM_DELETE_WINDOW', window_retries.on_destroy)
     Logger.wnd = LogWindow(root)
     Logger.wnd.window.wm_protocol('WM_DELETE_WINDOW', Logger.wnd.on_destroy)
 
@@ -931,6 +950,11 @@ def window_hcookiesm() -> HeadersAndCookiesWindow:
 def window_timeoutm() -> ConnectionTimeoutWindow:
     assert window_timeout is not None
     return window_timeout
+
+
+def window_retriesm() -> ConnectionRetriesWindow:
+    assert window_retries is not None
+    return window_retries
 
 
 def text_cmdm() -> Text:
