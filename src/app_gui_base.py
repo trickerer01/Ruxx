@@ -45,7 +45,7 @@ from app_logger import Logger
 from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME
 from app_tooltips import WidgetToolTip
 from app_utils import normalize_path
-from app_validators import valid_proxy, valid_positive_int
+from app_validators import valid_proxy, valid_positive_int, valid_window_position
 
 __all__ = (
     'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'LogWindow',
@@ -148,10 +148,6 @@ class AppRoot(Tk):
         global rootFrame
         global rootMenu
 
-        x = self.winfo_screenwidth() / 2 - WINDOW_MINSIZE[0] / 2
-        y = self.winfo_screenheight() / 2 - WINDOW_MINSIZE[1] / 2 + self.winfo_screenheight() / (3.5 if __RUXX_DEBUG__ else 8)
-
-        self.geometry(f'+{x:.0f}+{y:.0f}')
         self.title(f'{APP_NAME} {APP_VERSION}')
         self.default_bg_color = self['bg']
 
@@ -162,12 +158,18 @@ class AppRoot(Tk):
         first_row()
         first_column()
 
-    def adjust_size(self) -> None:
+    def set_position(self, x: float, y: float) -> None:
+        wh_fmt = f'{x:.0f}x{y:.0f}'
+        geom_fmt = valid_window_position(wh_fmt, self)
+        self.geometry(geom_fmt)
+        setrootconf(Options.OPT_WINDOW_POSITION, wh_fmt)
+
+    def adjust_position(self) -> None:
+        x = self.winfo_screenwidth() / 2 - WINDOW_MINSIZE[0] / 2
+        y = self.winfo_screenheight() / 2 - WINDOW_MINSIZE[1] / 2 + self.winfo_screenheight() / (3.5 if __RUXX_DEBUG__ else 8)
+        self.set_position(x, y)
         self.update()
-        self.minsize(self.winfo_reqwidth(), self.winfo_reqheight())  # not smaller than these
-        # print(self.winfo_reqwidth())
-        # print(self.winfo_reqheight())
-        # self.minsize(WINDOW_MINSIZE[0], WINDOW_MINSIZE[1])  # not smaller than these
+        # self.minsize(self.winfo_reqwidth(), self.winfo_reqheight())  # not smaller than these
         self.resizable(0, 0)
 
     def finalize(self) -> None:

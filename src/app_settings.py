@@ -9,12 +9,12 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from abc import ABC, abstractmethod
 from os import path, curdir, stat
-from tkinter import filedialog
+from tkinter import filedialog, Tk
 from typing import Union, List, Iterable, Callable, Optional
 
 # internal
 from app_defines import Mem, DEFAULT_ENCODING
-from app_gui_base import window_hcookiesm, getrootconf, setrootconf, int_vars, get_curdir, ask_filename
+from app_gui_base import window_hcookiesm, getrootconf, setrootconf, int_vars, get_curdir, ask_filename, rootm
 from app_gui_defines import (
     Options, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_PARCHI, OPTION_VALUES_THREADING, CVARS, SLASH,
 )
@@ -23,7 +23,7 @@ from app_logger import Logger
 from app_utils import normalize_path
 from app_validators import (
     Validator, ValidatorAlwaysTrue, ModuleValidator, VideosCBValidator, ImagesCBValidator, ParchiCBValidator, ThreadsCBValidator,
-    DateValidator, JsonValidator, ProxyTypeValidator, ProxyValidator, BoolStrValidator, TimeoutValidator,
+    DateValidator, JsonValidator, ProxyTypeValidator, ProxyValidator, BoolStrValidator, TimeoutValidator, WindowPosValidator,
 )
 
 __all__ = ('Settings',)
@@ -78,6 +78,7 @@ class Settings(ABC):
         'savecomments': Setting(Options.OPT_SAVE_COMMENTS, BoolStrValidator(), 'Invalid savecomments bool value \'%s\'!'),
         'extendfilename': Setting(Options.OPT_APPEND_SOURCE_AND_TAGS, BoolStrValidator(), 'Invalid extendfilename bool value \'%s\'!'),
         'warndestnonempty': Setting(Options.OPT_WARN_NONEMPTY_DEST, BoolStrValidator(), 'Invalid warndestnonempty bool value \'%s\'!'),
+        'windowposition': Setting(Options.OPT_WINDOW_POSITION, WindowPosValidator(), 'Invalid windowposition value \'%s\'!'),
     }
 
     combobox_setting_arrays = {
@@ -88,8 +89,10 @@ class Settings(ABC):
     }
 
     @staticmethod
-    def initialize(*, on_proc_module_change_callback: Callable[[int], None]):
+    def initialize(*, tk: Tk, on_proc_module_change_callback: Callable[[int], None]):
         Settings.on_proc_module_change_callback = on_proc_module_change_callback
+        for s in Settings.settings.values():
+            s.check.tk = tk
 
     @staticmethod
     def try_pick_autoconfig() -> None:
@@ -121,7 +124,7 @@ class Settings(ABC):
 
     @staticmethod
     def reset_all_settings() -> None:
-        Settings._read_settings(Settings.INITIAL_SETTINGS)
+        Settings._read_settings(Settings.INITIAL_SETTINGS, False)
 
     @staticmethod
     def _write_settings() -> List[str]:
@@ -141,13 +144,15 @@ class Settings(ABC):
                 myval = ProcModule.get() - 1
             elif conf in Settings.combobox_setting_arrays:
                 myval = Settings.combobox_setting_arrays.get(conf).index(getrootconf(conf))
+            elif conf == Options.OPT_WINDOW_POSITION:
+                myval = f'{rootm().winfo_x():.0f}x{rootm().winfo_y():.0f}'
             else:
                 myval = getrootconf(conf)
             settings_strlist.append(to_cfg_line(k, myval))
         return settings_strlist
 
     @staticmethod
-    def _read_settings(lines: Iterable[str]) -> None:
+    def _read_settings(lines: Iterable[str], set_window_pos=True) -> None:
         for line in lines:
             line = line.strip(' \n\ufeff')  # remove BOM too
             if line.startswith('#') or line == '':  # comment or a newline
@@ -176,6 +181,9 @@ class Settings(ABC):
                     setrootconf(Options.OPT_TIMEOUTSTRING_TEMP, val)
                 elif conf in Settings.combobox_setting_arrays:
                     setrootconf(conf, Settings.combobox_setting_arrays.get(conf)[val])
+                elif conf == Options.OPT_WINDOW_POSITION:
+                    if set_window_pos:
+                        rootm().set_position(*(float(dim) for dim in val.split('x', 1)))
                 else:
                     setrootconf(conf, val)
             else:

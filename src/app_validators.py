@@ -24,9 +24,10 @@ from app_module import ProcModule
 from app_utils import Protocol, normalize_path
 
 __all__ = (
-    'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int', 'Validator',
-    'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator',
-    'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator', 'ParchiCBValidator', 'TimeoutValidator',
+    'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int',
+    'valid_window_position', 'Validator', 'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator',
+    'ThreadsCBValidator', 'JsonValidator', 'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator',
+    'ParchiCBValidator', 'TimeoutValidator', 'WindowPosValidator',
 )
 
 
@@ -107,7 +108,18 @@ def valid_download_mode(mode: str) -> DownloadModes:
         raise ArgumentError
 
 
+def valid_window_position(val: str, tk) -> str:
+    try:
+        x, y = tuple(val.split('x', 1))
+        assert 0 < int(x) + 25 < tk.winfo_screenwidth() and 0 < int(y) + 25 < tk.winfo_screenheight()
+        return f'+{x}+{y}'
+    except Exception:
+        raise ArgumentError
+
+
 class Validator(Protocol):
+    tk = None
+
     @abstractmethod
     def __call__(self, val: Union[int, str]) -> bool:
         ...
@@ -222,6 +234,15 @@ class TimeoutValidator(StrValidator):
     def __call__(self, val: str) -> bool:
         try:
             _ = valid_positive_int(val, lb=3, ub=300)
+            return True
+        except Exception:
+            return False
+
+
+class WindowPosValidator(StrValidator):
+    def __call__(self, val: str) -> bool:
+        try:
+            _ = valid_window_position(val, self.tk)
             return True
         except Exception:
             return False

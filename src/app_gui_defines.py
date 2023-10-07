@@ -166,6 +166,7 @@ class Options(IntEnum):
     OPT_ISABOUTOPEN = auto()
     OPT_ISSAVESETTINGSOPEN = auto()
     OPT_ISLOADSETTINGSOPEN = auto()
+    OPT_WINDOW_POSITION = auto()
     OPT_ACTION_DOWNLOAD = auto()  # unbound, internal
     OPT_ACTION_CHECKTAGS = auto()  # unbound, internal
     OPT_ACTION_OPEN_DWN_FOLDER = auto()  # unbound, internal
@@ -212,6 +213,7 @@ CVARS = {
     Options.OPT_APPEND_SOURCE_AND_TAGS: 'appendSourceAndTags',
     Options.OPT_ISABOUTOPEN: 'isAboutOpen',
     Options.OPT_WARN_NONEMPTY_DEST: 'warnNonEmptyFolder',
+    Options.OPT_WINDOW_POSITION: 'windowPosition',
 }
 # end config vars
 

@@ -742,7 +742,7 @@ def init_gui() -> None:
     update_statusbar()
     update_download_state()
     # Clamp main window and make non-resizable
-    rootm().adjust_size()
+    rootm().adjust_position()
     # Update window geometry and set own widget bindings
     finalize_additional_windows()
     # OS-specific
@@ -751,7 +751,7 @@ def init_gui() -> None:
     rootm().option_add('*Dialog.msg.width', 0)
     rootm().option_add('*Dialog.msg.wrapLength', 0)
     # Init Settings system
-    Settings.initialize(on_proc_module_change_callback=set_proc_module)
+    Settings.initialize(tk=rootm(), on_proc_module_change_callback=set_proc_module)
     Settings.try_pick_autoconfig()
     Settings.save_initial_settings()
     # Main window binding, BG fix-ups and main loop
