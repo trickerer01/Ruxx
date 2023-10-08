@@ -1,0 +1,37 @@
+name: Ask a question
+description: Ask a question related to this project
+title: "[Question] ISSUE_TITLE"
+labels: [question]
+
+body:
+  - type: checkboxes
+    attributes:
+      label: DO NOT REMOVE OR SKIP THE TEMPLATE
+      description: Fill all fields even if you think it is irrelevant for the issue
+      options:
+        - label: I understand that my issue may get **closed without notice** if I *intentionally* remove or skip any mandatory\* field
+          required: true
+  - type: markdown
+    attributes:
+      value: |
+        ### Make sure you are **only** asking a question and not reporting a bug or requesting a feature.
+        If your question contains "isn't working" or "can you add", this is most likely the wrong template.
+        If you are in doubt whether this is the right template, **USE ANOTHER TEMPLATE**!
+  - type: textarea
+    id: question
+    attributes:
+      label: Provide a well enough worded question
+      placeholder: Provide any additional information and as much context and examples as possible
+    validations:
+      required: true
+  - type: textarea
+    id: verboselog
+    attributes:
+      label: Provide verbose output that demonstrated the problem (use --log-level trace)
+      description: |
+        It should start like this:
+      placeholder: |
+        Python 3.8.7 (tags/v3.8.7:6503f05, Dec 21 2020, 17:59:51) [MSC v.1928 64 bit (AMD64)]
+        Base args: .../src/ruxx.py
+        My args: Cmd: sfw -module rs -path '.../dl/1' -threads 3 -prefix -append_info
+      render: shell

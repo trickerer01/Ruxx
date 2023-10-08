@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 import sys
-from typing import Sequence
+from typing import List
 
 # internal
 from app_gui import run_ruxx, run_ruxx_gui
@@ -16,7 +16,7 @@ from app_gui import run_ruxx, run_ruxx_gui
 __all__ = ('run', 'run_gui')
 
 
-def run(args: Sequence[str]) -> None:
+def run(args: List[str]) -> None:
     run_ruxx(args)
 
 

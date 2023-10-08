@@ -15,7 +15,7 @@ from os import path, system, makedirs
 from threading import Thread
 from time import sleep as thread_sleep
 from tkinter import messagebox, END
-from typing import Optional, Union, List, Tuple, Sequence
+from typing import Optional, Union, List, Tuple
 
 # internal
 from app_cmdargs import prepare_arglist
@@ -443,6 +443,7 @@ def start_check_tags_thread(cmdline: List[str]) -> None:
     global dwn
     arg_list = prepare_arglist(cmdline[1:])
     with get_new_proc_module() as dwn:
+        dwn.save_cmdline(cmdline)
         dwn.launch_check_tags(arg_list)
 
 
@@ -627,6 +628,7 @@ def start_download_thread(cmdline: List[str]) -> None:
     global dwn
     arg_list = prepare_arglist(cmdline[1:])
     with get_new_proc_module() as dwn:
+        dwn.save_cmdline(cmdline)
         dwn.launch_download(arg_list)
 
 # end static methods
@@ -800,13 +802,14 @@ def dwnm() -> Union[DownloaderRn, DownloaderRx, DownloaderRs]:
 #             PROGRAM ENTRY             #
 #########################################
 
-def run_ruxx(args: Sequence[str]) -> None:
+def run_ruxx(args: List[str]) -> None:
     Logger.init(True)
     ensure_compatibility()
     current_process().killed = False
     arglist = prepare_arglist(args)
     set_proc_module(PROC_MODULES_BY_ABBR[arglist.module])
     with get_new_proc_module() as cdwn:
+        cdwn.save_cmdline(args)
         if arglist.get_maxid:
             cdwn.launch_get_max_id(arglist)
         else:

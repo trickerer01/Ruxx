@@ -76,6 +76,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.warn_nonempty = False
         self.tags_str_arr = list()  # type: List[str]
         # extra
+        self.cmdline = list()  # type: List[str]
         self.get_max_id = False
 
         # results
@@ -227,6 +228,12 @@ class DownloaderBase(ThreadedHtmlWorker):
     @abstractmethod
     def _can_extract_item_info_without_fetch(self) -> bool:
         ...
+
+    def save_cmdline(self, cmdline: List[str]):
+        self.cmdline = cmdline
+
+    def _at_launch(self) -> None:
+        trace(f'Python {sys.version}\nBase args: {" ".join(sys.argv)}\nMy args: {" ".join(self.cmdline)}')
 
     def get_tags_count(self, offset=0) -> int:
         """Public, needed by tests"""
@@ -973,6 +980,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     def _launch(self, args: Namespace, thiscall: Callable[[], None]) -> None:
+        self._at_launch()
         self.reset_root_thread(current_process())
         try:
             self.parse_args(args)
