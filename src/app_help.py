@@ -43,6 +43,7 @@ HELP_ARG_DUMP_SOURCES = 'Save all found source links to text file'
 HELP_ARG_DUMP_COMMENTS = 'Save all found comments to text file'
 HELP_ARG_APPEND_SOURCE_AND_TAGS = 'Append a shortened representation of major tags to file name'
 HELP_ARG_WARN_NON_EMPTY_FOLDER = 'In GUI mode, warn if download folder is not empty'
+HELP_ARG_CACHE_HTML_BLOAT = 'Cache processed HTML instead of cache, can be faster but increases memory usage'
 HELP_ARG_TAGS = 'Tags to search for, requred'
 # GUI help messages
 HELP_TAGS_MSG_RX = (

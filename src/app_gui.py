@@ -43,7 +43,7 @@ from app_gui_defines import (
     OPTION_CMD_SAVE_COMMENTS, OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH, OPTION_CMD_COOKIES, OPTION_CMD_HEADERS,
     OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT, OPTION_CMD_RETRIES,
     GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS,
-    OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI,
+    OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI, OPTION_CMD_CACHE_PROCCED_HTML,
     menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys,
 )
 from app_module import ProcModule
@@ -369,6 +369,9 @@ def prepare_cmdline() -> List[str]:
     addstr = OPTION_CMD_PROXY_NO_DOWNLOAD[int(getrootconf(Options.OPT_PROXY_NO_DOWNLOAD))]
     if len(addstr) > 0:
         newstr.append(addstr)
+    addstr = OPTION_CMD_CACHE_PROCCED_HTML[int(getrootconf(Options.OPT_CACHE_PROCCED_HTML))]
+    if len(addstr) > 0:
+        newstr.append(addstr)
     # timeout
     addstr = str(getrootconf(Options.OPT_TIMEOUTSTRING))
     if len(addstr) > 0:
@@ -681,6 +684,7 @@ def init_menus() -> None:
     register_menu_command('Set retries count...', window_retriesm().ask, Options.OPT_ISRETRIESOPEN)
     register_menu_checkbutton('Download without proxy', CVARS.get(Options.OPT_PROXY_NO_DOWNLOAD))
     register_menu_checkbutton('Ignore proxy', CVARS.get(Options.OPT_IGNORE_PROXY))
+    register_menu_checkbutton('Cache processed HTML', CVARS.get(Options.OPT_CACHE_PROCCED_HTML))
     # 6) Action
     register_menu('Actions', Menus.MENU_ACTIONS)
     register_menu_command('Download', do_download, Options.OPT_ACTION_DOWNLOAD, True)
@@ -741,6 +745,7 @@ def init_gui() -> None:
     setrootconf(Options.OPT_FNAMEPREFIX, True)
     setrootconf(Options.OPT_APPEND_SOURCE_AND_TAGS, True)
     setrootconf(Options.OPT_IGNORE_PROXY, IS_IDE)
+    setrootconf(Options.OPT_CACHE_PROCCED_HTML, IS_IDE)
     setrootconf(Options.OPT_SAVE_TAGS, not IS_IDE)
     setrootconf(Options.OPT_SAVE_SOURCES, not IS_IDE)
     setrootconf(Options.OPT_SAVE_COMMENTS, not IS_IDE)

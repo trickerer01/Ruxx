@@ -16,7 +16,7 @@ from re import compile as re_compile
 from sys import exc_info
 from threading import Thread, Lock as ThreadLock
 from time import sleep as thread_sleep
-from typing import Optional, Dict, IO
+from typing import Optional, Dict, IO, Union
 
 # requirements
 from bs4 import BeautifulSoup
@@ -24,8 +24,8 @@ from requests import Session, Response, HTTPError, adapters
 
 # internal
 from app_defines import (
-    ThreadInterruptException, DownloadModes, CONNECT_TIMEOUT_BASE, CONNECT_RETRIES_BASE, CONNECT_RETRIES_CHUNK, WRITE_CHUNK_SIZE,
-    DOWNLOAD_CHUNK_SIZE,
+    ThreadInterruptException, DownloadModes, HtmlCacheMode, CONNECT_TIMEOUT_BASE, CONNECT_RETRIES_BASE, CONNECT_RETRIES_CHUNK,
+    WRITE_CHUNK_SIZE, DOWNLOAD_CHUNK_SIZE,
 )
 from app_gui_defines import SLASH
 from app_logger import trace
@@ -73,7 +73,8 @@ class ThreadedWorker:
 class ThreadedHtmlWorker(ABC, ThreadedWorker):
     def __init__(self) -> None:
         super().__init__()
-        self.raw_html_cache = dict()  # type: Dict[str, BeautifulSoup]
+        self.raw_html_cache = dict()  # type: Dict[str, Union[BeautifulSoup, bytes]]
+        self.cache_mode = HtmlCacheMode.CACHE_BYTES
         self.add_headers = dict()  # type: Dict[str, str]
         self.add_cookies = dict()  # type: Dict[str, str]
         self.ignore_proxy = False
@@ -106,6 +107,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
         return s
 
     def parse_args(self, args: Namespace) -> None:
+        self.cache_mode = HtmlCacheMode.CACHE_BS if args.cache_html_bloat else HtmlCacheMode.CACHE_BYTES
         self.add_headers = args.headers or self.add_headers
         self.add_cookies = args.cookies or self.add_cookies
         self.ignore_proxy = args.noproxy or self.ignore_proxy
@@ -260,9 +262,9 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
 
     # threaded
     def fetch_html(self, url: str, tries=0, do_cache=False) -> Optional[BeautifulSoup]:
-        cached = self.raw_html_cache.get(url)
+        cached = self.raw_html_cache.get(url, b'')
         if cached:
-            return cached
+            return cached if isinstance(cached, BeautifulSoup) else BeautifulSoup(cached)
 
         tries = tries or self.retries
 
@@ -304,7 +306,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
 
         result = BeautifulSoup(r.content, 'html.parser') if r is not None else None
         if result and do_cache:
-            self.raw_html_cache[url] = result
+            self.raw_html_cache[url] = result if self.cache_mode == HtmlCacheMode.CACHE_BS else r.content
 
         return result
 

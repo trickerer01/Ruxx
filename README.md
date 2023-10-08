@@ -41,6 +41,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Connection -> Set retries count** \<F6> ‒ override connection retries count, may be useful when using proxy
 - **Connection -> Download without proxy** ‒ you can use this option for RX if only the main domain is blocked in your country
 - **Connection -> Ignore proxy** ‒ this is just a switch to disable proxy temporarily without wiping it
+- **Connection -> Cache processed HTML** ‒ by default HTML is cached as raw bytes, enabling this makes Ruxx cache HTML after it was processed into manageable form - a little bit faster but consumes much more memory. Mainly affects RS module
 - **Actions -> Download** \<Ctrl+Shift+D> ‒ same as download button
 - **Actions -> Check tags** \<Ctrl+Shift+C> ‒ same as check tags button
 - **Tools -> Load from ID list** ‒ Allows you to load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group expression, effectively allowing you to search for those ids. ~~Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details.~~ Re-enabled since version `1.1.284` for both RX and RN using a workaround, but doesn't run in parallel so be aware of that

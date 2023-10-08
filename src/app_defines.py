@@ -214,6 +214,11 @@ class Mem:
     MB = KB * 1024
     GB = MB * 1024
 
+
+class HtmlCacheMode(IntEnum):
+    CACHE_BYTES = auto()
+    CACHE_BS = auto()  # cache BeautifulSoup objects
+
 #
 #
 #########################################

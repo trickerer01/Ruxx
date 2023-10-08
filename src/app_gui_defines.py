@@ -70,6 +70,7 @@ OPTION_CMD_HEADERS = '-headers'
 OPTION_CMD_PROXY = '-proxy'
 OPTION_CMD_IGNORE_PROXY = ('', '-noproxy')
 OPTION_CMD_PROXY_NO_DOWNLOAD = ('', '-proxynodown')
+OPTION_CMD_CACHE_PROCCED_HTML = ('', '-cache_html_bloat')
 OPTION_CMD_TIMEOUT = '-timeout'
 OPTION_CMD_RETRIES = '-retries'
 OPTION_CMD_FNAMEPREFIX = ('', '-prefix')
@@ -159,6 +160,7 @@ class Options(IntEnum):
     OPT_MODULE = auto()
     OPT_IGNORE_PROXY = auto()
     OPT_PROXY_NO_DOWNLOAD = auto()
+    OPT_CACHE_PROCCED_HTML = auto()
     OPT_ISHCOOKIESOPEN = auto()
     OPT_COOKIE_ADD_STR = auto()
     OPT_HEADER_ADD_STR = auto()
@@ -211,6 +213,7 @@ CVARS = {
     Options.OPT_MODULE: 'module',
     Options.OPT_IGNORE_PROXY: 'ingoreProxy',
     Options.OPT_PROXY_NO_DOWNLOAD: 'proxyDownload',
+    Options.OPT_CACHE_PROCCED_HTML: 'cacheProcessedHtml',
     Options.OPT_ISHCOOKIESOPEN: 'isCookiesOpen',
     Options.OPT_COOKIE_ADD_STR: 'cookieAddStr',
     Options.OPT_HEADER_ADD_STR: 'headerAddStr',
@@ -309,7 +312,7 @@ class SubMenus(IntEnum):
     SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
     PREFIX, STAGS, SSOURCE, SCOMMENTS, EXTEND, WNONEMPTY = 0, 1, 2, 3, 4, 5
     RX, RN, RS = 0, 1, 2
-    HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY = 0, 1, 2, 3, 4, 5
+    HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6
     DOWNLOAD, CHECKTAGS = 0, 2
     IDLIST, UNTAG, RETAG, SORT = 0, 2, 3, 5
     DFULL, DSKIP, DTOUCH, DLIMSET, DLIMRESET = 0, 1, 2, 3, 4
@@ -332,7 +335,7 @@ menu_items = {
     Menus.MENU_EDIT: RuxxMenu({SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.EXTEND, SubMenus.WNONEMPTY}),
     Menus.MENU_MODULE: RuxxMenu({SubMenus.RX, SubMenus.RN, SubMenus.RS}),
     Menus.MENU_CONNECTION: RuxxMenu({SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
-                                     SubMenus.IGNOREPROXY}),
+                                     SubMenus.IGNOREPROXY, SubMenus.CACHEMODE}),
     Menus.MENU_ACTIONS: RuxxMenu({SubMenus.DOWNLOAD, SubMenus.CHECKTAGS}),
     Menus.MENU_TOOLS: RuxxMenu({SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT}),
     Menus.MENU_DEBUG: RuxxMenu({SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH, SubMenus.DLIMSET, SubMenus.DLIMRESET}),
@@ -342,7 +345,7 @@ menu_item_orig_states = {
     Menus.MENU_FILE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_EDIT: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_MODULE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.MENU_CONNECTION: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.MENU_CONNECTION: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_ACTIONS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_TOOLS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_DEBUG: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),

@@ -72,6 +72,7 @@ class Settings(ABC):
         'proxy': Setting(Options.OPT_PROXYSTRING, ProxyValidator(), 'Invalid proxy value \'%s\'!'),
         'ignoreproxy': Setting(Options.OPT_IGNORE_PROXY, BoolStrValidator(), 'Invalid ignoreproxy bool value \'%s\'!'),
         'ignoreproxydwn': Setting(Options.OPT_PROXY_NO_DOWNLOAD, BoolStrValidator(), 'Invalid ignoreproxydwn bool value \'%s\'!'),
+        'cacheprocessedhtml': Setting(Options.OPT_CACHE_PROCCED_HTML, BoolStrValidator(), 'Invalid cacheprocessedhtml bool value \'%s\'!'),
         'timeout': Setting(Options.OPT_TIMEOUTSTRING, TimeoutValidator(), 'Invalid timeout value \'%s\'!'),
         'retries': Setting(Options.OPT_RETRIESSTRING, RetriesValidator(), 'Invalid retries value \'%s\'!'),
         'prefix': Setting(Options.OPT_FNAMEPREFIX, BoolStrValidator(), 'Invalid prefix bool value \'%s\'!'),
