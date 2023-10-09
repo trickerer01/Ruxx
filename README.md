@@ -6,6 +6,7 @@
 Ruxx is a content downloader with a lot of filters for maximum search precision (and ugly GUI). Supported sites are on your right
 
 ### How to use
+- Python 3.7 or greater required. See `requirements.txt` for additional dependencies
 - \[Optional] Choose a **Module** (website) to use. Notice that an icon in the bottom left corner will change accordingly
 - Fill the **Tags** field with tags you want to search for. For base and quick advanced info on tags check **Help -> Tags** section. [More info](#tags-syntax)
 - \[Optional] Additonally, check the **filters** to fine-tune your search. You can choose whether you want do download **videos**, **images** or **both**, add **post date** limits, number of **download threads**
@@ -143,5 +144,4 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 Ruxx is written is Python (3.7). Lines of code: 8600+. Executables built using PyInstaller (5.8 for Windows, 3.6 for Linux)
 
 ### Support
-Did I help you? Maybe you wish to return the favor  
-[Donate](https://paypal.me/trickerer)
+For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/Ruxx/issues)
