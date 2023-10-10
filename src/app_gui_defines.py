@@ -82,6 +82,7 @@ OPTION_CMD_SAVE_SOURCES = ('', '-dump_sources')
 OPTION_CMD_SAVE_COMMENTS = ('', '-dump_comments')
 OPTION_CMD_APPEND_SOURCE_AND_TAGS = ('', '-append_info')
 OPTION_CMD_WARN_NONEMPTY_DEST = ('', '-warn_nonempty')
+OPTION_CMD_VERBOSE = ('', '-verbose')
 OPTION_CMD_DATEAFTER = '-mindate'
 OPTION_CMD_DATEBEFORE = '-maxdate'
 OPTION_CMD_PATH = '-path'
@@ -170,6 +171,7 @@ class Options(IntEnum):
     OPT_ISCONSOLELOGOPEN = auto()
     OPT_APPEND_SOURCE_AND_TAGS = auto()
     OPT_WARN_NONEMPTY_DEST = auto()
+    OPT_VERBOSE = auto()
     OPT_ISABOUTOPEN = auto()
     OPT_ISSAVESETTINGSOPEN = auto()
     OPT_ISLOADSETTINGSOPEN = auto()
@@ -224,6 +226,7 @@ CVARS = {
     Options.OPT_APPEND_SOURCE_AND_TAGS: 'appendSourceAndTags',
     Options.OPT_ISABOUTOPEN: 'isAboutOpen',
     Options.OPT_WARN_NONEMPTY_DEST: 'warnNonEmptyFolder',
+    Options.OPT_VERBOSE: 'verbose',
     Options.OPT_WINDOW_POSITION: 'windowPosition',
 }
 # end config vars
@@ -310,7 +313,7 @@ class Menus(IntEnum):
 
 class SubMenus(IntEnum):
     SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
-    PREFIX, STAGS, SSOURCE, SCOMMENTS, EXTEND, WNONEMPTY = 0, 1, 2, 3, 4, 5
+    PREFIX, STAGS, SSOURCE, SCOMMENTS, EXTEND, WNONEMPTY, VERBOSE = 0, 1, 2, 3, 4, 5, 6
     RX, RN, RS = 0, 1, 2
     HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6
     DOWNLOAD, CHECKTAGS = 0, 2
@@ -332,7 +335,8 @@ class RuxxMenu:
 
 menu_items = {
     Menus.MENU_FILE: RuxxMenu({SubMenus.SAVE, SubMenus.LOAD, SubMenus.RESET}),
-    Menus.MENU_EDIT: RuxxMenu({SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.EXTEND, SubMenus.WNONEMPTY}),
+    Menus.MENU_EDIT: RuxxMenu({SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.EXTEND, SubMenus.WNONEMPTY,
+                               SubMenus.VERBOSE}),
     Menus.MENU_MODULE: RuxxMenu({SubMenus.RX, SubMenus.RN, SubMenus.RS}),
     Menus.MENU_CONNECTION: RuxxMenu({SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
                                      SubMenus.IGNOREPROXY, SubMenus.CACHEMODE}),
@@ -343,7 +347,7 @@ menu_items = {
 
 menu_item_orig_states = {
     Menus.MENU_FILE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.MENU_EDIT: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.MENU_EDIT: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_MODULE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_CONNECTION: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
     Menus.MENU_ACTIONS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),

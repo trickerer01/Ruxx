@@ -233,7 +233,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.cmdline = cmdline
 
     def _at_launch(self) -> None:
-        trace(f'Python {sys.version}\nBase args: {" ".join(sys.argv)}\nMy args: {" ".join(self.cmdline)}')
+        if self.verbose:
+            trace(f'Python {sys.version}\nBase args: {" ".join(sys.argv)}\nMy args: {" ".join(self.cmdline)}')
 
     def get_tags_count(self, offset=0) -> int:
         """Public, needed by tests"""
@@ -980,10 +981,10 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     def _launch(self, args: Namespace, thiscall: Callable[[], None]) -> None:
-        self._at_launch()
         self.reset_root_thread(current_process())
         try:
             self.parse_args(args)
+            self._at_launch()
             thiscall()
         except (KeyboardInterrupt, ThreadInterruptException):
             trace(f'\nInterrupted by {str(sys.exc_info()[0])}!\n', True)

@@ -81,6 +81,7 @@ class Settings(ABC):
         'savecomments': Setting(Options.OPT_SAVE_COMMENTS, BoolStrValidator(), 'Invalid savecomments bool value \'%s\'!'),
         'extendfilename': Setting(Options.OPT_APPEND_SOURCE_AND_TAGS, BoolStrValidator(), 'Invalid extendfilename bool value \'%s\'!'),
         'warndestnonempty': Setting(Options.OPT_WARN_NONEMPTY_DEST, BoolStrValidator(), 'Invalid warndestnonempty bool value \'%s\'!'),
+        'verbose': Setting(Options.OPT_VERBOSE, BoolStrValidator(), 'Invalid verbose bool value \'%s\'!'),
         'windowposition': Setting(Options.OPT_WINDOW_POSITION, WindowPosValidator(), 'Invalid windowposition value \'%s\'!'),
     }
 

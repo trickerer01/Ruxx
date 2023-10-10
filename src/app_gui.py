@@ -42,7 +42,7 @@ from app_gui_defines import (
     OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS, OPTION_CMD_SAVE_SOURCES,
     OPTION_CMD_SAVE_COMMENTS, OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH, OPTION_CMD_COOKIES, OPTION_CMD_HEADERS,
     OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT, OPTION_CMD_RETRIES,
-    GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS,
+    GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_VERBOSE,
     OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI, OPTION_CMD_CACHE_PROCCED_HTML,
     menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys,
 )
@@ -414,7 +414,12 @@ def prepare_cmdline() -> List[str]:
     addstr = OPTION_CMD_APPEND_SOURCE_AND_TAGS[int(getrootconf(Options.OPT_APPEND_SOURCE_AND_TAGS))]
     if len(addstr) > 0:
         newstr.append(addstr)
+    # warn on non-empty folder
     addstr = OPTION_CMD_WARN_NONEMPTY_DEST[int(getrootconf(Options.OPT_WARN_NONEMPTY_DEST))]
+    if len(addstr) > 0:
+        newstr.append(addstr)
+    # verbose log
+    addstr = OPTION_CMD_VERBOSE[int(getrootconf(Options.OPT_VERBOSE))]
     if len(addstr) > 0:
         newstr.append(addstr)
 
@@ -668,6 +673,7 @@ def init_menus() -> None:
     register_menu_checkbutton('Save comments', CVARS.get(Options.OPT_SAVE_COMMENTS))
     register_menu_checkbutton('Extend file names with extra info', CVARS.get(Options.OPT_APPEND_SOURCE_AND_TAGS))
     register_menu_checkbutton('Warn if download folder is not empty', CVARS.get(Options.OPT_WARN_NONEMPTY_DEST))
+    register_menu_checkbutton('Verbose log', CVARS.get(Options.OPT_VERBOSE))
     # 3) View
     register_menu('View')
     register_menu_checkbutton('Log', CVARS.get(Options.OPT_ISLOGOPEN), Logger.wnd.toggle_visibility, hotkey_text(Options.OPT_ISLOGOPEN))

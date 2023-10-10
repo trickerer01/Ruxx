@@ -73,6 +73,7 @@ class ThreadedWorker:
 class ThreadedHtmlWorker(ABC, ThreadedWorker):
     def __init__(self) -> None:
         super().__init__()
+        self.verbose = False
         self.raw_html_cache = dict()  # type: Dict[str, Union[BeautifulSoup, bytes]]
         self.cache_mode = HtmlCacheMode.CACHE_BYTES
         self.add_headers = dict()  # type: Dict[str, str]
@@ -107,6 +108,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
         return s
 
     def parse_args(self, args: Namespace) -> None:
+        self.verbose = args.verbose or self.verbose
         self.cache_mode = HtmlCacheMode.CACHE_BS if args.cache_html_bloat else HtmlCacheMode.CACHE_BYTES
         self.add_headers = args.headers or self.add_headers
         self.add_cookies = args.cookies or self.add_cookies
@@ -264,7 +266,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
     def fetch_html(self, url: str, tries=0, do_cache=False) -> Optional[BeautifulSoup]:
         cached = self.raw_html_cache.get(url, b'')
         if cached:
-            return cached if isinstance(cached, BeautifulSoup) else BeautifulSoup(cached)
+            return cached if isinstance(cached, BeautifulSoup) else BeautifulSoup(cached, 'html.parser')
 
         tries = tries or self.retries
 
