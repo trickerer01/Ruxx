@@ -27,11 +27,11 @@ body:
   - type: textarea
     id: verboselog
     attributes:
-      label: Provide verbose output that demonstrated the problem (use --log-level trace)
+      label: Provide verbose output that demonstrated the problem (use -verbose | Edit -> Verbose log)
       description: |
         It should start like this:
       placeholder: |
         Python 3.8.7 (tags/v3.8.7:6503f05, Dec 21 2020, 17:59:51) [MSC v.1928 64 bit (AMD64)]
         Base args: .../src/ruxx.py
-        My args: Cmd: sfw -module rs -path '.../dl/1' -threads 3 -prefix -append_info
+        My args: Cmd: sfw -module rs -path '.../dl/1' -threads 3 -prefix -append_info -verbose
       render: shell
