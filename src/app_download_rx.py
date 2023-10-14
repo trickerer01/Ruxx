@@ -106,15 +106,7 @@ class DownloaderRx(DownloaderBase):
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
 
-        last = 0
-        posts_tags = raw_html.find_all('posts')
-        if len(posts_tags) != 0:
-            b = str(posts_tags[0])
-            b = b[b.find('count="') + len('count="'):]
-            b = b[:b.find('"')]
-            last = int(b)
-
-        return last
+        return int(raw_html.find('posts').get('count'))
 
     def _get_image_address(self, h: str) -> Tuple[str, str]:
         def hi_res_addr() -> Tuple[str, str]:
