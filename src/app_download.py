@@ -76,7 +76,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.warn_nonempty = False
         self.tags_str_arr = list()  # type: List[str]
         # extra
-        self.cmdline = list()  # type: List[str]
+        self.cmdline = ''
         self.get_max_id = False
 
         # results
@@ -101,8 +101,6 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.item_info_dict_all = dict()  # type: Dict[str, ItemInfo]
         self.neg_and_groups = list()  # type: List[List[Pattern[str]]]
         self.known_parents = set()  # type: Set[str]
-        # extra
-        self._max_id = 0
 
     def __del__(self) -> None:
         self.__cleanup()
@@ -229,12 +227,12 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _can_extract_item_info_without_fetch(self) -> bool:
         ...
 
-    def save_cmdline(self, cmdline: List[str]):
-        self.cmdline = cmdline
+    def save_cmdline(self, cmdline: Iterable[str]):
+        self.cmdline = ' '.join(cmdline)
 
     def _at_launch(self) -> None:
         if self.verbose:
-            trace(f'Python {sys.version}\nBase args: {" ".join(sys.argv)}\nMy args: {" ".join(self.cmdline)}')
+            trace(f'Python {sys.version}\nBase args: {" ".join(sys.argv)}\nMy args: {self.cmdline}')
 
     def get_tags_count(self, offset=0) -> int:
         """Public, needed by tests"""
@@ -972,8 +970,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         else:
             self.total_count = 1
             self._form_item_string_manually(count_or_html)
-        self._max_id = self._extract_id(self.items_raw_per_task[0])
-        trace(f'{self._get_module_abbr().upper()}: {self._max_id}')
+        trace(f'{self._get_module_abbr().upper()}: {self._extract_id(self.items_raw_per_task[0])}')
 
     @abstractmethod
     def form_tags_search_address(self, tags: str, maxlim: Optional[int] = None) -> str:

@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from re import compile as re_compile
-from typing import List, Pattern, Tuple, Optional
+from typing import Pattern, Tuple, Optional
 
 # requirements
 from iteration_utilities import unique_everseen
@@ -19,7 +19,7 @@ from app_re import re_space_mult
 
 __all__ = ('reset_last_tags', 'parse_tags')
 
-DEFAULT_TAGS = ['sfw']
+DEFAULT_TAGS = ('sfw',)
 
 # language=PythonRegExp
 TAG_CHAR = r'[a-zÀ-ʯА-я\d_+\-/!()*\'.]'
@@ -68,7 +68,7 @@ re_andgr_full = re_compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\
 re_negative_meta = re_compile(r'^-[^:]+:.+?$')
 
 last_tags = ''
-last_fulltags = None  # type: Optional[List[str]]
+last_fulltags = None  # type: Optional[Tuple[str, ...]]
 
 
 def reset_last_tags() -> None:
@@ -100,15 +100,15 @@ def split_or_group(gr: str) -> str:
     return f'( {" ~ ".join(part for part in orgr_parts)} )'
 
 
-def ret_tags(suc: bool, tag_list: List[str]) -> Tuple[bool, List[str]]:
-    return suc, tag_list.copy()
+def ret_tags(suc: bool, tag_list: Tuple[str, ...]) -> Tuple[bool, Tuple[str, ...]]:
+    return suc, tag_list
 
 
-def fail() -> Tuple[bool, List[str]]:
+def fail() -> Tuple[bool, Tuple[str, ...]]:
     return ret_tags(False, DEFAULT_TAGS)
 
 
-def parse_tags(tags: str) -> Tuple[bool, List[str]]:
+def parse_tags(tags: str) -> Tuple[bool, Tuple[str, ...]]:
     global last_tags
     global last_fulltags
 
@@ -124,7 +124,7 @@ def parse_tags(tags: str) -> Tuple[bool, List[str]]:
     last_tags = tags
     last_fulltags = None
 
-    if len(tags) <= 0:
+    if not tags:
         return fail()
 
     fulltags = list()
@@ -133,7 +133,7 @@ def parse_tags(tags: str) -> Tuple[bool, List[str]]:
             return fail()
         if ProcModule.is_rn() and tag.startswith('order='):
             return fail()
-        if tag[0] == '(' and re_orgr_full().fullmatch(tag):
+        if tag.startswith('(') and re_orgr_full().fullmatch(tag):
             try:
                 tag = split_or_group(tag)
             except Exception:
@@ -142,9 +142,9 @@ def parse_tags(tags: str) -> Tuple[bool, List[str]]:
             return fail()
         fulltags.append(tag)
 
-    last_fulltags = fulltags
+    last_fulltags = tuple(fulltags)
 
-    return ret_tags(True, fulltags)
+    return ret_tags(True, last_fulltags)
 
 #
 #

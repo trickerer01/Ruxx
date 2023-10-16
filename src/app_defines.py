@@ -201,7 +201,9 @@ PLATFORM_LINUX = 'linux'
 
 SUPPORTED_PLATFORMS = {PLATFORM_WINDOWS, PLATFORM_LINUX}  # , PLATFORM_DARWIN
 
-KNOWN_EXTENSIONS = ('mp4', 'webm', 'swf', 'png', 'jpg', 'jpeg', 'gif')
+KNOWN_EXTENSIONS_VID = ('mp4', 'webm')
+KNOWN_EXTENSIONS_IMG = ('swf', 'png', 'jpg', 'jpeg', 'gif')
+KNOWN_EXTENSIONS = KNOWN_EXTENSIONS_VID + KNOWN_EXTENSIONS_IMG
 KNOWN_EXTENSIONS_STR = ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)
 
 

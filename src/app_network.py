@@ -25,7 +25,7 @@ from requests import Session, Response, HTTPError, adapters
 # internal
 from app_defines import (
     ThreadInterruptException, DownloadModes, HtmlCacheMode, CONNECT_TIMEOUT_BASE, CONNECT_RETRIES_BASE, CONNECT_RETRIES_CHUNK,
-    WRITE_CHUNK_SIZE, DOWNLOAD_CHUNK_SIZE,
+    WRITE_CHUNK_SIZE, DOWNLOAD_CHUNK_SIZE, KNOWN_EXTENSIONS_VID,
 )
 from app_gui_defines import SLASH
 from app_logger import trace
@@ -114,7 +114,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
         self.add_cookies = args.cookies or self.add_cookies
         self.ignore_proxy = args.noproxy or self.ignore_proxy
         self.ignore_proxy_dwn = args.proxynodown or self.ignore_proxy_dwn
-        self.proxies = {'http': args.proxy, 'https': args.proxy} if args.proxy else None
+        self.proxies = {'http': str(args.proxy), 'https': str(args.proxy)} if args.proxy else None
         self.timeout = args.timeout or self.timeout
         self.retries = args.retries or self.retries
         self.session = self.make_session()
@@ -124,7 +124,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
         fullname = dest[dest.rfind(SLASH) + 1:]
         ext_full = fullname[fullname.rfind('.') + 1:]
         ext_char = ext_full[0]
-        is_video_ext = ext_full in {'webm', 'mp4'}
+        is_video_ext = ext_full in KNOWN_EXTENSIONS_VID
         touch_mode = mode == DownloadModes.DOWNLOAD_TOUCH
 
         result = FileDownloadResult()
