@@ -17,7 +17,7 @@ from bs4 import BeautifulSoup
 # internal
 from app_defines import (
     SITENAME_B_RX, FILE_NAME_PREFIX_RX, MODULE_ABBR_RX, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RX, DownloadModes, ItemInfo, Comment,
-    TAGS_CONCAT_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RX,
+    TAGS_CONCAT_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RX, FMT_DATE,
 )
 from app_download import DownloaderBase
 from app_logger import trace
@@ -93,11 +93,11 @@ class DownloaderRx(DownloaderBase):
 
     def _extract_post_date(self, raw: str) -> str:
         try:
-            # 'Mon Jan 06 21:51:58 +0000 2020' -> '2020-01-06'
+            # 'Mon Jan 06 21:51:58 +0000 2020' -> '06-01-2020'
             d_raw = raw[raw.find('created_at="') + 12:]
             d_raw = d_raw[:d_raw.find('"')]
             d = datetime.strptime(d_raw, '%a %b %d %X %z %Y')
-            return d.strftime('%Y-%m-%d')
+            return d.strftime(FMT_DATE)
         except Exception:
             thread_exit(f'Unable to extract post date from raw: {raw}', -446)
 

@@ -17,7 +17,7 @@ from bs4 import BeautifulSoup
 # internal
 from app_defines import (
     SITENAME_B_RN, FILE_NAME_PREFIX_RN, MODULE_ABBR_RN, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RN, DownloadModes, ItemInfo, Comment,
-    TAGS_CONCAT_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RN,
+    TAGS_CONCAT_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RN, FMT_DATE,
 )
 from app_download import DownloaderBase
 from app_logger import trace
@@ -104,10 +104,10 @@ class DownloaderRn(DownloaderBase):
 
     def _extract_post_date(self, raw_html: BeautifulSoup) -> str:
         try:
-            # '2017-04-19T11:55:45+00:00' -> '2017-04-19'
+            # '2017-04-19T11:55:45+00:00' -> '19-04-2017'
             d_raw = raw_html.find('time').get('datetime')
             d = datetime.fromisoformat(d_raw)
-            return d.strftime('%Y-%m-%d')
+            return d.strftime(FMT_DATE)
         except Exception:
             thread_exit(f'Unable to extract post date from raw: {str(raw_html)}', -446)
 

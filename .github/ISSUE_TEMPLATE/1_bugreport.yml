@@ -21,7 +21,7 @@ body:
   - type: textarea
     id: verboselog
     attributes:
-      label: Provide verbose output that demonstrated the problem (use -verbose | Edit -> Verbose log)
+      label: Provide verbose output that demonstrates the problem (use -verbose | Edit -> Verbose log)
       description: |
         It should start like this:
       placeholder: |
