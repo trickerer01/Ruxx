@@ -17,8 +17,8 @@ from json import dumps as json_dumps, loads as json_loads
 from os import curdir, path
 from re import compile as re_compile
 from tkinter import (
-    Menu, Toplevel, messagebox, ttk, Text, Scrollbar, StringVar, Button, Entry, Widget, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT,
-    TOP, INSERT, Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, S, X, Y, NO, YES, filedialog, BooleanVar
+    Menu, Toplevel, messagebox, ttk, Text, Scrollbar, StringVar, Button, Entry, Widget, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT, TOP, INSERT,
+    Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, S, X, Y, NO, YES, filedialog, BooleanVar
 )
 from typing import Optional, Callable, List, Union, Dict, Iterable, Tuple
 
