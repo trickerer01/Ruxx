@@ -23,9 +23,6 @@ BUT_CTRL_O = '<Control-o>'
 BUT_CTRL_L = '<Control-l>'
 BUT_CTRL_SHIFT_D = '<Control-Shift-D>'
 BUT_CTRL_SHIFT_C = '<Control-Shift-C>'
-# BUT_MOUSE_L = '<Button-1>'
-# BUT_MOUSE_MID = '<Button-2>'
-# BUT_MOUSE_R = '<Button-3>'
 BUT_F1 = '<F1>'
 BUT_F2 = '<F2>'
 BUT_F3 = '<F3>'
@@ -36,24 +33,14 @@ BUT_ALT_F4 = '<Alt-F4>'
 # Colors
 #  Color enum
 COLOR_WHITE = 'white'
-# COLOR_BLACK = 'black'
-# COLOR_GRAY = 'gray'
 COLOR_LIGHTGRAY = 'lightgray'
 COLOR_DARKGRAY = 'darkgray'
 COLOR_BROWN1 = 'brown1'  # red-ish (for warnings)
 COLOR_PALEGREEN = 'palegreen'
-# COLOR_STEELBLUE = 'lightsteelblue4'
-# COLOR_TOOLTIP_DEFAULT = '#ffffdd'  # whiteish
-#  Color defines
-# BUT_TOOLTIP_BG_DEFAULT = COLOR_WHITE
 # Abbrev
 STICKY_ALLDIRECTIONS = 'wens'
 STICKY_HORIZONTAL = 'we'
-# STICKY_VERTICAL = 'ns'
-# STICKY_HORIZONTAL_N = 'wen'
-# STICKY_HORIZONTAL_S = 'wes'
 STICKY_VERTICAL_W = 'wns'
-# STICKY_VERTICAL_E = 'ens'
 # Combobox
 OPTION_VALUES_VIDEOS = ('Don\'t download', 'Prefer MP4', 'Prefer Webm')
 OPTION_VALUES_IMAGES = ('Don\'t download', 'Prefer low res', 'Prefer high res')
@@ -88,10 +75,8 @@ OPTION_CMD_DATEBEFORE = '-maxdate'
 OPTION_CMD_PATH = '-path'
 OPTION_CMD_MODULE = '-module'
 # Sizes
-# BORDER_SIZE_DEFAULT = 4
 PADDING_DEFAULT = 2
 PADDING_ROOTFRAME_I = PADDING_DEFAULT
-# COLUMN_WIDTH_DEFAULT = 20
 GLOBAL_COLUMNCOUNT = 100
 GLOBAL_ROWCOUNT = 100
 COLUMNSPAN_MAX = GLOBAL_COLUMNCOUNT
