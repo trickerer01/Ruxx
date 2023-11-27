@@ -94,7 +94,7 @@ def valid_thread_count(val: str) -> int:
 
 def valid_path(pathstr: str) -> str:
     try:
-        newpath = normalize_path(path.abspath(pathstr.strip('\'"')))
+        newpath = normalize_path(path.abspath(path.expanduser(pathstr.strip('\'"'))))
         assert path.isdir(newpath[:(newpath.find(SLASH) + 1)])
         return newpath
     except Exception:

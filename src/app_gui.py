@@ -518,7 +518,7 @@ def recheck_args() -> Tuple[bool, str]:
     if not parse_tags_field(str(getrootconf(Options.OPT_TAGS))):
         return False, 'Invalid tags'
     # path
-    pathstr = normalize_path(str(getrootconf(Options.OPT_PATH)))
+    pathstr = normalize_path(path.expanduser(str(getrootconf(Options.OPT_PATH))))
     if len(pathstr) <= 0:
         return False, 'No path specified'
     if not path.isdir(pathstr[:(pathstr.find(SLASH) + 1)]):
