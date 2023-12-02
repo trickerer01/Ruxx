@@ -118,7 +118,7 @@ re_tags_exclude_rx_s_z_ex = (
     r'r(?:iant)|s(?:cular|es?)|ult(?:_.+?|boy|ed|s)?|ygren)|'  # va
     r'e(?:getable|hicles?|i(?:n(?:_.+?|s(?:_.+?)?|y(?:_.+?)?)?|l(?:ed)?)|nt|rbal|st(?:_lift|s)?)|g(?:_cats)|'  # v
     r'i(?:a(?:gra|ls?)|brat.+?|ct(?:im|or(?:ian|y)?)|deo(?:_?(?:\dd|call|hd)|s)?|ew(?:e[dr])?|gnette|king|lla(?:ger?s?|ins?)?|'  # v
-    r'n(?:dictus|e[ds]?|yl)|ol(?:a(?:tion)?|en(?:ce|t)|ins?)|r(?:gin|tamate|us)|s(?:age[drs]?|it(?:ed|ors?|s)?|or(?:_cap)?)|'  # vi
+    r'n(?:dictus|e[ds]?|tage|yl)|ol(?:a(?:tion)?|en(?:ce|t)|ins?)|r(?:gin|tamate|us)|s(?:age[drs]?|it(?:ed|ors?|s)?|or(?:_cap)?)|'  # vi
     r'v(?:arium|erid))|'  # vi
     r'j(?:u79)|k(?:ontakte)|o(?:dka|i(?:ce(?:d|roid|s)?|d)|l(?:cano|kor|tron)|rtex00|te|vo|yeur(?:i(?:ng|sm))?)|'  # v
     r'r(?:_?(?:chat|media))|shojo|tuber|ul(?:can|gar|pine|tures?|va))|'  # v

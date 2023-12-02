@@ -68,7 +68,7 @@ re_tags_exclude_rx_j_r = (
     r'e(?:b(?:ula)|c(?:k(?:_.+?|b(?:and|ell)|lace|ring|t(?:ie|uft)|wear)?|tar)|ed(?:les{0,2}|y)|g(?:ligee)|'  # n
     r'k(?:o.*?)|ltumo|mi|o(?:n(?:_.+?)?|pets|teny)|ph(?:ew|ilim)|r(?:d[sy]?|vous)|st|t(?:flix|ora.+?|s|t(?:ed|ing))|'  # ne
     r'u(?:mono|ral|ter(?:ed)?)|vrean|w(?:_.+?|half|t|s(?:paper)?|year))|'  # ne
-    r'i(?:bbl(?:es?|ing)|c(?:e|hijou|ktoons)|ece|ght(?:_.+|c(?:ap|lub)|gown|ie|mare|s|time)?|jisanji|ke|'  # n
+    r'i(?:bbl(?:es?|ing)|c(?:e(?:_.+?)?|hijou|ktoons)|ece|ght(?:_.+|c(?:ap|lub)|gown|ie|mare|s|time)?|jisanji|ke|'  # n
     r'n(?:ja(?:go|s)?|tendo(?:_?\d+?)?)|oh(?:_?\d)?|p(?:_?slip|pl[a-v]{1,2})|sekoi|troplus)|'  # ni
     r'o(?:_[a-z_]+?|blood|n(?:_.+?|b(?:ender|inary)|con|human|n?ude)|o(?:b|dles?|k[sy]?|se)|p(?:an|ixel)|r(?:agami|ipro)|'  # n
     r's(?:e(?:_.+?|bleed|job|less|ring)?|tril(?:ls|s)?)|t(?:_.+?|e(?:book|d|pad|s)?|hing.*?)|v(?:a(?:_.+?|g.+?)?|ember|us)|zzle)|'  # no
@@ -114,7 +114,7 @@ re_tags_exclude_rx_j_r = (
     r'o(?:ck(?:ets?|ies|y)|diums?|g(?:champ|gers)|i(?:nt(?:er|ing|s|y)?|son)|k[ei](?:ball|dex|es|mo(?:n|rph)|ng|r|s)?|'  # p
     r'l(?:aroid|e(?:_tied|arm|s)?|i(?:ce(?:man)?|sh|tic(?:ians?|s)?)|ka(?:_dots?)?|l(?:en)?|y(?:amori|gons?))|'  # po
     r'm(?:_poms?|f|p(?:adour|oms?))|n(?:cho|d|ut|ytails?)|o(?:f|l(?:_.+?|ball|que|s(?:ide)|toy)?)|'  # po
-    r'p(?:corn|ers?|p(?:goes|ing|y(?:twt)?)|sicle|y)|r(?:ch|n(?:_?star|hub)?|o(?:naiko)?|t(?:als?|ion|raits?)?)|'  # po
+    r'p(?:corn|ers?|p(?:goes|ing|y(?:twt)?)|sicle|y)|r(?:ch|ing|n(?:_?(?:star|hub))?|o(?:naiko)?|t(?:als?|ion|raits?)?)|'  # po
     r's(?:e(?:d|ss(?:ed|i(?:ng|on))?)?|i(?:ng|tions?)|sess(?:ed|i(?:ng|on))?|t(?:_.+?|card|er|human|man|s)?)|'  # po
     r't(?:_?belly|atos?|ions?|tery)|u(?:ch(?:es)?|n(?:ce|d(?:ed|ing|s)?)|ring|t(?:ing|y)?)|v(?:_.+?|nb)?|'  # po
     r'w(?:der(?:ed|s)?|er(?:_.+?|ed|full?|less|s|tip)?))|'  # po
