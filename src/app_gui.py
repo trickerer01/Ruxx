@@ -303,7 +303,7 @@ def prepare_cmdline() -> List[str]:
     if len(tags_line) > 0 and (tags_line.find('  ') != -1 or tags_line.find('\n') != -1):
         tags_line = re_space_mult.sub(r' ', tags_line.replace('\n', ' '))
         setrootconf(Options.OPT_TAGS, tags_line)
-    parse_suc, tags_list = parse_tags(tags_line)
+    _, tags_list = parse_tags(tags_line)
     tags_str = ' '.join(normalize_tag(tag) for tag in tags_list)
     newstr.append(tags_str)
     # + module
@@ -506,16 +506,12 @@ def check_tags_direct() -> None:
     Thread(target=check_tags_direct_do).start()
 
 
-def parse_tags_field(tags: str) -> bool:
-    result, _ = parse_tags(tags)
-    return result
-
-
 def recheck_args() -> Tuple[bool, str]:
     # tags
     if len(str(getrootconf(Options.OPT_TAGS))) <= 0:
         return False, 'No tags specified'
-    if not parse_tags_field(str(getrootconf(Options.OPT_TAGS))):
+    parse_result, _ = parse_tags(str(getrootconf(Options.OPT_TAGS)))
+    if not parse_result:
         return False, 'Invalid tags'
     # path
     pathstr = normalize_path(path.expanduser(str(getrootconf(Options.OPT_PATH))))
@@ -542,9 +538,9 @@ def recheck_args() -> Tuple[bool, str]:
     if datetime.strptime(datebefore_str, FMT_DATE) < datetime.strptime(dateafter_str, FMT_DATE):
         return False, 'Maximum date cannot be lower than minimum date'
     # Not downloading anything
-    if str(getrootconf(Options.OPT_IMGSETTING)) == OPTION_VALUES_IMAGES[0] and \
-            str(getrootconf(Options.OPT_VIDSETTING)) == OPTION_VALUES_VIDEOS[0] and \
-            (not __RUXX_DEBUG__ or len(OPTION_CMD_DOWNMODE[int(getrootconf(Options.OPT_DOWNLOAD_MODE))]) == 0):
+    if (str(getrootconf(Options.OPT_IMGSETTING)) == OPTION_VALUES_IMAGES[0] and
+        str(getrootconf(Options.OPT_VIDSETTING)) == OPTION_VALUES_VIDEOS[0] and
+       (not __RUXX_DEBUG__ or len(OPTION_CMD_DOWNMODE[int(getrootconf(Options.OPT_DOWNLOAD_MODE))]) == 0)):
         return False, 'Not downloading anything'
 
     return True, ''

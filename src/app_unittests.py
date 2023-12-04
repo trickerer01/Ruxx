@@ -14,7 +14,7 @@ from tempfile import gettempdir
 
 # internal
 from app_cmdargs import prepare_arglist
-from app_defines import DEFAULT_HEADERS, DownloadModes
+from app_defines import DEFAULT_HEADERS, DownloadModes, ThreadInterruptException
 from app_download_rx import DownloaderRx
 from app_logger import Logger
 from app_utils import normalize_path
@@ -26,7 +26,7 @@ CUR_PATH = normalize_path(path.abspath(curdir))
 
 args_argparse_str1 = (
     'sfw asd ned -nds -proxr '
-    '-timeout 13 -retries 56 -dmode 0 -skip_img -skip_vid -webm -lowres -noproxy -proxynodown -prefix -dump_tags -dump_sources -append_info'
+    '-timeout 13 -retries 56 -dmode 0 -skip_img -skip_vid -lowres -noproxy -proxynodown -prefix -dump_tags -dump_sources -append_info'
 )
 args_argparse_str2 = (
     'sfw asd ned -nds -proxt '
@@ -34,6 +34,7 @@ args_argparse_str2 = (
     '-headers {"name1":"value1"} -cookies {"name2":"value2"} '
     '-path ' + CUR_PATH
 )
+args_argparse_str3 = args_argparse_str2 + ' sort:score'
 
 
 class ArgParseTests(TestCase):
@@ -42,7 +43,7 @@ class ArgParseTests(TestCase):
         args = args_argparse_str1
         arglist = prepare_arglist(args.split())
         self.assertIsNotNone(arglist.tags)
-        print(str(arglist.tags))
+        # print(str(arglist.tags))
         self.assertEqual(5, len(arglist.tags))
         print('test_argparse1 passed')
 
@@ -64,6 +65,7 @@ class ArgParseTests(TestCase):
 
 class DownloaderBaseTests(TestCase):
     def test_cmdline1(self) -> None:
+        Logger.init(True, True)
         args = args_argparse_str1
         arglist = prepare_arglist(args.split())
         with DownloaderRx() as dwn:
@@ -74,7 +76,7 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual(DownloadModes.DOWNLOAD_FULL, dwn.download_mode)
             self.assertTrue(dwn.skip_images)
             self.assertTrue(dwn.skip_videos)
-            self.assertTrue(dwn.prefer_webm)
+            self.assertFalse(dwn.prefer_webm)
             self.assertTrue(dwn.low_res)
             self.assertTrue(dwn.ignore_proxy)
             self.assertTrue(dwn.ignore_proxy_dwn)
@@ -85,6 +87,7 @@ class DownloaderBaseTests(TestCase):
         print('test_cmdline1 passed')
 
     def test_cmdline2(self) -> None:
+        Logger.init(True, True)
         args = args_argparse_str2
         arglist = prepare_arglist(args.split())
         with DownloaderRx() as dwn:
@@ -99,6 +102,14 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('value1', dwn.add_headers.get('name1'))
             self.assertEqual('value2', dwn.add_cookies.get('name2'))
         print('test_cmdline2 passed')
+
+    def test_cmdline3(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str3
+        arglist = prepare_arglist(args.split())
+        with DownloaderRx() as dwn:
+            self.assertRaises(ThreadInterruptException, dwn.parse_args, arglist)
+        print('test_cmdline3 passed')
 
 
 # Tests below require actual connection

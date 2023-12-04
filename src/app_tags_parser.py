@@ -129,10 +129,6 @@ def parse_tags(tags: str) -> Tuple[bool, Tuple[str, ...]]:
 
     fulltags = list()
     for tag in unique_everseen(tags.split(' ')):  # type: str
-        if (ProcModule.is_rx() or ProcModule.is_rs()) and tag.startswith('sort:'):
-            return fail()
-        if ProcModule.is_rn() and tag.startswith('order='):
-            return fail()
         if tag.startswith('(') and re_orgr_full().fullmatch(tag):
             try:
                 tag = split_or_group(tag)

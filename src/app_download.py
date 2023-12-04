@@ -900,9 +900,15 @@ class DownloaderBase(ThreadedHtmlWorker):
         tags_list, self.neg_and_groups = extract_neg_and_groups(' '.join(tags_base_arr))
         for t in tags_list:
             if len(t) > 2 and f'{t[0]}{t[-1]}' == '()' and f'{t[:2]}{t[-2:]}' != f'({cc}{cc})':
-                thread_exit(f'Invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated with \'{cc}\'.')
+                thread_exit(f'Error: invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated with \'{cc}\'')
         self.tags_str_arr = split_tags_into_tasks(tags_list, cc, sc, split_always)
         self.orig_tasks_count = self._tasks_count()
+        # conflict: sort tag + date filter
+        sort_checker = (lambda s: (s.startswith('order=') and s != 'order=id_desc') if ProcModule.is_rn() else
+                                  (s.startswith('sort:') and s != 'sort:id'))
+        sort_tags = list(filter(sort_checker, tags_list))
+        if sort_tags and (self.date_min != DATE_MIN_DEFAULT or self.date_max != datetime.today().strftime(FMT_DATE)):
+            thread_exit('Error: cannot use both sort tag and date filter at the same time!')
 
     def _process_all_tags(self) -> None:
         if self.warn_nonempty:
