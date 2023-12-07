@@ -20,16 +20,14 @@ class ToolTipBase(ABC):
         self.timed = timed
         self.tipwindow = None  # type: Optional[Toplevel]
         self.id = None  # type: Optional[str]
-        self.x = self.y = 0
-        if not self.timed:
-            self._id1 = self.widget.bind('<Enter>', self.enter)
-            self._id2 = self.widget.bind('<Leave>', self.leave)
-            self._id3 = self.widget.bind('<ButtonPress>', self.leave)
-
         self.bgcolor = bgcolor or '#ffffdd'
         self.appear_delay = appear_delay or 1000
         self.border_width = border_width or 1
         self.relief = relief or SOLID
+        if not self.timed:
+            self.widget.bind('<Enter>', self.enter)
+            self.widget.bind('<Leave>', self.leave)
+            self.widget.bind('<ButtonPress>', self.leave)
 
     def enter(self, *_) -> None:
         self.schedule()
@@ -56,9 +54,9 @@ class ToolTipBase(ABC):
             return
         x = self.widget.winfo_rootx() + 20
         y = self.widget.winfo_rooty() + self.widget.winfo_height() + 1
-        self.tipwindow = tw = Toplevel(self.widget)
-        tw.wm_overrideredirect(1)
-        tw.wm_geometry(f'+{x:.0f}+{y:.0f}')
+        self.tipwindow = Toplevel(self.widget)
+        self.tipwindow.wm_overrideredirect(1)
+        self.tipwindow.wm_geometry(f'+{x:.0f}+{y:.0f}')
         self._showcontents()
         if self.timed:
             self.schedule()
