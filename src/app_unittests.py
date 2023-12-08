@@ -9,12 +9,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from os import path, curdir, remove as remove_file
 from sys import exit as sysexit
-from unittest import main as run_tests, TestCase
 from tempfile import gettempdir
+from unittest import main as run_tests, TestCase
 
 # internal
 from app_cmdargs import prepare_arglist
-from app_defines import DEFAULT_HEADERS, DownloadModes, ThreadInterruptException
+from app_defines import DEFAULT_HEADERS, DownloadModes, ThreadInterruptException, DATE_MIN_DEFAULT
+from app_download_rn import DownloaderRn
+from app_download_rs import DownloaderRs
 from app_download_rx import DownloaderRx
 from app_logger import Logger
 from app_utils import normalize_path
@@ -35,6 +37,27 @@ args_argparse_str2 = (
     '-path ' + CUR_PATH
 )
 args_argparse_str3 = args_argparse_str2 + ' sort:score'
+item_str1_rx = (
+    '<post height="1291" score="27" file_url="/images/6898/76dfed93372eb7a373ffe2430379cfb1.jpeg" parent_id="90002"'
+    ' sample_url="/preview/6898/76dfed93372eb7a373ffe2430379cfb1.jpeg" sample_width="961" sample_height="1291"'
+    ' preview_url="/thumbnails/6898/thumbnail_76dfed93372eb7a373ffe2430379cfb1.jpg" rating="s"'
+    ' tags=" clothing female female_only flower heart long_hair safe sfw " id="7869261" width="961" change="1683351206"'
+    ' md5="76dfed93372eb7a373ffe2430379cfb1" creator_id="1825071" has_children="false" created_at="Sat May 06 07:33:08 +0200 2023"'
+    ' status="active" source="Twitter/safe" has_notes="false" has_comments="false" preview_width="111" preview_height="150"/>'
+)
+item_str1_rn = (
+    '<a href="/post/view/427251" class="thumb shm-thumb shm-thumb-link " data-tags="marnie_(pokemon) pokemon ryumigin"'
+    ' data-height="1200" data-width="848" data-mime="image/png" data-post-id="427251"><img id="thumb_427251"'
+    ' title="Marnie_(Pokemon) Pokemon RyumiGin // 848x1200 // 1.2MB // png"'
+    ' alt="Marnie_(Pokemon) Pokemon RyumiGin // 848x1200 // 1.2MB // png"'
+    '  height="170" width="120"src="/_thumbs/00c90baef0be3a687f37e70c0a1bb291/thumb.jpg"></a>'
+)
+item_str1_rs = (
+    '<div style="border-radius: 3px; margin: 0px 10px 15px 10px; overflow: hidden; height: 200px; "><a id="7939303"'
+    ' href="/index.php?r=posts/view&amp;id=7939303"><img  src="/thumbnails/bf/77/thumbnail_bf771345fb58e7ad19087320dc56d76e.jpg"'
+    ' title="1boy, 1girls, 3d, i love you, kakegurui, kissing, koikatsu, outside, safe, sfw, valentine&#039;s day"'
+    ' alt="Image: 7939303" style="width: 220px; height: 100%; object-fit: cover; object-position: center;"/></a></div>'
+)
 
 
 class ArgParseTests(TestCase):
@@ -64,6 +87,35 @@ class ArgParseTests(TestCase):
 
 
 class DownloaderBaseTests(TestCase):
+    def test_item1_rx(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str1
+        arglist = prepare_arglist(args.split())
+        with DownloaderRx() as dwn:
+            dwn.parse_args(arglist)
+            self.assertEqual('7869261', dwn._extract_id(dwn._local_addr_from_string(item_str1_rx)))
+            self.assertEqual('06-05-2023', dwn._extract_post_date(item_str1_rx))
+        print('test_item1_rx passe')
+
+    def test_item1_rn(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str1
+        arglist = prepare_arglist(args.split())
+        with DownloaderRn() as dwn:
+            dwn.parse_args(arglist)
+            self.assertEqual('427251', dwn._extract_id(item_str1_rn))
+        print('test_item1_rn passe')
+
+    def test_item1_rs(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str1
+        arglist = prepare_arglist(args.split())
+        with DownloaderRs() as dwn:
+            dwn.parse_args(arglist)
+            self.assertEqual('7939303', dwn._extract_id(dwn._local_addr_from_string(item_str1_rs)))
+            self.assertEqual(DATE_MIN_DEFAULT, dwn._extract_post_date(item_str1_rs))
+        print('test_item1_rs passe')
+
     def test_cmdline1(self) -> None:
         Logger.init(True, True)
         args = args_argparse_str1
@@ -128,6 +180,19 @@ class ConnTests(TestCase):
             self.assertEqual(1, dwn.total_count)
         print('test_connect_rx1 passed')
 
+    def test_connect_rs1(self) -> None:
+        # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
+        Logger.init(True, True)
+        # ____empty,  tag,             tag,       flag,    v,     flag,     v,     flag,         v             flag      v
+        argslist = ('id:=7939303', '-severals', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
+        arglist = prepare_arglist(argslist)
+        with DownloaderRs() as dwn:
+            dwn.parse_args(arglist)
+            dwn.url = dwn.form_tags_search_address(dwn.tags_str_arr[0])
+            dwn.total_count = dwn.get_items_query_size_or_html(dwn.url)
+            self.assertEqual(1, dwn.total_count)
+        print('test_connect_rs1 passed')
+
 
 class DownloadTests(TestCase):
     def test_down_rx1(self) -> None:
@@ -156,6 +221,21 @@ class DownloadTests(TestCase):
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
         print('test_down_rx2 passed')
+
+    def test_down_rs1(self) -> None:
+        # this test actually performs a download
+        tempfile_id = str(7939303)
+        tempfile_ext = 'png'
+        tempfile_path = f'{normalize_path(gettempdir())}{tempfile_id}.{tempfile_ext}'
+        Logger.init(True, True)
+        # ____empty,  tag,                   flag,     v,     flag,         v             flag      v
+        argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', gettempdir())
+        arglist = prepare_arglist(argslist)
+        with DownloaderRs() as dwn:
+            dwn.launch_download(arglist)
+            self.assertTrue(path.isfile(tempfile_path))
+            remove_file(tempfile_path)
+        print('test_down_rs1 passed')
 
 
 def run_all_tests() -> None:

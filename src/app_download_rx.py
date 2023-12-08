@@ -79,9 +79,8 @@ class DownloaderRx(DownloaderBase):
         return h
 
     def _extract_id(self, addr: str) -> str:
-        h = addr[addr.find(' id="') + len(' id="'):]
-        h = h[:h.find('"')]
-        return h
+        id_idx = addr.find(' id="') + len(' id="')
+        return addr[id_idx:addr.find('"', id_idx + 1)]
 
     def _is_video(self, h: str) -> bool:
         # tags are not 100% accurate so use a more direct approach
@@ -94,9 +93,8 @@ class DownloaderRx(DownloaderBase):
     def _extract_post_date(self, raw: str) -> str:
         try:
             # 'Mon Jan 06 21:51:58 +0000 2020' -> '06-01-2020'
-            d_raw = raw[raw.find('created_at="') + 12:]
-            d_raw = d_raw[:d_raw.find('"')]
-            d = datetime.strptime(d_raw, '%a %b %d %X %z %Y')
+            date_idx = raw.find('created_at="') + len('created_at="')
+            d = datetime.strptime(raw[date_idx:raw.find('"', date_idx + 1)], '%a %b %d %X %z %Y')
             return d.strftime(FMT_DATE)
         except Exception:
             thread_exit(f'Unable to extract post date from raw: {raw}', -446)
