@@ -30,13 +30,15 @@ args_argparse_str1 = (
     'sfw asd ned -nds -proxr '
     '-timeout 13 -retries 56 -dmode 0 -skip_img -skip_vid -lowres -noproxy -proxynodown -prefix -dump_tags -dump_sources -append_info'
 )
-args_argparse_str2 = (
+args_argparse_str2_base = (
     'sfw asd ned -nds -proxt '
-    '-mindate 31-12-1950 -maxdate 01-01-2038 -threads 8 -proxy http://8.8.8.8:65333 '
+    '-threads 8 -proxy http://8.8.8.8:65333 '
     '-headers {"name1":"value1"} -cookies {"name2":"value2"} '
     '-path ' + CUR_PATH
 )
+args_argparse_str2 = args_argparse_str2_base + ' -mindate 31-12-1950 -maxdate 01-01-2038'
 args_argparse_str3 = args_argparse_str2 + ' sort:score'
+args_argparse_str4 = args_argparse_str2_base + ' sort:score:desc score:40'
 item_str1_rx = (
     '<post height="1291" score="27" file_url="/images/6898/76dfed93372eb7a373ffe2430379cfb1.jpeg" parent_id="90002"'
     ' sample_url="/preview/6898/76dfed93372eb7a373ffe2430379cfb1.jpeg" sample_width="961" sample_height="1291"'
@@ -68,7 +70,7 @@ class ArgParseTests(TestCase):
         self.assertIsNotNone(arglist.tags)
         # print(str(arglist.tags))
         self.assertEqual(5, len(arglist.tags))
-        print('test_argparse1 passed')
+        print(f'{self._testMethodName} passed')
 
     def test_argparse2(self) -> None:
         # 5 tags, value types check
@@ -83,7 +85,7 @@ class ArgParseTests(TestCase):
         self.assertIsNotNone(arglist.proxy)
         self.assertIsNotNone(arglist.headers)
         self.assertIsNotNone(arglist.cookies)
-        print('test_argparse2 passed')
+        print(f'{self._testMethodName} passed')
 
 
 class DownloaderBaseTests(TestCase):
@@ -95,7 +97,7 @@ class DownloaderBaseTests(TestCase):
             dwn.parse_args(arglist)
             self.assertEqual('7869261', dwn._extract_id(dwn._local_addr_from_string(item_str1_rx)))
             self.assertEqual('06-05-2023', dwn._extract_post_date(item_str1_rx))
-        print('test_item1_rx passe')
+        print(f'{self._testMethodName} passed')
 
     def test_item1_rn(self) -> None:
         Logger.init(True, True)
@@ -104,7 +106,7 @@ class DownloaderBaseTests(TestCase):
         with DownloaderRn() as dwn:
             dwn.parse_args(arglist)
             self.assertEqual('427251', dwn._extract_id(item_str1_rn))
-        print('test_item1_rn passe')
+        print(f'{self._testMethodName} passed')
 
     def test_item1_rs(self) -> None:
         Logger.init(True, True)
@@ -114,7 +116,7 @@ class DownloaderBaseTests(TestCase):
             dwn.parse_args(arglist)
             self.assertEqual('7939303', dwn._extract_id(dwn._local_addr_from_string(item_str1_rs)))
             self.assertEqual(DATE_MIN_DEFAULT, dwn._extract_post_date(item_str1_rs))
-        print('test_item1_rs passe')
+        print(f'{self._testMethodName} passed')
 
     def test_cmdline1(self) -> None:
         Logger.init(True, True)
@@ -136,7 +138,7 @@ class DownloaderBaseTests(TestCase):
             self.assertTrue(dwn.dump_tags)
             self.assertTrue(dwn.dump_sources)
             self.assertTrue(dwn.append_info)
-        print('test_cmdline1 passed')
+        print(f'{self._testMethodName} passed')
 
     def test_cmdline2(self) -> None:
         Logger.init(True, True)
@@ -153,7 +155,7 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('http://8.8.8.8:65333', dwn.proxies.get('https'))
             self.assertEqual('value1', dwn.add_headers.get('name1'))
             self.assertEqual('value2', dwn.add_cookies.get('name2'))
-        print('test_cmdline2 passed')
+        print(f'{self._testMethodName} passed')
 
     def test_cmdline3(self) -> None:
         Logger.init(True, True)
@@ -161,7 +163,17 @@ class DownloaderBaseTests(TestCase):
         arglist = prepare_arglist(args.split())
         with DownloaderRx() as dwn:
             self.assertRaises(ThreadInterruptException, dwn.parse_args, arglist)
-        print('test_cmdline3 passed')
+        print(f'{self._testMethodName} passed')
+
+    def test_cmdline4(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str4
+        arglist = prepare_arglist(args.split())
+        with DownloaderRx() as dwn:
+            dwn.parse_args(arglist)
+            self.assertFalse(dwn.default_sort)
+            self.assertEqual(7, dwn.get_tags_count())
+        print(f'{self._testMethodName} passed')
 
 
 # Tests below require actual connection
@@ -178,7 +190,7 @@ class ConnTests(TestCase):
             dwn.url = dwn.form_tags_search_address(dwn.tags_str_arr[0])
             dwn.total_count = dwn.get_items_query_size_or_html(dwn.url)
             self.assertEqual(1, dwn.total_count)
-        print('test_connect_rx1 passed')
+        print(f'{self._testMethodName} passed')
 
     def test_connect_rs1(self) -> None:
         # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
@@ -191,7 +203,7 @@ class ConnTests(TestCase):
             dwn.url = dwn.form_tags_search_address(dwn.tags_str_arr[0])
             dwn.total_count = dwn.get_items_query_size_or_html(dwn.url)
             self.assertEqual(1, dwn.total_count)
-        print('test_connect_rs1 passed')
+        print(f'{self._testMethodName} passed')
 
 
 class DownloadTests(TestCase):
@@ -205,7 +217,7 @@ class DownloadTests(TestCase):
             dwn.launch_download(arglist)
             self.assertTrue(dwn.fail_count == 0, f'dwn.failCount {dwn.fail_count:d} == 0')
             self.assertTrue(dwn.processed_count == 1, f'dwn.processed_count {dwn.fail_count:d} == 1')
-        print('test_down_rx1 passed')
+        print(f'{self._testMethodName} passed')
 
     def test_down_rx2(self) -> None:
         # this test actually performs a download
@@ -220,7 +232,7 @@ class DownloadTests(TestCase):
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
-        print('test_down_rx2 passed')
+        print(f'{self._testMethodName} passed')
 
     def test_down_rs1(self) -> None:
         # this test actually performs a download
@@ -235,7 +247,7 @@ class DownloadTests(TestCase):
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
-        print('test_down_rs1 passed')
+        print(f'{self._testMethodName} passed')
 
 
 def run_all_tests() -> None:

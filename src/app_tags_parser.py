@@ -26,11 +26,11 @@ TAG_CHAR = r'[a-zÀ-ʯА-я\d_+\-/!()*\'.]'
 # language=PythonRegExp
 META_CHAR = r'[a-z\d_]'
 # language=PythonRegExp
-META_COUNT_RX = r':(?:[<>]=?|=)?[a-z\d_]+?'
+META_COUNT_RX = r':(?:(?:[<>]=?|=)?[a-z\d_]+?|[a-z\d_]+:[a-z\d_]+)'
 # language=PythonRegExp
 META_COUNT_RN = r'(?:[<>]=?|=)[a-z\d_]+?'
 # language=PythonRegExp
-META_COUNT_RS = r':(?:[<>]=?|=)?[a-z\d_]+?'
+META_COUNT_RS = r':(?:(?:[<>]=?|=)?[a-z\d_]+?|[a-z\d_]+:[a-z\d_]+)'
 # language=PythonRegExp
 RE_ORGR_PART_RX = fr'{TAG_CHAR}+?(?:{META_COUNT_RX})?'
 # language=PythonRegExp

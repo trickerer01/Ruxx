@@ -101,6 +101,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.item_info_dict_all = dict()  # type: Dict[str, ItemInfo]
         self.neg_and_groups = list()  # type: List[List[Pattern[str]]]
         self.known_parents = set()  # type: Set[str]
+        self.default_sort = True
 
     def __del__(self) -> None:
         self.__cleanup()
@@ -855,7 +856,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('\nNothing to download: queue is empty')
             return
 
-        self.items_raw_all = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)), reverse=True)  # type: List[str]
+        if self.default_sort:
+            self.items_raw_all = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)), reverse=True)  # type: List[str]
 
         if self.download_limit > 0:
             if len(self.items_raw_all) > self.download_limit:
@@ -865,12 +867,12 @@ class DownloaderBase(ThreadedHtmlWorker):
             else:
                 trace('\nShrinking queue down is not required!')
 
-        item_front = self._extract_item_info(self.items_raw_all[0]).id
-        item_end = self._extract_item_info(self.items_raw_all[-1]).id
-        # front item is always >= end item
-        trace(f'\nProcessing {self.total_count_all:d} items, bound {item_end} to {item_front}')
+        min_id = self._extract_id(min(self.items_raw_all, key=lambda x: int(self._extract_id(x))))
+        max_id = self._extract_id(max(self.items_raw_all, key=lambda x: int(self._extract_id(x))))
+        trace(f'\nProcessing {self.total_count_all:d} items, bound {min_id} to {max_id}')
 
-        self.items_raw_all.reverse()
+        if self.default_sort:
+            self.items_raw_all.reverse()
         self.current_state = DownloaderStates.STATE_DOWNLOADING
         trace(f'{self.total_count_all:d} item(s) scheduled, {self.maxthreads_items:d} thread(s) max\nWorking...\n')
 
@@ -900,15 +902,18 @@ class DownloaderBase(ThreadedHtmlWorker):
         tags_list, self.neg_and_groups = extract_neg_and_groups(' '.join(tags_base_arr))
         for t in tags_list:
             if len(t) > 2 and f'{t[0]}{t[-1]}' == '()' and f'{t[:2]}{t[-2:]}' != f'({cc}{cc})':
-                thread_exit(f'Error: invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated with \'{cc}\'')
+                thread_exit(f'Error: invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated by \'{cc}\'')
         self.tags_str_arr = split_tags_into_tasks(tags_list, cc, sc, split_always)
         self.orig_tasks_count = self._tasks_count()
-        # conflict: sort tag + date filter
+        # conflict: non-default sorting
         sort_checker = (lambda s: (s.startswith('order=') and s != 'order=id_desc') if ProcModule.is_rn() else
-                                  (s.startswith('sort:') and s != 'sort:id'))
-        sort_tags = list(filter(sort_checker, tags_list))
-        if sort_tags and (self.date_min != DATE_MIN_DEFAULT or self.date_max != datetime.today().strftime(FMT_DATE)):
-            thread_exit('Error: cannot use both sort tag and date filter at the same time!')
+                                  (s.startswith('sort:') and s != 'sort:id' and s != 'sort:id:desc'))
+        self.default_sort = len(list(filter(sort_checker, tags_list))) == 0
+        if not self.default_sort:
+            if self._tasks_count() > 1:
+                thread_exit('Error: cannot use non-default sorting with multi-task query!')
+            if self.date_min != DATE_MIN_DEFAULT or self.date_max != datetime.today().strftime(FMT_DATE):
+                thread_exit('Error: cannot use both sort tag and date filter at the same time!')
 
     def _process_all_tags(self) -> None:
         if self.warn_nonempty:
