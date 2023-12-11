@@ -857,12 +857,12 @@ class DownloaderBase(ThreadedHtmlWorker):
             return
 
         if self.default_sort:
-            self.items_raw_all = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)), reverse=True)  # type: List[str]
+            self.items_raw_all = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)))  # type: List[str]
 
         if self.download_limit > 0:
             if len(self.items_raw_all) > self.download_limit:
                 trace(f'\nShrinking queue down to {self.download_limit:d} items...')
-                self.items_raw_all = self.items_raw_all[self.download_limit * -1:]
+                self.items_raw_all = self.items_raw_all[:self.download_limit]
                 self.total_count_all = len(self.items_raw_all)
             else:
                 trace('\nShrinking queue down is not required!')
@@ -871,8 +871,6 @@ class DownloaderBase(ThreadedHtmlWorker):
         max_id = self._extract_id(max(self.items_raw_all, key=lambda x: int(self._extract_id(x))))
         trace(f'\nProcessing {self.total_count_all:d} items, bound {min_id} to {max_id}')
 
-        if self.default_sort:
-            self.items_raw_all.reverse()
         self.current_state = DownloaderStates.STATE_DOWNLOADING
         trace(f'{self.total_count_all:d} item(s) scheduled, {self.maxthreads_items:d} thread(s) max\nWorking...\n')
 
