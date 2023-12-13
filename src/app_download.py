@@ -887,6 +887,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                     thread_sleep(0.2)
         else:
             for i in range(self.total_count_all):
+                self.catch_cancel_or_ctrl_c()
                 self._process_item(self.items_raw_all[i])
 
         skip_all = self.download_mode == DownloadModes.DOWNLOAD_SKIP
