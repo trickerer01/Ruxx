@@ -206,7 +206,7 @@ class DownloaderRx(DownloaderBase):
 
         if orig_item:
             if len(orig_item.groupdict()) > 1:
-                trace(f'Warning (W1): ProcItem: more than 1 items for {item_id}', True)
+                trace(f'Warning (W1): ProcItem: {len(orig_item.groupdict()):d} items for {item_id}', True)
 
             is_vid = self._is_video(h)
             if is_vid:

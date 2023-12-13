@@ -88,7 +88,6 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.failed_items = list()  # type: List[str]
         self.total_count = 0
         self.total_count_old = 0
-        self.total_count_all = 0
         self.processed_count = 0
         self.total_pages = 0
         self.current_task_num = 0
@@ -102,6 +101,10 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.neg_and_groups = list()  # type: List[List[Pattern[str]]]
         self.known_parents = set()  # type: Set[str]
         self.default_sort = True
+
+    @property
+    def total_count_all(self) -> int:
+        return len(self.items_raw_all)
 
     def __del__(self) -> None:
         self.__cleanup()
@@ -719,7 +722,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 removed_count += 1
 
         if removed_count > 0:
-            trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
+            trace(f'Filtered out {removed_count:d} / {total_count_old:d} item(s)!')
 
     def _process_tags(self, tag_str: str) -> None:
         self.current_state = DownloaderStates.STATE_SEARCHING
@@ -737,7 +740,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 trace('Nothing to process: query result is empty')
                 return
 
-            trace(f'Total {self.total_count:d} items found across {self._num_pages():d} pages')
+            trace(f'Total {self.total_count:d} item(s) found across {self._num_pages():d} page(s)')
 
             if 0 < self._get_max_search_depth() < self.total_count:
                 trace('\nFATAL: too many possible matches, won\'t be able to fetch html for all the pages!\nTry adding an ID filter.')
@@ -838,7 +841,6 @@ class DownloaderBase(ThreadedHtmlWorker):
             apply_filter(DownloaderStates.STATE_FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
 
         self.items_raw_all = list(unique_everseen(self.items_raw_all + self.items_raw_per_task))  # type: List[str]
-        self.total_count_all = len(self.items_raw_all)
         self.item_info_dict_all.update(self.item_info_dict_per_task)
         if self.current_task_num > 1:
             trace(f'overall totalcount: {self.total_count_all:d}')
@@ -860,21 +862,20 @@ class DownloaderBase(ThreadedHtmlWorker):
             self.items_raw_all = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)))  # type: List[str]
 
         if self.download_limit > 0:
-            if len(self.items_raw_all) > self.download_limit:
-                trace(f'\nShrinking queue down to {self.download_limit:d} items...')
+            if self.total_count_all > self.download_limit:
+                trace(f'\nShrinking queue down to {self.download_limit:d} item(s)...')
                 self.items_raw_all = self.items_raw_all[:self.download_limit]
-                self.total_count_all = len(self.items_raw_all)
             else:
                 trace('\nShrinking queue down is not required!')
 
         min_id = self._extract_id(min(self.items_raw_all, key=lambda x: int(self._extract_id(x))))
         max_id = self._extract_id(max(self.items_raw_all, key=lambda x: int(self._extract_id(x))))
-        trace(f'\nProcessing {self.total_count_all:d} items, bound {min_id} to {max_id}')
+        trace(f'\nProcessing {self.total_count_all:d} item(s), bound {min_id} to {max_id}')
 
         self.current_state = DownloaderStates.STATE_DOWNLOADING
         trace(f'{self.total_count_all:d} item(s) scheduled, {self.maxthreads_items:d} thread(s) max\nWorking...\n')
 
-        if self.maxthreads_items > 1 and len(self.items_raw_all) > 1:
+        if self.maxthreads_items > 1 and self.total_count_all > 1:
             with Pool(self.maxthreads_items) as active_pool:  # type: ThreadPool
                 ress = list()
                 for iarr in self.items_raw_all:
@@ -891,7 +892,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 self._process_item(self.items_raw_all[i])
 
         skip_all = self.download_mode == DownloadModes.DOWNLOAD_SKIP
-        trace(f'\nAll {"skipped" if skip_all else "processed"} ({self.total_count_all:d} items)...')
+        trace(f'\nAll {"skipped" if skip_all else "processed"} ({self.total_count_all:d} item(s))...')
 
     def _parse_tags(self, tags_base_arr: Iterable[str]) -> None:
         cc = self._get_tags_concat_char()
@@ -900,14 +901,14 @@ class DownloaderBase(ThreadedHtmlWorker):
         # join by ' ' is required by tests, although normally len(args.tags) == 1
         tags_list, self.neg_and_groups = extract_neg_and_groups(' '.join(tags_base_arr))
         for t in tags_list:
-            if len(t) > 2 and f'{t[0]}{t[-1]}' == '()' and f'{t[:2]}{t[-2:]}' != f'({cc}{cc})':
+            if len(t) > 2 and f'{t[0]}{t[-1]}' == '()' and f'{t[:2]}{t[-2:]}' != f'({cc * 2})':
                 thread_exit(f'Error: invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated by \'{cc}\'')
         self.tags_str_arr = split_tags_into_tasks(tags_list, cc, sc, split_always)
         self.orig_tasks_count = self._tasks_count()
         # conflict: non-default sorting
         sort_checker = (lambda s: (s.startswith('order=') and s != 'order=id_desc') if ProcModule.is_rn() else
                                   (s.startswith('sort:') and s != 'sort:id' and s != 'sort:id:desc'))
-        self.default_sort = len(list(filter(sort_checker, tags_list))) == 0
+        self.default_sort = not any(sort_checker(tag) for tag in tags_list)
         if not self.default_sort:
             if self._tasks_count() > 1:
                 thread_exit('Error: cannot use non-default sorting with multi-task query!')
@@ -957,7 +958,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         success_files = min(self.success_count, self.total_count_all - self.fail_count)
         trace(f'\n{self._tasks_count():d} task(s) completed, {success_files:d} / {total_files:d} item(s) succeded', False, True)
         if len(self.failed_items) > 0:
-            trace(f'{len(self.failed_items):d} failed items:')
+            trace(f'{len(self.failed_items):d} failed item(s):')
             trace('\n'.join(self.failed_items))
 
     def _check_tags(self) -> None:
