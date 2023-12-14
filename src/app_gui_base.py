@@ -36,7 +36,7 @@ from app_gui_defines import (
     IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL, PADDING_DEFAULT,
     OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, Globals, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
     OPTION_VALUES_PROXYTYPE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
-    STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, BUTTONS_TO_UNFOCUS,
+    STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, BUTTONS_TO_UNFOCUS, BUT_CTRL_BACKSPACE,
     gobjects, Icons, Menus, SubMenus, menu_items, hotkeys, SLASH,
 )
 from app_module import ProcModule
@@ -190,6 +190,29 @@ class BaseFrame(ttk.Frame):
         super().__init__(parent, **kw)
 
 
+class BaseEntry(Entry):
+    CTRL_BKSP_DELIMS = ' ,.!~/-=:;'
+
+    def __init__(self, parent=None, *args, **kw) -> None:
+        super().__init__(parent, *args, **kw)
+        self.bind(BUT_CTRL_BACKSPACE, self.on_event_ctrl_backspace)
+
+    def on_event_ctrl_backspace(self, *_) -> None:
+        my_str = self.get()
+        cur_idx = prev_idx = self.index(INSERT)
+        while prev_idx >= 1:
+            prev_idx -= 1
+            if prev_idx >= 1 and my_str[prev_idx] == my_str[prev_idx - 1]:
+                continue
+            if my_str[prev_idx] in BaseEntry.CTRL_BKSP_DELIMS:
+                if prev_idx == cur_idx - 1:
+                    continue
+                if my_str[prev_idx] != my_str[prev_idx + 1]:
+                    prev_idx += 1
+                break
+        self.selection_range(prev_idx, cur_idx)
+
+
 class BaseWindow:
     def __init__(self, parent, init_hidden=True) -> None:
         self.parent = parent
@@ -310,7 +333,7 @@ class AskFileTypeFilterWindow(AwaitableAskWindow):
 
 class AskFileSizeFilterWindow(AwaitableAskWindow):
     def __init__(self, parent) -> None:
-        self.entry = None  # type: Optional[Entry]
+        self.entry = None  # type: Optional[BaseEntry]
         super().__init__(parent, 'Size thresholds MB')
 
     def finalize(self) -> None:
@@ -319,7 +342,7 @@ class AskFileSizeFilterWindow(AwaitableAskWindow):
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = Entry(frame, width=18, textvariable=self.variable)
+        self.entry = BaseEntry(frame, width=18, textvariable=self.variable)
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
     def value(self) -> Optional[List[float]]:
@@ -332,7 +355,7 @@ class AskFileSizeFilterWindow(AwaitableAskWindow):
 class AskIntWindow(AwaitableAskWindow):
     def __init__(self, parent, validator: Callable[[int], bool], title='Enter number') -> None:
         self.validator = validator or (lambda _: True)
-        self.entry = None  # type: Optional[Entry]
+        self.entry = None  # type: Optional[BaseEntry]
         super().__init__(parent, title)
 
     def finalize(self) -> None:
@@ -341,7 +364,7 @@ class AskIntWindow(AwaitableAskWindow):
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = Entry(frame, width=18, textvariable=self.variable)
+        self.entry = BaseEntry(frame, width=18, textvariable=self.variable)
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
     def value(self) -> Optional[int]:
@@ -355,7 +378,7 @@ class AskIntWindow(AwaitableAskWindow):
 
 class AskFileScoreFilterWindow(AwaitableAskWindow):
     def __init__(self, parent) -> None:
-        self.entry = None  # type: Optional[Entry]
+        self.entry = None  # type: Optional[BaseEntry]
         super().__init__(parent, 'Score thresholds')
 
     def finalize(self) -> None:
@@ -364,7 +387,7 @@ class AskFileScoreFilterWindow(AwaitableAskWindow):
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = Entry(frame, width=18, textvariable=self.variable)
+        self.entry = BaseEntry(frame, width=18, textvariable=self.variable)
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
     def value(self) -> Optional[List[int]]:
@@ -443,7 +466,7 @@ class LogWindow(BaseWindow):
 class ProxyWindow(BaseWindow):
     def __init__(self, parent) -> None:
         self.ptype_var = None  # type: Optional[StringVar]
-        self.entry_addr = None  # type: Optional[Entry]
+        self.entry_addr = None  # type: Optional[BaseEntry]
         self.but_ok = None  # type: Optional[Button]
         self.but_cancel = None  # type: Optional[Button]
         self.err_message = None  # type: Optional[WidgetToolTip]
@@ -469,9 +492,9 @@ class ProxyWindow(BaseWindow):
         cbtype.current(ptype_index)
         cbtype.grid(row=1, column=0, columnspan=5)
         cbtype.config(state=STATE_READONLY)
-        _ = Entry(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS.get(Options.OPT_PROXYSTRING)))
-        self.entry_addr = Entry(downframe, font=FONT_SANS_MEDIUM, width=21,
-                                textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PROXYSTRING_TEMP)))
+        _ = BaseEntry(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS.get(Options.OPT_PROXYSTRING)))
+        self.entry_addr = BaseEntry(downframe, font=FONT_SANS_MEDIUM, width=21,
+                                    textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PROXYSTRING_TEMP)))
         if __RUXX_DEBUG__:
             self.entry_addr.insert(END, PROXY_DEFAULT_STR)
         self.err_message = attach_tooltip(self.entry_addr, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
@@ -547,13 +570,13 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.lbox_h = None  # type: Optional[Listbox]
         self.bdel_h = None  # type: Optional[Button]
         self.badd_h = None  # type: Optional[Button]
-        self.entry_h = None  # type: Optional[Entry]
+        self.entry_h = None  # type: Optional[BaseEntry]
         self.err_message_syntax_h = None  # type: Optional[WidgetToolTip]
         self.err_message_count_h = None  # type: Optional[WidgetToolTip]
         self.lbox_c = None  # type: Optional[Listbox]
         self.bdel_c = None  # type: Optional[Button]
         self.badd_c = None  # type: Optional[Button]
-        self.entry_c = None  # type: Optional[Entry]
+        self.entry_c = None  # type: Optional[BaseEntry]
         self.err_message_syntax_c = None  # type: Optional[WidgetToolTip]
         self.err_message_count_c = None  # type: Optional[WidgetToolTip]
         super().__init__(parent)
@@ -582,7 +605,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.badd_h = Button(hframe, image=get_icon(Icons.ICON_ADD), command=self.add_header_to_list)
         self.badd_h.pack(side=LEFT, padx=0, pady=5)
 
-        self.entry_h = Entry(hframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_HEADER_ADD_STR)))
+        self.entry_h = BaseEntry(hframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_HEADER_ADD_STR)))
         self.entry_h.pack(side=LEFT, padx=5, pady=5, fill=X, expand=YES)
         attach_tooltip(self.entry_h, TOOLTIP_HCOOKIE_ADD_ENTRY)
 
@@ -608,7 +631,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.badd_c = Button(cframe, image=get_icon(Icons.ICON_ADD), command=self.add_coookie_to_list)
         self.badd_c.pack(side=LEFT, padx=0, pady=5)
 
-        self.entry_c = Entry(cframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_COOKIE_ADD_STR)))
+        self.entry_c = BaseEntry(cframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_COOKIE_ADD_STR)))
         self.entry_c.pack(side=LEFT, padx=5, pady=5, fill=X, expand=YES)
         attach_tooltip(self.entry_c, TOOLTIP_HCOOKIE_ADD_ENTRY)
 
@@ -780,7 +803,7 @@ class ConnectRequestIntWindow(BaseWindow):
         self.minmax = minmax
         self.conf_open, self.conf_str, self.conf_str_temp = conf_open, conf_str, conf_str_temp
         self.var = None  # type: Optional[IntVar]
-        self.entry = None  # type: Optional[Entry]
+        self.entry = None  # type: Optional[BaseEntry]
         self.but_ok = None  # type: Optional[Button]
         self.but_cancel = None  # type: Optional[Button]
         self.err_message = None  # type: Optional[WidgetToolTip]
@@ -799,8 +822,9 @@ class ConnectRequestIntWindow(BaseWindow):
         hint.config(state=STATE_DISABLED)
         hint.grid(row=0, column=0, columnspan=15)
 
-        _ = Entry(textvariable=StringVar(rootm(), str(self.baseval), CVARS.get(self.conf_str)))
-        self.entry = Entry(downframe, font=FONT_SANS_MEDIUM, width=19, textvariable=StringVar(rootm(), '', CVARS.get(self.conf_str_temp)))
+        _ = BaseEntry(textvariable=StringVar(rootm(), str(self.baseval), CVARS.get(self.conf_str)))
+        self.entry = BaseEntry(
+            downframe, font=FONT_SANS_MEDIUM, width=19, textvariable=StringVar(rootm(), '', CVARS.get(self.conf_str_temp)))
         self.entry.insert(END, str(self.baseval))
         self.err_message = attach_tooltip(self.entry, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
         self.entry.grid(row=1, column=3, columnspan=10)
@@ -1040,7 +1064,7 @@ def create_base_window_widgets() -> None:
     opframe_datemin = ttk.LabelFrame(root_framem(), text='Date min')
     opframe_datemin.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                          sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_datemin_t = Entry(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMIN)))
+    op_datemin_t = BaseEntry(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMIN)))
     register_global(Globals.GOBJECT_FIELD_DATEMIN, op_datemin_t)
     op_datemin_t.insert(0, DATE_MIN_DEFAULT)
     op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if sys.platform == PLATFORM_WINDOWS else 1))
@@ -1049,7 +1073,7 @@ def create_base_window_widgets() -> None:
     opframe_datemax = ttk.LabelFrame(root_framem(), text='Date max')
     opframe_datemax.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=COLUMNSPAN_MAX - 5,
                          sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_datemax_t = Entry(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMAX)))
+    op_datemax_t = BaseEntry(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMAX)))
     register_global(Globals.GOBJECT_FIELD_DATEMAX, op_datemax_t)
     op_datemax_t.insert(0, datetime.today().strftime(FMT_DATE))
     op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if sys.platform == PLATFORM_WINDOWS else 1))
@@ -1060,7 +1084,7 @@ def create_base_window_widgets() -> None:
     opframe_tags.grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX,
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Text
-    op_tagsstr = Entry(opframe_tags, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), 'sfw', CVARS.get(Options.OPT_TAGS)))
+    op_tagsstr = BaseEntry(opframe_tags, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), 'sfw', CVARS.get(Options.OPT_TAGS)))
     register_global(Globals.GOBJECT_FIELD_TAGS, op_tagsstr)
     op_tagsstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button check
@@ -1078,8 +1102,7 @@ def create_base_window_widgets() -> None:
     opframe_path.grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX,
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Text
-    op_pathstr = Entry(opframe_path, font=FONT_LUCIDA_MEDIUM,
-                       textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PATH)))
+    op_pathstr = BaseEntry(opframe_path, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PATH)))
     register_global(Globals.GOBJECT_FIELD_PATH, op_pathstr)
     op_pathstr.insert(0, normalize_path(path.abspath(curdir), False))  # 3.8
     op_pathstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
