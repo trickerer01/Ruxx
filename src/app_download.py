@@ -17,7 +17,7 @@ from multiprocessing.pool import ThreadPool
 from os import makedirs, listdir, path, curdir
 from re import compile as re_compile
 from time import sleep as thread_sleep
-from typing import Optional, Dict, Tuple, Union, List, Callable, Pattern, Iterable, Set, MutableSet
+from typing import Dict, Tuple, Union, List, Callable, Pattern, Iterable, Set, MutableSet
 
 # requirements
 from bs4 import BeautifulSoup
@@ -153,7 +153,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def _form_item_string_manually(self, raw_html_page: BeautifulSoup) -> None:
+    def _form_item_string_manually(self, raw_html_page: BeautifulSoup) -> str:
         ...
 
     @abstractmethod
@@ -189,8 +189,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def get_items_query_size_or_html(self, url: str, tries: int = None) -> Union[int, BeautifulSoup]:
-        """Public, needed by tagging tests"""
+    def _get_items_query_size_or_html(self, url: str, tries: int = None) -> Union[int, BeautifulSoup]:
         ...
 
     @abstractmethod
@@ -726,10 +725,10 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     def _process_tags(self, tag_str: str) -> None:
         self.current_state = DownloaderStates.STATE_SEARCHING
-        self.url = self.form_tags_search_address(tag_str)
+        self.url = self._form_tags_search_address(tag_str)
 
         page_size = self._get_items_per_page()
-        total_count_or_html = self.get_items_query_size_or_html(self.url)
+        total_count_or_html = self._get_items_query_size_or_html(self.url)
 
         if isinstance(total_count_or_html, int):
             self.total_count = total_count_or_html
@@ -767,7 +766,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace(f'Scanning pages {self.minpage + 1:d} - {self.maxpage + 1:d}')
 
             self.total_count_old = self.total_count
-            self.total_count = 0  # type: Union[int, BeautifulSoup]
+            self.total_count = 0
 
             if self.maxthreads_items > 1 and self._num_pages() > 1:
                 trace(f'  ...using {self.maxthreads_items:d} threads...')
@@ -812,7 +811,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             if __RUXX_DEBUG__:
                 trace('Warning (W1): A single match redirect was hit, forming item string manually')
 
-            self._form_item_string_manually(total_count_or_html)
+            self.total_count = 1
+            self.items_raw_per_task = [self._form_item_string_manually(total_count_or_html)]
 
         def after_filter(sleep_time: float) -> None:
             self.total_count = len(self.items_raw_per_task)
@@ -965,33 +965,32 @@ class DownloaderBase(ThreadedHtmlWorker):
         if self._tasks_count() != 1:
             raise ThreadInterruptException('Cannot check tags: more than 1 task was formed')
         cur_tags = self.tags_str_arr[0]
-        self.url = self.form_tags_search_address(cur_tags)
-        total_count_or_html = self.get_items_query_size_or_html(self.url, tries=1)
+        self.url = self._form_tags_search_address(cur_tags)
+        total_count_or_html = self._get_items_query_size_or_html(self.url, tries=1)
         self.total_count = total_count_or_html if isinstance(total_count_or_html, int) else 1
 
     def _get_max_id(self) -> None:
         self.get_max_id = True
         self.include_parchi = False
-        self.url = self.form_tags_search_address('', 1)
-        count_or_html = self.get_items_query_size_or_html(self.url)
+        self.url = self._form_tags_search_address('', 1)
+        count_or_html = self._get_items_query_size_or_html(self.url)
         if isinstance(count_or_html, int):
             self.total_count = count_or_html
             self._get_page_items(0, 1, self.maxpage)
             self.items_raw_per_task = self.items_raw_per_page.get(0)[:1]
         else:
             self.total_count = 1
-            self._form_item_string_manually(count_or_html)
+            self.items_raw_per_task = [self._form_item_string_manually(count_or_html)]
         trace(f'{self._get_module_abbr().upper()}: {self._extract_id(self.items_raw_per_task[0])}')
 
     @abstractmethod
-    def form_tags_search_address(self, tags: str, maxlim: Optional[int] = None) -> str:
-        """Public, needed by tests"""
+    def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:
         ...
 
     def _launch(self, args: Namespace, thiscall: Callable[[], None]) -> None:
         self.reset_root_thread(current_process())
         try:
-            self.parse_args(args)
+            self._parse_args(args)
             self._at_launch()
             thiscall()
         except (KeyboardInterrupt, ThreadInterruptException):
@@ -1015,10 +1014,9 @@ class DownloaderBase(ThreadedHtmlWorker):
         """Public, needed by core"""
         self._launch(args, self._get_max_id)
 
-    def parse_args(self, args: Namespace) -> None:
-        """Public, needed by tests"""
+    def _parse_args(self, args: Namespace) -> None:
         assert hasattr(args, 'tags') and type(args.tags) == list
-        ThreadedHtmlWorker.parse_args(self, args)
+        ThreadedHtmlWorker._parse_args(self, args)
         self.add_filename_prefix = args.prefix or self.add_filename_prefix
         self.dump_tags = args.dump_tags or self.dump_tags
         self.dump_sources = args.dump_sources or self.dump_sources

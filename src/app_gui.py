@@ -15,7 +15,7 @@ from os import path, system, makedirs
 from threading import Thread
 from time import sleep as thread_sleep
 from tkinter import messagebox, END
-from typing import Optional, Union, List, Tuple
+from typing import Optional, List, Tuple
 
 # internal
 from app_cmdargs import prepare_arglist
@@ -23,6 +23,7 @@ from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, DEFAULT_HEADERS, DATE_MIN_DEFAULT,
     PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, FMT_DATE, max_progress_value_for_state,
 )
+from app_download import DownloaderBase
 from app_download_rn import DownloaderRn
 from app_download_rx import DownloaderRx
 from app_download_rs import DownloaderRs
@@ -69,7 +70,7 @@ CAN_MANIPULATE_CONSOLE = HAS_OWN_CONSOLE and not IS_RAW
 # end loaded
 
 # MODULES
-dwn = None  # type: Union[None, DownloaderRn, DownloaderRx, DownloaderRs]
+dwn = None  # type: Optional[DownloaderBase]
 DOWNLOADERS_BY_PROC_MODULE = {
     ProcModule.PROC_RX: DownloaderRx,
     ProcModule.PROC_RN: DownloaderRn,
@@ -201,7 +202,7 @@ def open_download_folder() -> None:
         Logger.log(f'Couldn\'t open \'{cur_path}\'.', False, False)
 
 
-def get_new_proc_module() -> Union[DownloaderRn, DownloaderRx, DownloaderRs]:
+def get_new_proc_module() -> DownloaderBase:
     return DOWNLOADERS_BY_PROC_MODULE[ProcModule.CUR_PROC_MODULE]()
 
 
@@ -787,10 +788,9 @@ def tags_check_threadm() -> Thread:
     return tags_check_thread
 
 
-def dwnm() -> Union[DownloaderRn, DownloaderRx, DownloaderRs]:
+def dwnm() -> DownloaderBase:
     global dwn
-    if dwn is None:
-        dwn = DOWNLOADERS_BY_PROC_MODULE.get(ProcModule.CUR_PROC_MODULE)()
+    dwn = dwn or DOWNLOADERS_BY_PROC_MODULE.get(ProcModule.CUR_PROC_MODULE)()
     return dwn
 
 # End Helper wrappers

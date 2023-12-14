@@ -107,7 +107,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
             s.proxies.update(self.proxies.copy())
         return s
 
-    def parse_args(self, args: Namespace) -> None:
+    def _parse_args(self, args: Namespace) -> None:
         self.verbose = args.verbose or self.verbose
         self.cache_mode = HtmlCacheMode.CACHE_BS if args.cache_html_bloat else HtmlCacheMode.CACHE_BYTES
         self.add_headers = args.headers or self.add_headers

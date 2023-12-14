@@ -61,7 +61,7 @@ class DownloaderRn(DownloaderBase):
     def _get_max_search_depth(self) -> int:
         return MAX_SEARCH_DEPTH
 
-    def _form_item_string_manually(self, raw_html_page: BeautifulSoup) -> None:
+    def _form_item_string_manually(self, raw_html_page: BeautifulSoup) -> str:
         assert isinstance(raw_html_page, BeautifulSoup)
         # extract id
         iid_url = str(raw_html_page.find('a', attrs={'download': '', 'href': re_shimmie_image_href_full}))
@@ -75,7 +75,7 @@ class DownloaderRn(DownloaderBase):
             trace('ERROR: re fails while forming item id string')
             raise ValueError
         # form string
-        self.items_raw_per_task = [f'<a data-post-id="{iid}" href="/post/view/{iid}" data-tags="{itags.lower()}" title="{itags} {iext}"> ']
+        return f'<a data-post-id="{iid}" href="/post/view/{iid}" data-tags="{itags.lower()}" title="{itags} {iext}"> '
 
     def _is_search_overload_page(self, *ignored) -> bool:
         return False
@@ -111,7 +111,7 @@ class DownloaderRn(DownloaderBase):
         except Exception:
             thread_exit(f'Unable to extract post date from raw: {str(raw_html)}', -446)
 
-    def get_items_query_size_or_html(self, url: str, tries=0) -> Union[int, BeautifulSoup]:
+    def _get_items_query_size_or_html(self, url: str, tries=0) -> Union[int, BeautifulSoup]:
         raw_html = self.fetch_html(f'{url}{1:d}', tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
@@ -256,7 +256,7 @@ class DownloaderRn(DownloaderBase):
 
         self._inc_proc_count()
 
-    def form_tags_search_address(self, tags: str, *ignored) -> str:
+    def _form_tags_search_address(self, tags: str, *ignored) -> str:
         return f'{self._get_sitename()}post/list/{tags}{self._get_tags_concat_char()}order%253Did_desc/'
 
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:

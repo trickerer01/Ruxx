@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from base64 import b64decode
 from datetime import datetime
-from typing import Tuple, Optional, Pattern
+from typing import Tuple, Pattern
 
 # requirements
 from bs4 import BeautifulSoup
@@ -61,7 +61,7 @@ class DownloaderRx(DownloaderBase):
     def _get_max_search_depth(self) -> int:
         return MAX_SEARCH_DEPTH
 
-    def _form_item_string_manually(self, *ignored) -> None:
+    def _form_item_string_manually(self, *ignored) -> str:
         raise NotImplementedError
 
     def _is_search_overload_page(self, raw_html_page: BeautifulSoup) -> bool:
@@ -99,7 +99,7 @@ class DownloaderRx(DownloaderBase):
         except Exception:
             thread_exit(f'Unable to extract post date from raw: {raw}', -446)
 
-    def get_items_query_size_or_html(self, url: str, tries: int = None) -> int:
+    def _get_items_query_size_or_html(self, url: str, tries: int = None) -> int:
         raw_html = self.fetch_html(f'{url}&pid=0', tries)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
@@ -218,7 +218,7 @@ class DownloaderRx(DownloaderBase):
 
         self._inc_proc_count()
 
-    def form_tags_search_address(self, tags: str, maxlim: Optional[int] = None) -> str:
+    def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:
         return f'{self._get_sitename()}index.php?page=dapi&s=post&q=index&tags={tags}{self._maxlim_str(maxlim)}'
 
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:

@@ -94,7 +94,7 @@ class DownloaderBaseTests(TestCase):
         args = args_argparse_str1
         arglist = prepare_arglist(args.split())
         with DownloaderRx() as dwn:
-            dwn.parse_args(arglist)
+            dwn._parse_args(arglist)
             self.assertEqual('7869261', dwn._extract_id(dwn._local_addr_from_string(item_str1_rx)))
             self.assertEqual('06-05-2023', dwn._extract_post_date(item_str1_rx))
         print(f'{self._testMethodName} passed')
@@ -104,7 +104,7 @@ class DownloaderBaseTests(TestCase):
         args = args_argparse_str1
         arglist = prepare_arglist(args.split())
         with DownloaderRn() as dwn:
-            dwn.parse_args(arglist)
+            dwn._parse_args(arglist)
             self.assertEqual('427251', dwn._extract_id(item_str1_rn))
         print(f'{self._testMethodName} passed')
 
@@ -113,7 +113,7 @@ class DownloaderBaseTests(TestCase):
         args = args_argparse_str1
         arglist = prepare_arglist(args.split())
         with DownloaderRs() as dwn:
-            dwn.parse_args(arglist)
+            dwn._parse_args(arglist)
             self.assertEqual('7939303', dwn._extract_id(dwn._local_addr_from_string(item_str1_rs)))
             self.assertEqual(DATE_MIN_DEFAULT, dwn._extract_post_date(item_str1_rs))
         print(f'{self._testMethodName} passed')
@@ -123,7 +123,7 @@ class DownloaderBaseTests(TestCase):
         args = args_argparse_str1
         arglist = prepare_arglist(args.split())
         with DownloaderRx() as dwn:
-            dwn.parse_args(arglist)
+            dwn._parse_args(arglist)
             self.assertEqual(5, dwn.get_tags_count())
             self.assertEqual(13, dwn.timeout)
             self.assertEqual(56, dwn.retries)
@@ -145,7 +145,7 @@ class DownloaderBaseTests(TestCase):
         args = args_argparse_str2
         arglist = prepare_arglist(args.split())
         with DownloaderRx() as dwn:
-            dwn.parse_args(arglist)
+            dwn._parse_args(arglist)
             self.assertEqual(5, dwn.get_tags_count())
             self.assertEqual('31-12-1950', dwn.date_min)
             self.assertEqual('01-01-2038', dwn.date_max)
@@ -162,7 +162,7 @@ class DownloaderBaseTests(TestCase):
         args = args_argparse_str3
         arglist = prepare_arglist(args.split())
         with DownloaderRx() as dwn:
-            self.assertRaises(ThreadInterruptException, dwn.parse_args, arglist)
+            self.assertRaises(ThreadInterruptException, dwn._parse_args, arglist)
         print(f'{self._testMethodName} passed')
 
     def test_cmdline4(self) -> None:
@@ -170,7 +170,7 @@ class DownloaderBaseTests(TestCase):
         args = args_argparse_str4
         arglist = prepare_arglist(args.split())
         with DownloaderRx() as dwn:
-            dwn.parse_args(arglist)
+            dwn._parse_args(arglist)
             self.assertFalse(dwn.default_sort)
             self.assertEqual(7, dwn.get_tags_count())
         print(f'{self._testMethodName} passed')
@@ -186,9 +186,9 @@ class ConnTests(TestCase):
         argslist = ('id:=2000000', '-severals', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with DownloaderRx() as dwn:
-            dwn.parse_args(arglist)
-            dwn.url = dwn.form_tags_search_address(dwn.tags_str_arr[0])
-            dwn.total_count = dwn.get_items_query_size_or_html(dwn.url)
+            dwn._parse_args(arglist)
+            dwn.url = dwn._form_tags_search_address(dwn.tags_str_arr[0])
+            dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
             self.assertEqual(1, dwn.total_count)
         print(f'{self._testMethodName} passed')
 
@@ -199,14 +199,14 @@ class ConnTests(TestCase):
         argslist = ('id:=7939303', '-severals', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with DownloaderRs() as dwn:
-            dwn.parse_args(arglist)
-            dwn.url = dwn.form_tags_search_address(dwn.tags_str_arr[0])
-            dwn.total_count = dwn.get_items_query_size_or_html(dwn.url)
+            dwn._parse_args(arglist)
+            dwn.url = dwn._form_tags_search_address(dwn.tags_str_arr[0])
+            dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
             self.assertEqual(1, dwn.total_count)
         print(f'{self._testMethodName} passed')
 
 
-class DownloadTests(TestCase):
+class RealDownloadTests(TestCase):
     def test_down_rx1(self) -> None:
         # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
         Logger.init(True, True)

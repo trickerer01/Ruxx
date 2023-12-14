@@ -58,7 +58,7 @@ class DownloaderRs(DownloaderBase):
     def _get_max_search_depth(self) -> int:
         return MAX_SEARCH_DEPTH
 
-    def _form_item_string_manually(self, *ignored) -> None:
+    def _form_item_string_manually(self, *ignored) -> str:
         raise NotImplementedError
 
     def _is_search_overload_page(self, raw_html_page: BeautifulSoup) -> bool:
@@ -96,7 +96,7 @@ class DownloaderRs(DownloaderBase):
     def _extract_post_date(self, raw: str) -> str:
         return DATE_MIN_DEFAULT
 
-    def get_items_query_size_or_html(self, url: str, tries: int = None) -> Union[int, BeautifulSoup]:
+    def _get_items_query_size_or_html(self, url: str, tries: int = None) -> Union[int, BeautifulSoup]:
         raw_html = self.fetch_html(f'{url}&page=0', tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
@@ -227,7 +227,7 @@ class DownloaderRs(DownloaderBase):
 
         self._inc_proc_count()
 
-    def form_tags_search_address(self, tags: str, *ignored) -> str:
+    def _form_tags_search_address(self, tags: str, *ignored) -> str:
         return f'{self._get_sitename()}index.php?r=posts/index&q={tags}'
 
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
