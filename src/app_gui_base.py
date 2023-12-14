@@ -36,7 +36,8 @@ from app_gui_defines import (
     IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL, PADDING_DEFAULT,
     OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, Globals, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
     OPTION_VALUES_PROXYTYPE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
-    STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, BUTTONS_TO_UNFOCUS, BUT_CTRL_BACKSPACE,
+    STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, BUTTONS_TO_UNFOCUS,
+    BUT_CTRL_BACKSPACE, BUT_CTRL_DELETE,
     gobjects, Icons, Menus, SubMenus, menu_items, hotkeys, SLASH,
 )
 from app_module import ProcModule
@@ -191,26 +192,47 @@ class BaseFrame(ttk.Frame):
 
 
 class BaseEntry(Entry):
-    CTRL_BKSP_DELIMS = ' ,.!~/-=:;'
+    CTRL_DELETION_DELIMS = ' ,.!~/-=:;'
 
     def __init__(self, parent=None, *args, **kw) -> None:
         super().__init__(parent, *args, **kw)
         self.bind(BUT_CTRL_BACKSPACE, self.on_event_ctrl_backspace)
+        self.bind(BUT_CTRL_DELETE, self.on_event_ctrl_delete)
 
     def on_event_ctrl_backspace(self, *_) -> None:
+        if self.select_present():
+            return
         my_str = self.get()
         cur_idx = prev_idx = self.index(INSERT)
         while prev_idx >= 1:
             prev_idx -= 1
             if prev_idx >= 1 and my_str[prev_idx] == my_str[prev_idx - 1]:
                 continue
-            if my_str[prev_idx] in BaseEntry.CTRL_BKSP_DELIMS:
+            if my_str[prev_idx] in BaseEntry.CTRL_DELETION_DELIMS:
                 if prev_idx == cur_idx - 1:
                     continue
                 if my_str[prev_idx] != my_str[prev_idx + 1]:
                     prev_idx += 1
                 break
         self.selection_range(prev_idx, cur_idx)
+
+    def on_event_ctrl_delete(self, *_) -> None:
+        if self.select_present():
+            return
+        my_str = self.get()
+        cur_idx = next_idx = self.index(INSERT)
+        end_idx = self.index(END) - 1
+        while next_idx < end_idx:
+            next_idx += 1
+            if next_idx < end_idx and my_str[next_idx] == my_str[next_idx + 1]:
+                continue
+            if my_str[next_idx] in BaseEntry.CTRL_DELETION_DELIMS:
+                if next_idx == cur_idx:
+                    continue
+                if my_str[next_idx] != my_str[next_idx - 1]:
+                    next_idx -= 1
+                break
+        self.selection_range(cur_idx, next_idx + 1)
 
 
 class BaseWindow:
