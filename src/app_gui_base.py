@@ -17,8 +17,8 @@ from json import dumps as json_dumps, loads as json_loads
 from os import curdir, path
 from re import compile as re_compile
 from tkinter import (
-    Menu, Toplevel, messagebox, ttk, Text, Scrollbar, StringVar, Button, Entry, Widget, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT, TOP, INSERT,
-    Checkbutton, Label, Tk, Listbox, PhotoImage, IntVar, HORIZONTAL, W, S, X, Y, NO, YES, filedialog, BooleanVar
+    Tk, Toplevel, ttk, Widget, Menu, Scrollbar, Button, Text, Label, Listbox, PhotoImage, StringVar, IntVar, BooleanVar,
+    filedialog, messagebox, HORIZONTAL, W, S, X, Y, NO, YES, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT, TOP, INSERT, NONE, SEL
 )
 from typing import Optional, Callable, List, Union, Dict, Iterable, Tuple
 
@@ -30,19 +30,20 @@ from app_defines import (
 from app_file_parser import prepare_tags_list
 from app_file_sorter import FileTypeFilter
 from app_gui_defines import (
-    BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, Options, STATE_NORMAL,
+    BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, STATE_NORMAL,
     TOOLTIP_INVALID_SYNTAX, CVARS, FONT_SANS_MEDIUM, COLUMNSPAN_MAX, BUT_CTRL_A, TOOLTIP_HCOOKIE_ADD_ENTRY, TOOLTIP_HCOOKIE_DELETE,
     BUT_DELETE, WINDOW_MINSIZE, PADDING_ROOTFRAME_I, IMG_SAVE_DATA, IMG_PROC_RX_DATA, IMG_PROC_RN_DATA, IMG_PROC_RS_DATA,
     IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL, PADDING_DEFAULT,
-    OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, Globals, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
+    OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
     OPTION_VALUES_PROXYTYPE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
     STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, BUTTONS_TO_UNFOCUS,
-    BUT_CTRL_BACKSPACE, BUT_CTRL_DELETE,
-    gobjects, Icons, Menus, SubMenus, menu_items, hotkeys, SLASH,
+    SLASH, BEGIN, BUT_CTRL_BACKSPACE, BUT_CTRL_DELETE,
+    Icons, Options, Globals, Menus, SubMenus, menu_items, hotkeys, gobjects,
 )
 from app_module import ProcModule
 from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, ABOUT_MSG
 from app_logger import Logger
+from app_re import re_space_mult
 from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME
 from app_tooltips import WidgetToolTip
 from app_utils import normalize_path
@@ -71,6 +72,7 @@ window_retries = None  # type: Optional[ConnectionRetriesWindow]
 # counters
 c_menu = None  # type: Optional[BaseMenu]
 c_submenu = None  # type: Optional[BaseMenu]
+# these containers keep technically unbound variables so they arent purged by GC
 int_vars = dict()  # type: Dict[str, IntVar]
 string_vars = dict()  # type: Dict[str, StringVar]
 # end globals
@@ -87,6 +89,7 @@ icons = {ic: None for ic in Icons.__members__.values()}  # type: Dict[Icons, Opt
 re_ask_values = re_compile(r'[^, ]+')
 re_json_entry_value = re_compile(r'^([^: ,]+)[: ,](.+)$')
 
+# GUI grid composition: current column / row universal counters (resettable)
 c_col = None  # type: Optional[int]
 c_row = None  # type: Optional[int]
 
@@ -138,7 +141,7 @@ def attach_tooltip(widget: Widget, contents: Iterable[str], appeardelay=TOOLTIP_
                          relief=relief)
 
 
-def register_global(index: Globals, gobject: Union[Checkbutton, ttk.Combobox, Entry, Button, Label]) -> None:
+def register_global(index: Globals, gobject: Widget) -> None:
     assert index in gobjects and gobjects.get(index) is None
     gobjects[index] = gobject
 
@@ -191,48 +194,129 @@ class BaseFrame(ttk.Frame):
         super().__init__(parent, **kw)
 
 
-class BaseEntry(Entry):
+class BaseText(Text):
     CTRL_DELETION_DELIMS = ' ,.!~/-=:;'
 
     def __init__(self, parent=None, *args, **kw) -> None:
+        self._textvariable = kw.pop('textvariable', StringVar(rootm(), '', ''))
+        kw.update(height=1, undo=True, maxundo=500, wrap=NONE)
         super().__init__(parent, *args, **kw)
+
+        self._initted_value = False
+        self._text_override = ''
+        self._bg_color_orig = self['bg']
+
+        self.insert(END, self._textvariable.get())
+        self.tk.eval('''
+            proc widget_proxy {widget widget_command args} {
+                set result [uplevel [linsert $args 0 $widget_command]]
+                if {([lindex $args 0] in {insert replace delete})} {
+                    event generate $widget <<Change>> -when tail
+                }
+                return $result
+            }
+        ''')
+        self.tk.eval('''
+            rename {widget} _{widget}
+            interp alias {{}} ::{widget} {{}} widget_proxy {widget} _{widget}
+        '''.format(widget=str(self)))
+
+        self._textvariable.trace_add(['unset', 'write'], self._on_var_change)
+        self.bind('<<Change>>', self._on_widget_change)
+        self.bind('<<Paste>>', self._handle_paste)
+        self.bind(BUT_RETURN, lambda _: 'break')
         self.bind(BUT_CTRL_BACKSPACE, self.on_event_ctrl_backspace)
         self.bind(BUT_CTRL_DELETE, self.on_event_ctrl_delete)
 
+    def clear(self) -> None:
+        self.delete(BEGIN, END)
+
+    def gettext(self) -> str:
+        return self.get(BEGIN, f'{END}-1c')
+
+    def settext(self, text: str, *args) -> None:
+        my_text = text
+        idx = int((self.index(INSERT) if is_focusing(self) else self.index(f'{END}-1c')).split('.')[1])
+        self.clear()
+        self.insert(BEGIN, my_text, *args)
+        self._on_widget_change()
+        if is_focusing(self):
+            self.mark_set(INSERT, f'1.{idx - 1:d}')
+
+    def select_all(self) -> None:
+        end_index = f'{END}-1c'
+        self.tag_add(SEL, BEGIN, end_index)
+        self.mark_set(INSERT, self.index(end_index))
+
+    def set_state(self, state: str) -> None:
+        self.configure(bg=self._bg_color_orig if state == STATE_NORMAL else rootm().default_bg_color)
+
+    def _handle_paste(self, *_) -> None:
+        cur_text = self.gettext()
+        pasted_text = self.clipboard_get()
+        new_text = re_space_mult.sub(r' ', pasted_text.replace('\n', ' '))
+        idx_adjust = len(new_text)
+        sel = self.tag_ranges(SEL)
+        if sel:
+            idx = int(str(sel[0]).split('.')[1])
+            idx2 = int(str(min(float(str(sel[1])), 1.999999)).split('.')[1])
+        else:
+            idx = idx2 = int(self.index(INSERT).split('.')[1])
+            if (idx > 0 and cur_text[idx - 1] == ' ') or (len(cur_text) > idx and cur_text[idx] == ' '):
+                idx_adjust -= 1
+        self._text_override = f'{cur_text[:idx]}{new_text}{cur_text[idx2:]}'
+        self.after(1, lambda *_: self.mark_set(INSERT, f'1.{idx + idx_adjust}'))
+
+    def _on_var_change(self, *_) -> None:
+        my_text = self.gettext()
+        var_text = self._textvariable.get()
+        if my_text != var_text:
+            self.settext(var_text)
+        if self._initted_value is False:
+            self._initted_value = True
+            self.edit_reset()
+
+    def _on_widget_change(self, *_) -> None:
+        self._textvariable.set(
+            self._text_override or
+            (re_space_mult.sub(r' ', self.gettext().replace('\n', ' '))
+             if getattr(self._textvariable, '_name', '') == CVARS[Options.OPT_TAGS] else self.gettext()))
+        self._text_override = ''
+
     def on_event_ctrl_backspace(self, *_) -> None:
-        if self.select_present():
+        if self.tag_ranges(SEL):
             return
-        my_str = self.get()
-        cur_idx = prev_idx = self.index(INSERT)
+        my_str = self.gettext()
+        cur_idx = prev_idx = int(self.index(INSERT).split('.')[1])
         while prev_idx >= 1:
             prev_idx -= 1
             if prev_idx >= 1 and my_str[prev_idx] == my_str[prev_idx - 1]:
                 continue
-            if my_str[prev_idx] in BaseEntry.CTRL_DELETION_DELIMS:
+            if my_str[prev_idx] in self.CTRL_DELETION_DELIMS:
                 if prev_idx == cur_idx - 1:
                     continue
                 if my_str[prev_idx] != my_str[prev_idx + 1]:
                     prev_idx += 1
                 break
-        self.selection_range(prev_idx, cur_idx)
+        self.delete(f'1.{prev_idx + 1:d}', INSERT)
 
     def on_event_ctrl_delete(self, *_) -> None:
-        if self.select_present():
+        if self.tag_ranges(SEL):
             return
-        my_str = self.get()
-        cur_idx = next_idx = self.index(INSERT)
-        end_idx = self.index(END) - 1
+        my_str = self.gettext()
+        cur_idx = next_idx = int(self.index(INSERT).split('.')[1])
+        end_idx = int(self.index(f'{END}-1c').split('.')[1]) - 1
         while next_idx < end_idx:
             next_idx += 1
             if next_idx < end_idx and my_str[next_idx] == my_str[next_idx + 1]:
                 continue
-            if my_str[next_idx] in BaseEntry.CTRL_DELETION_DELIMS:
+            if my_str[next_idx] in self.CTRL_DELETION_DELIMS:
                 if next_idx == cur_idx:
                     continue
                 if my_str[next_idx] != my_str[next_idx - 1]:
                     next_idx -= 1
                 break
-        self.selection_range(cur_idx, next_idx + 1)
+        self.delete(INSERT, f'1.{next_idx:d}')
 
 
 class BaseWindow:
@@ -355,7 +439,7 @@ class AskFileTypeFilterWindow(AwaitableAskWindow):
 
 class AskFileSizeFilterWindow(AwaitableAskWindow):
     def __init__(self, parent) -> None:
-        self.entry = None  # type: Optional[BaseEntry]
+        self.entry = None  # type: Optional[BaseText]
         super().__init__(parent, 'Size thresholds MB')
 
     def finalize(self) -> None:
@@ -364,7 +448,7 @@ class AskFileSizeFilterWindow(AwaitableAskWindow):
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = BaseEntry(frame, width=18, textvariable=self.variable)
+        self.entry = BaseText(frame, width=18, textvariable=self.variable)
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
     def value(self) -> Optional[List[float]]:
@@ -377,7 +461,7 @@ class AskFileSizeFilterWindow(AwaitableAskWindow):
 class AskIntWindow(AwaitableAskWindow):
     def __init__(self, parent, validator: Callable[[int], bool], title='Enter number') -> None:
         self.validator = validator or (lambda _: True)
-        self.entry = None  # type: Optional[BaseEntry]
+        self.entry = None  # type: Optional[BaseText]
         super().__init__(parent, title)
 
     def finalize(self) -> None:
@@ -386,7 +470,7 @@ class AskIntWindow(AwaitableAskWindow):
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = BaseEntry(frame, width=18, textvariable=self.variable)
+        self.entry = BaseText(frame, width=18, textvariable=self.variable)
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
     def value(self) -> Optional[int]:
@@ -400,7 +484,7 @@ class AskIntWindow(AwaitableAskWindow):
 
 class AskFileScoreFilterWindow(AwaitableAskWindow):
     def __init__(self, parent) -> None:
-        self.entry = None  # type: Optional[BaseEntry]
+        self.entry = None  # type: Optional[BaseText]
         super().__init__(parent, 'Score thresholds')
 
     def finalize(self) -> None:
@@ -409,7 +493,7 @@ class AskFileScoreFilterWindow(AwaitableAskWindow):
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = BaseEntry(frame, width=18, textvariable=self.variable)
+        self.entry = BaseText(frame, width=18, textvariable=self.variable)
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
     def value(self) -> Optional[List[int]]:
@@ -488,7 +572,7 @@ class LogWindow(BaseWindow):
 class ProxyWindow(BaseWindow):
     def __init__(self, parent) -> None:
         self.ptype_var = None  # type: Optional[StringVar]
-        self.entry_addr = None  # type: Optional[BaseEntry]
+        self.entry_addr = None  # type: Optional[BaseText]
         self.but_ok = None  # type: Optional[Button]
         self.but_cancel = None  # type: Optional[Button]
         self.err_message = None  # type: Optional[WidgetToolTip]
@@ -514,9 +598,9 @@ class ProxyWindow(BaseWindow):
         cbtype.current(ptype_index)
         cbtype.grid(row=1, column=0, columnspan=5)
         cbtype.config(state=STATE_READONLY)
-        _ = BaseEntry(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS.get(Options.OPT_PROXYSTRING)))
-        self.entry_addr = BaseEntry(downframe, font=FONT_SANS_MEDIUM, width=21,
-                                    textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PROXYSTRING_TEMP)))
+        _ = BaseText(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS.get(Options.OPT_PROXYSTRING)))
+        self.entry_addr = BaseText(downframe, font=FONT_SANS_MEDIUM, width=21,
+                                   textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PROXYSTRING_TEMP)))
         if __RUXX_DEBUG__:
             self.entry_addr.insert(END, PROXY_DEFAULT_STR)
         self.err_message = attach_tooltip(self.entry_addr, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
@@ -547,8 +631,7 @@ class ProxyWindow(BaseWindow):
     def select_all(self) -> None:
         if self.visible is True:
             self.entry_addr.focus_set()
-            self.entry_addr.selection_range(0, END)
-            self.entry_addr.icursor(END)
+            self.entry_addr.select_all()
 
     def ok(self) -> None:
         # Address validation
@@ -592,13 +675,13 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.lbox_h = None  # type: Optional[Listbox]
         self.bdel_h = None  # type: Optional[Button]
         self.badd_h = None  # type: Optional[Button]
-        self.entry_h = None  # type: Optional[BaseEntry]
+        self.entry_h = None  # type: Optional[BaseText]
         self.err_message_syntax_h = None  # type: Optional[WidgetToolTip]
         self.err_message_count_h = None  # type: Optional[WidgetToolTip]
         self.lbox_c = None  # type: Optional[Listbox]
         self.bdel_c = None  # type: Optional[Button]
         self.badd_c = None  # type: Optional[Button]
-        self.entry_c = None  # type: Optional[BaseEntry]
+        self.entry_c = None  # type: Optional[BaseText]
         self.err_message_syntax_c = None  # type: Optional[WidgetToolTip]
         self.err_message_count_c = None  # type: Optional[WidgetToolTip]
         super().__init__(parent)
@@ -627,7 +710,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.badd_h = Button(hframe, image=get_icon(Icons.ICON_ADD), command=self.add_header_to_list)
         self.badd_h.pack(side=LEFT, padx=0, pady=5)
 
-        self.entry_h = BaseEntry(hframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_HEADER_ADD_STR)))
+        self.entry_h = BaseText(hframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_HEADER_ADD_STR)))
         self.entry_h.pack(side=LEFT, padx=5, pady=5, fill=X, expand=YES)
         attach_tooltip(self.entry_h, TOOLTIP_HCOOKIE_ADD_ENTRY)
 
@@ -653,7 +736,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.badd_c = Button(cframe, image=get_icon(Icons.ICON_ADD), command=self.add_coookie_to_list)
         self.badd_c.pack(side=LEFT, padx=0, pady=5)
 
-        self.entry_c = BaseEntry(cframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_COOKIE_ADD_STR)))
+        self.entry_c = BaseText(cframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_COOKIE_ADD_STR)))
         self.entry_c.pack(side=LEFT, padx=5, pady=5, fill=X, expand=YES)
         attach_tooltip(self.entry_c, TOOLTIP_HCOOKIE_ADD_ENTRY)
 
@@ -671,8 +754,8 @@ class HeadersAndCookiesWindow(BaseWindow):
 
         # initial values just for convenience
         self.lbox_h.insert(0, f'User-Agent:{USER_AGENT}')
-        self.entry_h.insert(0, 'User-Agent:')
-        self.entry_c.insert(0, 'cf_clearance:')
+        self.entry_h.settext('User-Agent:')
+        self.entry_c.settext('cf_clearance:')
 
         # configure required width (needed if we change default useragent in the future)
         def get_maxlen(b: Listbox) -> int:
@@ -738,8 +821,7 @@ class HeadersAndCookiesWindow(BaseWindow):
             self.err_message_syntax_h.showtip()
         else:
             self.lbox_h.insert(END, newval)
-            self.entry_h.delete(0, END)
-            self.entry_h.insert(0, 'User-Agent:')
+            self.entry_h.settext('User-Agent:')
             self.select_all_h()
 
     def delete_selected_h(self) -> None:
@@ -753,8 +835,7 @@ class HeadersAndCookiesWindow(BaseWindow):
     def select_all_h(self) -> None:
         if self.visible is True:
             self.entry_h.focus_set()
-            self.entry_h.selection_range(0, END)
-            self.entry_h.icursor(END)
+            self.entry_h.select_all()
 
     def add_coookie_to_list(self) -> None:
         syntax_valid = True
@@ -779,8 +860,7 @@ class HeadersAndCookiesWindow(BaseWindow):
             self.err_message_syntax_c.showtip()
         else:
             self.lbox_c.insert(END, newval)
-            self.entry_c.delete(0, END)
-            self.entry_c.insert(0, 'cf_clearance:')
+            self.entry_c.settext('cf_clearance:')
             self.select_all_c()
 
     def delete_selected_c(self) -> None:
@@ -794,8 +874,7 @@ class HeadersAndCookiesWindow(BaseWindow):
     def select_all_c(self) -> None:
         if self.visible is True:
             self.entry_c.focus_set()
-            self.entry_c.selection_range(0, END)
-            self.entry_c.icursor(END)
+            self.entry_c.select_all()
 
     def set_to_h(self, json_h: str) -> None:
         if self.lbox_h.size() > 0:
@@ -825,7 +904,7 @@ class ConnectRequestIntWindow(BaseWindow):
         self.minmax = minmax
         self.conf_open, self.conf_str, self.conf_str_temp = conf_open, conf_str, conf_str_temp
         self.var = None  # type: Optional[IntVar]
-        self.entry = None  # type: Optional[BaseEntry]
+        self.entry = None  # type: Optional[BaseText]
         self.but_ok = None  # type: Optional[Button]
         self.but_cancel = None  # type: Optional[Button]
         self.err_message = None  # type: Optional[WidgetToolTip]
@@ -844,8 +923,8 @@ class ConnectRequestIntWindow(BaseWindow):
         hint.config(state=STATE_DISABLED)
         hint.grid(row=0, column=0, columnspan=15)
 
-        _ = BaseEntry(textvariable=StringVar(rootm(), str(self.baseval), CVARS.get(self.conf_str)))
-        self.entry = BaseEntry(
+        _ = BaseText(textvariable=StringVar(rootm(), str(self.baseval), CVARS.get(self.conf_str)))
+        self.entry = BaseText(
             downframe, font=FONT_SANS_MEDIUM, width=19, textvariable=StringVar(rootm(), '', CVARS.get(self.conf_str_temp)))
         self.entry.insert(END, str(self.baseval))
         self.err_message = attach_tooltip(self.entry, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
@@ -875,8 +954,7 @@ class ConnectRequestIntWindow(BaseWindow):
     def select_all(self) -> None:
         if self.visible is True:
             self.entry.focus_set()
-            self.entry.selection_range(0, END)
-            self.entry.icursor(END)
+            self.entry.select_all()
 
     def ok(self) -> None:
         try:
@@ -1086,18 +1164,18 @@ def create_base_window_widgets() -> None:
     opframe_datemin = ttk.LabelFrame(root_framem(), text='Date min')
     opframe_datemin.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                          sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_datemin_t = BaseEntry(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMIN)))
+    op_datemin_t = BaseText(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMIN)))
     register_global(Globals.GOBJECT_FIELD_DATEMIN, op_datemin_t)
-    op_datemin_t.insert(0, DATE_MIN_DEFAULT)
+    op_datemin_t.insert(END, DATE_MIN_DEFAULT)
     op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if sys.platform == PLATFORM_WINDOWS else 1))
     attach_tooltip(op_datemin_t, TOOLTIP_DATE)
     #  Date max
     opframe_datemax = ttk.LabelFrame(root_framem(), text='Date max')
     opframe_datemax.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=COLUMNSPAN_MAX - 5,
                          sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_datemax_t = BaseEntry(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMAX)))
+    op_datemax_t = BaseText(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMAX)))
     register_global(Globals.GOBJECT_FIELD_DATEMAX, op_datemax_t)
-    op_datemax_t.insert(0, datetime.today().strftime(FMT_DATE))
+    op_datemax_t.insert(END, datetime.today().strftime(FMT_DATE))
     op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if sys.platform == PLATFORM_WINDOWS else 1))
     attach_tooltip(op_datemax_t, TOOLTIP_DATE)
 
@@ -1106,7 +1184,7 @@ def create_base_window_widgets() -> None:
     opframe_tags.grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX,
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Text
-    op_tagsstr = BaseEntry(opframe_tags, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), 'sfw', CVARS.get(Options.OPT_TAGS)))
+    op_tagsstr = BaseText(opframe_tags, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), 'sfw', CVARS.get(Options.OPT_TAGS)))
     register_global(Globals.GOBJECT_FIELD_TAGS, op_tagsstr)
     op_tagsstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button check
@@ -1124,9 +1202,9 @@ def create_base_window_widgets() -> None:
     opframe_path.grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX,
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Text
-    op_pathstr = BaseEntry(opframe_path, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PATH)))
+    op_pathstr = BaseText(opframe_path, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PATH)))
     register_global(Globals.GOBJECT_FIELD_PATH, op_pathstr)
-    op_pathstr.insert(0, normalize_path(path.abspath(curdir), False))  # 3.8
+    op_pathstr.insert(END, normalize_path(path.abspath(curdir), False))  # 3.8
     op_pathstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button open
     op_pathbut = Button(opframe_path, image=get_icon(Icons.ICON_OPEN))
@@ -1167,7 +1245,7 @@ def create_base_window_widgets() -> None:
         messagebox.showinfo('', 'Not all GOBJECTS were registered')
 
 
-def get_global(index: Globals) -> Union[Entry, Button]:
+def get_global(index: Globals) -> Union[Text, BaseText, Button]:
     return gobjects[index]
 
 
@@ -1192,9 +1270,9 @@ def is_menu_disabled(menu: Menus, submenu: SubMenus) -> bool:
     return False
 
 
-def is_focusing(gidx: Globals) -> bool:
+def is_focusing(glob: Union[Globals, Widget]) -> bool:
     try:
-        return rootm().focus_get() == get_global(gidx)
+        return rootm().focus_get() == (get_global(glob) if isinstance(glob, Globals) else glob)
     except Exception:
         return False
 
@@ -1208,11 +1286,7 @@ def toggle_console() -> None:
 def hotkey_text(option: Options) -> str:
     return (
         hotkeys.get(option).upper()
-                           .replace('CONTROL', 'Ctrl')
-                           .replace('SHIFT', 'Shift')
-                           .replace('-', '+')
-                           .replace('<', '')
-                           .replace('>', '')
+               .replace('CONTROL', 'Ctrl').replace('SHIFT', 'Shift').replace('-', '+').replace('<', '').replace('>', '')
     )
 
 

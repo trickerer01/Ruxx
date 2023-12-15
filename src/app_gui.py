@@ -48,7 +48,6 @@ from app_gui_defines import (
     menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys,
 )
 from app_module import ProcModule
-from app_re import re_space_mult
 from app_logger import Logger
 from app_revision import __RUXX_DEBUG__
 from app_settings import Settings
@@ -242,9 +241,12 @@ def update_widget_enabled_states() -> None:
                 config_menu(i, j, state=newstate)
     for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:  # type: Globals
         if gi == Globals.GOBJECT_COMBOBOX_PARCHI:
-            config_global(gi, state=(STATE_DISABLED if not ProcModule.is_rx() else gobject_orig_states[gi]))
+            newstate = STATE_DISABLED if not ProcModule.is_rx() else gobject_orig_states[gi]
+            config_global(gi, state=newstate)
         elif gi in {Globals.GOBJECT_FIELD_DATEMIN, Globals.GOBJECT_FIELD_DATEMAX}:
-            config_global(gi, state=(STATE_DISABLED if ProcModule.is_rs() else gobject_orig_states[gi]))
+            newstate = STATE_DISABLED if ProcModule.is_rs() else gobject_orig_states[gi]
+            get_global(gi).set_state(newstate)
+            config_global(gi, state=newstate)
 
 
 def update_progressbar() -> None:
@@ -293,19 +295,11 @@ def update_statusbar() -> None:
 
 
 def prepare_cmdline() -> List[str]:
-    def normalize_tag(ntag: str) -> str:
-        return ntag.replace('+', '%2b').replace(' ', '+')
-
-    # fill the str
     # base
     newstr = ['Cmd:']
     # + tags
-    tags_line = str(getrootconf(Options.OPT_TAGS))
-    if len(tags_line) > 0 and (tags_line.find('  ') != -1 or tags_line.find('\n') != -1):
-        tags_line = re_space_mult.sub(r' ', tags_line.replace('\n', ' '))
-        setrootconf(Options.OPT_TAGS, tags_line)
-    _, tags_list = parse_tags(tags_line)
-    tags_str = ' '.join(normalize_tag(tag) for tag in tags_list)
+    _, tags_list = parse_tags(str(getrootconf(Options.OPT_TAGS)))
+    tags_str = ' '.join(tag.replace('+', '%2b').replace(' ', '+') for tag in tags_list)
     newstr.append(tags_str)
     # + module
     module_name = ProcModule.get_cur_module_name()

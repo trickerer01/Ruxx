@@ -97,6 +97,7 @@ SLASH = '/'
 UNDERSCORE = '_'
 NEWLINE = '\n'
 NEWLINE_X2 = '\n\n'
+BEGIN = '1.0'
 
 
 # icons enum
