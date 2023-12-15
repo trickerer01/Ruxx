@@ -16,11 +16,11 @@ from re import compile as re_compile
 from sys import exc_info
 from threading import Thread, Lock as ThreadLock
 from time import sleep as thread_sleep
-from typing import Optional, Dict, IO, Union
+from typing import Optional, Dict, IO, Union, Tuple
 
 # requirements
 from bs4 import BeautifulSoup
-from requests import Session, Response, HTTPError, adapters
+from requests import Session, Response, HTTPError, adapters, structures
 
 # internal
 from app_defines import (
@@ -76,8 +76,8 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
         self.verbose = False
         self.raw_html_cache = dict()  # type: Dict[str, Union[BeautifulSoup, bytes]]
         self.cache_mode = HtmlCacheMode.CACHE_BYTES
-        self.add_headers = dict()  # type: Dict[str, str]
-        self.add_cookies = dict()  # type: Dict[str, str]
+        self.add_headers = structures.CaseInsensitiveDict()  # type: structures.CaseInsensitiveDict[str, str]
+        self.add_cookies = structures.CaseInsensitiveDict()  # type: structures.CaseInsensitiveDict[str, str]
         self.ignore_proxy = False
         self.ignore_proxy_dwn = False
         self.proxies = None  # type: Optional[Dict[str, str]]
@@ -110,13 +110,20 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
     def _parse_args(self, args: Namespace) -> None:
         self.verbose = args.verbose or self.verbose
         self.cache_mode = HtmlCacheMode.CACHE_BS if args.cache_html_bloat else HtmlCacheMode.CACHE_BYTES
-        self.add_headers = args.headers or self.add_headers
-        self.add_cookies = args.cookies or self.add_cookies
         self.ignore_proxy = args.noproxy or self.ignore_proxy
         self.ignore_proxy_dwn = args.proxynodown or self.ignore_proxy_dwn
         self.proxies = {'http': str(args.proxy), 'https': str(args.proxy)} if args.proxy else None
         self.timeout = args.timeout or self.timeout
         self.retries = args.retries or self.retries
+        if args.headers:
+            self.add_headers.update(args.headers)
+        if args.cookies:
+            self.add_cookies.update(args.cookies)
+        for container_base, container_ext in zip((self.add_headers, self.add_cookies), (args.header, args.cookie)):
+            for pair in container_ext or []:  # type: Tuple[str, str]
+                if pair[0] in container_base:
+                    trace(f'Warning (W1): Overriding json value at \'{pair[0]}\' from \'{container_base[pair[0]]}\' to \'{pair[1]}\'')
+                container_base.update({pair[0]: pair[1]})
         self.session = self.make_session()
 
     # threaded

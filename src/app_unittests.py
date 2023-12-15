@@ -39,6 +39,8 @@ args_argparse_str2_base = (
 args_argparse_str2 = args_argparse_str2_base + ' -mindate 31-12-1950 -maxdate 01-01-2038'
 args_argparse_str3 = args_argparse_str2 + ' sort:score'
 args_argparse_str4 = args_argparse_str2_base + ' sort:score:desc score:40'
+args_argparse_str5 = args_argparse_str2_base + ' -header name2=value2'
+args_argparse_str6 = args_argparse_str5 + ' -header Name1=value3 -header NAME2=value4'
 item_str1_rx = (
     '<post height="1291" score="27" file_url="/images/6898/76dfed93372eb7a373ffe2430379cfb1.jpeg" parent_id="90002"'
     ' sample_url="/preview/6898/76dfed93372eb7a373ffe2430379cfb1.jpeg" sample_width="961" sample_height="1291"'
@@ -173,6 +175,26 @@ class DownloaderBaseTests(TestCase):
             dwn._parse_args(arglist)
             self.assertFalse(dwn.default_sort)
             self.assertEqual(7, dwn.get_tags_count())
+        print(f'{self._testMethodName} passed')
+
+    def test_cmdline5(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str5
+        arglist = prepare_arglist(args.split())
+        with DownloaderRx() as dwn:
+            dwn._parse_args(arglist)
+            self.assertEqual(2, len(dwn.add_headers))
+        print(f'{self._testMethodName} passed')
+
+    def test_cmdline6(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str6
+        arglist = prepare_arglist(args.split())
+        with DownloaderRx() as dwn:
+            dwn._parse_args(arglist)
+            self.assertEqual(2, len(dwn.add_headers))
+            self.assertEqual('value3', dwn.add_headers['name1'])
+            self.assertEqual('value4', dwn.add_headers['name2'])
         print(f'{self._testMethodName} passed')
 
 

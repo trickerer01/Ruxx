@@ -194,6 +194,7 @@ TAGS_STRING_LENGTH_MAX_RN = 300  # tested up to 2400 but longer strings take for
 TAGS_STRING_LENGTH_MAX_RS = 7000  # actual value is unknown, last tested: 6600
 
 ACTION_STORE_TRUE = 'store_true'
+ACTION_APPEND = 'append'
 
 PLATFORM_WINDOWS = 'win32'
 PLATFORM_LINUX = 'linux'

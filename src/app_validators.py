@@ -13,7 +13,7 @@ from datetime import datetime
 from ipaddress import IPv4Address
 from json import loads as json_loads
 from os import path
-from typing import Union
+from typing import Union, Dict, Tuple
 
 # internal
 from app_defines import FMT_DATE, THREADS_MAX_ITEMS, DownloadModes
@@ -24,9 +24,9 @@ from app_module import ProcModule
 from app_utils import Protocol, normalize_path
 
 __all__ = (
-    'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_download_mode', 'valid_proxy', 'valid_positive_int',
-    'valid_window_position', 'Validator', 'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator',
-    'ThreadsCBValidator', 'JsonValidator', 'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator',
+    'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_kwarg', 'valid_download_mode', 'valid_proxy',
+    'valid_positive_int', 'valid_window_position', 'Validator', 'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator',
+    'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator', 'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator',
     'ParchiCBValidator', 'TimeoutValidator', 'RetriesValidator', 'WindowPosValidator',
 )
 
@@ -67,9 +67,17 @@ def valid_date(date: str) -> str:
         raise ArgumentError
 
 
-def valid_json(json: str) -> dict:
+def valid_json(json: str) -> Dict[str, str]:
     try:
         return json_loads(json.strip('\'"').replace('\\', ''))
+    except Exception:
+        raise ArgumentError
+
+
+def valid_kwarg(kwarg: str) -> Tuple[str, str]:
+    try:
+        k, v = tuple(kwarg.split('=', 1))
+        return k, v
     except Exception:
         raise ArgumentError
 
