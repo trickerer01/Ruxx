@@ -61,9 +61,10 @@ __all__ = ('run_ruxx', 'run_ruxx_gui')
 download_thread = None  # type: Optional[Thread]
 tags_check_thread = None  # type: Optional[Thread]
 prev_download_state = True
+IS_WIN = sys.platform == PLATFORM_WINDOWS
 IS_RAW = '_sitebuiltins' in sys.modules  # ran from console (shell or IDE)
 IS_IDE = '_virtualenv' in sys.modules  # ran from IDE
-CONSOLEVAL = ctypes.windll.kernel32.GetConsoleProcessList(ctypes.byref(ctypes.c_int(0)), 1) if sys.platform == PLATFORM_WINDOWS else -1
+CONSOLEVAL = ctypes.windll.kernel32.GetConsoleProcessList(ctypes.byref(ctypes.c_int(0)), 1) if IS_WIN else -1
 HAS_OWN_CONSOLE = CONSOLEVAL == 2  # 1 process is a main window, 2 is the console itself, 3 would be external console
 CAN_MANIPULATE_CONSOLE = HAS_OWN_CONSOLE and not IS_RAW
 # end loaded
@@ -651,10 +652,10 @@ def init_menus() -> None:
     register_menu_separator()
     register_menu_command('Reset all settings', Settings.reset_all_settings)
     register_menu_separator()
-    register_menu_command('Open download folder', open_download_folder, Options.OPT_ACTION_OPEN_DWN_FOLDER, True)
+    register_menu_command('Open download folder', open_download_folder, Options.OPT_ACTION_OPEN_DWN_FOLDER, IS_WIN)
     register_menu_separator()
     register_menu_command('Exit', sys.exit)
-    if sys.platform != PLATFORM_WINDOWS:
+    if not IS_WIN:
         config_menu(Menus.MENU_FILE, SubMenus.OPENFOLDER, state=STATE_DISABLED)  # disable 'Open download folder'
     # 2) Edit
     register_menu('Edit', Menus.MENU_EDIT)

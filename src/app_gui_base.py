@@ -65,6 +65,7 @@ root = None  # type: Optional[AppRoot]
 rootFrame = None  # type: Optional[BaseFrame]
 rootMenu = None  # type: Optional[Menu]
 # windows
+IS_WIN = sys.platform == PLATFORM_WINDOWS
 window_proxy = None  # type: Optional[ProxyWindow]
 window_hcookies = None  # type: Optional[HeadersAndCookiesWindow]
 window_timeout = None  # type: Optional[ConnectionTimeoutWindow]
@@ -1167,7 +1168,7 @@ def create_base_window_widgets() -> None:
     op_datemin_t = BaseText(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMIN)))
     register_global(Globals.GOBJECT_FIELD_DATEMIN, op_datemin_t)
     op_datemin_t.insert(END, DATE_MIN_DEFAULT)
-    op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if sys.platform == PLATFORM_WINDOWS else 1))
+    op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if IS_WIN else 1))
     attach_tooltip(op_datemin_t, TOOLTIP_DATE)
     #  Date max
     opframe_datemax = ttk.LabelFrame(root_framem(), text='Date max')
@@ -1176,7 +1177,7 @@ def create_base_window_widgets() -> None:
     op_datemax_t = BaseText(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMAX)))
     register_global(Globals.GOBJECT_FIELD_DATEMAX, op_datemax_t)
     op_datemax_t.insert(END, datetime.today().strftime(FMT_DATE))
-    op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if sys.platform == PLATFORM_WINDOWS else 1))
+    op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if IS_WIN else 1))
     attach_tooltip(op_datemax_t, TOOLTIP_DATE)
 
     # Tags #
@@ -1184,7 +1185,8 @@ def create_base_window_widgets() -> None:
     opframe_tags.grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX,
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Text
-    op_tagsstr = BaseText(opframe_tags, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), 'sfw', CVARS.get(Options.OPT_TAGS)))
+    op_tagsstr = BaseText(opframe_tags, width=0, font=FONT_LUCIDA_MEDIUM,
+                          textvariable=StringVar(rootm(), 'sfw', CVARS.get(Options.OPT_TAGS)))
     register_global(Globals.GOBJECT_FIELD_TAGS, op_tagsstr)
     op_tagsstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button check
