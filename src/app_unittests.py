@@ -19,6 +19,7 @@ from app_download_rn import DownloaderRn
 from app_download_rs import DownloaderRs
 from app_download_rx import DownloaderRx
 from app_logger import Logger
+from app_tags_parser import parse_tags
 from app_utils import normalize_path
 
 __all__ = ('run_all_tests',)
@@ -41,26 +42,30 @@ args_argparse_str3 = args_argparse_str2 + ' sort:score'
 args_argparse_str4 = args_argparse_str2_base + ' sort:score:desc score:40'
 args_argparse_str5 = args_argparse_str2_base + ' -header name2=value2'
 args_argparse_str6 = args_argparse_str5 + ' -header Name1=value3 -header NAME2=value4'
+args_tagparse_str1 = (
+    'sfw asd ned -nds -proxr sort:id sord:score:asc -rating:explicit score:90 '
+    '(t1~t2~t3) (t4~t5) -(t6,t7) -(t8,t9,t10) -(t?1,t*2|t?3|t11,t12*,*t13)'
+)
 item_str1_rx = (
-    '<post height="1291" score="27" file_url="/images/6898/76dfed93372eb7a373ffe2430379cfb1.jpeg" parent_id="90002"'
-    ' sample_url="/preview/6898/76dfed93372eb7a373ffe2430379cfb1.jpeg" sample_width="961" sample_height="1291"'
-    ' preview_url="/thumbnails/6898/thumbnail_76dfed93372eb7a373ffe2430379cfb1.jpg" rating="s"'
-    ' tags=" clothing female female_only flower heart long_hair safe sfw " id="7869261" width="961" change="1683351206"'
-    ' md5="76dfed93372eb7a373ffe2430379cfb1" creator_id="1825071" has_children="false" created_at="Sat May 06 07:33:08 +0200 2023"'
-    ' status="active" source="Twitter/safe" has_notes="false" has_comments="false" preview_width="111" preview_height="150"/>'
+    '<post height="1291" score="27" file_url="/images/6898/76dfed93372eb7a373ffe2430379cfb1.jpeg" parent_id="90002" '
+    'sample_url="/preview/6898/76dfed93372eb7a373ffe2430379cfb1.jpeg" sample_width="961" sample_height="1291" '
+    'preview_url="/thumbnails/6898/thumbnail_76dfed93372eb7a373ffe2430379cfb1.jpg" rating="s" '
+    'tags=" clothing female female_only flower heart long_hair safe sfw " id="7869261" width="961" change="1683351206" '
+    'md5="76dfed93372eb7a373ffe2430379cfb1" creator_id="1825071" has_children="false" created_at="Sat May 06 07:33:08 +0200 2023" '
+    'status="active" source="Twitter/safe" has_notes="false" has_comments="false" preview_width="111" preview_height="150"/>'
 )
 item_str1_rn = (
-    '<a href="/post/view/427251" class="thumb shm-thumb shm-thumb-link " data-tags="marnie_(pokemon) pokemon ryumigin"'
-    ' data-height="1200" data-width="848" data-mime="image/png" data-post-id="427251"><img id="thumb_427251"'
-    ' title="Marnie_(Pokemon) Pokemon RyumiGin // 848x1200 // 1.2MB // png"'
-    ' alt="Marnie_(Pokemon) Pokemon RyumiGin // 848x1200 // 1.2MB // png"'
-    '  height="170" width="120"src="/_thumbs/00c90baef0be3a687f37e70c0a1bb291/thumb.jpg"></a>'
+    '<a href="/post/view/427251" class="thumb shm-thumb shm-thumb-link " data-tags="marnie_(pokemon) pokemon ryumigin" '
+    'data-height="1200" data-width="848" data-mime="image/png" data-post-id="427251"><img id="thumb_427251" '
+    'title="Marnie_(Pokemon) Pokemon RyumiGin // 848x1200 // 1.2MB // png" '
+    'alt="Marnie_(Pokemon) Pokemon RyumiGin // 848x1200 // 1.2MB // png" '
+    'height="170" width="120"src="/_thumbs/00c90baef0be3a687f37e70c0a1bb291/thumb.jpg"></a>'
 )
 item_str1_rs = (
-    '<div style="border-radius: 3px; margin: 0px 10px 15px 10px; overflow: hidden; height: 200px; "><a id="7939303"'
-    ' href="/index.php?r=posts/view&amp;id=7939303"><img  src="/thumbnails/bf/77/thumbnail_bf771345fb58e7ad19087320dc56d76e.jpg"'
-    ' title="1boy, 1girls, 3d, i love you, kakegurui, kissing, koikatsu, outside, safe, sfw, valentine&#039;s day"'
-    ' alt="Image: 7939303" style="width: 220px; height: 100%; object-fit: cover; object-position: center;"/></a></div>'
+    '<div style="border-radius: 3px; margin: 0px 10px 15px 10px; overflow: hidden; height: 200px; "><a id="7939303" '
+    'href="/index.php?r=posts/view&amp;id=7939303"><img  src="/thumbnails/bf/77/thumbnail_bf771345fb58e7ad19087320dc56d76e.jpg" '
+    'title="1boy, 1girls, 3d, i love you, kakegurui, kissing, koikatsu, outside, safe, sfw, valentine&#039;s day" '
+    'alt="Image: 7939303" style="width: 220px; height: 100%; object-fit: cover; object-position: center;"/></a></div>'
 )
 
 
@@ -87,6 +92,15 @@ class ArgParseTests(TestCase):
         self.assertIsNotNone(arglist.proxy)
         self.assertIsNotNone(arglist.headers)
         self.assertIsNotNone(arglist.cookies)
+        print(f'{self._testMethodName} passed')
+
+
+class TagParseTests(TestCase):
+    def test_tagparse1(self) -> None:
+        args = args_tagparse_str1
+        res, tags = parse_tags(args)
+        self.assertTrue(res)
+        self.assertEqual(14, len(tags))
         print(f'{self._testMethodName} passed')
 
 

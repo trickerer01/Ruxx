@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from re import compile as re_compile
-from typing import Pattern, Tuple, Optional
+from typing import Optional, Pattern, Sequence, Tuple
 
 # requirements
 from iteration_utilities import unique_everseen
@@ -24,13 +24,19 @@ DEFAULT_TAGS = ('sfw',)
 # language=PythonRegExp
 TAG_CHAR = r'[a-zÀ-ʯА-я\d_+\-/!()*\'.]'
 # language=PythonRegExp
-META_CHAR = r'[a-z\d_]'
+META_CHAR = r'[a-z\d_\-]'
 # language=PythonRegExp
-META_COUNT_RX = r':(?:(?:[<>]=?|=)?[a-z\d_]+?|[a-z\d_]+:[a-z\d_]+)'
+META_COUNT_RX = r':(?:(?:[<>]=?|=)?[a-z\d_]+?|[a-z\d_]+:[a-z\d_]+?)'
 # language=PythonRegExp
 META_COUNT_RN = r'(?:[<>]=?|=)[a-z\d_]+?'
 # language=PythonRegExp
-META_COUNT_RS = r':(?:(?:[<>]=?|=)?[a-z\d_]+?|[a-z\d_]+:[a-z\d_]+)'
+META_COUNT_RS = r':(?:(?:[<>]=?|=)?[a-z\d_]+?|[a-z\d_]+:[a-z\d_]+?)'
+# language=PythonRegExp
+META_SORT_RX = r'sort(?::[^:]+?){1,2}'
+# language=PythonRegExp
+META_SORT_RN = r'order=(?:id|score)_desc'
+# language=PythonRegExp
+META_SORT_RS = r'sort(?::[^:]+?){1,2}'
 # language=PythonRegExp
 RE_ORGR_PART_RX = fr'{TAG_CHAR}+?(?:{META_COUNT_RX})?'
 # language=PythonRegExp
@@ -53,6 +59,11 @@ re_metas = {
     ProcModule.PROC_RN: re_compile(fr'^{META_CHAR}+?{META_COUNT_RN}$'),
     ProcModule.PROC_RS: re_compile(fr'^{META_CHAR}+?{META_COUNT_RS}$'),
 }
+re_sorts = {
+    ProcModule.PROC_RX: re_compile(fr'^{META_SORT_RX}$'),
+    ProcModule.PROC_RN: re_compile(fr'^{META_SORT_RN}$'),
+    ProcModule.PROC_RS: re_compile(fr'^{META_SORT_RS}$'),
+}
 re_orgrs_full = {
     ProcModule.PROC_RX: re_compile(fr'^\((?:{RE_ORGR_PART_RX})(?:~{RE_ORGR_PART_RX})+?\)$'),
     ProcModule.PROC_RN: re_compile(fr'^\((?:{RE_ORGR_PART_RN})(?:~{RE_ORGR_PART_RN})+?\)$'),
@@ -68,7 +79,7 @@ re_andgr_full = re_compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\
 re_negative_meta = re_compile(r'^-[^:]+:.+?$')
 
 last_tags = ''
-last_fulltags = None  # type: Optional[Tuple[str, ...]]
+last_fulltags = None  # type: Optional[Sequence[str]]
 
 
 def reset_last_tags() -> None:
@@ -82,6 +93,10 @@ def re_plain() -> Pattern:
 
 def re_meta() -> Pattern:
     return re_metas.get(ProcModule.CUR_PROC_MODULE)
+
+
+def re_sort() -> Pattern:
+    return re_sorts.get(ProcModule.CUR_PROC_MODULE)
 
 
 def re_orgr_full() -> Pattern:
@@ -100,15 +115,15 @@ def split_or_group(gr: str) -> str:
     return f'( {" ~ ".join(part for part in orgr_parts)} )'
 
 
-def ret_tags(suc: bool, tag_list: Tuple[str, ...]) -> Tuple[bool, Tuple[str, ...]]:
+def ret_tags(suc: bool, tag_list: Sequence[str]) -> Tuple[bool, Sequence[str]]:
     return suc, tag_list
 
 
-def fail() -> Tuple[bool, Tuple[str, ...]]:
+def fail() -> Tuple[bool, Sequence[str]]:
     return ret_tags(False, DEFAULT_TAGS)
 
 
-def parse_tags(tags: str) -> Tuple[bool, Tuple[str, ...]]:
+def parse_tags(tags: str) -> Tuple[bool, Sequence[str]]:
     global last_tags
     global last_fulltags
 
@@ -128,15 +143,21 @@ def parse_tags(tags: str) -> Tuple[bool, Tuple[str, ...]]:
         return fail()
 
     fulltags = list()
+    sort_tags_count = 0
     for tag in unique_everseen(tags.split(' ')):  # type: str
         if tag.startswith('(') and re_orgr_full().fullmatch(tag):
             try:
                 tag = split_or_group(tag)
             except Exception:
                 return fail()
+        elif re_sort().fullmatch(tag):
+            sort_tags_count += 1
         if not (re_orgr_full_s().fullmatch(tag) or re_andgr_full.fullmatch(tag) or re_meta().fullmatch(tag) or re_plain().fullmatch(tag)):
             return fail()
         fulltags.append(tag)
+
+    if len(fulltags) <= sort_tags_count:
+        return fail()
 
     last_fulltags = tuple(fulltags)
 
