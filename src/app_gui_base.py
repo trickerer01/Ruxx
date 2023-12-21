@@ -260,13 +260,13 @@ class BaseText(Text):
         sel = self.tag_ranges(SEL)
         if sel:
             idx = int(str(sel[0]).split('.')[1])
-            idx2 = int(str(min(float(str(sel[1])), 1.999999)).split('.')[1])
+            idx2 = 999999 if float(str(sel[1])) >= 2.0 else int(str(sel[1]).split('.')[1])
         else:
             idx = idx2 = int(self.index(INSERT).split('.')[1])
             if (idx > 0 and cur_text[idx - 1] == ' ') or (len(cur_text) > idx and cur_text[idx] == ' '):
                 idx_adjust -= 1
         self._text_override = f'{cur_text[:idx]}{new_text}{cur_text[idx2:]}'
-        self.after(1, lambda *_: self.mark_set(INSERT, f'1.{idx + idx_adjust}'))
+        self.after(1, lambda *_: self.mark_set(INSERT, f'1.{idx + idx_adjust:d}'))
 
     def _on_var_change(self, *_) -> None:
         my_text = self.gettext()
