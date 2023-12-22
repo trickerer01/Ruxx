@@ -168,7 +168,7 @@ class AppRoot(Tk):
         wh_fmt = f'{x:.0f}x{y:.0f}'
         geom_fmt = valid_window_position(wh_fmt, self)
         self.geometry(geom_fmt)
-        setrootconf(Options.OPT_WINDOW_POSITION, wh_fmt)
+        setrootconf(Options.WINDOW_POSITION, wh_fmt)
 
     def adjust_position(self) -> None:
         x = self.winfo_screenwidth() / 2 - WINDOW_MINSIZE[0] / 2
@@ -281,7 +281,7 @@ class BaseText(Text):
         self._textvariable.set(
             self._text_override or
             (re_space_mult.sub(r' ', self.gettext().replace('\n', ' '))
-             if getattr(self._textvariable, '_name', '') == CVARS[Options.OPT_TAGS] else self.gettext()))
+             if getattr(self._textvariable, '_name', '') == CVARS[Options.TAGS] else self.gettext()))
         self._text_override = ''
 
     def on_event_ctrl_backspace(self, *_) -> None:
@@ -435,7 +435,7 @@ class AskFileTypeFilterWindow(AwaitableAskWindow):
             # noinspection PyArgumentList
             return FileTypeFilter(AskFileTypeFilterWindow.VALUES.index(self.variable.get()) + 1)
         except Exception:
-            return FileTypeFilter.FILTER_INVALID
+            return FileTypeFilter.INVALID
 
 
 class AskFileSizeFilterWindow(AwaitableAskWindow):
@@ -557,7 +557,7 @@ class LogWindow(BaseWindow):
                 self.text.see(END)
                 self.text.yview_moveto(1.0)
             self.show()
-        setrootconf(Options.OPT_ISLOGOPEN, self.visible)
+        setrootconf(Options.ISLOGOPEN, self.visible)
 
     def _clear(self) -> None:
         self.text.config(state=STATE_NORMAL)
@@ -567,7 +567,7 @@ class LogWindow(BaseWindow):
     def on_destroy(self) -> None:
         # just hide
         self.hide()
-        setrootconf(Options.OPT_ISLOGOPEN, False)
+        setrootconf(Options.ISLOGOPEN, False)
 
 
 class ProxyWindow(BaseWindow):
@@ -593,15 +593,15 @@ class ProxyWindow(BaseWindow):
         proxyhint.grid(row=0, column=0, columnspan=15)
 
         ptype_index = len(OPTION_VALUES_PROXYTYPE) - 1 if __RUXX_DEBUG__ else 0
-        self.ptype_var = StringVar(rootm(), OPTION_VALUES_PROXYTYPE[ptype_index], CVARS.get(Options.OPT_PROXYTYPE))
+        self.ptype_var = StringVar(rootm(), OPTION_VALUES_PROXYTYPE[ptype_index], CVARS.get(Options.PROXYTYPE))
         cbtype = ttk.Combobox(downframe, values=OPTION_VALUES_PROXYTYPE, state=STATE_READONLY, width=6,
-                              textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PROXYTYPE_TEMP)))
+                              textvariable=StringVar(rootm(), '', CVARS.get(Options.PROXYTYPE_TEMP)))
         cbtype.current(ptype_index)
         cbtype.grid(row=1, column=0, columnspan=5)
         cbtype.config(state=STATE_READONLY)
-        _ = BaseText(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS.get(Options.OPT_PROXYSTRING)))
+        _ = BaseText(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS.get(Options.PROXYSTRING)))
         self.entry_addr = BaseText(downframe, font=FONT_SANS_MEDIUM, width=21,
-                                   textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PROXYSTRING_TEMP)))
+                                   textvariable=StringVar(rootm(), '', CVARS.get(Options.PROXYSTRING_TEMP)))
         if __RUXX_DEBUG__:
             self.entry_addr.insert(END, PROXY_DEFAULT_STR)
         self.err_message = attach_tooltip(self.entry_addr, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
@@ -636,7 +636,7 @@ class ProxyWindow(BaseWindow):
 
     def ok(self) -> None:
         # Address validation
-        newval = str(getrootconf(Options.OPT_PROXYSTRING_TEMP))
+        newval = str(getrootconf(Options.PROXYSTRING_TEMP))
 
         # moved to cmdargs, wrapped here
         try:
@@ -648,12 +648,12 @@ class ProxyWindow(BaseWindow):
         if not adr_valid:
             self.err_message.showtip()
         else:
-            setrootconf(Options.OPT_PROXYSTRING, newval)
-            setrootconf(Options.OPT_PROXYTYPE, getrootconf(Options.OPT_PROXYTYPE_TEMP))
+            setrootconf(Options.PROXYSTRING, newval)
+            setrootconf(Options.PROXYTYPE, getrootconf(Options.PROXYTYPE_TEMP))
             self.hide()
 
     def cancel(self) -> None:
-        setrootconf(Options.OPT_PROXYSTRING_TEMP, str(getrootconf(Options.OPT_PROXYSTRING)))
+        setrootconf(Options.PROXYSTRING_TEMP, str(getrootconf(Options.PROXYSTRING)))
         self.hide()
 
     def ask(self) -> None:
@@ -704,14 +704,14 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.lbox_h = Listbox(hframe, width=base_width, height=HeadersAndCookiesWindow.MAX_HEADERS, borderwidth=2, font=FONT_SANS_MEDIUM)
         self.lbox_h.pack(padx=5, pady=0)
 
-        self.bdel_h = Button(hframe, image=get_icon(Icons.ICON_DELETE), command=self.delete_selected_h)
+        self.bdel_h = Button(hframe, image=get_icon(Icons.DELETE), command=self.delete_selected_h)
         self.bdel_h.pack(side=LEFT, padx=5, pady=5)
         attach_tooltip(self.bdel_h, TOOLTIP_HCOOKIE_DELETE)
 
-        self.badd_h = Button(hframe, image=get_icon(Icons.ICON_ADD), command=self.add_header_to_list)
+        self.badd_h = Button(hframe, image=get_icon(Icons.ADD), command=self.add_header_to_list)
         self.badd_h.pack(side=LEFT, padx=0, pady=5)
 
-        self.entry_h = BaseText(hframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_HEADER_ADD_STR)))
+        self.entry_h = BaseText(hframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.HEADER_ADD_STR)))
         self.entry_h.pack(side=LEFT, padx=5, pady=5, fill=X, expand=YES)
         attach_tooltip(self.entry_h, TOOLTIP_HCOOKIE_ADD_ENTRY)
 
@@ -730,14 +730,14 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.lbox_c = Listbox(cframe, width=base_width, height=HeadersAndCookiesWindow.MAX_COOKIES, borderwidth=2, font=FONT_SANS_MEDIUM)
         self.lbox_c.pack(padx=5, pady=0)
 
-        self.bdel_c = Button(cframe, image=get_icon(Icons.ICON_DELETE), command=self.delete_selected_c)
+        self.bdel_c = Button(cframe, image=get_icon(Icons.DELETE), command=self.delete_selected_c)
         self.bdel_c.pack(side=LEFT, padx=5, pady=5)
         attach_tooltip(self.bdel_c, TOOLTIP_HCOOKIE_DELETE)
 
-        self.badd_c = Button(cframe, image=get_icon(Icons.ICON_ADD), command=self.add_coookie_to_list)
+        self.badd_c = Button(cframe, image=get_icon(Icons.ADD), command=self.add_coookie_to_list)
         self.badd_c.pack(side=LEFT, padx=0, pady=5)
 
-        self.entry_c = BaseText(cframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_COOKIE_ADD_STR)))
+        self.entry_c = BaseText(cframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.COOKIE_ADD_STR)))
         self.entry_c.pack(side=LEFT, padx=5, pady=5, fill=X, expand=YES)
         attach_tooltip(self.entry_c, TOOLTIP_HCOOKIE_ADD_ENTRY)
 
@@ -782,7 +782,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         else:
             self.hide()
 
-        setrootconf(Options.OPT_ISHCOOKIESOPEN, self.visible)
+        setrootconf(Options.ISHCOOKIESOPEN, self.visible)
 
     @staticmethod
     def _listbox_to_json(lb: Listbox) -> str:
@@ -803,7 +803,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         syntax_valid = True
 
         h_count = self.lbox_h.size()
-        newval = str(getrootconf(Options.OPT_HEADER_ADD_STR))
+        newval = str(getrootconf(Options.HEADER_ADD_STR))
 
         try:
             parts = re_json_entry_value.search(newval)
@@ -842,7 +842,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         syntax_valid = True
 
         c_count = self.lbox_c.size()
-        newval = str(getrootconf(Options.OPT_COOKIE_ADD_STR))
+        newval = str(getrootconf(Options.COOKIE_ADD_STR))
 
         try:
             parts = re_json_entry_value.search(newval)
@@ -893,7 +893,7 @@ class HeadersAndCookiesWindow(BaseWindow):
 
     def on_destroy(self) -> None:
         self.hide()
-        setrootconf(Options.OPT_ISHCOOKIESOPEN, False)
+        setrootconf(Options.ISHCOOKIESOPEN, False)
 
 
 class ConnectRequestIntWindow(BaseWindow):
@@ -982,13 +982,13 @@ class ConnectRequestIntWindow(BaseWindow):
 
 class ConnectionTimeoutWindow(ConnectRequestIntWindow):
     def __init__(self, parent) -> None:
-        super().__init__(parent, Options.OPT_ISTIMEOUTOPEN, Options.OPT_TIMEOUTSTRING, Options.OPT_TIMEOUTSTRING_TEMP,
+        super().__init__(parent, Options.ISTIMEOUTOPEN, Options.TIMEOUTSTRING, Options.TIMEOUTSTRING_TEMP,
                          'Timeout', '3 .. 300, in seconds', CONNECT_TIMEOUT_BASE, (3, 300))
 
 
 class ConnectionRetriesWindow(ConnectRequestIntWindow):
     def __init__(self, parent) -> None:
-        super().__init__(parent, Options.OPT_ISRETRIESOPEN, Options.OPT_RETRIESSTRING, Options.OPT_RETRIESSTRING_TEMP,
+        super().__init__(parent, Options.ISRETRIESOPEN, Options.RETRIESSTRING, Options.RETRIESSTRING_TEMP,
                          'Retries', '5 .. inf.', CONNECT_RETRIES_BASE, (5, 2**63))
 
 
@@ -1105,20 +1105,20 @@ def create_base_window_widgets() -> None:
     CreateRoot()
 
     # icons
-    icons[Icons.ICON_RUXX] = PhotoImage(data=b64decode(IMG_PROC_RUXX_DATA))
-    icons[Icons.ICON_RX] = PhotoImage(data=b64decode(IMG_PROC_RX_DATA))
-    icons[Icons.ICON_RN] = PhotoImage(data=b64decode(IMG_PROC_RN_DATA))
-    icons[Icons.ICON_RS] = PhotoImage(data=b64decode(IMG_PROC_RS_DATA))
-    icons[Icons.ICON_OPEN] = PhotoImage(data=b64decode(IMG_OPEN_DATA))
-    icons[Icons.ICON_SAVE] = PhotoImage(data=b64decode(IMG_SAVE_DATA))
-    icons[Icons.ICON_DELETE] = PhotoImage(data=b64decode(IMG_DELETE_DATA))
-    icons[Icons.ICON_ADD] = PhotoImage(data=b64decode(IMG_ADD_DATA))
-    icons[Icons.ICON_TEXT] = PhotoImage(data=b64decode(IMG_TEXT_DATA))  # unused
+    icons[Icons.RUXX] = PhotoImage(data=b64decode(IMG_PROC_RUXX_DATA))
+    icons[Icons.RX] = PhotoImage(data=b64decode(IMG_PROC_RX_DATA))
+    icons[Icons.RN] = PhotoImage(data=b64decode(IMG_PROC_RN_DATA))
+    icons[Icons.RS] = PhotoImage(data=b64decode(IMG_PROC_RS_DATA))
+    icons[Icons.OPEN] = PhotoImage(data=b64decode(IMG_OPEN_DATA))
+    icons[Icons.SAVE] = PhotoImage(data=b64decode(IMG_SAVE_DATA))
+    icons[Icons.DELETE] = PhotoImage(data=b64decode(IMG_DELETE_DATA))
+    icons[Icons.ADD] = PhotoImage(data=b64decode(IMG_ADD_DATA))
+    icons[Icons.TEXT] = PhotoImage(data=b64decode(IMG_TEXT_DATA))  # unused
 
-    rootm().iconphoto(True, get_icon(Icons.ICON_RUXX))
+    rootm().iconphoto(True, get_icon(Icons.RUXX))
 
     # validators
-    string_vars[CVARS.get(Options.OPT_LASTPATH)] = StringVar(rootm(), '', CVARS.get(Options.OPT_LASTPATH))
+    string_vars[CVARS.get(Options.LASTPATH)] = StringVar(rootm(), '', CVARS.get(Options.LASTPATH))
 
     # Options #
     #  Videos
@@ -1126,8 +1126,8 @@ def create_base_window_widgets() -> None:
     opframe_vid.grid(row=cur_row(), column=cur_column(), rowspan=1, columnspan=1,
                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_vid = ttk.Combobox(opframe_vid, values=OPTION_VALUES_VIDEOS, state=STATE_READONLY, width=13,
-                          textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_VIDSETTING)))
-    register_global(Globals.GOBJECT_COMBOBOX_VIDEOS, op_vid)
+                          textvariable=StringVar(rootm(), '', CVARS.get(Options.VIDSETTING)))
+    register_global(Globals.COMBOBOX_VIDEOS, op_vid)
     attach_tooltip(op_vid, TOOLTIP_VIDEOS)
     op_vid.current(1)
     op_vid.pack(padx=PADDING_DEFAULT * 2, pady=3)
@@ -1136,8 +1136,8 @@ def create_base_window_widgets() -> None:
     opframe_img.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_img = ttk.Combobox(opframe_img, values=OPTION_VALUES_IMAGES, state=STATE_READONLY, width=13,
-                          textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_IMGSETTING)))
-    register_global(Globals.GOBJECT_COMBOBOX_IMAGES, op_img)
+                          textvariable=StringVar(rootm(), '', CVARS.get(Options.IMGSETTING)))
+    register_global(Globals.COMBOBOX_IMAGES, op_img)
     attach_tooltip(op_img, TOOLTIP_IMAGES)
     op_img.current(len(OPTION_VALUES_IMAGES) - 1)
     op_img.pack(padx=PADDING_DEFAULT * 2, pady=3)
@@ -1146,8 +1146,8 @@ def create_base_window_widgets() -> None:
     opframe_parch.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                        sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_parch = ttk.Combobox(opframe_parch, values=OPTION_VALUES_PARCHI, state=STATE_READONLY, width=18,
-                            textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PARCHISETTING)))
-    register_global(Globals.GOBJECT_COMBOBOX_PARCHI, op_parch)
+                            textvariable=StringVar(rootm(), '', CVARS.get(Options.PARCHISETTING)))
+    register_global(Globals.COMBOBOX_PARCHI, op_parch)
     attach_tooltip(op_parch, TOOLTIP_PARCHI)
     op_parch.current(len(OPTION_VALUES_PARCHI) - 2)
     op_parch.pack(padx=PADDING_DEFAULT * 2, pady=3)
@@ -1156,8 +1156,8 @@ def create_base_window_widgets() -> None:
     opframe_thread.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                         sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_thread = ttk.Combobox(opframe_thread, values=OPTION_VALUES_THREADING, state=STATE_READONLY, width=9,
-                             textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_THREADSETTING)))
-    register_global(Globals.GOBJECT_COMBOBOX_THREADING, op_thread)
+                             textvariable=StringVar(rootm(), '', CVARS.get(Options.THREADSETTING)))
+    register_global(Globals.COMBOBOX_THREADING, op_thread)
     attach_tooltip(op_thread, TOOLTIP_THREADING)
     op_thread.current(len(OPTION_VALUES_THREADING) - 1)
     op_thread.pack(padx=PADDING_DEFAULT * 2, pady=3)
@@ -1165,8 +1165,8 @@ def create_base_window_widgets() -> None:
     opframe_datemin = ttk.LabelFrame(root_framem(), text='Date min')
     opframe_datemin.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                          sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_datemin_t = BaseText(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMIN)))
-    register_global(Globals.GOBJECT_FIELD_DATEMIN, op_datemin_t)
+    op_datemin_t = BaseText(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.DATEMIN)))
+    register_global(Globals.FIELD_DATEMIN, op_datemin_t)
     op_datemin_t.insert(END, DATE_MIN_DEFAULT)
     op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if IS_WIN else 1))
     attach_tooltip(op_datemin_t, TOOLTIP_DATE)
@@ -1174,8 +1174,8 @@ def create_base_window_widgets() -> None:
     opframe_datemax = ttk.LabelFrame(root_framem(), text='Date max')
     opframe_datemax.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=COLUMNSPAN_MAX - 5,
                          sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_datemax_t = BaseText(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_DATEMAX)))
-    register_global(Globals.GOBJECT_FIELD_DATEMAX, op_datemax_t)
+    op_datemax_t = BaseText(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.DATEMAX)))
+    register_global(Globals.FIELD_DATEMAX, op_datemax_t)
     op_datemax_t.insert(END, datetime.today().strftime(FMT_DATE))
     op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if IS_WIN else 1))
     attach_tooltip(op_datemax_t, TOOLTIP_DATE)
@@ -1186,17 +1186,17 @@ def create_base_window_widgets() -> None:
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Text
     op_tagsstr = BaseText(opframe_tags, width=0, font=FONT_LUCIDA_MEDIUM,
-                          textvariable=StringVar(rootm(), 'sfw', CVARS.get(Options.OPT_TAGS)))
-    register_global(Globals.GOBJECT_FIELD_TAGS, op_tagsstr)
+                          textvariable=StringVar(rootm(), 'sfw', CVARS.get(Options.TAGS)))
+    register_global(Globals.FIELD_TAGS, op_tagsstr)
     op_tagsstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button check
     op_tagsbutcheck = Button(opframe_tags, text='check')
-    register_global(Globals.GOBJECT_BUTTON_CHECKTAGS, op_tagsbutcheck)
+    register_global(Globals.BUTTON_CHECKTAGS, op_tagsbutcheck)
     op_tagsbutcheck.pack(padx=2, pady=3, expand=NO, side=LEFT)
     attach_tooltip(op_tagsbutcheck, TOOLTIP_TAGS_CHECK)
     #  Button clear
-    op_tagsbutclear = Button(opframe_tags, text='clear', command=lambda: setrootconf(Options.OPT_TAGS, ''))
-    register_global(Globals.GOBJECT_BUTTON_CLEARTAGS, op_tagsbutclear)
+    op_tagsbutclear = Button(opframe_tags, text='clear', command=lambda: setrootconf(Options.TAGS, ''))
+    register_global(Globals.BUTTON_CLEARTAGS, op_tagsbutclear)
     op_tagsbutclear.pack(padx=2, pady=3, expand=NO, side=LEFT)
 
     # Path #
@@ -1204,13 +1204,13 @@ def create_base_window_widgets() -> None:
     opframe_path.grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX,
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Text
-    op_pathstr = BaseText(opframe_path, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_PATH)))
-    register_global(Globals.GOBJECT_FIELD_PATH, op_pathstr)
+    op_pathstr = BaseText(opframe_path, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.PATH)))
+    register_global(Globals.FIELD_PATH, op_pathstr)
     op_pathstr.insert(END, normalize_path(path.abspath(curdir), False))  # 3.8
     op_pathstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button open
-    op_pathbut = Button(opframe_path, image=get_icon(Icons.ICON_OPEN))
-    register_global(Globals.GOBJECT_BUTTON_OPENFOLDER, op_pathbut)
+    op_pathbut = Button(opframe_path, image=get_icon(Icons.OPEN))
+    register_global(Globals.BUTTON_OPENFOLDER, op_pathbut)
     op_pathbut.pack(padx=2, pady=3, expand=NO, side=RIGHT)
 
     # Cmdline and _download button #
@@ -1223,23 +1223,23 @@ def create_base_window_widgets() -> None:
     dw_but = Button(root_framem(), text='Download', width=8, font=FONT_SANS_MEDIUM)
     dw_but.grid(row=cur_row(), column=GLOBAL_COLUMNCOUNT - 1, columnspan=1, rowspan=ROWSPAN_MAX,
                 sticky=STICKY_VERTICAL_W, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    register_global(Globals.GOBJECT_BUTTON_DOWNLOAD, dw_but)
+    register_global(Globals.BUTTON_DOWNLOAD, dw_but)
 
     # This one is after root_frame
     pb1 = ttk.Progressbar(rootm(), value=0, maximum=PROGRESS_BAR_MAX, mode='determinate', orient=HORIZONTAL,
-                          variable=IntVar(rootm(), 0, CVARS.get(Options.OPT_PROGRESS)))
+                          variable=IntVar(rootm(), 0, CVARS.get(Options.PROGRESS)))
     pb1.pack(fill=X, expand=NO, anchor=S)
 
     # This one is after progressbar
     sb_frame = BaseFrame(rootm())
     sb_frame.pack(fill=X, expand=NO, anchor=S)
 
-    ib1 = Label(sb_frame, borderwidth=1, relief=FLAT, anchor=W, image=get_icon(Icons.ICON_RX))
+    ib1 = Label(sb_frame, borderwidth=1, relief=FLAT, anchor=W, image=get_icon(Icons.RX))
     ib1.pack(expand=NO, side=LEFT)
-    register_global(Globals.GOBJECT_MODULE_ICON, ib1)
+    register_global(Globals.MODULE_ICON, ib1)
 
     sb1 = Label(sb_frame, borderwidth=1, relief=SUNKEN, anchor=W, text='Ready', bg=COLOR_DARKGRAY,
-                textvariable=StringVar(rootm(), '', CVARS.get(Options.OPT_STATUS)))
+                textvariable=StringVar(rootm(), '', CVARS.get(Options.STATUS)))
     sb1.pack(fill=X, expand=NO)
 
     # Safety precautions
@@ -1293,8 +1293,8 @@ def hotkey_text(option: Options) -> str:
 
 
 def get_curdir(prioritize_last_path=True) -> str:
-    lastloc = str(getrootconf(Options.OPT_LASTPATH))
-    curloc = str(getrootconf(Options.OPT_PATH))
+    lastloc = str(getrootconf(Options.LASTPATH))
+    curloc = str(getrootconf(Options.PATH))
     if prioritize_last_path:
         return lastloc if len(lastloc) > 0 else curloc if path.isdir(curloc) else path.abspath(curdir)
     else:
@@ -1327,10 +1327,10 @@ def load_id_list() -> None:
     if filepath:
         success, file_tags = prepare_tags_list(filepath)
         if success:
-            setrootconf(Options.OPT_TAGS, file_tags)
+            setrootconf(Options.TAGS, file_tags)
             # reset settings for immediate downloading
-            setrootconf(Options.OPT_DATEMIN, DATE_MIN_DEFAULT)
-            setrootconf(Options.OPT_DATEMAX, datetime.today().strftime(FMT_DATE))
+            setrootconf(Options.DATEMIN, DATE_MIN_DEFAULT)
+            setrootconf(Options.DATEMAX, datetime.today().strftime(FMT_DATE))
         else:
             messagebox.showwarning(message=f'Unable to load ids from {filepath[filepath.rfind("/") + 1:]}!')
 
@@ -1338,15 +1338,15 @@ def load_id_list() -> None:
 def ask_filename(ftypes: Iterable[Tuple[str, str]]) -> str:
     fullpath = filedialog.askopenfilename(filetypes=ftypes, initialdir=get_curdir())
     if fullpath and len(fullpath) > 0:
-        setrootconf(Options.OPT_LASTPATH, fullpath[:normalize_path(fullpath, False).rfind(SLASH) + 1])  # not bound
+        setrootconf(Options.LASTPATH, fullpath[:normalize_path(fullpath, False).rfind(SLASH) + 1])  # not bound
     return fullpath
 
 
 def browse_path() -> None:
     loc = str(filedialog.askdirectory(initialdir=get_curdir()))
     if len(loc) > 0:
-        setrootconf(Options.OPT_PATH, loc)
-        setrootconf(Options.OPT_LASTPATH, loc[:normalize_path(loc, False).rfind(SLASH) + 1])  # not bound
+        setrootconf(Options.PATH, loc)
+        setrootconf(Options.LASTPATH, loc[:normalize_path(loc, False).rfind(SLASH) + 1])  # not bound
 
 
 def register_menu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind: bool = False,
@@ -1392,7 +1392,7 @@ def get_all_media_files_in_cur_dir() -> Tuple[str]:
 
 
 def update_lastpath(filefullpath: str) -> None:
-    setrootconf(Options.OPT_LASTPATH, filefullpath[:normalize_path(filefullpath, False).rfind(SLASH) + 1])
+    setrootconf(Options.LASTPATH, filefullpath[:normalize_path(filefullpath, False).rfind(SLASH) + 1])
 
 #
 #

@@ -57,39 +57,39 @@ class Settings(ABC):
             return result
 
     settings = {
-        'tags': Setting(Options.OPT_TAGS, ValidatorAlwaysTrue()),  # no validation, str
-        'module': Setting(Options.OPT_MODULE, ModuleValidator(), 'Invalid module \'%s\'!'),
-        'path': Setting(Options.OPT_PATH, ValidatorAlwaysTrue()),  # no validation, str
-        'videos': Setting(Options.OPT_VIDSETTING, VideosCBValidator(), 'Invalid videos option \'%s\'!'),
-        'images': Setting(Options.OPT_IMGSETTING, ImagesCBValidator(), 'Invalid images option \'%s\'!'),
-        'parchi': Setting(Options.OPT_PARCHISETTING, ParchiCBValidator(), 'Invalid parchi option \'%s\'!'),
-        'threads': Setting(Options.OPT_THREADSETTING, ThreadsCBValidator(), 'Invalid threads option \'%s\'!'),
-        'datemin': Setting(Options.OPT_DATEMIN, DateValidator(), 'Invalid date value \'%s\'!'),
-        'datemax': Setting(Options.OPT_DATEMAX, DateValidator(), 'Invalid date value \'%s\'!'),
-        'headers': Setting(Options.OPT_HEADER_ADD_STR, JsonValidator(), 'Invalid headers json \'%s\'!'),
-        'cookies': Setting(Options.OPT_COOKIE_ADD_STR, JsonValidator(), 'Invalid cookies json \'%s\'!'),
-        'proxytype': Setting(Options.OPT_PROXYTYPE, ProxyTypeValidator(), 'Invalid proxy type value \'%s\'!'),
-        'proxy': Setting(Options.OPT_PROXYSTRING, ProxyValidator(), 'Invalid proxy value \'%s\'!'),
-        'ignoreproxy': Setting(Options.OPT_IGNORE_PROXY, BoolStrValidator(), 'Invalid ignoreproxy bool value \'%s\'!'),
-        'ignoreproxydwn': Setting(Options.OPT_PROXY_NO_DOWNLOAD, BoolStrValidator(), 'Invalid ignoreproxydwn bool value \'%s\'!'),
-        'cacheprocessedhtml': Setting(Options.OPT_CACHE_PROCCED_HTML, BoolStrValidator(), 'Invalid cacheprocessedhtml bool value \'%s\'!'),
-        'timeout': Setting(Options.OPT_TIMEOUTSTRING, TimeoutValidator(), 'Invalid timeout value \'%s\'!'),
-        'retries': Setting(Options.OPT_RETRIESSTRING, RetriesValidator(), 'Invalid retries value \'%s\'!'),
-        'prefix': Setting(Options.OPT_FNAMEPREFIX, BoolStrValidator(), 'Invalid prefix bool value \'%s\'!'),
-        'savetags': Setting(Options.OPT_SAVE_TAGS, BoolStrValidator(), 'Invalid savetags bool value \'%s\'!'),
-        'savesources': Setting(Options.OPT_SAVE_SOURCES, BoolStrValidator(), 'Invalid savesources bool value \'%s\'!'),
-        'savecomments': Setting(Options.OPT_SAVE_COMMENTS, BoolStrValidator(), 'Invalid savecomments bool value \'%s\'!'),
-        'extendfilename': Setting(Options.OPT_APPEND_SOURCE_AND_TAGS, BoolStrValidator(), 'Invalid extendfilename bool value \'%s\'!'),
-        'warndestnonempty': Setting(Options.OPT_WARN_NONEMPTY_DEST, BoolStrValidator(), 'Invalid warndestnonempty bool value \'%s\'!'),
-        'verbose': Setting(Options.OPT_VERBOSE, BoolStrValidator(), 'Invalid verbose bool value \'%s\'!'),
-        'windowposition': Setting(Options.OPT_WINDOW_POSITION, WindowPosValidator(), 'Invalid windowposition value \'%s\'!'),
+        'tags': Setting(Options.TAGS, ValidatorAlwaysTrue()),  # no validation, str
+        'module': Setting(Options.MODULE, ModuleValidator(), 'Invalid module \'%s\'!'),
+        'path': Setting(Options.PATH, ValidatorAlwaysTrue()),  # no validation, str
+        'videos': Setting(Options.VIDSETTING, VideosCBValidator(), 'Invalid videos option \'%s\'!'),
+        'images': Setting(Options.IMGSETTING, ImagesCBValidator(), 'Invalid images option \'%s\'!'),
+        'parchi': Setting(Options.PARCHISETTING, ParchiCBValidator(), 'Invalid parchi option \'%s\'!'),
+        'threads': Setting(Options.THREADSETTING, ThreadsCBValidator(), 'Invalid threads option \'%s\'!'),
+        'datemin': Setting(Options.DATEMIN, DateValidator(), 'Invalid date value \'%s\'!'),
+        'datemax': Setting(Options.DATEMAX, DateValidator(), 'Invalid date value \'%s\'!'),
+        'headers': Setting(Options.HEADER_ADD_STR, JsonValidator(), 'Invalid headers json \'%s\'!'),
+        'cookies': Setting(Options.COOKIE_ADD_STR, JsonValidator(), 'Invalid cookies json \'%s\'!'),
+        'proxytype': Setting(Options.PROXYTYPE, ProxyTypeValidator(), 'Invalid proxy type value \'%s\'!'),
+        'proxy': Setting(Options.PROXYSTRING, ProxyValidator(), 'Invalid proxy value \'%s\'!'),
+        'ignoreproxy': Setting(Options.IGNORE_PROXY, BoolStrValidator(), 'Invalid ignoreproxy bool value \'%s\'!'),
+        'ignoreproxydwn': Setting(Options.PROXY_NO_DOWNLOAD, BoolStrValidator(), 'Invalid ignoreproxydwn bool value \'%s\'!'),
+        'cacheprocessedhtml': Setting(Options.CACHE_PROCCED_HTML, BoolStrValidator(), 'Invalid cacheprocessedhtml bool value \'%s\'!'),
+        'timeout': Setting(Options.TIMEOUTSTRING, TimeoutValidator(), 'Invalid timeout value \'%s\'!'),
+        'retries': Setting(Options.RETRIESSTRING, RetriesValidator(), 'Invalid retries value \'%s\'!'),
+        'prefix': Setting(Options.FNAMEPREFIX, BoolStrValidator(), 'Invalid prefix bool value \'%s\'!'),
+        'savetags': Setting(Options.SAVE_TAGS, BoolStrValidator(), 'Invalid savetags bool value \'%s\'!'),
+        'savesources': Setting(Options.SAVE_SOURCES, BoolStrValidator(), 'Invalid savesources bool value \'%s\'!'),
+        'savecomments': Setting(Options.SAVE_COMMENTS, BoolStrValidator(), 'Invalid savecomments bool value \'%s\'!'),
+        'extendfilename': Setting(Options.APPEND_SOURCE_AND_TAGS, BoolStrValidator(), 'Invalid extendfilename bool value \'%s\'!'),
+        'warndestnonempty': Setting(Options.WARN_NONEMPTY_DEST, BoolStrValidator(), 'Invalid warndestnonempty bool value \'%s\'!'),
+        'verbose': Setting(Options.VERBOSE, BoolStrValidator(), 'Invalid verbose bool value \'%s\'!'),
+        'windowposition': Setting(Options.WINDOW_POSITION, WindowPosValidator(), 'Invalid windowposition value \'%s\'!'),
     }
 
     combobox_setting_arrays = {
-        Options.OPT_VIDSETTING: OPTION_VALUES_VIDEOS,
-        Options.OPT_IMGSETTING: OPTION_VALUES_IMAGES,
-        Options.OPT_PARCHISETTING: OPTION_VALUES_PARCHI,
-        Options.OPT_THREADSETTING: OPTION_VALUES_THREADING,
+        Options.VIDSETTING: OPTION_VALUES_VIDEOS,
+        Options.IMGSETTING: OPTION_VALUES_IMAGES,
+        Options.PARCHISETTING: OPTION_VALUES_PARCHI,
+        Options.THREADSETTING: OPTION_VALUES_THREADING,
     }
 
     @staticmethod
@@ -140,15 +140,15 @@ class Settings(ABC):
             # noinspection PyUnusedLocal
             myval = ...  # type: Union[str, int]
             conf = Settings.settings.get(k).conf
-            if conf == Options.OPT_HEADER_ADD_STR:
+            if conf == Options.HEADER_ADD_STR:
                 myval = window_hcookiesm().get_json_h()
-            elif conf == Options.OPT_COOKIE_ADD_STR:
+            elif conf == Options.COOKIE_ADD_STR:
                 myval = window_hcookiesm().get_json_c()
-            elif conf == Options.OPT_MODULE:
+            elif conf == Options.MODULE:
                 myval = ProcModule.get() - 1
             elif conf in Settings.combobox_setting_arrays:
                 myval = Settings.combobox_setting_arrays.get(conf).index(getrootconf(conf))
-            elif conf == Options.OPT_WINDOW_POSITION:
+            elif conf == Options.WINDOW_POSITION:
                 myval = f'{rootm().winfo_x():.0f}x{rootm().winfo_y():.0f}'
             else:
                 myval = getrootconf(conf)
@@ -166,29 +166,29 @@ class Settings(ABC):
                 conf = Settings.settings.get(kv_k).conf
                 val = Settings.settings.get(kv_k).type(kv_v)
                 assert Settings.settings.get(kv_k).validate(val)
-                if conf == Options.OPT_HEADER_ADD_STR:
+                if conf == Options.HEADER_ADD_STR:
                     window_hcookiesm().set_to_h(val)
-                elif conf == Options.OPT_COOKIE_ADD_STR:
+                elif conf == Options.COOKIE_ADD_STR:
                     window_hcookiesm().set_to_c(val)
-                elif conf == Options.OPT_MODULE:
+                elif conf == Options.MODULE:
                     Settings.on_proc_module_change_callback(val + 1)
                     setrootconf(conf, ProcModule.get_cur_module_name())
                     int_vars.get(CVARS.get(conf)).set(val + 1)
-                elif conf == Options.OPT_PROXYSTRING:
-                    setrootconf(Options.OPT_PROXYSTRING, val)
-                    setrootconf(Options.OPT_PROXYSTRING_TEMP, val)
-                elif conf == Options.OPT_PROXYTYPE:
-                    setrootconf(Options.OPT_PROXYTYPE, val)
-                    setrootconf(Options.OPT_PROXYTYPE_TEMP, val)
-                elif conf == Options.OPT_TIMEOUTSTRING:
-                    setrootconf(Options.OPT_TIMEOUTSTRING, val)
-                    setrootconf(Options.OPT_TIMEOUTSTRING_TEMP, val)
-                elif conf == Options.OPT_RETRIESSTRING:
-                    setrootconf(Options.OPT_RETRIESSTRING, val)
-                    setrootconf(Options.OPT_RETRIESSTRING_TEMP, val)
+                elif conf == Options.PROXYSTRING:
+                    setrootconf(Options.PROXYSTRING, val)
+                    setrootconf(Options.PROXYSTRING_TEMP, val)
+                elif conf == Options.PROXYTYPE:
+                    setrootconf(Options.PROXYTYPE, val)
+                    setrootconf(Options.PROXYTYPE_TEMP, val)
+                elif conf == Options.TIMEOUTSTRING:
+                    setrootconf(Options.TIMEOUTSTRING, val)
+                    setrootconf(Options.TIMEOUTSTRING_TEMP, val)
+                elif conf == Options.RETRIESSTRING:
+                    setrootconf(Options.RETRIESSTRING, val)
+                    setrootconf(Options.RETRIESSTRING_TEMP, val)
                 elif conf in Settings.combobox_setting_arrays:
                     setrootconf(conf, Settings.combobox_setting_arrays.get(conf)[val])
-                elif conf == Options.OPT_WINDOW_POSITION:
+                elif conf == Options.WINDOW_POSITION:
                     if set_window_pos:
                         rootm().set_position(*(float(dim) for dim in val.split('x', 1)))
                 else:
@@ -201,7 +201,7 @@ class Settings(ABC):
         try:
             filepath = filedialog.asksaveasfilename(initialdir=get_curdir(), filetypes=(('Config files', '*.cfg'), ('All files', '*.*')))
             if filepath and len(filepath) > 0:
-                setrootconf(Options.OPT_LASTPATH, filepath[:normalize_path(filepath, False).rfind(SLASH) + 1])
+                setrootconf(Options.LASTPATH, filepath[:normalize_path(filepath, False).rfind(SLASH) + 1])
                 if str(filepath).endswith('.cfg') is False:
                     filepath += '.cfg'
                 Logger.log(f'Saving setting to {filepath}...', False, False)

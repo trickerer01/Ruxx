@@ -198,7 +198,7 @@ class DownloaderRs(DownloaderBase):
         item_id = self._extract_id(h)
 
         raw_html = BeautifulSoup()
-        if self.download_mode != DownloadModes.DOWNLOAD_SKIP or self.dump_comments is True:
+        if self.download_mode != DownloadModes.SKIP or self.dump_comments is True:
             raw_html = self.fetch_html(h)
             if raw_html is None:
                 trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
@@ -207,7 +207,7 @@ class DownloaderRs(DownloaderBase):
             else:
                 self._extract_comments(raw_html, item_id)
 
-        if self.download_mode == DownloadModes.DOWNLOAD_SKIP:
+        if self.download_mode == DownloadModes.SKIP:
             self._inc_proc_count()
             return
 

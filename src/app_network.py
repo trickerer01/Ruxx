@@ -132,7 +132,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
         ext_full = fullname[fullname.rfind('.') + 1:]
         ext_char = ext_full[0]
         is_video_ext = ext_full in KNOWN_EXTENSIONS_VID
-        touch_mode = mode == DownloadModes.DOWNLOAD_TOUCH
+        touch_mode = mode == DownloadModes.TOUCH
 
         result = FileDownloadResult()
         result.result_str = f'[{current_process().getName()}]{" <touch>" if touch_mode else ""} {item_id}({ext_char})... '
@@ -140,7 +140,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
         if touch_mode:
             with open(dest, 'wb'):
                 pass
-        elif mode == DownloadModes.DOWNLOAD_FULL:
+        elif mode == DownloadModes.FULL:
             expected_size = 0
             with self.make_session() as s:
                 s.stream = True

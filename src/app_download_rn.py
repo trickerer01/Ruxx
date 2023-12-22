@@ -204,7 +204,7 @@ class DownloaderRn(DownloaderBase):
         item_id = self._extract_id(h)
 
         raw_html = BeautifulSoup()
-        if self.download_mode != DownloadModes.DOWNLOAD_SKIP or self.dump_sources is True or self.dump_comments is True:
+        if self.download_mode != DownloadModes.SKIP or self.dump_sources is True or self.dump_comments is True:
             raw_html = self.fetch_html(f'{self._get_sitename()}{h}')
             if raw_html is None:
                 trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
@@ -223,7 +223,7 @@ class DownloaderRn(DownloaderBase):
                     score_text = fav_sib.text[:max(fav_sib.text.find(' '), 0)]
                     self.item_info_dict_per_task[full_item_id].score = score_text
 
-        if self.download_mode == DownloadModes.DOWNLOAD_SKIP:
+        if self.download_mode == DownloadModes.SKIP:
             self._inc_proc_count()
             return
 

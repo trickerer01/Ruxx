@@ -103,119 +103,119 @@ BEGIN = '1.0'
 # icons enum
 @unique
 class Icons(IntEnum):
-    ICON_RUXX = 0
-    ICON_RX = auto()
-    ICON_RN = auto()
-    ICON_RS = auto()
-    ICON_OPEN = auto()
-    ICON_SAVE = auto()
-    ICON_DELETE = auto()
-    ICON_ADD = auto()
-    ICON_TEXT = auto()
+    RUXX = 0
+    RX = auto()
+    RN = auto()
+    RS = auto()
+    OPEN = auto()
+    SAVE = auto()
+    DELETE = auto()
+    ADD = auto()
+    TEXT = auto()
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__}.{self._name_} ({self.value:d})'
+        return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
 # existing config vars
 @unique
 class Options(IntEnum):
-    OPT_ISLOGOPEN = 0
-    OPT_VIDSETTING = auto()
-    OPT_IMGSETTING = auto()
-    OPT_PARCHISETTING = auto()
-    OPT_THREADSETTING = auto()
-    OPT_DOWNLOAD_MODE = auto()
-    OPT_DOWNLOAD_LIMIT = auto()
-    OPT_DATEMIN = auto()
-    OPT_DATEMAX = auto()
-    OPT_TAGS = auto()
-    OPT_PATH = auto()
-    OPT_LASTPATH = auto()  # unbound, internal
-    OPT_PROGRESS = auto()
-    OPT_STATUS = auto()
-    OPT_FNAMEPREFIX = auto()
-    OPT_ISPROXYOPEN = auto()
-    OPT_PROXYSTRING = auto()
-    OPT_PROXYSTRING_TEMP = auto()
-    OPT_PROXYTYPE = auto()
-    OPT_PROXYTYPE_TEMP = auto()
-    OPT_ISTIMEOUTOPEN = auto()
-    OPT_TIMEOUTSTRING = auto()
-    OPT_TIMEOUTSTRING_TEMP = auto()
-    OPT_ISRETRIESOPEN = auto()
-    OPT_RETRIESSTRING = auto()
-    OPT_RETRIESSTRING_TEMP = auto()
-    OPT_MODULE = auto()
-    OPT_IGNORE_PROXY = auto()
-    OPT_PROXY_NO_DOWNLOAD = auto()
-    OPT_CACHE_PROCCED_HTML = auto()
-    OPT_ISHCOOKIESOPEN = auto()
-    OPT_COOKIE_ADD_STR = auto()
-    OPT_HEADER_ADD_STR = auto()
-    OPT_SAVE_TAGS = auto()
-    OPT_SAVE_SOURCES = auto()
-    OPT_SAVE_COMMENTS = auto()
-    OPT_ISCONSOLELOGOPEN = auto()
-    OPT_APPEND_SOURCE_AND_TAGS = auto()
-    OPT_WARN_NONEMPTY_DEST = auto()
-    OPT_VERBOSE = auto()
-    OPT_ISABOUTOPEN = auto()
-    OPT_ISSAVESETTINGSOPEN = auto()
-    OPT_ISLOADSETTINGSOPEN = auto()
-    OPT_WINDOW_POSITION = auto()
-    OPT_ACTION_DOWNLOAD = auto()  # unbound, internal
-    OPT_ACTION_CHECKTAGS = auto()  # unbound, internal
-    OPT_ACTION_OPEN_DWN_FOLDER = auto()  # unbound, internal
+    ISLOGOPEN = 0
+    VIDSETTING = auto()
+    IMGSETTING = auto()
+    PARCHISETTING = auto()
+    THREADSETTING = auto()
+    DOWNLOAD_MODE = auto()
+    DOWNLOAD_LIMIT = auto()
+    DATEMIN = auto()
+    DATEMAX = auto()
+    TAGS = auto()
+    PATH = auto()
+    LASTPATH = auto()  # unbound, internal
+    PROGRESS = auto()
+    STATUS = auto()
+    FNAMEPREFIX = auto()
+    ISPROXYOPEN = auto()
+    PROXYSTRING = auto()
+    PROXYSTRING_TEMP = auto()
+    PROXYTYPE = auto()
+    PROXYTYPE_TEMP = auto()
+    ISTIMEOUTOPEN = auto()
+    TIMEOUTSTRING = auto()
+    TIMEOUTSTRING_TEMP = auto()
+    ISRETRIESOPEN = auto()
+    RETRIESSTRING = auto()
+    RETRIESSTRING_TEMP = auto()
+    MODULE = auto()
+    IGNORE_PROXY = auto()
+    PROXY_NO_DOWNLOAD = auto()
+    CACHE_PROCCED_HTML = auto()
+    ISHCOOKIESOPEN = auto()
+    COOKIE_ADD_STR = auto()
+    HEADER_ADD_STR = auto()
+    SAVE_TAGS = auto()
+    SAVE_SOURCES = auto()
+    SAVE_COMMENTS = auto()
+    ISCONSOLELOGOPEN = auto()
+    APPEND_SOURCE_AND_TAGS = auto()
+    WARN_NONEMPTY_DEST = auto()
+    VERBOSE = auto()
+    ISABOUTOPEN = auto()
+    ISSAVESETTINGSOPEN = auto()
+    ISLOADSETTINGSOPEN = auto()
+    WINDOW_POSITION = auto()
+    ACTION_DOWNLOAD = auto()  # unbound, internal
+    ACTION_CHECKTAGS = auto()  # unbound, internal
+    ACTION_OPEN_DWN_FOLDER = auto()  # unbound, internal
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__}.{self._name_} ({self.value:d})'
+        return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
 # array
 CVARS = {
-    Options.OPT_ISLOGOPEN: 'isLogOpen',
-    Options.OPT_VIDSETTING: 'vidsetting',
-    Options.OPT_IMGSETTING: 'imgsetting',
-    Options.OPT_PARCHISETTING: 'parchisetting',
-    Options.OPT_THREADSETTING: 'threadsetting',
-    Options.OPT_DOWNLOAD_MODE: 'downloadmode',
-    Options.OPT_DOWNLOAD_LIMIT: 'downloadlimit',
-    Options.OPT_DATEMIN: 'dateafter',
-    Options.OPT_DATEMAX: 'datebefore',
-    Options.OPT_TAGS: 'tags',
-    Options.OPT_PATH: 'path',
-    Options.OPT_LASTPATH: 'curpath',
-    Options.OPT_PROGRESS: 'progress',
-    Options.OPT_STATUS: 'status',
-    Options.OPT_FNAMEPREFIX: 'fnameprefix',
-    Options.OPT_ISPROXYOPEN: 'isProxyOpen',
-    Options.OPT_PROXYSTRING: 'proxyString',
-    Options.OPT_PROXYSTRING_TEMP: 'proxyStringTemp',
-    Options.OPT_PROXYTYPE: 'proxyType',
-    Options.OPT_PROXYTYPE_TEMP: 'proxyTypeTemp',
-    Options.OPT_ISTIMEOUTOPEN: 'isTimeoutOpen',
-    Options.OPT_TIMEOUTSTRING: 'timeoutString',
-    Options.OPT_TIMEOUTSTRING_TEMP: 'timeoutStringTemp',
-    Options.OPT_ISRETRIESOPEN: 'isRetriesOpen',
-    Options.OPT_RETRIESSTRING: 'retriesString',
-    Options.OPT_RETRIESSTRING_TEMP: 'retriesStringTemp',
-    Options.OPT_MODULE: 'module',
-    Options.OPT_IGNORE_PROXY: 'ingoreProxy',
-    Options.OPT_PROXY_NO_DOWNLOAD: 'proxyDownload',
-    Options.OPT_CACHE_PROCCED_HTML: 'cacheProcessedHtml',
-    Options.OPT_ISHCOOKIESOPEN: 'isCookiesOpen',
-    Options.OPT_COOKIE_ADD_STR: 'cookieAddStr',
-    Options.OPT_HEADER_ADD_STR: 'headerAddStr',
-    Options.OPT_SAVE_TAGS: 'saveTags',
-    Options.OPT_SAVE_SOURCES: 'saveSources',
-    Options.OPT_SAVE_COMMENTS: 'saveComments',
-    Options.OPT_ISCONSOLELOGOPEN: 'isConsoleOpen',
-    Options.OPT_APPEND_SOURCE_AND_TAGS: 'appendSourceAndTags',
-    Options.OPT_ISABOUTOPEN: 'isAboutOpen',
-    Options.OPT_WARN_NONEMPTY_DEST: 'warnNonEmptyFolder',
-    Options.OPT_VERBOSE: 'verbose',
-    Options.OPT_WINDOW_POSITION: 'windowPosition',
+    Options.ISLOGOPEN: 'isLogOpen',
+    Options.VIDSETTING: 'vidsetting',
+    Options.IMGSETTING: 'imgsetting',
+    Options.PARCHISETTING: 'parchisetting',
+    Options.THREADSETTING: 'threadsetting',
+    Options.DOWNLOAD_MODE: 'downloadmode',
+    Options.DOWNLOAD_LIMIT: 'downloadlimit',
+    Options.DATEMIN: 'dateafter',
+    Options.DATEMAX: 'datebefore',
+    Options.TAGS: 'tags',
+    Options.PATH: 'path',
+    Options.LASTPATH: 'curpath',
+    Options.PROGRESS: 'progress',
+    Options.STATUS: 'status',
+    Options.FNAMEPREFIX: 'fnameprefix',
+    Options.ISPROXYOPEN: 'isProxyOpen',
+    Options.PROXYSTRING: 'proxyString',
+    Options.PROXYSTRING_TEMP: 'proxyStringTemp',
+    Options.PROXYTYPE: 'proxyType',
+    Options.PROXYTYPE_TEMP: 'proxyTypeTemp',
+    Options.ISTIMEOUTOPEN: 'isTimeoutOpen',
+    Options.TIMEOUTSTRING: 'timeoutString',
+    Options.TIMEOUTSTRING_TEMP: 'timeoutStringTemp',
+    Options.ISRETRIESOPEN: 'isRetriesOpen',
+    Options.RETRIESSTRING: 'retriesString',
+    Options.RETRIESSTRING_TEMP: 'retriesStringTemp',
+    Options.MODULE: 'module',
+    Options.IGNORE_PROXY: 'ingoreProxy',
+    Options.PROXY_NO_DOWNLOAD: 'proxyDownload',
+    Options.CACHE_PROCCED_HTML: 'cacheProcessedHtml',
+    Options.ISHCOOKIESOPEN: 'isCookiesOpen',
+    Options.COOKIE_ADD_STR: 'cookieAddStr',
+    Options.HEADER_ADD_STR: 'headerAddStr',
+    Options.SAVE_TAGS: 'saveTags',
+    Options.SAVE_SOURCES: 'saveSources',
+    Options.SAVE_COMMENTS: 'saveComments',
+    Options.ISCONSOLELOGOPEN: 'isConsoleOpen',
+    Options.APPEND_SOURCE_AND_TAGS: 'appendSourceAndTags',
+    Options.ISABOUTOPEN: 'isAboutOpen',
+    Options.WARN_NONEMPTY_DEST: 'warnNonEmptyFolder',
+    Options.VERBOSE: 'verbose',
+    Options.WINDOW_POSITION: 'windowPosition',
 }
 # end config vars
 
@@ -224,61 +224,61 @@ CVARS = {
 # root
 @unique
 class Globals(IntEnum):
-    GOBJECT_COMBOBOX_VIDEOS = 0
-    GOBJECT_COMBOBOX_IMAGES = auto()
-    GOBJECT_COMBOBOX_PARCHI = auto()
-    GOBJECT_COMBOBOX_THREADING = auto()
-    GOBJECT_FIELD_DATEMIN = auto()
-    GOBJECT_FIELD_DATEMAX = auto()
-    GOBJECT_FIELD_TAGS = auto()
-    GOBJECT_BUTTON_CLEARTAGS = auto()
-    GOBJECT_BUTTON_CHECKTAGS = auto()
-    GOBJECT_FIELD_PATH = auto()
-    GOBJECT_BUTTON_OPENFOLDER = auto()
-    GOBJECT_BUTTON_DOWNLOAD = auto()
-    GOBJECT_MODULE_ICON = auto()
+    COMBOBOX_VIDEOS = 0
+    COMBOBOX_IMAGES = auto()
+    COMBOBOX_PARCHI = auto()
+    COMBOBOX_THREADING = auto()
+    FIELD_DATEMIN = auto()
+    FIELD_DATEMAX = auto()
+    FIELD_TAGS = auto()
+    BUTTON_CLEARTAGS = auto()
+    BUTTON_CHECKTAGS = auto()
+    FIELD_PATH = auto()
+    BUTTON_OPENFOLDER = auto()
+    BUTTON_DOWNLOAD = auto()
+    MODULE_ICON = auto()
     MAX_GOBJECTS = auto()
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__}.{self._name_} ({self.value:d})'
+        return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
 gobjects = {
-    Globals.GOBJECT_COMBOBOX_VIDEOS: None,
-    Globals.GOBJECT_COMBOBOX_IMAGES: None,
-    Globals.GOBJECT_COMBOBOX_PARCHI: None,
-    Globals.GOBJECT_COMBOBOX_THREADING: None,
-    Globals.GOBJECT_FIELD_DATEMIN: None,
-    Globals.GOBJECT_FIELD_DATEMAX: None,
-    Globals.GOBJECT_FIELD_TAGS: None,
-    Globals.GOBJECT_BUTTON_CLEARTAGS: None,
-    Globals.GOBJECT_BUTTON_CHECKTAGS: None,
-    Globals.GOBJECT_FIELD_PATH: None,
-    Globals.GOBJECT_BUTTON_OPENFOLDER: None,
-    Globals.GOBJECT_BUTTON_DOWNLOAD: None,
-    Globals.GOBJECT_MODULE_ICON: None,
+    Globals.COMBOBOX_VIDEOS: None,
+    Globals.COMBOBOX_IMAGES: None,
+    Globals.COMBOBOX_PARCHI: None,
+    Globals.COMBOBOX_THREADING: None,
+    Globals.FIELD_DATEMIN: None,
+    Globals.FIELD_DATEMAX: None,
+    Globals.FIELD_TAGS: None,
+    Globals.BUTTON_CLEARTAGS: None,
+    Globals.BUTTON_CHECKTAGS: None,
+    Globals.FIELD_PATH: None,
+    Globals.BUTTON_OPENFOLDER: None,
+    Globals.BUTTON_DOWNLOAD: None,
+    Globals.MODULE_ICON: None,
 }
 
 gobject_orig_states = {
-    Globals.GOBJECT_COMBOBOX_VIDEOS: STATE_READONLY,
-    Globals.GOBJECT_COMBOBOX_IMAGES: STATE_READONLY,
-    Globals.GOBJECT_COMBOBOX_PARCHI: STATE_READONLY,
-    Globals.GOBJECT_COMBOBOX_THREADING: STATE_READONLY,
-    Globals.GOBJECT_FIELD_DATEMIN: STATE_NORMAL,
-    Globals.GOBJECT_FIELD_DATEMAX: STATE_NORMAL,
-    Globals.GOBJECT_FIELD_TAGS: STATE_NORMAL,
-    Globals.GOBJECT_BUTTON_CLEARTAGS: STATE_NORMAL,
-    Globals.GOBJECT_BUTTON_CHECKTAGS: STATE_NORMAL,
-    Globals.GOBJECT_FIELD_PATH: STATE_NORMAL,
-    Globals.GOBJECT_BUTTON_OPENFOLDER: STATE_NORMAL,
-    Globals.GOBJECT_BUTTON_DOWNLOAD: STATE_NORMAL,
-    Globals.GOBJECT_MODULE_ICON: STATE_NORMAL,
+    Globals.COMBOBOX_VIDEOS: STATE_READONLY,
+    Globals.COMBOBOX_IMAGES: STATE_READONLY,
+    Globals.COMBOBOX_PARCHI: STATE_READONLY,
+    Globals.COMBOBOX_THREADING: STATE_READONLY,
+    Globals.FIELD_DATEMIN: STATE_NORMAL,
+    Globals.FIELD_DATEMAX: STATE_NORMAL,
+    Globals.FIELD_TAGS: STATE_NORMAL,
+    Globals.BUTTON_CLEARTAGS: STATE_NORMAL,
+    Globals.BUTTON_CHECKTAGS: STATE_NORMAL,
+    Globals.FIELD_PATH: STATE_NORMAL,
+    Globals.BUTTON_OPENFOLDER: STATE_NORMAL,
+    Globals.BUTTON_DOWNLOAD: STATE_NORMAL,
+    Globals.MODULE_ICON: STATE_NORMAL,
 }
 
 
 # buttons to unfocus
 BUTTONS_TO_UNFOCUS = (
-    Globals.GOBJECT_BUTTON_DOWNLOAD,
+    Globals.BUTTON_DOWNLOAD,
 )
 # end buttons to unfocus
 
@@ -286,17 +286,17 @@ BUTTONS_TO_UNFOCUS = (
 # menus
 @unique
 class Menus(IntEnum):
-    MENU_FILE = 0
-    MENU_EDIT = auto()
-    MENU_CONNECTION = auto()
-    MENU_TOOLS = auto()
-    MENU_MODULE = auto()
-    MENU_ACTIONS = auto()
-    MENU_DEBUG = auto()
+    FILE = 0
+    EDIT = auto()
+    CONNECTION = auto()
+    TOOLS = auto()
+    MODULE = auto()
+    ACTIONS = auto()
+    DEBUG = auto()
     MAX_MENUS = auto()
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__}.{self._name_} ({self.value:d})'
+        return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
 class SubMenus(IntEnum):
@@ -309,7 +309,7 @@ class SubMenus(IntEnum):
     DFULL, DSKIP, DTOUCH, DLIMSET, DLIMRESET = 0, 1, 2, 3, 4
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__}.{self._name_} ({self.value:d})'
+        return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
 class RuxxMenu:
@@ -322,40 +322,40 @@ class RuxxMenu:
 
 
 menu_items = {
-    Menus.MENU_FILE: RuxxMenu({SubMenus.SAVE, SubMenus.LOAD, SubMenus.RESET}),
-    Menus.MENU_EDIT: RuxxMenu({SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.EXTEND, SubMenus.WNONEMPTY,
-                               SubMenus.VERBOSE}),
-    Menus.MENU_MODULE: RuxxMenu({SubMenus.RX, SubMenus.RN, SubMenus.RS}),
-    Menus.MENU_CONNECTION: RuxxMenu({SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
-                                     SubMenus.IGNOREPROXY, SubMenus.CACHEMODE}),
-    Menus.MENU_ACTIONS: RuxxMenu({SubMenus.DOWNLOAD, SubMenus.CHECKTAGS}),
-    Menus.MENU_TOOLS: RuxxMenu({SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT}),
-    Menus.MENU_DEBUG: RuxxMenu({SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH, SubMenus.DLIMSET, SubMenus.DLIMRESET}),
+    Menus.FILE: RuxxMenu({SubMenus.SAVE, SubMenus.LOAD, SubMenus.RESET}),
+    Menus.EDIT: RuxxMenu({SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.EXTEND, SubMenus.WNONEMPTY,
+                          SubMenus.VERBOSE}),
+    Menus.MODULE: RuxxMenu({SubMenus.RX, SubMenus.RN, SubMenus.RS}),
+    Menus.CONNECTION: RuxxMenu({SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
+                                SubMenus.IGNOREPROXY, SubMenus.CACHEMODE}),
+    Menus.ACTIONS: RuxxMenu({SubMenus.DOWNLOAD, SubMenus.CHECKTAGS}),
+    Menus.TOOLS: RuxxMenu({SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT}),
+    Menus.DEBUG: RuxxMenu({SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH, SubMenus.DLIMSET, SubMenus.DLIMRESET}),
 }
 
 menu_item_orig_states = {
-    Menus.MENU_FILE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.MENU_EDIT: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.MENU_MODULE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.MENU_CONNECTION: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.MENU_ACTIONS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.MENU_TOOLS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.MENU_DEBUG: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.FILE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.EDIT: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.MODULE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.CONNECTION: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.ACTIONS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.TOOLS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.DEBUG: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
 }
 # end global static
 # hotkeys
 hotkeys = {
-    Options.OPT_ISABOUTOPEN: BUT_F1,
-    Options.OPT_ISLOGOPEN: BUT_F2,
-    Options.OPT_ISHCOOKIESOPEN: BUT_F3,
-    Options.OPT_ISPROXYOPEN: BUT_F4,
-    Options.OPT_ISTIMEOUTOPEN: BUT_F5,
-    Options.OPT_ISRETRIESOPEN: BUT_F6,
-    Options.OPT_ISSAVESETTINGSOPEN: BUT_CTRL_S,
-    Options.OPT_ISLOADSETTINGSOPEN: BUT_CTRL_O,
-    Options.OPT_ACTION_DOWNLOAD: BUT_CTRL_SHIFT_D,
-    Options.OPT_ACTION_CHECKTAGS: BUT_CTRL_SHIFT_C,
-    Options.OPT_ACTION_OPEN_DWN_FOLDER: BUT_CTRL_L,
+    Options.ISABOUTOPEN: BUT_F1,
+    Options.ISLOGOPEN: BUT_F2,
+    Options.ISHCOOKIESOPEN: BUT_F3,
+    Options.ISPROXYOPEN: BUT_F4,
+    Options.ISTIMEOUTOPEN: BUT_F5,
+    Options.ISRETRIESOPEN: BUT_F6,
+    Options.ISSAVESETTINGSOPEN: BUT_CTRL_S,
+    Options.ISLOADSETTINGSOPEN: BUT_CTRL_O,
+    Options.ACTION_DOWNLOAD: BUT_CTRL_SHIFT_D,
+    Options.ACTION_CHECKTAGS: BUT_CTRL_SHIFT_C,
+    Options.ACTION_OPEN_DWN_FOLDER: BUT_CTRL_L,
 }
 # end hotkeys
 # tooltips

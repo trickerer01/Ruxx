@@ -26,7 +26,7 @@ CT = TypeVar('CT', bound=Comparable)
 class FileTypeFilter(IntEnum):
     BY_VIDEO_AUDIO = 1
     BY_EXTENSION = auto()
-    FILTER_INVALID = auto()
+    INVALID = auto()
 
 
 def get_threshold_index(thresholds: Collection[CT], val: CT) -> int:
@@ -43,7 +43,7 @@ def move_file(old_fullpath: str, new_folder: str, file_name: str) -> None:
 
 
 def sort_files_by_type(files: Iterable[str], filter_type: FileTypeFilter) -> int:
-    assert filter_type != FileTypeFilter.FILTER_INVALID
+    assert filter_type != FileTypeFilter.INVALID
     moved_count = 0
     for full_path in files:
         try:

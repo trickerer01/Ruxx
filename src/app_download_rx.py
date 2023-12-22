@@ -195,7 +195,7 @@ class DownloaderRx(DownloaderBase):
             else:
                 self._extract_comments(raw_html, item_id)
 
-        if self.download_mode == DownloadModes.DOWNLOAD_SKIP:
+        if self.download_mode == DownloadModes.SKIP:
             self._inc_proc_count()
             return
 

@@ -76,30 +76,29 @@ class PageCheck:
 
 @unique
 class DownloaderStates(IntEnum):
-    STATE_IDLE = 0
-    STATE_SEARCHING = auto()
-    STATE_SCANNING_PAGES1 = auto()
-    STATE_SCANNING_PAGES2 = auto()
-    STATE_FILTERING_ITEMS1 = auto()
-    STATE_FILTERING_ITEMS2 = auto()
-    STATE_FILTERING_ITEMS3 = auto()
-    STATE_FILTERING_ITEMS4 = auto()
-    STATE_DOWNLOADING = auto()
-    MAX_STATES = auto()
+    IDLE = 0
+    SEARCHING = auto()
+    SCANNING_PAGES1 = auto()
+    SCANNING_PAGES2 = auto()
+    FILTERING_ITEMS1 = auto()
+    FILTERING_ITEMS2 = auto()
+    FILTERING_ITEMS3 = auto()
+    FILTERING_ITEMS4 = auto()
+    DOWNLOADING = auto()
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__}.{self._name_} ({self.value:d})'
+        return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
 PROGRESS_BAR_PCT = {
-    DownloaderStates.STATE_SEARCHING: 0.005,
-    DownloaderStates.STATE_SCANNING_PAGES1: 0.005,
-    DownloaderStates.STATE_SCANNING_PAGES2: 0.005,
-    DownloaderStates.STATE_FILTERING_ITEMS1: 0.005,
-    DownloaderStates.STATE_FILTERING_ITEMS2: 0.005,
-    DownloaderStates.STATE_FILTERING_ITEMS3: 0.005,
-    DownloaderStates.STATE_FILTERING_ITEMS4: 0.005,
-    DownloaderStates.STATE_DOWNLOADING: 0.965
+    DownloaderStates.SEARCHING: 0.005,
+    DownloaderStates.SCANNING_PAGES1: 0.005,
+    DownloaderStates.SCANNING_PAGES2: 0.005,
+    DownloaderStates.FILTERING_ITEMS1: 0.005,
+    DownloaderStates.FILTERING_ITEMS2: 0.005,
+    DownloaderStates.FILTERING_ITEMS3: 0.005,
+    DownloaderStates.FILTERING_ITEMS4: 0.005,
+    DownloaderStates.DOWNLOADING: 0.965
 }
 assert sum(v for v in PROGRESS_BAR_PCT.values()) == 1.000
 
@@ -108,39 +107,39 @@ PROGRESS_BAR_MAX = 1000000000
 
 
 def max_progress_value_for_state(state: DownloaderStates) -> float:
-    return PROGRESS_BAR_MAX * PROGRESS_BAR_PCT.get(state)
+    return PROGRESS_BAR_MAX * PROGRESS_BAR_PCT.get(state, 1.0)
 
 
-PROGRESS_VALUE_DOWNLOAD = max_progress_value_for_state(DownloaderStates.STATE_DOWNLOADING)
+PROGRESS_VALUE_DOWNLOAD = max_progress_value_for_state(DownloaderStates.DOWNLOADING)
 PROGRESS_VALUE_NO_DOWNLOAD = PROGRESS_BAR_MAX - PROGRESS_VALUE_DOWNLOAD
 
 
 @unique
 class DownloadModes(IntEnum):
-    DOWNLOAD_FULL = 0
-    DOWNLOAD_SKIP = auto()
-    DOWNLOAD_TOUCH = auto()
+    FULL = 0
+    SKIP = auto()
+    TOUCH = auto()
 
     def __str__(self) -> str:
-        return f'{self.__class__.__name__}.{self._name_} ({self.value:d})'
+        return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
-DMODE_DEFAULT = DownloadModes.DOWNLOAD_FULL
+DMODE_DEFAULT = DownloadModes.FULL
 DMODE_CHOICES = {dm.value for dm in DownloadModes.__members__.values()}  # type: Set[int]
 
-STATE_WORK_START = DownloaderStates.STATE_SEARCHING
+STATE_WORK_START = DownloaderStates.SEARCHING
 
 
 STATUSBAR_INFO_MAP = {
-    DownloaderStates.STATE_IDLE: ('Ready', None, None, None),
-    DownloaderStates.STATE_SEARCHING: ('Searching...', None, None, None),
-    DownloaderStates.STATE_SCANNING_PAGES1: ('Filtering pages (1/2)... ', 'total_pages', None, None),
-    DownloaderStates.STATE_SCANNING_PAGES2: ('Filtering pages (2/2)... ', 'total_pages', None, None),
-    DownloaderStates.STATE_FILTERING_ITEMS1: ('Filtering files (1/4)... ', 'total_count', None, None),
-    DownloaderStates.STATE_FILTERING_ITEMS2: ('Filtering files (2/4)... ', 'total_count', None, None),
-    DownloaderStates.STATE_FILTERING_ITEMS3: ('Filtering files (3/4)... ', 'total_count', None, None),
-    DownloaderStates.STATE_FILTERING_ITEMS4: ('Filtering files (4/4)... ', 'total_count', None, None),
-    DownloaderStates.STATE_DOWNLOADING: ('Downloading... ', 'processed_count', ' / ', 'total_count_all')
+    DownloaderStates.IDLE: ('Ready', None, None, None),
+    DownloaderStates.SEARCHING: ('Searching...', None, None, None),
+    DownloaderStates.SCANNING_PAGES1: ('Filtering pages (1/2)... ', 'total_pages', None, None),
+    DownloaderStates.SCANNING_PAGES2: ('Filtering pages (2/2)... ', 'total_pages', None, None),
+    DownloaderStates.FILTERING_ITEMS1: ('Filtering files (1/4)... ', 'total_count', None, None),
+    DownloaderStates.FILTERING_ITEMS2: ('Filtering files (2/4)... ', 'total_count', None, None),
+    DownloaderStates.FILTERING_ITEMS3: ('Filtering files (3/4)... ', 'total_count', None, None),
+    DownloaderStates.FILTERING_ITEMS4: ('Filtering files (4/4)... ', 'total_count', None, None),
+    DownloaderStates.DOWNLOADING: ('Downloading... ', 'processed_count', ' / ', 'total_count_all')
 }  # type: Dict[DownloaderStates, Tuple[str, Optional[str], Optional[str], Optional[str]]]
 
 

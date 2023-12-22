@@ -143,7 +143,7 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual(5, dwn.get_tags_count())
             self.assertEqual(13, dwn.timeout)
             self.assertEqual(56, dwn.retries)
-            self.assertEqual(DownloadModes.DOWNLOAD_FULL, dwn.download_mode)
+            self.assertEqual(DownloadModes.FULL, dwn.download_mode)
             self.assertTrue(dwn.skip_images)
             self.assertTrue(dwn.skip_videos)
             self.assertFalse(dwn.prefer_webm)

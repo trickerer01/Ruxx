@@ -62,7 +62,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.dump_sources = False
         self.dump_comments = False
         self.append_info = False
-        self.download_mode = DownloadModes.DOWNLOAD_FULL
+        self.download_mode = DownloadModes.FULL
         self.download_limit = 0
         self.maxthreads_items = 1
         self.include_parchi = False
@@ -92,7 +92,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.total_pages = 0
         self.current_task_num = 0
         self.orig_tasks_count = 0
-        self.current_state = DownloaderStates.STATE_IDLE
+        self.current_state = DownloaderStates.IDLE
         self.items_raw_per_task = list()  # type: List[str]
         self.items_raw_per_page = dict()  # type: Dict[int, List[str]]
         self.items_raw_all = list()  # type: List[str]
@@ -116,7 +116,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.__cleanup()
 
     def __cleanup(self) -> None:
-        # self.current_state = DownloaderStates.STATE_IDLE
+        # self.current_state = DownloaderStates.IDLE
         self.raw_html_cache.clear()
         if self.session:
             self.session.close()
@@ -268,7 +268,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     # threaded
     def _download(self, link: str, item_id: str, dest: str) -> None:
-        if self.download_mode != DownloadModes.DOWNLOAD_SKIP:
+        if self.download_mode != DownloadModes.SKIP:
             with self.item_lock:
                 if not path.isdir(self.dest_base):
                     try:
@@ -281,7 +281,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         except DownloadInterruptException:
             return
 
-        if self.download_mode == DownloadModes.DOWNLOAD_TOUCH or result.file_size > 0:
+        if self.download_mode == DownloadModes.TOUCH or result.file_size > 0:
             result.result_str = f'{result.result_str}done ({result.file_size / Mem.MB:.2f} Mb)'
             with self.item_lock:
                 self.success_count += 1
@@ -724,7 +724,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace(f'Filtered out {removed_count:d} / {total_count_old:d} item(s)!')
 
     def _process_tags(self, tag_str: str) -> None:
-        self.current_state = DownloaderStates.STATE_SEARCHING
+        self.current_state = DownloaderStates.SEARCHING
         self.url = self._form_tags_search_address(tag_str)
 
         page_size = self._get_items_per_page()
@@ -747,7 +747,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             self.total_pages = self._num_pages()
 
-            pageargs = ((DownloaderStates.STATE_SCANNING_PAGES1, True), (DownloaderStates.STATE_SCANNING_PAGES2, False))
+            pageargs = ((DownloaderStates.SCANNING_PAGES1, True), (DownloaderStates.SCANNING_PAGES2, False))
 
             def page_filter(st: DownloaderStates, di: bool) -> int:
                 self.current_state = st
@@ -826,11 +826,11 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         after_filter(0.1)
 
-        apply_filter(DownloaderStates.STATE_FILTERING_ITEMS1, self._filter_last_items)
-        apply_filter(DownloaderStates.STATE_FILTERING_ITEMS2, self._filter_first_items)
-        apply_filter(DownloaderStates.STATE_FILTERING_ITEMS3, self._filter_items_by_type)
-        apply_filter(DownloaderStates.STATE_FILTERING_ITEMS4, self._filter_items_by_previous_tasks)
-        apply_filter(DownloaderStates.STATE_FILTERING_ITEMS4, self._filter_existing_items)
+        apply_filter(DownloaderStates.FILTERING_ITEMS1, self._filter_last_items)
+        apply_filter(DownloaderStates.FILTERING_ITEMS2, self._filter_first_items)
+        apply_filter(DownloaderStates.FILTERING_ITEMS3, self._filter_items_by_type)
+        apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_by_previous_tasks)
+        apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_existing_items)
 
         # store items info for future processing
         # custom filters may exclude certain items from the infos dict
@@ -838,7 +838,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self._extract_cur_task_infos(task_parents)
 
         if self.current_task_num <= self.orig_tasks_count:
-            apply_filter(DownloaderStates.STATE_FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
+            apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
 
         self.items_raw_all = list(unique_everseen(self.items_raw_all + self.items_raw_per_task))  # type: List[str]
         self.item_info_dict_all.update(self.item_info_dict_per_task)
@@ -872,7 +872,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         max_id = self._extract_id(max(self.items_raw_all, key=lambda x: int(self._extract_id(x))))
         trace(f'\nProcessing {self.total_count_all:d} item(s), bound {min_id} to {max_id}')
 
-        self.current_state = DownloaderStates.STATE_DOWNLOADING
+        self.current_state = DownloaderStates.DOWNLOADING
         trace(f'{self.total_count_all:d} item(s) scheduled, {self.maxthreads_items:d} thread(s) max\nWorking...\n')
 
         if self.maxthreads_items > 1 and self.total_count_all > 1:
@@ -891,7 +891,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 self.catch_cancel_or_ctrl_c()
                 self._process_item(self.items_raw_all[i])
 
-        skip_all = self.download_mode == DownloadModes.DOWNLOAD_SKIP
+        skip_all = self.download_mode == DownloadModes.SKIP
         trace(f'\nAll {"skipped" if skip_all else "processed"} ({self.total_count_all:d} item(s))...')
 
     def _parse_tags(self, tags_base_arr: Iterable[str]) -> None:
@@ -924,7 +924,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             else:
                 trace('Warning (W1): argument \'-warn_nonempty\' is ignored in non-GUI mode')
 
-        if self.download_mode != DownloadModes.DOWNLOAD_FULL:
+        if self.download_mode != DownloadModes.FULL:
             trace(f'{BR}\n\n(Emulation Mode)')
         trace(f'\n{BR}\n{APP_NAME} core ver {APP_VERSION}')
         trace(f'Starting {self._get_module_abbr()}_manual', False, True)
@@ -1000,7 +1000,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             import traceback
             trace(f'Unhandled exception: {str(sys.exc_info()[0])}!\n{traceback.format_exc()}', True)
         finally:
-            self.current_state = DownloaderStates.STATE_IDLE
+            self.current_state = DownloaderStates.IDLE
 
     def launch_download(self, args: Namespace) -> None:
         """Public, needed by core"""
