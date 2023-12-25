@@ -1074,7 +1074,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 for key in item_info.__slots__:
                     if key in ItemInfo.optional_slots:
                         continue
-                    if item_info.__getattribute__(key) == '':
+                    if getattr(item_info, key) == '':
                         trace(f'Info: extract info {abbrp}{item_info.id}: uninitialized field \'{key}\'!')
 
         abbrp = self._get_module_abbr_p()

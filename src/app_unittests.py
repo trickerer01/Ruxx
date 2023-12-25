@@ -8,9 +8,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from os import path, curdir, remove as remove_file
-from sys import exit as sysexit
 from tempfile import gettempdir
-from unittest import main as run_tests, TestCase
+from unittest import TestCase
 
 # internal
 from app_cmdargs import prepare_arglist
@@ -22,7 +21,7 @@ from app_logger import Logger
 from app_tags_parser import parse_tags
 from app_utils import normalize_path
 
-__all__ = ('run_all_tests',)
+__all__ = ()
 
 
 CUR_PATH = normalize_path(path.abspath(curdir))
@@ -101,6 +100,13 @@ class TagParseTests(TestCase):
         res, tags = parse_tags(args)
         self.assertTrue(res)
         self.assertEqual(14, len(tags))
+        print(f'{self._testMethodName} passed')
+
+
+class LoggerTests(TestCase):
+    def test_log1(self) -> None:
+        Logger.init(True, False)
+        Logger.log('‴﴾₽ὁﻼé₼☼ἦ﴿‴', True, True)
         print(f'{self._testMethodName} passed')
 
 
@@ -284,17 +290,6 @@ class RealDownloadTests(TestCase):
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
         print(f'{self._testMethodName} passed')
-
-
-def run_all_tests() -> None:
-    res = run_tests(module='app_unittests', exit=False)
-    if not res.result.wasSuccessful():
-        print('Fail')
-        sysexit()
-
-
-if __name__ == '__main__':
-    run_all_tests()
 
 #
 #

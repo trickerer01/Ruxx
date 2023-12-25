@@ -67,7 +67,7 @@ class ThreadedWorker:
             thread_exit(message, code=1)
 
     def is_killed(self) -> bool:
-        return self.my_root_thread and hasattr(self.my_root_thread, 'killed') and getattr(self.my_root_thread, 'killed') is True
+        return self.my_root_thread and getattr(self.my_root_thread, 'killed', False) is True
 
 
 class ThreadedHtmlWorker(ABC, ThreadedWorker):
@@ -123,7 +123,7 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
             for pair in container_ext or []:  # type: Tuple[str, str]
                 if pair[0] in container_base:
                     trace(f'Warning (W1): Overriding json value at \'{pair[0]}\' from \'{container_base[pair[0]]}\' to \'{pair[1]}\'')
-                container_base.update({pair[0]: pair[1]})
+                container_base[pair[0]] = pair[1]
         self.session = self.make_session()
 
     # threaded

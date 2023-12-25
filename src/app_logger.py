@@ -59,14 +59,10 @@ class Logger:
                 print(text)
             except UnicodeError:
                 try:
-                    print(text.encode(DEFAULT_ENCODING).decode())
+                    print(text.encode(DEFAULT_ENCODING, errors='backslashreplace')
+                          .decode(getpreferredencoding(), errors='backslashreplace'))
                 except Exception:
-                    try:
-                        print(text.encode(DEFAULT_ENCODING).decode(getpreferredencoding()))
-                    except Exception:
-                        print('<Message was not logged due to UnicodeError>')
-                finally:
-                    print('Previous message caused UnicodeError...')
+                    print('<Message was not logged due to UnicodeError>')
         else:
             Logger._append(f'{text}\n')
 
