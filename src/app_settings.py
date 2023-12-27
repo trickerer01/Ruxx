@@ -92,6 +92,13 @@ class Settings(ABC):
         Options.THREADSETTING: OPTION_VALUES_THREADING,
     }
 
+    duplicating_settings = {
+        Options.PROXYSTRING: Options.PROXYSTRING_TEMP,
+        Options.PROXYTYPE: Options.PROXYTYPE_TEMP,
+        Options.TIMEOUTSTRING: Options.TIMEOUTSTRING_TEMP,
+        Options.RETRIESSTRING: Options.RETRIESSTRING_TEMP,
+    }
+
     @staticmethod
     def initialize(*, tk: Tk, on_proc_module_change_callback: Callable[[int], None]):
         Settings.on_proc_module_change_callback = on_proc_module_change_callback
@@ -174,23 +181,13 @@ class Settings(ABC):
                     Settings.on_proc_module_change_callback(val + 1)
                     setrootconf(conf, ProcModule.get_cur_module_name())
                     int_vars.get(CVARS.get(conf)).set(val + 1)
-                elif conf == Options.PROXYSTRING:
-                    setrootconf(Options.PROXYSTRING, val)
-                    setrootconf(Options.PROXYSTRING_TEMP, val)
-                elif conf == Options.PROXYTYPE:
-                    setrootconf(Options.PROXYTYPE, val)
-                    setrootconf(Options.PROXYTYPE_TEMP, val)
-                elif conf == Options.TIMEOUTSTRING:
-                    setrootconf(Options.TIMEOUTSTRING, val)
-                    setrootconf(Options.TIMEOUTSTRING_TEMP, val)
-                elif conf == Options.RETRIESSTRING:
-                    setrootconf(Options.RETRIESSTRING, val)
-                    setrootconf(Options.RETRIESSTRING_TEMP, val)
-                elif conf in Settings.combobox_setting_arrays:
-                    setrootconf(conf, Settings.combobox_setting_arrays.get(conf)[val])
                 elif conf == Options.WINDOW_POSITION:
                     if set_window_pos:
-                        rootm().set_position(*(float(dim) for dim in val.split('x', 1)))
+                        rootm().set_position(*(float(dim) for dim in str(val).split('x', 1)))
+                elif conf in Settings.duplicating_settings:
+                    [setrootconf(cnf, val) for cnf in (conf, Settings.duplicating_settings.get(conf))]
+                elif conf in Settings.combobox_setting_arrays:
+                    setrootconf(conf, Settings.combobox_setting_arrays.get(conf)[val])
                 else:
                     setrootconf(conf, val)
             else:
