@@ -8,8 +8,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from os import path, curdir, remove as remove_file
+from sys import exit as sysexit
 from tempfile import gettempdir
-from unittest import TestCase
+from unittest import main as run_tests, TestCase
 
 # internal
 from app_cmdargs import prepare_arglist
@@ -21,7 +22,7 @@ from app_logger import Logger
 from app_tags_parser import parse_tags
 from app_utils import normalize_path
 
-__all__ = ()
+__all__ = ('run_all_tests',)
 
 
 CUR_PATH = normalize_path(path.abspath(curdir))
@@ -290,6 +291,13 @@ class RealDownloadTests(TestCase):
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
         print(f'{self._testMethodName} passed')
+
+
+def run_all_tests() -> None:
+    res = run_tests(module='app_unittests', exit=False)
+    if not res.result.wasSuccessful():
+        print('Fail')
+        sysexit()
 
 #
 #
