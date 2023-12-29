@@ -41,7 +41,7 @@ def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split
             do_split = split_always
             for add_s in add_list:
                 add_s_negative = add_s.startswith('-')
-                add_s_meta = add_s.find(sc) != -1
+                add_s_meta = sc in add_s
                 if add_s_negative is True or split_always is True or add_s_meta is True:
                     assert (add_s_negative & add_s_meta) is False  # see app_tags_parser.py::split_or_group(str)
                     do_split = True

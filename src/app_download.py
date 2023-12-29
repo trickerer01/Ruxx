@@ -50,9 +50,6 @@ class DownloaderBase(ThreadedHtmlWorker):
     DownloaderBase !Abstract!
     """
     @abstractmethod
-    def ___this_class_has_virtual_methods___(self) -> ...:
-        ...
-
     def __init__(self) -> None:
         super().__init__()
 

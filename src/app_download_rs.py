@@ -40,9 +40,6 @@ class DownloaderRs(DownloaderBase):
     def __init__(self) -> None:
         super().__init__()
 
-    def ___this_class_has_virtual_methods___(self) -> None:
-        return
-
     def _get_sitename(self) -> str:
         return SITENAME
 
@@ -243,7 +240,7 @@ class DownloaderRs(DownloaderBase):
                 author_a = comment_div.find('a', href=re_comment_a_rs)
                 author = author_a.text  # type: str
                 body = comment_div.text.strip()  # type: str
-                if body.find('  ') != -1:
+                if '  ' in body:
                     body = body[body.find('  ') + 2:]
                 self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
 

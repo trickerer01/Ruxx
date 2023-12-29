@@ -43,9 +43,6 @@ class DownloaderRn(DownloaderBase):
     def __init__(self) -> None:
         super().__init__()
 
-    def ___this_class_has_virtual_methods___(self) -> None:
-        return
-
     def _get_sitename(self) -> str:
         return SITENAME
 
@@ -97,7 +94,7 @@ class DownloaderRn(DownloaderBase):
 
     def _is_video(self, h: str) -> bool:
         # tags are not 100% accurate so use a more direct approach
-        return h.find('mp4') != -1 or h.find('webm') != -1 or h.find('swf') != -1
+        return 'mp4' in h or 'webm' in h or 'swf' in h
 
     def _get_item_html(self, h: str) -> Optional[BeautifulSoup]:
         return self.fetch_html(f'{self._get_sitename()}{h}')

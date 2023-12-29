@@ -127,7 +127,7 @@ def parse_tags(tags: str) -> Tuple[bool, Sequence[str]]:
     global last_tags
     global last_fulltags
 
-    if tags.find('  ') != -1:
+    if '  ' in tags:
         tags = re_space_mult.sub(' ', tags)
     tags = tags.strip()
 

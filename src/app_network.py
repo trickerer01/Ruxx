@@ -53,7 +53,8 @@ def thread_exit(err_str='', code=-1) -> None:
     raise ThreadInterruptException(str(code))
 
 
-class ThreadedWorker:
+class ThreadedWorker(ABC):
+    @abstractmethod
     def __init__(self) -> None:
         self.my_root_thread = None  # type: Optional[Thread]
         self.item_lock = ThreadLock()
@@ -70,7 +71,8 @@ class ThreadedWorker:
         return self.my_root_thread and getattr(self.my_root_thread, 'killed', False) is True
 
 
-class ThreadedHtmlWorker(ABC, ThreadedWorker):
+class ThreadedHtmlWorker(ThreadedWorker):
+    @abstractmethod
     def __init__(self) -> None:
         super().__init__()
         self.verbose = False
@@ -85,10 +87,6 @@ class ThreadedHtmlWorker(ABC, ThreadedWorker):
         self.retries = CONNECT_RETRIES_BASE
         self.etags = dict()  # type: Dict[str, str]
         self.session = None  # type: Optional[Session]
-
-    @abstractmethod
-    def ___this_class_has_virtual_methods___(self) -> ...:
-        ...
 
     @abstractmethod
     def _get_sitename(self) -> str:

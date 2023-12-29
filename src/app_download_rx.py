@@ -43,9 +43,6 @@ class DownloaderRx(DownloaderBase):
     def __init__(self) -> None:
         super().__init__()
 
-    def ___this_class_has_virtual_methods___(self) -> None:
-        return
-
     def _get_sitename(self) -> str:
         return SITENAME
 
