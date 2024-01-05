@@ -25,6 +25,7 @@ from app_utils import normalize_path
 __all__ = ('run_all_tests',)
 
 
+RUN_CONN_TESTS = 1
 CUR_PATH = normalize_path(path.abspath(curdir))
 
 args_argparse_str1 = (
@@ -223,9 +224,11 @@ class DownloaderBaseTests(TestCase):
 
 class ConnTests(TestCase):
     def test_connect_rx1(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
         # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
         Logger.init(True, True)
-        # ____empty,  tag,             tag,       flag,    v,     flag,     v,     flag,         v             flag      v
+        #                tag           tag        flag     v      flag      v      flag            v           flag      v
         argslist = ('id:=2000000', '-severals', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with DownloaderRx() as dwn:
@@ -236,9 +239,11 @@ class ConnTests(TestCase):
         print(f'{self._testMethodName} passed')
 
     def test_connect_rs1(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
         # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
         Logger.init(True, True)
-        # ____empty,  tag,             tag,       flag,    v,     flag,     v,     flag,         v             flag      v
+        #                tag           tag        flag     v      flag      v      flag            v           flag      v
         argslist = ('id:=7939303', '-severals', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with DownloaderRs() as dwn:
@@ -249,11 +254,30 @@ class ConnTests(TestCase):
         print(f'{self._testMethodName} passed')
 
 
+class ItemFilterTests(TestCase):
+    def test_filter_rx1(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        Logger.init(True, True)
+        #              tag         flag     v      flag      v     flag      v         flag          v           flag          v
+        argslist = ('moonlight', '-dmode', '1', '-threads', '8', '-path', CUR_PATH, '-mindate', '01-01-2012', '-maxdate', '01-12-2023')
+        # this search yields at least 3200 results (before date filter)
+        arglist = prepare_arglist(argslist)
+        with DownloaderRx() as dwn:
+            dwn.launch_download(arglist)
+            self.assertEqual(3015, len(dwn.item_info_dict_all))
+            self.assertEqual('9081766', list(dwn.item_info_dict_all.values())[0].id)
+            self.assertEqual('963172', list(dwn.item_info_dict_all.values())[-1].id)
+        print(f'{self._testMethodName} passed')
+
+
 class RealDownloadTests(TestCase):
     def test_down_rx1(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
         # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
         Logger.init(True, True)
-        # ____empty,  tag,             tag,       flag,    v,     flag,     v,     flag,         v             flag      v
+        #                tag           tag        flag     v      flag      v      flag            v           flag      v
         argslist = ('id:=2000000', '-overflow', '-dmode', '1', '-threads', '2', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with DownloaderRx() as dwn:
@@ -263,12 +287,14 @@ class RealDownloadTests(TestCase):
         print(f'{self._testMethodName} passed')
 
     def test_down_rx2(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
         # this test actually performs a download
-        tempfile_id = str(6579460)
+        tempfile_id = '6579460'
         tempfile_ext = 'png'
         tempfile_path = f'{normalize_path(gettempdir())}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
-        # ____empty,  tag,                   flag,     v,     flag,         v             flag      v
+        #                  tag               flag      v      flag            v           flag       v
         argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', gettempdir())
         arglist = prepare_arglist(argslist)
         with DownloaderRx() as dwn:
@@ -278,12 +304,14 @@ class RealDownloadTests(TestCase):
         print(f'{self._testMethodName} passed')
 
     def test_down_rs1(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
         # this test actually performs a download
-        tempfile_id = str(7939303)
+        tempfile_id = '7939303'
         tempfile_ext = 'png'
         tempfile_path = f'{normalize_path(gettempdir())}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
-        # ____empty,  tag,                   flag,     v,     flag,         v             flag      v
+        #                  tag               flag      v      flag            v           flag       v
         argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', gettempdir())
         arglist = prepare_arglist(argslist)
         with DownloaderRs() as dwn:

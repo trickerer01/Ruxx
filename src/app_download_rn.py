@@ -113,12 +113,10 @@ class DownloaderRn(DownloaderBase):
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
         last = 1
-        last_page_buttons = raw_html.find_all('a', string='Last')
-        if len(last_page_buttons) != 0:
-            for but in last_page_buttons:
-                b = str(but)
-                b = b[:b.rfind('">')]
-                last = int(b[b.rfind('/') + 1:])
+        for but in raw_html.find_all('a', string='Last'):
+            b = str(but)
+            b = b[:b.rfind('">')]
+            last = int(b[b.rfind('/') + 1:])
 
         if last > 1:
             raw_html = self.fetch_html(f'{url}{last:d}', do_cache=True)

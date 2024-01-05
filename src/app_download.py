@@ -474,23 +474,22 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('last items filter is irrelevant! Skipping')
             return
 
-        if len(self.items_raw_per_task) < 2:
+        orig_len = len(self.items_raw_per_task)
+        if orig_len < 2:
             trace('less than 2 items: skipping')
             return
 
         trace(f'mindate at {self.date_min}, filtering')
-        items_tofilter = self.items_raw_per_task[-(min(len(self.items_raw_per_task), self._get_items_per_page() * 2)):]
-        self.items_raw_per_task = self.items_raw_per_task[:-len(items_tofilter)]  # type: List[str]
-        trace(f'Items to potentially remove: {len(items_tofilter):d}')
+        boundary = orig_len - min(orig_len, self._get_items_per_page() * 2)
 
         divider = 1
         dofinal = False
-        cur_index = 0
         step_direction = 1
         cur_step = 0
-        f_total = len(items_tofilter)
-        forward_lim = f_total
-        backward_lim = -1
+        f_total = orig_len - boundary
+        cur_index = boundary
+        forward_lim = orig_len
+        backward_lim = boundary - 1
         while True and f_total > 0:  # while True
             cur_step += 1
             trace(f'step {cur_step:d}')
@@ -503,11 +502,9 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             if cur_index < backward_lim:
                 trace('Error: cur_index < backward_lim, aborting filter!')
-                self.items_raw_per_task += items_tofilter
                 break
             if cur_index > forward_lim:
                 trace('Error: cur_index > forward_lim, aborting filter!')
-                self.items_raw_per_task += items_tofilter
                 break
 
             # last steps
@@ -521,12 +518,11 @@ class DownloaderBase(ThreadedHtmlWorker):
                 dofinal = True
 
             if dofinal is True:
-                items_tofilter = items_tofilter[:cur_index]
-                trace(f'Items after filter: {len(items_tofilter):d}')
-                self.items_raw_per_task += items_tofilter
+                trace(f'Filtered out {orig_len - cur_index:d} / {orig_len :d} items')
+                del self.items_raw_per_task[cur_index:]
                 break
 
-            h = self._local_addr_from_string(str(items_tofilter[cur_index]))
+            h = self._local_addr_from_string(str(self.items_raw_per_task[cur_index]))
             item_id = self._extract_id(h)
 
             def forward() -> Tuple[int, int]:
@@ -554,23 +550,21 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('first items filter is irrelevant! Skipping')
             return
 
-        if len(self.items_raw_per_task) < 2:
+        orig_len = len(self.items_raw_per_task)
+        if orig_len < 2:
             trace('less than 2 items: skipping')
             return
 
         trace(f'maxdate at {self.date_max}, filtering')
-        items_tofilter = self.items_raw_per_task[:(min(len(self.items_raw_per_task), self._get_items_per_page() * 2))]
-        self.items_raw_per_task = self.items_raw_per_task[len(items_tofilter):]  # type: List[str]
-
-        trace(f'Items to potentially remove: {len(items_tofilter):d}')
+        boundary = min(orig_len, self._get_items_per_page() * 2)
 
         divider = 1
         dofinal = False
-        cur_index = 0
         step_direction = 1
         cur_step = 0
-        f_total = len(items_tofilter)
-        forward_lim = f_total
+        f_total = boundary
+        cur_index = 0
+        forward_lim = boundary
         backward_lim = -1
         while True and f_total > 0:  # while True
             cur_step += 1
@@ -584,11 +578,9 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             if cur_index < backward_lim:
                 trace('Error: cur_index < backward_lim, aborting filter!')
-                self.items_raw_per_task = items_tofilter + self.items_raw_per_task
                 break
             if cur_index > forward_lim:
                 trace('Error: cur_index > forward_lim, aborting filter!')
-                self.items_raw_per_task = items_tofilter + self.items_raw_per_task
                 break
 
             # last steps
@@ -602,12 +594,11 @@ class DownloaderBase(ThreadedHtmlWorker):
                 dofinal = True
 
             if dofinal is True:
-                items_tofilter = items_tofilter[cur_index:]
-                trace(f'Items after filter: {len(items_tofilter):d}')
-                self.items_raw_per_task = items_tofilter + self.items_raw_per_task  # type: List[str]
+                trace(f'Filtered out {cur_index:d} / {orig_len :d} items')
+                del self.items_raw_per_task[:cur_index]
                 break
 
-            h = self._local_addr_from_string(str(items_tofilter[cur_index]))
+            h = self._local_addr_from_string(str(self.items_raw_per_task[cur_index]))
             item_id = self._extract_id(h)
 
             def forward() -> Tuple[int, int]:
@@ -718,7 +709,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 removed_count += 1
 
         if removed_count > 0:
-            trace(f'Filtered out {removed_count:d} / {total_count_old:d} item(s)!')
+            trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
 
     def _process_tags(self, tag_str: str) -> None:
         self.current_state = DownloaderStates.SEARCHING
@@ -801,7 +792,7 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             self.items_raw_per_page.clear()
 
-            self.items_raw_per_task = list(unique_everseen(self.items_raw_per_task))  # type: List[str]
+            self.items_raw_per_task = list(unique_everseen(self.items_raw_per_task))
         else:
             # we have been redirected to a page with our single result! compose item string manually
             if __RUXX_DEBUG__:
@@ -931,8 +922,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             self.current_task_num += 1
             cur_task_tags = self.tags_str_arr[self.current_task_num - 1]
             extra_task_num = self.current_task_num - self.orig_tasks_count
-            is_extra = extra_task_num > 0
-            trace(f'\n{f"[extra {extra_task_num:d}] " if is_extra else ""}task {self.current_task_num:d} in progress...\n{cur_task_tags}\n')
+            extra_task_str = f'[extra {extra_task_num:d}] ' if extra_task_num > 0 else ''
+            trace(f'\n{extra_task_str}task {self.current_task_num:d} in progress...\n{cur_task_tags}\n')
             try:
                 self._process_tags(cur_task_tags)
             except ThreadInterruptException:
@@ -1103,9 +1094,9 @@ class DownloaderBase(ThreadedHtmlWorker):
                 thread_exit(f'ERROR: Unable to create folder {self.dest_base}!')
 
         self.item_info_dict_all = {
-            k: v for k, v in sorted(sorted(self.item_info_dict_all.items(), key=lambda item: item[0]), key=lambda item: int(item[1].id))
+            k: self.item_info_dict_all[k] for k in sorted(self.item_info_dict_all.keys())
         }  # type: Dict[str, ItemInfo]
-        item_info_list = sorted(list(self.item_info_dict_all.values()), key=lambda x: x.id)  # type: List[ItemInfo]
+        item_info_list = list(self.item_info_dict_all.values())
         id_begin = item_info_list[0].id
         id_end = item_info_list[-1].id
         abbrp = self._get_module_abbr_p()
