@@ -1,5 +1,6 @@
 # Dev
 1ruxxenv/
+1venv/
 release/
 images/
 un/
@@ -8,6 +9,7 @@ hooks/
 version_info.txt
 *.pyc
 *.cfg
+*.lnk
 src/curr.py
 src/app_genrev.py
 src/app_grab_tags*.py

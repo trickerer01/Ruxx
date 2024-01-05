@@ -12,7 +12,7 @@ from re import compile as re_compile
 from typing import Pattern, Iterable, Sequence
 
 # internal
-from app_defines import DEFAULT_ENCODING, FILE_NAME_FULL_MAX_LEN
+from app_defines import UTF8, FILE_NAME_FULL_MAX_LEN
 from app_gui_defines import SLASH, UNDERSCORE
 from app_tagger import append_filtered_tags
 from app_utils import trim_undersores, normalize_path
@@ -49,7 +49,7 @@ def retag_files(files: Sequence[str], re_tags_to_process: Pattern, re_tags_to_ex
         for diritem in listdir(base_path):
             if path.splitext(diritem)[1] == '.txt':
                 if re_tagsfile_name.fullmatch(diritem) is not None:
-                    with open(f'{base_path}{SLASH}{diritem}', 'rt', encoding=DEFAULT_ENCODING) as tags_file:
+                    with open(f'{base_path}{SLASH}{diritem}', 'rt', encoding=UTF8) as tags_file:
                         lines = tags_file.readlines()
                     for line in lines:
                         line = line.strip(' \n\ufeff')

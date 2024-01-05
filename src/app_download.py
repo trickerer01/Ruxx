@@ -25,8 +25,8 @@ from iteration_utilities import unique_everseen
 
 # internal
 from app_defines import (
-    ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, ItemInfo, Mem, DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE,
-    DEFAULT_ENCODING, SOURCE_DEFAULT, PLATFORM_WINDOWS,
+    ThreadInterruptException, DownloaderStates, DownloadModes, PageCheck, ItemInfo, Mem,
+    DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE, UTF8, SOURCE_DEFAULT, PLATFORM_WINDOWS,
 )
 from app_gui_defines import UNDERSCORE, NEWLINE, NEWLINE_X2
 from app_module import ProcModule
@@ -794,8 +794,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             self.items_raw_per_task = [''] * self.total_count
             cur_idx = 0
             for k in range(self.minpage, self.maxpage + 1):
-                cur_l = self.items_raw_per_page.get(k)
-                assert cur_l is not None
+                cur_l = self.items_raw_per_page[k]
                 for i in range(len(cur_l)):
                     self.items_raw_per_task[cur_idx] = cur_l[i]
                     cur_idx += 1
@@ -1134,7 +1133,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{filename}\' already exists. Overwrite?'):
                     trace('Skipped.')
                     continue
-            with open(filename, 'wt', encoding=DEFAULT_ENCODING) as dump:
+            with open(filename, 'wt', encoding=UTF8) as dump:
                 for iteminfo in item_info_list:
                     dump.write(proc(iteminfo))
             trace('Done.')

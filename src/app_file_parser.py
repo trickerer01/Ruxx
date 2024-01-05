@@ -15,7 +15,7 @@ from iteration_utilities import unique_everseen
 
 # internal
 from app_defines import (
-    DEFAULT_ENCODING, FILE_NAME_PREFIX_RX, FILE_NAME_PREFIX_RN, FILE_NAME_PREFIX_RS,
+    UTF8, FILE_NAME_PREFIX_RX, FILE_NAME_PREFIX_RN, FILE_NAME_PREFIX_RS,
     ID_VALUE_SEPARATOR_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RS,
 )
 from app_module import ProcModule
@@ -63,13 +63,13 @@ def id_list_from_string(id_str: str) -> List[str]:
 def parse_file(filepath: str) -> Tuple[bool, List[str]]:
     id_list = list()  # type: List[str]
     try:
-        for line in open(filepath, 'rt', encoding=DEFAULT_ENCODING).readlines():
+        for line in open(filepath, 'rt', encoding=UTF8).readlines():
             line = line.strip(' \n\ufeff')
             if len(line) == 0 or re_comments.fullmatch(line):
                 continue
             elif not get_r_idstring().fullmatch(line):
                 raise IOError
-            id_list += id_list_from_string(line)
+            id_list.extend(id_list_from_string(line))
         return True, [f'id{get_idval_eq_sep()}{s}' for s in sorted(unique_everseen(id_list), key=lambda item: int(item))]
     except Exception:
         return False, id_list

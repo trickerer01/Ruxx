@@ -70,7 +70,7 @@ def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser.add_argument('-dlimit', metavar='#NUMBER', default=0, help=HELP_ARG_DOWNLOAD_LIMIT, type=valid_positive_int)
     parser.add_argument(dest='tags', nargs=ZERO_OR_MORE, help=HELP_ARG_TAGS)
     parsed, unks = parser.parse_known_args(args)
-    parsed.tags += unks  # -tags will be placed here; shove them into parsed tags
+    parsed.tags.extend(unks)  # -tags will be placed here; shove them into parsed tags
     if (not parsed.get_maxid) and (not parsed.tags):
         parser.error('the following arguments are required: tags')
     return parsed

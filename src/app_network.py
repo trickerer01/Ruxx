@@ -190,7 +190,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                 if __RUXX_DEBUG__:
                                     trace(f'Warning (W2): {item_id} invalid chunk {chunk_num:d} err {errcode:d}', True)
                                 # website may send not an HTTP error but instead just a mismatched chunk and call it good
-                                severe_err = errcode in {1, 2, 3, 4}
+                                severe_err = errcode in (1, 2, 3, 4)
                                 response = Response()
                                 response.status_code = 416 if severe_err else 417  # Expectation Failed
                                 new_exc = HTTPError(response=response)

@@ -13,7 +13,7 @@ from tkinter import filedialog, Tk
 from typing import Union, List, Iterable, Callable, Optional
 
 # internal
-from app_defines import Mem, DEFAULT_ENCODING
+from app_defines import Mem, UTF8
 from app_gui_base import window_hcookiesm, getrootconf, setrootconf, int_vars, get_curdir, ask_filename, rootm
 from app_gui_defines import (
     Options, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_PARCHI, OPTION_VALUES_THREADING, CVARS, SLASH,
@@ -119,7 +119,7 @@ class Settings(ABC):
                     continue
                 Logger.log(f'Trying to autoconfigure using {filename}...', False, False)
                 try:
-                    with open(full_path, 'rt', encoding=DEFAULT_ENCODING) as rfile:
+                    with open(full_path, 'rt', encoding=UTF8) as rfile:
                         Settings._read_settings(rfile.readlines())
                     Logger.log('Ok', False, False)
                     break
@@ -202,7 +202,7 @@ class Settings(ABC):
                 if str(filepath).endswith('.cfg') is False:
                     filepath += '.cfg'
                 Logger.log(f'Saving setting to {filepath}...', False, False)
-                with open(filepath, 'wt', encoding=DEFAULT_ENCODING) as wfile:
+                with open(filepath, 'wt', encoding=UTF8) as wfile:
                     wfile.writelines(Settings._write_settings())
                 Logger.log('Ok', False, False)
         except Exception:
@@ -214,7 +214,7 @@ class Settings(ABC):
             filepath = ask_filename((('Config files', '*.cfg'), ('All files', '*.*')))
             if filepath is not None and len(filepath) > 0:
                 Logger.log(f'Loading setting from {filepath}...', False, False)
-                with open(filepath, 'rt', encoding=DEFAULT_ENCODING) as rfile:
+                with open(filepath, 'rt', encoding=UTF8) as rfile:
                     Settings._read_settings(rfile.readlines())
                 Logger.log('Ok', False, False)
         except Exception:

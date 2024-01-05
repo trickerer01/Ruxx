@@ -14,7 +14,7 @@ from typing import Optional, List
 from tkinter import END, INSERT
 
 # internal
-from app_defines import DEFAULT_ENCODING
+from app_defines import UTF8
 from app_gui_defines import STATE_NORMAL, STATE_DISABLED
 from app_utils import find_first_not_of
 
@@ -59,7 +59,7 @@ class Logger:
                 print(text)
             except UnicodeError:
                 try:
-                    print(text.encode(DEFAULT_ENCODING, errors='backslashreplace')
+                    print(text.encode(UTF8, errors='backslashreplace')
                           .decode(getpreferredencoding(), errors='backslashreplace'))
                 except Exception:
                     print('<Message was not logged due to UnicodeError>')
