@@ -10,7 +10,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import ctypes
 import sys
 from datetime import datetime
-from multiprocessing.dummy import current_process
 from os import path, system, makedirs
 from threading import Thread
 from time import sleep as thread_sleep
@@ -20,13 +19,11 @@ from typing import Optional, List, Tuple
 # internal
 from app_cmdargs import prepare_arglist
 from app_defines import (
-    DownloaderStates, DownloadModes, STATE_WORK_START, MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, DEFAULT_HEADERS, DATE_MIN_DEFAULT,
-    PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, FMT_DATE, max_progress_value_for_state,
+    DownloaderStates, DownloadModes, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP,
+    PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, FMT_DATE, max_progress_value_for_state,
 )
 from app_download import DownloaderBase
-from app_download_rn import DownloaderRn
-from app_download_rx import DownloaderRx
-from app_download_rs import DownloaderRs
+from app_download_defines import DOWNLOADERS_BY_PROC_MODULE
 from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_size, sort_files_by_score
 from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
@@ -41,10 +38,11 @@ from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
     OPTION_VALUES_THREADING, OPTION_CMD_VIDEOS, OPTION_CMD_IMAGES, OPTION_CMD_THREADING_CMD, OPTION_CMD_THREADING, OPTION_CMD_FNAMEPREFIX,
     OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS, OPTION_CMD_SAVE_SOURCES,
-    OPTION_CMD_SAVE_COMMENTS, OPTION_CMD_DATEAFTER, OPTION_CMD_DATEBEFORE, OPTION_CMD_PATH, OPTION_CMD_COOKIES, OPTION_CMD_HEADERS,
-    OPTION_CMD_PROXY, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT, OPTION_CMD_RETRIES,
-    GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_VERBOSE,
-    OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE, OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI, OPTION_CMD_CACHE_PROCCED_HTML,
+    OPTION_CMD_SAVE_COMMENTS, OPTION_CMD_DATEAFTER_CMD, OPTION_CMD_DATEBEFORE_CMD, OPTION_CMD_PATH_CMD, OPTION_CMD_COOKIES_CMD,
+    OPTION_CMD_HEADERS_CMD, OPTION_CMD_PROXY_CMD, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT_CMD,
+    OPTION_CMD_RETRIES_CMD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS,
+    OPTION_CMD_VERBOSE, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE_CMD, OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI,
+    OPTION_CMD_CACHE_PROCCED_HTML,
     menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys,
 )
 from app_module import ProcModule
@@ -55,7 +53,7 @@ from app_tags_parser import reset_last_tags, parse_tags
 from app_utils import normalize_path, confirm_yes_no, ensure_compatibility
 from app_validators import DateValidator
 
-__all__ = ('run_ruxx', 'run_ruxx_gui')
+__all__ = ('run_ruxx_gui',)
 
 # loaded
 download_thread = None  # type: Optional[Thread]
@@ -71,16 +69,6 @@ CAN_MANIPULATE_CONSOLE = HAS_OWN_CONSOLE and not IS_RAW
 
 # MODULES
 dwn = None  # type: Optional[DownloaderBase]
-DOWNLOADERS_BY_PROC_MODULE = {
-    ProcModule.PROC_RX: DownloaderRx,
-    ProcModule.PROC_RN: DownloaderRn,
-    ProcModule.PROC_RS: DownloaderRs,
-}
-PROC_MODULES_BY_ABBR = {
-    MODULE_ABBR_RX: ProcModule.PROC_RX,
-    MODULE_ABBR_RN: ProcModule.PROC_RN,
-    MODULE_ABBR_RS: ProcModule.PROC_RS,
-}
 # END MODULES
 
 
@@ -299,12 +287,12 @@ def prepare_cmdline() -> List[str]:
     newstr.append(tags_str)
     # + module
     module_name = ProcModule.get_cur_module_name()
-    newstr.append(OPTION_CMD_MODULE)
+    newstr.append(OPTION_CMD_MODULE_CMD)
     newstr.append(module_name)
     # + path (tags included)
     pathstr = normalize_path(str(getrootconf(Options.PATH)))
     # if pathstr != normalize_path(path.abspath(curdir)):
-    newstr.append(OPTION_CMD_PATH)
+    newstr.append(OPTION_CMD_PATH_CMD)
     newstr.append(f'\'{pathstr}\'')
     # + options
     addstr = OPTION_CMD_VIDEOS[OPTION_VALUES_VIDEOS.index(str(getrootconf(Options.VIDSETTING)))]  # type: str
@@ -323,7 +311,7 @@ def prepare_cmdline() -> List[str]:
     # date min / max
     if not is_global_disabled(Globals.FIELD_DATEMIN) and not is_global_disabled(Globals.FIELD_DATEMAX):
         today_str = datetime.today().strftime(FMT_DATE)
-        for datestr in ((Options.DATEMIN, OPTION_CMD_DATEAFTER), (Options.DATEMAX, OPTION_CMD_DATEBEFORE)):
+        for datestr in ((Options.DATEMIN, OPTION_CMD_DATEAFTER_CMD), (Options.DATEMAX, OPTION_CMD_DATEBEFORE_CMD)):
             while True:
                 try:
                     addstr = str(getrootconf(datestr[0]))
@@ -340,19 +328,19 @@ def prepare_cmdline() -> List[str]:
     # headers
     addstr = window_hcookiesm().get_json_h()
     if len(addstr) > 2 and addstr != DEFAULT_HEADERS:  # != "'{}'"
-        newstr.append(OPTION_CMD_HEADERS)
+        newstr.append(OPTION_CMD_HEADERS_CMD)
         newstr.append(addstr)
     # cookies
     addstr = window_hcookiesm().get_json_c()
     if len(addstr) > 2:  # != "{}"
-        newstr.append(OPTION_CMD_COOKIES)
+        newstr.append(OPTION_CMD_COOKIES_CMD)
         newstr.append(addstr)
     # proxy
     addstr = str(getrootconf(Options.PROXYSTRING))
     if len(addstr) > 0:
         ptype = str(getrootconf(Options.PROXYTYPE))
         addstr = f'{ptype}://{addstr}'
-        newstr.append(OPTION_CMD_PROXY)
+        newstr.append(OPTION_CMD_PROXY_CMD)
         newstr.append(addstr)
     addstr = OPTION_CMD_IGNORE_PROXY[int(getrootconf(Options.IGNORE_PROXY))]
     if len(addstr) > 0:
@@ -366,12 +354,12 @@ def prepare_cmdline() -> List[str]:
     # timeout
     addstr = str(getrootconf(Options.TIMEOUTSTRING))
     if len(addstr) > 0:
-        newstr.append(OPTION_CMD_TIMEOUT)
+        newstr.append(OPTION_CMD_TIMEOUT_CMD)
         newstr.append(addstr)
     # retries
     addstr = str(getrootconf(Options.RETRIESSTRING))
     if len(addstr) > 0:
-        newstr.append(OPTION_CMD_RETRIES)
+        newstr.append(OPTION_CMD_RETRIES_CMD)
         newstr.append(addstr)
     # prefix
     addstr = OPTION_CMD_FNAMEPREFIX[int(getrootconf(Options.FNAMEPREFIX))]
@@ -794,20 +782,6 @@ def dwnm() -> DownloaderBase:
 #             PROGRAM ENTRY             #
 #########################################
 
-def run_ruxx(args: List[str]) -> None:
-    Logger.init(True)
-    ensure_compatibility()
-    current_process().killed = False
-    arglist = prepare_arglist(args)
-    set_proc_module(PROC_MODULES_BY_ABBR[arglist.module])
-    with get_new_proc_module() as cdwn:
-        cdwn.save_cmdline(args)
-        if arglist.get_maxid:
-            cdwn.launch_get_max_id(arglist)
-        else:
-            cdwn.launch_download(arglist)
-
-
 def run_ruxx_gui() -> None:
     Logger.init(False)
     ensure_compatibility()
@@ -821,14 +795,6 @@ def run_ruxx_gui() -> None:
     init_gui()
     Logger.init(True)
     cancel_download()
-
-
-if __name__ == '__main__':
-    if len(sys.argv) >= 2:
-        run_ruxx(sys.argv[1:])
-    else:
-        run_ruxx_gui()
-    sys.exit(0)
 
 #########################################
 #             PROGRAM END               #

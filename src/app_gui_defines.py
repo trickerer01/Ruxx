@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from enum import IntEnum, unique, auto
-from typing import Optional, Set
+from typing import Optional
 
 # Buttons
 STATE_READONLY = 'readonly'
@@ -54,14 +54,14 @@ OPTION_CMD_IMAGES = ('-skip_img', '-lowres', '')
 OPTION_CMD_PARCHI = ('', '-include_parchi')
 OPTION_CMD_THREADING_CMD = '-threads'
 OPTION_CMD_THREADING = ('1', '2', '3', '4', '5', '6', '7', '8')
-OPTION_CMD_COOKIES = '-cookies'
-OPTION_CMD_HEADERS = '-headers'
-OPTION_CMD_PROXY = '-proxy'
+OPTION_CMD_COOKIES_CMD = '-cookies'
+OPTION_CMD_HEADERS_CMD = '-headers'
+OPTION_CMD_PROXY_CMD = '-proxy'
 OPTION_CMD_IGNORE_PROXY = ('', '-noproxy')
 OPTION_CMD_PROXY_NO_DOWNLOAD = ('', '-proxynodown')
 OPTION_CMD_CACHE_PROCCED_HTML = ('', '-cache_html_bloat')
-OPTION_CMD_TIMEOUT = '-timeout'
-OPTION_CMD_RETRIES = '-retries'
+OPTION_CMD_TIMEOUT_CMD = '-timeout'
+OPTION_CMD_RETRIES_CMD = '-retries'
 OPTION_CMD_FNAMEPREFIX = ('', '-prefix')
 OPTION_CMD_DOWNMODE_CMD = '-dmode'
 OPTION_CMD_DOWNLIMIT_CMD = '-dlimit'
@@ -72,10 +72,10 @@ OPTION_CMD_SAVE_COMMENTS = ('', '-dump_comments')
 OPTION_CMD_APPEND_SOURCE_AND_TAGS = ('', '-append_info')
 OPTION_CMD_WARN_NONEMPTY_DEST = ('', '-warn_nonempty')
 OPTION_CMD_VERBOSE = ('', '-verbose')
-OPTION_CMD_DATEAFTER = '-mindate'
-OPTION_CMD_DATEBEFORE = '-maxdate'
-OPTION_CMD_PATH = '-path'
-OPTION_CMD_MODULE = '-module'
+OPTION_CMD_DATEAFTER_CMD = '-mindate'
+OPTION_CMD_DATEBEFORE_CMD = '-maxdate'
+OPTION_CMD_PATH_CMD = '-path'
+OPTION_CMD_MODULE_CMD = '-module'
 # Sizes
 PADDING_DEFAULT = 2
 PADDING_ROOTFRAME_I = PADDING_DEFAULT
@@ -313,24 +313,24 @@ class SubMenus(IntEnum):
 
 
 class RuxxMenu:
-    def __init__(self, indecies: Set[SubMenus]) -> None:
-        self.menu = None  # type: Optional["Menu"]  # noqa F821
-        self.statefuls = indecies
+    def __init__(self, *indecies: SubMenus) -> None:
+        self.menu = None  # type: Optional['Menu']  # noqa F821
+        self.statefuls = set(ind for ind in indecies)
 
     def __bool__(self) -> bool:
         return not not self.menu
 
 
 menu_items = {
-    Menus.FILE: RuxxMenu({SubMenus.SAVE, SubMenus.LOAD, SubMenus.RESET}),
-    Menus.EDIT: RuxxMenu({SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.EXTEND, SubMenus.WNONEMPTY,
-                          SubMenus.VERBOSE}),
-    Menus.MODULE: RuxxMenu({SubMenus.RX, SubMenus.RN, SubMenus.RS}),
-    Menus.CONNECTION: RuxxMenu({SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
-                                SubMenus.IGNOREPROXY, SubMenus.CACHEMODE}),
-    Menus.ACTIONS: RuxxMenu({SubMenus.DOWNLOAD, SubMenus.CHECKTAGS}),
-    Menus.TOOLS: RuxxMenu({SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT}),
-    Menus.DEBUG: RuxxMenu({SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH, SubMenus.DLIMSET, SubMenus.DLIMRESET}),
+    Menus.FILE: RuxxMenu(SubMenus.SAVE, SubMenus.LOAD, SubMenus.RESET),
+    Menus.EDIT: RuxxMenu(SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.EXTEND,
+                         SubMenus.WNONEMPTY, SubMenus.VERBOSE),
+    Menus.MODULE: RuxxMenu(SubMenus.RX, SubMenus.RN, SubMenus.RS),
+    Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
+                               SubMenus.IGNOREPROXY, SubMenus.CACHEMODE),
+    Menus.ACTIONS: RuxxMenu(SubMenus.DOWNLOAD, SubMenus.CHECKTAGS),
+    Menus.TOOLS: RuxxMenu(SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT),
+    Menus.DEBUG: RuxxMenu(SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH, SubMenus.DLIMSET, SubMenus.DLIMRESET),
 }
 
 menu_item_orig_states = {
