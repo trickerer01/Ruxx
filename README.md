@@ -132,7 +132,12 @@ Ruxx doesn't provide a method of authentication natively on either of supported 
 
 #### Using from console
 It is possible to use Ruxx as a cmdline tool. In main window you will find `Cmd` section ‒ it generates your cmdline arguments every time you make a change ‒ use those arguments as an example. In console window you may need to escape some of them (path, 'or' groups, tags containing dot(s), etc.). Most arguments are optional though ‒ the only ones required are `tags` (default module is RX)  
-Invoke `Ruxx --help` for full help
+  
+To run Ruxx directly using python use `ruxx_cmd.py` or `ruxx_gui.py`
+- `python ruxx_cmd.py <...args>` - run Ruxx command
+- `python ruxx_gui.py` - run Ruxx GUI
+
+Invoke `Ruxx --help` or `python ruxx_cmd --help` for full help
 
 #### Logging
 Ruxx will log most of its actions, which you can see in **Log** window  

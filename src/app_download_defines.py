@@ -4,7 +4,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 """
 #########################################
 #
-# From this file only import to highest level (app_gui.py, ruxx.py, ruxx_gui.py)
+# From this file only import to highest level (app_gui.py, ruxx_cmd.py, ruxx_gui.py)
 #
 
 from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS
