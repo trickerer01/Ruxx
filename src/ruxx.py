@@ -13,6 +13,8 @@ import sys
 from ruxx_cmd import run_cmd
 from ruxx_gui import run_gui
 
+__all__ = ()
+
 
 if __name__ == '__main__':
     if len(sys.argv) >= 2:

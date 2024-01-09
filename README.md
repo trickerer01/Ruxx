@@ -108,14 +108,15 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 - Ruxx syntax for `OR` is simplified compared to what you would normally use for RX: `(tag1~tag2~...~tagN)` instead of `( tag1 ~ tag2 ~ ... ~ tagN )`
 - Ruxx allows using `OR` groups for all modules, not just RX
 - The syntax is also the same for all modules, don't use curvy brackets for RS
-- `OR` group can't be negative and needs to be unwrapped: `-(tag1~tag2~tag3)` = `-tag1 -tag2 -tag3`
+- `OR` group can't be negative and needs to be unwrapped:
+  - `-(tag1~tag2~tag3)` => `-tag1 -tag2 -tag3`
 - Since using meta tags in `OR` groups `(id:=X~score:=Y)` is broken (RX) or straight impossible (RS, RN), Ruxx will always unwrap such groups to process them properly
 4. Negative groups
 - Syntax: `-(tag1,tag2,...,tagN)`. Ruxx allows to filter out tag combinations (posts where all tags in group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for 'any symbol' and 'any number of any symbols' repectively. You can also use pipe symbol `|` for direct regex `OR` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regular expressions `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
     - Important note: unlike normal `-tags`, negative group will not check tag aliases
 5. Tags number limits
 - Any valid search query requires at least one positive non-sorting tag to search for. Search query cannot be formed using just `sort:...` tag or `-tags` only
-- Very long search queries will cause website to return empty result. Generally this happens when trying to add too many `-tags` to narrow down the search. If resulting query is too long Ruxx will automatically create a specific [negative group](#tags-syntax) from excessive `-tags` and use them as an additional filter. The message will be given as follows: `<X> 'excluded tags combination' custom filter(s) parsed`
+- Very long search queries will cause website to return empty result. Generally this happens when trying to add too many `-tags` to narrow down the search. If resulting query is too long Ruxx will automatically create a specific [negative group](#tags-syntax) from excessive `-tags` and use them as additional filter. The message will be given as follows: `<X> 'excluded tags combination' custom filter(s) parsed`
 
 #### User credentials
 Ruxx doesn't provide a method of authentication natively on either of supported sites. To use your identity during search you need to follow 3 simple steps:
@@ -137,7 +138,7 @@ To run Ruxx directly using python use `ruxx_cmd.py` or `ruxx_gui.py`
 - `python ruxx_cmd.py <...args>` - run Ruxx command
 - `python ruxx_gui.py` - run Ruxx GUI
 
-Invoke `Ruxx --help` or `python ruxx_cmd --help` for full help
+Invoke `Ruxx --help` or `python ruxx_cmd.py --help` for full help
 
 #### Logging
 Ruxx will log most of its actions, which you can see in **Log** window  

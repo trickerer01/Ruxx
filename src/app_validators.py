@@ -25,7 +25,7 @@ from app_utils import Protocol, normalize_path
 
 __all__ = (
     'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_kwarg', 'valid_download_mode', 'valid_proxy',
-    'valid_positive_int', 'valid_window_position', 'Validator', 'ValidatorAlwaysTrue', 'ModuleValidator', 'VideosCBValidator',
+    'valid_positive_int', 'valid_window_position', 'Validator', 'DummyValidator', 'ModuleValidator', 'VideosCBValidator',
     'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator', 'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator',
     'ParchiCBValidator', 'TimeoutValidator', 'RetriesValidator', 'WindowPosValidator',
 )
@@ -155,7 +155,7 @@ class StrValidator(Validator):
         return str
 
 
-class ValidatorAlwaysTrue(IntValidator, StrValidator):
+class DummyValidator(IntValidator, StrValidator):
     def __call__(self, val: Union[int, str]) -> bool:
         return True
 

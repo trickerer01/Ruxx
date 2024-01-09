@@ -46,7 +46,7 @@ from app_gui_defines import (
     menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys,
 )
 from app_module import ProcModule
-from app_logger import Logger
+from app_logger import Logger, trace
 from app_revision import __RUXX_DEBUG__
 from app_settings import Settings
 from app_tags_parser import reset_last_tags, parse_tags
@@ -75,11 +75,11 @@ dwn = None  # type: Optional[DownloaderBase]
 # static methods
 def file_worker_report(succ_count: int, total_count: int, word1: str) -> None:
     if succ_count == total_count:
-        Logger.log(f'Successfully {word1}ed {total_count:d} file(s).', False, False)
+        trace(f'Successfully {word1}ed {total_count:d} file(s).')
     elif succ_count > 0:
-        Logger.log(f'Warning: only {succ_count:d} / {total_count:d} files were {word1}ed.', False, False)
+        trace(f'Warning: only {succ_count:d} / {total_count:d} files were {word1}ed.')
     else:
-        Logger.log(f'An error occured while {word1}ing {total_count:d} files.', False, False)
+        trace(f'An error occured while {word1}ing {total_count:d} files.')
 
 
 def untag_files_do() -> None:
@@ -153,17 +153,17 @@ def set_download_limit() -> None:
     limit = aw.value()
     if limit is None:
         if aw.variable.get() != '':
-            Logger.log(f'Invalid limt value \'{aw.variable.get()}\'', False, False)
+            trace(f'Invalid limt value \'{aw.variable.get()}\'')
         return
     setrootconf(Options.DOWNLOAD_LIMIT, limit)
     config_menu(Menus.DEBUG, SubMenus.DLIMSET, label=f'Set download limit ({limit})...')
-    Logger.log(f'Download limit set to {limit:d} item(s).', False, False)
+    trace(f'Download limit set to {limit:d} item(s).')
 
 
 def reset_download_limit() -> None:
     setrootconf(Options.DOWNLOAD_LIMIT, 0)
     config_menu(Menus.DEBUG, SubMenus.DLIMSET, label='Set download limit (0)...')
-    Logger.log('Download limit was reset.', False, False)
+    trace('Download limit was reset.')
 
 
 def open_download_folder() -> None:
@@ -179,15 +179,15 @@ def open_download_folder() -> None:
         try:
             makedirs(cur_path)
         except Exception:
-            Logger.log(f'Unable to create path \'{cur_path}\'.', False, False)
+            trace(f'Unable to create path \'{cur_path}\'.')
             return
 
     try:
         res = system(f'start "" "{path.abspath(cur_path)}"')
         if res != 0:
-            Logger.log(f'Couldn\'t open \'{cur_path}\', error: {res:d}.', False, False)
+            trace(f'Couldn\'t open \'{cur_path}\', error: {res:d}.')
     except Exception:
-        Logger.log(f'Couldn\'t open \'{cur_path}\'.', False, False)
+        trace(f'Couldn\'t open \'{cur_path}\'.')
 
 
 def get_new_proc_module() -> DownloaderBase:

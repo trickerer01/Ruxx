@@ -41,6 +41,7 @@ if __name__ == '__main__':
         sys.exit(0)
     else:
         print('ERROR: Ruxx cmd arguments required. To run GUI use ruxx_gui.py')
+        sys.exit(-1)
 
 #
 #

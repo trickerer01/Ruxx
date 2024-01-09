@@ -19,10 +19,10 @@ from app_gui_defines import (
     Options, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_PARCHI, OPTION_VALUES_THREADING, CVARS, SLASH,
 )
 from app_module import ProcModule
-from app_logger import Logger
+from app_logger import trace
 from app_utils import normalize_path
 from app_validators import (
-    Validator, ValidatorAlwaysTrue, ModuleValidator, VideosCBValidator, ImagesCBValidator, ParchiCBValidator, ThreadsCBValidator,
+    Validator, DummyValidator, ModuleValidator, VideosCBValidator, ImagesCBValidator, ParchiCBValidator, ThreadsCBValidator,
     DateValidator, JsonValidator, ProxyTypeValidator, ProxyValidator, BoolStrValidator, TimeoutValidator, RetriesValidator,
     WindowPosValidator,
 )
@@ -43,7 +43,7 @@ class Settings(ABC):
         ...
 
     class Setting:
-        def __init__(self, sconf: Options, check: Validator, check_fail_message: str = None) -> None:
+        def __init__(self, sconf: Options, check: Validator, check_fail_message: str) -> None:
             self.conf = sconf
             self.type = check.get_value_type()
             self.check = check
@@ -53,13 +53,13 @@ class Settings(ABC):
         def validate(self, val: Union[int, str]) -> bool:
             result = self.check(val)
             if result is False:
-                Logger.log(self.check_fail_message % str(val), False, False)
+                trace(self.check_fail_message % str(val))
             return result
 
     settings = {
-        'tags': Setting(Options.TAGS, ValidatorAlwaysTrue()),  # no validation, str
+        'path': Setting(Options.PATH, DummyValidator(), ''),  # no validation, str
+        'tags': Setting(Options.TAGS, DummyValidator(), ''),  # no validation, str
         'module': Setting(Options.MODULE, ModuleValidator(), 'Invalid module \'%s\'!'),
-        'path': Setting(Options.PATH, ValidatorAlwaysTrue()),  # no validation, str
         'videos': Setting(Options.VIDSETTING, VideosCBValidator(), 'Invalid videos option \'%s\'!'),
         'images': Setting(Options.IMGSETTING, ImagesCBValidator(), 'Invalid images option \'%s\'!'),
         'parchi': Setting(Options.PARCHISETTING, ParchiCBValidator(), 'Invalid parchi option \'%s\'!'),
@@ -115,19 +115,19 @@ class Settings(ABC):
                     continue
                 file_size = stat(full_path).st_size
                 if file_size > 16 * Mem.KB:
-                    Logger.log(f'Skipping \'{filename}\', file is too large ({file_size / Mem.KB:.2f})', False, False)
+                    trace(f'Skipping \'{filename}\', file is too large ({file_size / Mem.KB:.2f})')
                     continue
-                Logger.log(f'Trying to autoconfigure using {filename}...', False, False)
+                trace(f'Trying to autoconfigure using {filename}...')
                 try:
                     with open(full_path, 'rt', encoding=UTF8) as rfile:
                         Settings._read_settings(rfile.readlines())
-                    Logger.log('Ok', False, False)
+                    trace('Ok')
                     break
                 except Exception:
-                    Logger.log(f'Cannot load settings from {filename}.', False, False)
+                    trace(f'Cannot load settings from {filename}.')
                     continue
         except Exception:
-            Logger.log('Error loading settings.', False, False)
+            trace('Error loading settings.')
 
     @staticmethod
     def save_initial_settings() -> None:
@@ -144,9 +144,8 @@ class Settings(ABC):
 
         settings_strlist = ['# Ruxx config settings #\n\n']
         for k in Settings.settings:
-            # noinspection PyUnusedLocal
-            myval = ...  # type: Union[str, int]
-            conf = Settings.settings.get(k).conf
+            myval: Union[str, int]
+            conf = Settings.settings[k].conf
             if conf == Options.HEADER_ADD_STR:
                 myval = window_hcookiesm().get_json_h()
             elif conf == Options.COOKIE_ADD_STR:
@@ -154,7 +153,7 @@ class Settings(ABC):
             elif conf == Options.MODULE:
                 myval = ProcModule.get() - 1
             elif conf in Settings.combobox_setting_arrays:
-                myval = Settings.combobox_setting_arrays.get(conf).index(getrootconf(conf))
+                myval = Settings.combobox_setting_arrays[conf].index(getrootconf(conf))
             elif conf == Options.WINDOW_POSITION:
                 myval = f'{rootm().winfo_x():.0f}x{rootm().winfo_y():.0f}'
             else:
@@ -170,9 +169,9 @@ class Settings(ABC):
                 continue
             kv_k, kv_v = line.split('=', 1)  # type: str, str
             if kv_k in Settings.settings:
-                conf = Settings.settings.get(kv_k).conf
-                val = Settings.settings.get(kv_k).type(kv_v)
-                assert Settings.settings.get(kv_k).validate(val)
+                conf = Settings.settings[kv_k].conf
+                val = Settings.settings[kv_k].type(kv_v)
+                assert Settings.settings[kv_k].validate(val)
                 if conf == Options.HEADER_ADD_STR:
                     window_hcookiesm().set_to_h(val)
                 elif conf == Options.COOKIE_ADD_STR:
@@ -191,7 +190,7 @@ class Settings(ABC):
                 else:
                     setrootconf(conf, val)
             else:
-                Logger.log(f'unknown option \'{kv_k}\', skipped', False, False)
+                trace(f'unknown option \'{kv_k}\', skipped')
 
     @staticmethod
     def save_settings() -> None:
@@ -201,24 +200,24 @@ class Settings(ABC):
                 setrootconf(Options.LASTPATH, filepath[:normalize_path(filepath, False).rfind(SLASH) + 1])
                 if str(filepath).endswith('.cfg') is False:
                     filepath += '.cfg'
-                Logger.log(f'Saving setting to {filepath}...', False, False)
+                trace(f'Saving setting to {filepath}...')
                 with open(filepath, 'wt', encoding=UTF8) as wfile:
                     wfile.writelines(Settings._write_settings())
-                Logger.log('Ok', False, False)
+                trace('Ok')
         except Exception:
-            Logger.log('Error saving settings.', False, False)
+            trace('Error saving settings.')
 
     @staticmethod
     def load_settings() -> None:
         try:
             filepath = ask_filename((('Config files', '*.cfg'), ('All files', '*.*')))
             if filepath is not None and len(filepath) > 0:
-                Logger.log(f'Loading setting from {filepath}...', False, False)
+                trace(f'Loading setting from {filepath}...')
                 with open(filepath, 'rt', encoding=UTF8) as rfile:
                     Settings._read_settings(rfile.readlines())
-                Logger.log('Ok', False, False)
+                trace('Ok')
         except Exception:
-            Logger.log('Error loading settings.', False, False)
+            trace('Error loading settings.')
 
 #
 #
