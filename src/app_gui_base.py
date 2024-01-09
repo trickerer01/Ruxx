@@ -225,6 +225,7 @@ class BaseText(Text):
         self._textvariable.trace_add(['unset', 'write'], self._on_var_change)
         self.bind('<<Change>>', self._on_widget_change)
         self.bind('<<Paste>>', self._handle_paste)
+        self.bind('<<Selection>>', self._handle_select)
         self.bind(BUT_RETURN, lambda _: 'break')
         self.bind(BUT_CTRL_BACKSPACE, self.on_event_ctrl_backspace)
         self.bind(BUT_CTRL_DELETE, self.on_event_ctrl_delete)
@@ -251,6 +252,14 @@ class BaseText(Text):
 
     def set_state(self, state: str) -> None:
         self.configure(bg=self._bg_color_orig if state == STATE_NORMAL else rootm().default_bg_color)
+
+    def _handle_select(self, *_) -> None:
+        sel = self.tag_ranges(SEL)
+        if sel and float(str(sel[1])) >= 2.0:
+            end_index = f'{END}-1c'
+            self.tag_remove(SEL, end_index)
+            self.tag_add(SEL, sel[0], end_index)
+            self.mark_set(INSERT, end_index)
 
     def _handle_paste(self, *_) -> None:
         cur_text = self.gettext()
