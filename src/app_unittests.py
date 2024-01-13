@@ -14,7 +14,7 @@ from unittest import main as run_tests, TestCase
 
 # internal
 from app_cmdargs import prepare_arglist
-from app_defines import DEFAULT_HEADERS, DownloadModes, ThreadInterruptException, DATE_MIN_DEFAULT
+from app_defines import DEFAULT_HEADERS, DATE_MIN_DEFAULT, DownloadModes, ThreadInterruptException
 from app_download_rn import DownloaderRn
 from app_download_rs import DownloaderRs
 from app_download_rx import DownloaderRx

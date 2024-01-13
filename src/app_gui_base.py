@@ -199,6 +199,7 @@ class BaseText(Text):
     CTRL_DELETION_DELIMS = ' ,.!~/-=:;'
 
     def __init__(self, parent=None, *args, **kw) -> None:
+        known_bindings = kw.pop('bindings', {})  # type: Dict[str, Callable[[...], None]]
         self._textvariable = kw.pop('textvariable', StringVar(rootm(), '', ''))
         kw.update(height=1, undo=True, maxundo=500, wrap=NONE)
         super().__init__(parent, *args, **kw)
@@ -222,11 +223,16 @@ class BaseText(Text):
             interp alias {{}} ::{widget} {{}} widget_proxy {widget} _{widget}
         '''.format(widget=str(self)))
 
+        def parent_event(sequence: str, *args_) -> str:
+            if sequence in known_bindings:
+                known_bindings[sequence](*args_)
+            return 'break'
+
         self._textvariable.trace_add(['unset', 'write'], self._on_var_change)
         self.bind('<<Change>>', self._on_widget_change)
         self.bind('<<Paste>>', self._handle_paste)
         self.bind('<<Selection>>', self._handle_select)
-        self.bind(BUT_RETURN, lambda _: 'break')
+        self.bind(BUT_RETURN, lambda e: parent_event(BUT_RETURN, e))
         self.bind(BUT_CTRL_BACKSPACE, self.on_event_ctrl_backspace)
         self.bind(BUT_CTRL_DELETE, self.on_event_ctrl_delete)
 
@@ -610,7 +616,8 @@ class ProxyWindow(BaseWindow):
         cbtype.config(state=STATE_READONLY)
         _ = BaseText(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS.get(Options.PROXYSTRING)))
         self.entry_addr = BaseText(downframe, font=FONT_SANS_MEDIUM, width=21,
-                                   textvariable=StringVar(rootm(), '', CVARS.get(Options.PROXYSTRING_TEMP)))
+                                   textvariable=StringVar(rootm(), '', CVARS.get(Options.PROXYSTRING_TEMP)),
+                                   bindings={BUT_RETURN: lambda _: self.ok()})
         if __RUXX_DEBUG__:
             self.entry_addr.insert(END, PROXY_DEFAULT_STR)
         self.err_message = attach_tooltip(self.entry_addr, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
@@ -720,7 +727,8 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.badd_h = Button(hframe, image=get_icon(Icons.ADD), command=self.add_header_to_list)
         self.badd_h.pack(side=LEFT, padx=0, pady=5)
 
-        self.entry_h = BaseText(hframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.HEADER_ADD_STR)))
+        self.entry_h = BaseText(hframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.HEADER_ADD_STR)),
+                                bindings={BUT_RETURN: lambda _: self.add_header_to_list()})
         self.entry_h.pack(side=LEFT, padx=5, pady=5, fill=X, expand=YES)
         attach_tooltip(self.entry_h, TOOLTIP_HCOOKIE_ADD_ENTRY)
 
@@ -743,10 +751,11 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.bdel_c.pack(side=LEFT, padx=5, pady=5)
         attach_tooltip(self.bdel_c, TOOLTIP_HCOOKIE_DELETE)
 
-        self.badd_c = Button(cframe, image=get_icon(Icons.ADD), command=self.add_coookie_to_list)
+        self.badd_c = Button(cframe, image=get_icon(Icons.ADD), command=self.add_cookie_to_list)
         self.badd_c.pack(side=LEFT, padx=0, pady=5)
 
-        self.entry_c = BaseText(cframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.COOKIE_ADD_STR)))
+        self.entry_c = BaseText(cframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.COOKIE_ADD_STR)),
+                                bindings={BUT_RETURN: lambda _: self.add_cookie_to_list()})
         self.entry_c.pack(side=LEFT, padx=5, pady=5, fill=X, expand=YES)
         attach_tooltip(self.entry_c, TOOLTIP_HCOOKIE_ADD_ENTRY)
 
@@ -781,8 +790,8 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.window.bind(BUT_ESCAPE, lambda _: self.hide())
         self.lbox_h.bind(BUT_DELETE, lambda _: self.delete_selected_h())
         self.lbox_c.bind(BUT_DELETE, lambda _: self.delete_selected_c())
-        self.entry_h.bind(BUT_RETURN, lambda _: self.add_header_to_list())
-        self.entry_c.bind(BUT_RETURN, lambda _: self.add_coookie_to_list())
+        # self.entry_h.bind(BUT_RETURN, lambda _: self.add_header_to_list())
+        # self.entry_c.bind(BUT_RETURN, lambda _: self.add_coookie_to_list())
 
     def toggle_visibility(self) -> None:
         if self.visible is False:
@@ -847,7 +856,7 @@ class HeadersAndCookiesWindow(BaseWindow):
             self.entry_h.focus_set()
             self.entry_h.select_all()
 
-    def add_coookie_to_list(self) -> None:
+    def add_cookie_to_list(self) -> None:
         syntax_valid = True
 
         c_count = self.lbox_c.size()
@@ -934,8 +943,9 @@ class ConnectRequestIntWindow(BaseWindow):
         hint.grid(row=0, column=0, columnspan=15)
 
         _ = BaseText(textvariable=StringVar(rootm(), str(self.baseval), CVARS.get(self.conf_str)))
-        self.entry = BaseText(
-            downframe, font=FONT_SANS_MEDIUM, width=19, textvariable=StringVar(rootm(), '', CVARS.get(self.conf_str_temp)))
+        self.entry = BaseText(downframe, font=FONT_SANS_MEDIUM, width=19,
+                              textvariable=StringVar(rootm(), '', CVARS.get(self.conf_str_temp)),
+                              bindings={BUT_RETURN: lambda _: self.ok()})
         self.entry.insert(END, str(self.baseval))
         self.err_message = attach_tooltip(self.entry, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
         self.entry.grid(row=1, column=3, columnspan=10)
