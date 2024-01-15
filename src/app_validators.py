@@ -217,7 +217,7 @@ class JsonValidator(StrValidator):
 
 class BoolStrValidator(StrValidator):
     def __call__(self, val: str) -> bool:
-        return len(val) == 1 and val[0] in ('0', '1')
+        return val in ('0', '1')
 
 
 class ProxyValidator(StrValidator):

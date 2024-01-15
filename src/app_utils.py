@@ -74,7 +74,7 @@ def trim_undersores(base_str: str) -> str:
 
 def format_score(score_str: str) -> str:
     score_str = score_str or '0'
-    return f'({"" if score_str[0] in {"0", "-", "u"} else "+"}{score_str})'
+    return f'({"" if score_str.startswith(("0", "-", "u")) else "+"}{score_str})'
 
 #
 #
