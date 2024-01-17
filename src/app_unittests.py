@@ -265,7 +265,7 @@ class ItemFilterTests(TestCase):
         arglist = prepare_arglist(argslist)
         with DownloaderRx() as dwn:
             dwn.launch_download(arglist)
-            self.assertEqual(3015, len(dwn.item_info_dict_all))
+            # self.assertEqual(3015, len(dwn.item_info_dict_all))  # may change too frequently
             self.assertEqual('9081766', list(dwn.item_info_dict_all.values())[0].id)
             self.assertEqual('963172', list(dwn.item_info_dict_all.values())[-1].id)
         print(f'{self._testMethodName} passed')
