@@ -17,6 +17,7 @@ from sys import exc_info
 from threading import Thread, Lock as ThreadLock
 from time import sleep as thread_sleep
 from typing import Optional, Dict, IO, Union, Tuple
+from urllib.parse import urlparse
 
 # requirements
 from bs4 import BeautifulSoup
@@ -255,6 +256,14 @@ class ThreadedHtmlWorker(ThreadedWorker):
                         trace(f'{result.result_str}{("interrupted by user." if current_process() == self.my_root_thread else "")}', True)
                         raise DownloadInterruptException
                     except (HTTPError, Exception) as err:
+                        if isinstance(err, HTTPError) and err.response.status_code == 404:  # RS cdn error
+                            hostname = urlparse(link).hostname or 'unk'
+                            if hostname.startswith('video'):
+                                if __RUXX_DEBUG__:
+                                    trace(f'Warning (W3): {item_id} catched HTTPError 404 (host: {hostname})! '
+                                          f'Trying no-cdn source...', True)
+                                re_vhost_cdn = re_compile(r'-cdn\d')  # video-cdn1.rs
+                                link = re_vhost_cdn.sub('', link)
                         if isinstance(err, HTTPError) and err.response.status_code == 416:  # Requested range is not satisfiable
                             if __RUXX_DEBUG__:
                                 trace(f'Warning (W3): {item_id} catched HTTPError 416!', True)
