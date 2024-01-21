@@ -6,14 +6,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# [1, 5, 9] slice notation
-# print(list(range(10))[1:10:4])
-# print(list(range(10))[-9:10:4])
-# print(list(range(10))[1::4])
-
-# def pow_b(n: int, p: int) -> int:
-#     return n if (p == 1) else (n * pow_b(n, p - 1)) if (p & 1) else (pow_b(n * n, p // 2))
-
 from enum import IntEnum, auto, unique
 from typing import Dict, Tuple, Optional, Set, List
 
