@@ -18,7 +18,7 @@ from app_defines import (
     SITENAME_B_RS, FILE_NAME_PREFIX_RS, MODULE_ABBR_RS, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RS, DownloadModes, ItemInfo, Comment,
     TAGS_CONCAT_CHAR_RS, ID_VALUE_SEPARATOR_CHAR_RS, DATE_MIN_DEFAULT,
 )
-from app_download import DownloaderBase
+from app_download import Downloader
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
@@ -33,7 +33,7 @@ ITEMS_PER_PAGE = ITEMS_PER_PAGE_RS
 MAX_SEARCH_DEPTH = 240 * ITEMS_PER_PAGE - 1  # set by site devs
 
 
-class DownloaderRs(DownloaderBase):
+class DownloaderRs(Downloader):
     """
     DownloaderRs
     """

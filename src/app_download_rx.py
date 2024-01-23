@@ -19,7 +19,7 @@ from app_defines import (
     SITENAME_B_RX, FILE_NAME_PREFIX_RX, MODULE_ABBR_RX, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RX, DownloadModes, ItemInfo, Comment,
     TAGS_CONCAT_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RX, FMT_DATE,
 )
-from app_download import DownloaderBase
+from app_download import Downloader
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
@@ -36,7 +36,7 @@ MAX_SEARCH_DEPTH = 200000 + ITEMS_PER_PAGE - 1  # set by site devs
 item_info_fields = {'file_url': 'ext'}
 
 
-class DownloaderRx(DownloaderBase):
+class DownloaderRx(Downloader):
     """
     DownloaderRx
     """

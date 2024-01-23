@@ -19,7 +19,7 @@ from app_defines import (
     SITENAME_B_RN, FILE_NAME_PREFIX_RN, MODULE_ABBR_RN, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RN, DownloadModes, ItemInfo, Comment,
     TAGS_CONCAT_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RN, FMT_DATE,
 )
-from app_download import DownloaderBase
+from app_download import Downloader
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
@@ -36,7 +36,7 @@ MAX_SEARCH_DEPTH = 0
 item_info_fields = {'data-post-id': 'id', 'data-tags': 'tags', 'title': 'ext'}
 
 
-class DownloaderRn(DownloaderBase):
+class DownloaderRn(Downloader):
     """
     DownloaderRn
     """

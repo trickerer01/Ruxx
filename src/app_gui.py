@@ -22,7 +22,7 @@ from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP,
     PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, FMT_DATE, max_progress_value_for_state,
 )
-from app_download import DownloaderBase
+from app_download import Downloader
 from app_download_defines import DOWNLOADERS_BY_PROC_MODULE
 from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_size, sort_files_by_score
 from app_file_tagger import untag_files, retag_files
@@ -68,7 +68,7 @@ CAN_MANIPULATE_CONSOLE = HAS_OWN_CONSOLE and not IS_RAW
 # end loaded
 
 # MODULES
-dwn = None  # type: Optional[DownloaderBase]
+dwn = None  # type: Optional[Downloader]
 # END MODULES
 
 
@@ -190,7 +190,7 @@ def open_download_folder() -> None:
         trace(f'Couldn\'t open \'{cur_path}\'.')
 
 
-def get_new_proc_module() -> DownloaderBase:
+def get_new_proc_module() -> Downloader:
     return DOWNLOADERS_BY_PROC_MODULE[ProcModule.CUR_PROC_MODULE]()
 
 
@@ -766,7 +766,7 @@ def tags_check_threadm() -> Thread:
     return tags_check_thread
 
 
-def dwnm() -> DownloaderBase:
+def dwnm() -> Downloader:
     global dwn
     dwn = dwn or DOWNLOADERS_BY_PROC_MODULE.get(ProcModule.CUR_PROC_MODULE)()
     return dwn
