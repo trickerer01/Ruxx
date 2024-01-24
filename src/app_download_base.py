@@ -1,0 +1,539 @@
+# coding=UTF-8
+"""
+Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
+"""
+#########################################
+#
+#
+
+# native
+from abc import abstractmethod
+from datetime import datetime
+from os import path, curdir, listdir
+from re import compile as re_compile
+from typing import List, Dict, Set, Pattern, MutableSet, Tuple, Union
+
+# requirements
+from bs4 import BeautifulSoup
+
+# internal
+from app_defines import DownloadModes, DownloaderStates, ItemInfo, PageCheck, DATE_MIN_DEFAULT, FMT_DATE
+from app_logger import trace
+from app_network import ThreadedHtmlWorker, thread_exit
+from app_utils import normalize_path, as_date
+
+
+class DownloaderBase(ThreadedHtmlWorker):
+    """
+    DownloaderBase !Abstract!
+    """
+    @abstractmethod
+    def __init__(self) -> None:
+        super().__init__()
+
+        # config
+        self.add_filename_prefix = False
+        self.dump_tags = False
+        self.dump_sources = False
+        self.dump_comments = False
+        self.append_info = False
+        self.download_mode = DownloadModes.FULL
+        self.download_limit = 0
+        self.maxthreads_items = 1
+        self.include_parchi = False
+        self.skip_images = False
+        self.skip_videos = False
+        self.prefer_webm = False
+        self.low_res = False
+        self.date_min = DATE_MIN_DEFAULT
+        self.date_max = datetime.today().strftime(FMT_DATE)
+        self.dest_base = normalize_path(path.abspath(curdir))
+        self.warn_nonempty = False
+        self.tags_str_arr = list()  # type: List[str]
+        # extra
+        self.cmdline = ''
+        self.get_max_id = False
+
+        # results
+        self.url = ''
+        self.minpage = 0
+        self.maxpage = 0
+        self.success_count = 0
+        self.fail_count = 0
+        self.failed_items = list()  # type: List[str]
+        self.total_count = 0
+        self.total_count_old = 0
+        self.processed_count = 0
+        self.total_pages = 0
+        self.current_task_num = 0
+        self.orig_tasks_count = 0
+        self.current_state = DownloaderStates.IDLE
+        self.items_raw_per_task = list()  # type: List[str]
+        self.items_raw_per_page = dict()  # type: Dict[int, List[str]]
+        self.items_raw_all = list()  # type: List[str]
+        self.item_info_dict_per_task = dict()  # type: Dict[str, ItemInfo]
+        self.item_info_dict_all = dict()  # type: Dict[str, ItemInfo]
+        self.neg_and_groups = list()  # type: List[List[Pattern[str]]]
+        self.known_parents = set()  # type: Set[str]
+        self.default_sort = True
+
+    @abstractmethod
+    def _get_module_abbr(self) -> str:
+        ...
+
+    @abstractmethod
+    def _get_module_abbr_p(self) -> str:
+        ...
+
+    @abstractmethod
+    def _get_items_per_page(self) -> int:
+        ...
+
+    @abstractmethod
+    def _get_max_search_depth(self) -> int:
+        ...
+
+    @abstractmethod
+    def _form_item_string_manually(self, raw_html_page: BeautifulSoup) -> str:
+        ...
+
+    @abstractmethod
+    def _is_search_overload_page(self, raw_html_page: BeautifulSoup) -> bool:
+        ...
+
+    @abstractmethod
+    def _form_page_num_address(self, n: int) -> str:
+        ...
+
+    @abstractmethod
+    def _get_all_post_tags(self, raw_html_page: BeautifulSoup) -> list:
+        ...
+
+    @abstractmethod
+    def _local_addr_from_string(self, h: str) -> str:
+        ...
+
+    @abstractmethod
+    def _extract_id(self, h: str) -> str:
+        ...
+
+    @abstractmethod
+    def _is_video(self, h: str) -> bool:
+        ...
+
+    @abstractmethod
+    def _get_item_html(self, h: str) -> Union[None, BeautifulSoup, str]:
+        ...
+
+    @abstractmethod
+    def _extract_post_date(self, raw_or_html: Union[BeautifulSoup, str]) -> str:
+        ...
+
+    @abstractmethod
+    def _get_items_query_size_or_html(self, url: str, tries: int = None) -> Union[int, BeautifulSoup]:
+        ...
+
+    @abstractmethod
+    def _get_image_address(self, h: str) -> Tuple[str, str]:
+        ...
+
+    @abstractmethod
+    def _get_video_address(self, h: str) -> Tuple[str, str]:
+        ...
+
+    @abstractmethod
+    def _extract_item_info(self, item: str) -> ItemInfo:
+        ...
+
+    @abstractmethod
+    def get_re_tags_to_process(self) -> Pattern:
+        """Public, needed by tagging tools"""
+        ...
+
+    @abstractmethod
+    def get_re_tags_to_exclude(self) -> Pattern:
+        """Public, needed by tagging tools"""
+        ...
+
+    @abstractmethod
+    def _get_tags_concat_char(self) -> str:
+        ...
+
+    @abstractmethod
+    def _get_idval_equal_seaparator(self) -> str:
+        ...
+
+    @abstractmethod
+    def _split_or_group_into_tasks_always(self) -> bool:
+        ...
+
+    @abstractmethod
+    def _can_extract_item_info_without_fetch(self) -> bool:
+        ...
+
+    def _num_pages(self) -> int:
+        return (self.maxpage - self.minpage) + 1
+
+    def _get_page_boundary_by_date(self, minpage: bool) -> int:
+        if 1 <= self._num_pages() <= 2:
+            trace('Only a page or two! Skipping')
+            pnum = self.minpage if minpage else self.maxpage
+        elif minpage is True and as_date(self.date_max) >= datetime.today().date():
+            trace('Min page: max date irrelevant! Skipping')
+            pnum = self.minpage
+        elif minpage is False and as_date(self.date_min) <= as_date(DATE_MIN_DEFAULT):
+            trace('Max page: min date irrelevant! Skipping')
+            pnum = self.maxpage
+        else:
+            p_chks = list()
+            for i in range(self.maxpage + 3):
+                p_chks.append(PageCheck())
+
+            lim_backw = self.minpage - 1
+            lim_forw = self.maxpage + 1
+
+            dofinal = False
+            cur_step = 0
+            pdivider = 1
+            step_dir = 1  # forward
+            pnum = self.minpage
+
+            while True:
+                self.catch_cancel_or_ctrl_c()
+
+                if dofinal is True:
+                    trace(f'{"min" if minpage else "max"} page reached: {pnum + 1:d}')
+                    break
+
+                cur_step += 1
+                trace(f'step {cur_step:d}')
+
+                pdivider = min(pdivider * 2, self._num_pages())
+                pnum += (self._num_pages() // pdivider) * step_dir
+                trace(f'page {pnum + 1:d} (div {pdivider:d}, step {step_dir:d})')
+
+                half_div = pdivider > self._num_pages() // 2
+
+                if pnum < self.minpage:
+                    trace('Page < minpage, returning minpage!')
+                    pnum = self.minpage
+                    break
+                if pnum > self.maxpage:
+                    trace('Page > maxpage, returning maxpage!')
+                    pnum = self.maxpage
+                    break
+
+                items_per_page = self._get_items_per_page()
+
+                prev = pnum * items_per_page
+                curmax = min((pnum + 1) * items_per_page, self.total_count)
+                i_count = curmax - prev
+
+                raw_html_page = self.fetch_html(self._form_page_num_address(pnum), do_cache=True)
+                if raw_html_page is None:
+                    thread_exit(f'ERROR: ProcPage: unable to retreive html for page {pnum + 1:d}!', -16)
+
+                items_raw = self._get_all_post_tags(raw_html_page)
+                if len(items_raw) == 0:
+                    thread_exit(f'ERROR: ProcPage: cannot find picture or video on page {pnum + 1:d}', -17)
+
+                # check first item if moving forward and last item if backwards
+                h = self._local_addr_from_string(str(items_raw[0 if step_dir == 1 else i_count - 1]))
+                item_id = self._extract_id(h)
+
+                # trace(f'checking id {item_id}')
+
+                def forward() -> Tuple[int, int]:
+                    return pnum, 1
+
+                def backward() -> Tuple[int, int]:
+                    return pnum, -1
+
+                cur_step_dir = step_dir
+
+                raw_html_item = self._get_item_html(h)
+                if raw_html_item is None:
+                    thread_exit(f'ERROR: TagProc: unable to retreive html for {item_id}! Stopping search', -18)
+
+                if minpage is True:
+                    if as_date(self._extract_post_date(raw_html_item)) > as_date(self.date_max):
+                        if half_div and (p_chks[lim_forw + 1].first or p_chks[pnum + 1].last):
+                            dofinal = True
+                        else:
+                            trace(f'Info: TagProc: > maxdate at {item_id} - stepping forward...')
+                            lim_backw, step_dir = forward()
+                    else:
+                        if half_div and (p_chks[lim_backw + 1].last or p_chks[pnum + 1].first):
+                            dofinal = True
+                        else:
+                            trace(f'Info: TagProc: <= maxdate at {item_id} - stepping backwards...')
+                            lim_forw, step_dir = backward()
+                else:
+                    if as_date(self._extract_post_date(raw_html_item)) < as_date(self.date_min):
+                        if half_div and (p_chks[lim_backw + 1].last or p_chks[pnum + 1].first):
+                            dofinal = True
+                        else:
+                            trace(f'Info: TagProc: < mindate at {item_id} - stepping backwards...')
+                            lim_forw, step_dir = backward()
+                    else:
+                        if half_div and (p_chks[lim_forw + 1].first or p_chks[pnum + 1].last):
+                            dofinal = True
+                        else:
+                            trace(f'Info: TagProc: >= mindate at {item_id} - stepping forward...')
+                            lim_backw, step_dir = forward()
+
+                if cur_step_dir == 1:
+                    p_chks[pnum + 1].first = True
+                else:
+                    p_chks[pnum + 1].last = True
+
+        return pnum
+
+    def _filter_last_items(self) -> None:
+        # Filter out all trailing items if needed (last page)
+        trace('Filtering trailing back items...')
+
+        if as_date(self.date_min) <= as_date(DATE_MIN_DEFAULT):
+            trace('last items filter is irrelevant! Skipping')
+            return
+
+        orig_len = len(self.items_raw_per_task)
+        if orig_len < 2:
+            trace('less than 2 items: skipping')
+            return
+
+        trace(f'mindate at {self.date_min}, filtering')
+        boundary = orig_len - min(orig_len, self._get_items_per_page() * 2)
+
+        divider = 1
+        dofinal = False
+        step_direction = 1
+        cur_step = 0
+        f_total = orig_len - boundary
+        cur_index = boundary
+        forward_lim = orig_len
+        backward_lim = boundary - 1
+        while True and f_total > 0:  # while True
+            cur_step += 1
+            trace(f'step {cur_step:d}')
+
+            self.catch_cancel_or_ctrl_c()
+
+            divider = min(divider * 2, f_total)
+            cur_index += (f_total // divider) * step_direction
+            trace(f'index {cur_index:d} (div {divider:d}, step {step_direction:d})')
+
+            if cur_index < backward_lim:
+                trace('Error: cur_index < backward_lim, aborting filter!')
+                break
+            if cur_index > forward_lim:
+                trace('Error: cur_index > forward_lim, aborting filter!')
+                break
+
+            # last steps
+            if cur_index == backward_lim:
+                cur_index = backward_lim + 1
+                trace(f'End: reached back lim at {backward_lim:d}!')
+                dofinal = True
+            elif cur_index == forward_lim:
+                cur_index = forward_lim
+                trace(f'End: reached forw lim at {forward_lim:d}!')
+                dofinal = True
+
+            if dofinal is True:
+                trace(f'Filtered out {orig_len - cur_index:d} / {orig_len :d} items')
+                del self.items_raw_per_task[cur_index:]
+                break
+
+            h = self._local_addr_from_string(str(self.items_raw_per_task[cur_index]))
+            item_id = self._extract_id(h)
+
+            def forward() -> Tuple[int, int]:
+                return cur_index, 1
+
+            def backward() -> Tuple[int, int]:
+                return cur_index, -1
+
+            raw_html_item = self._get_item_html(h) if as_date(self.date_min) > as_date(DATE_MIN_DEFAULT) else None
+            post_date = self._extract_post_date(raw_html_item) if raw_html_item is not None else None
+            exceed_date = (as_date(post_date) < as_date(self.date_min)) if post_date is not None else False
+
+            if exceed_date:
+                trace(f'Info: TagProc_filter: {item_id} exceeds min date ({post_date} < {self.date_min}), shuffling backwards...')
+                forward_lim, step_direction = backward()
+            else:
+                trace(f'Info: TagProc_filter: {item_id} does not exceed min date - stepping forward...')
+                backward_lim, step_direction = forward()
+
+    def _filter_first_items(self) -> None:
+        # Filter out all trailing items if needed (front page)
+        trace('Filtering trailing front items...')
+
+        if as_date(self.date_max) >= datetime.today().date():
+            trace('first items filter is irrelevant! Skipping')
+            return
+
+        orig_len = len(self.items_raw_per_task)
+        if orig_len < 2:
+            trace('less than 2 items: skipping')
+            return
+
+        trace(f'maxdate at {self.date_max}, filtering')
+        boundary = min(orig_len, self._get_items_per_page() * 2)
+
+        divider = 1
+        dofinal = False
+        step_direction = 1
+        cur_step = 0
+        f_total = boundary
+        cur_index = 0
+        forward_lim = boundary
+        backward_lim = -1
+        while True and f_total > 0:  # while True
+            cur_step += 1
+            trace(f'step {cur_step:d}')
+
+            self.catch_cancel_or_ctrl_c()
+
+            divider = min(divider * 2, f_total)
+            cur_index += (f_total // divider) * step_direction
+            trace(f'index {cur_index:d} (div {divider:d}, step {step_direction:d})')
+
+            if cur_index < backward_lim:
+                trace('Error: cur_index < backward_lim, aborting filter!')
+                break
+            if cur_index > forward_lim:
+                trace('Error: cur_index > forward_lim, aborting filter!')
+                break
+
+            # last steps
+            if cur_index == backward_lim:
+                cur_index = backward_lim + 1
+                trace(f'End: reached back lim at {backward_lim:d}!')
+                dofinal = True
+            elif cur_index == forward_lim:
+                cur_index = forward_lim
+                trace(f'End: reached forw lim at {forward_lim:d}!')
+                dofinal = True
+
+            if dofinal is True:
+                trace(f'Filtered out {cur_index:d} / {orig_len :d} items')
+                del self.items_raw_per_task[:cur_index]
+                break
+
+            h = self._local_addr_from_string(str(self.items_raw_per_task[cur_index]))
+            item_id = self._extract_id(h)
+
+            def forward() -> Tuple[int, int]:
+                return cur_index, 1
+
+            def backward() -> Tuple[int, int]:
+                return cur_index, -1
+
+            raw_html_item = self._get_item_html(h) if as_date(self.date_max) < datetime.today().date() else None
+            post_date = self._extract_post_date(raw_html_item) if raw_html_item is not None else None
+            exceed_date = (as_date(post_date) > as_date(self.date_max)) if post_date is not None else False
+
+            if exceed_date:
+                trace(f'Info: TagProc_filter: {item_id} exceeds max date ({post_date} > {self.date_max}), stepping forward...')
+                backward_lim, step_direction = forward()
+            else:
+                trace(f'Info: TagProc_filter: {item_id} does not exceed max date - stepping backwards...')
+                forward_lim, step_direction = backward()
+
+    def _filter_items_by_type(self) -> None:
+        trace('Filtering items by type...')
+
+        if self.skip_images is False and self.skip_videos is False:
+            trace('Both types are enabled! Skipping')
+            return
+
+        total_count_temp = self.total_count
+
+        for idx in reversed(range(len(self.items_raw_per_task))):  # type: int
+            self.catch_cancel_or_ctrl_c()
+            h = str(self.items_raw_per_task[idx])
+            is_vid = self._is_video(h)
+            if self.skip_videos if is_vid else self.skip_images:
+                del self.items_raw_per_task[idx]
+                self.total_count -= 1
+
+        if total_count_temp != self.total_count:
+            trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')
+
+    def _filter_items_by_previous_tasks(self) -> None:
+        trace('Filtering items by previous tasks...')
+
+        if self.current_task_num <= 1:
+            return
+
+        total_count_temp = self.total_count
+
+        for idx in reversed(range(len(self.items_raw_per_task))):  # type: int
+            self.catch_cancel_or_ctrl_c()
+            full_itemid = f'{self._get_module_abbr_p()}{self._extract_id(self.items_raw_per_task[idx])}'
+            if full_itemid in self.item_info_dict_all:
+                del self.items_raw_per_task[idx]
+                self.total_count -= 1
+
+        if total_count_temp != self.total_count:
+            trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')
+
+    def _filter_existing_items(self) -> None:
+        trace('Filtering out existing items...')
+
+        if not path.isdir(self.dest_base):
+            return
+
+        total_count_temp = self.total_count
+
+        curdirfiles = [curfile for curfile in listdir(self.dest_base) if path.isfile(f'{self.dest_base}{curfile}')]
+        if len(curdirfiles) == 0:
+            return
+
+        abbrp = self._get_module_abbr_p()
+        for idx in reversed(range(len(self.items_raw_per_task))):  # type: int
+            self.catch_cancel_or_ctrl_c()
+            h = self._local_addr_from_string(str(self.items_raw_per_task[idx]))
+            item_id = self._extract_id(h)
+            rex_cdfile = re_compile(fr'^(?:{abbrp})?{item_id}[._].*?$')
+            for f_idx in reversed(range(len(curdirfiles))):
+                if rex_cdfile.fullmatch(curdirfiles[f_idx]) is not None:
+                    del curdirfiles[f_idx]
+                    del self.items_raw_per_task[idx]
+                    self.total_count -= 1
+                    break
+
+        if total_count_temp != self.total_count:
+            trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')
+
+    def _filter_items_matching_negative_and_groups(self, parents: MutableSet[str]) -> None:
+        trace('Filtering out items using custom filters...')
+
+        if len(self.neg_and_groups) == 0:
+            return
+
+        abbrp = self._get_module_abbr_p()
+        total_count_old = len(self.items_raw_per_task)
+        removed_count = 0
+        for idx in reversed(range(total_count_old)):  # type: int
+            h = self._local_addr_from_string(str(self.items_raw_per_task[idx]))
+            item_id = self._extract_id(h)
+            idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'
+            item_info = self.item_info_dict_per_task.get(idstring)
+            tags_list = item_info.tags.split(' ')
+            if any(all(any(p.fullmatch(tag) is not None for tag in tags_list) for p in plist) for plist in self.neg_and_groups):
+                if item_id in parents:
+                    parents.remove(item_id)
+                if item_info.parent_id in parents:
+                    parents.remove(item_info.parent_id)
+                del self.item_info_dict_per_task[idstring]
+                del self.items_raw_per_task[idx]
+                removed_count += 1
+
+        if removed_count > 0:
+            trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
+
+#
+#
+#########################################
