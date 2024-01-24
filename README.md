@@ -6,7 +6,6 @@
 Ruxx is a content downloader with a lot of filters for maximum search precision (and ugly GUI). Supported sites are on your right
 
 ### How to use
-- Python 3.7 or greater required. See `requirements.txt` for additional dependencies
 - \[Optional] Choose **Module** (website) to use. The icon in the bottom left corner will change accordingly
 - Fill the **Tags** field with tags you want to search for. For base and quick advanced info on tags check **Help -> Tags** section. [More info](#tags-syntax)
 - \[Optional] Configure **filters** to fine-tune your search. You can choose whether you want do download **videos**, **images** or **both**, add **post date** limits, number of **download threads**
@@ -133,11 +132,13 @@ Ruxx doesn't provide a method of authentication natively on either of supported 
     - RN `cf_clearance` cookie duration is **15 minutes**
 
 #### Using from console
-It is possible to use Ruxx as a cmdline tool. In main window you will find `Cmd` section ‒ it generates your cmdline arguments every time you make a change ‒ use those arguments as an example. In console window you may need to escape some of them (path, `OR` groups, tags containing dots, etc.). Most arguments are optional though ‒ the only ones required are `tags` (default module is RX)  
-  
-To run Ruxx directly using python use `ruxx_cmd.py` or `ruxx_gui.py`
-- `python ruxx_cmd.py <...args>` - run Ruxx command
-- `python ruxx_gui.py` - run Ruxx GUI
+- It is possible to use Ruxx as a cmdline tool. In main window you will find `Cmd` section ‒ it generates your cmdline arguments every time you make a change ‒ use those arguments as an example. In console window you may need to escape some of them (path, `OR` groups, tags containing dots, etc.). Most arguments are optional though ‒ the only ones required are `tags` (default module is RX)  
+- Python 3.7 or greater required. See `requirements.txt` for additional dependencies. Install with:
+  - `python -m pip install -r requirements.txt`
+
+- To run Ruxx directly using python target `ruxx_cmd.py` or `ruxx_gui.py`
+  - `python ruxx_cmd.py <...args>` - run Ruxx command
+  - `python ruxx_gui.py` - run Ruxx GUI
 
 Invoke `Ruxx --help` or `python ruxx_cmd.py --help` for full help
 
