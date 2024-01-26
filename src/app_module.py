@@ -9,8 +9,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # internal
 from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS
 
-__all__ = ('ProcModule',)
-
 
 class ProcModule(object):
     PROC_RX = 1
@@ -60,6 +58,13 @@ class ProcModule(object):
     @staticmethod
     def is_rs() -> bool:
         return ProcModule.get() is ProcModule.PROC_RS
+
+
+PROC_MODULES_BY_ABBR = {
+    MODULE_ABBR_RX: ProcModule.PROC_RX,
+    MODULE_ABBR_RN: ProcModule.PROC_RN,
+    MODULE_ABBR_RS: ProcModule.PROC_RS,
+}
 
 #
 #

@@ -4,25 +4,32 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 """
 #########################################
 #
-# From this file only import to highest level (app_gui.py, ruxx_cmd.py, ruxx_gui.py)
+# Downloader subclasses should be imported only to here
+# From this module only import to highest level (app_unittests.py, app_gui.py, ruxx_cmd.py, ruxx_gui.py)
 #
 
-from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS
+from app_download import Downloader
 from app_download_rn import DownloaderRn
 from app_download_rs import DownloaderRs
 from app_download_rx import DownloaderRx
 from app_module import ProcModule
+
+__all__ = ('make_downloader', 'get_new_downloader')
+
 
 DOWNLOADERS_BY_PROC_MODULE = {
     ProcModule.PROC_RX: DownloaderRx,
     ProcModule.PROC_RN: DownloaderRn,
     ProcModule.PROC_RS: DownloaderRs,
 }
-PROC_MODULES_BY_ABBR = {
-    MODULE_ABBR_RX: ProcModule.PROC_RX,
-    MODULE_ABBR_RN: ProcModule.PROC_RN,
-    MODULE_ABBR_RS: ProcModule.PROC_RS,
-}
+
+
+def make_downloader(proc_module: int) -> Downloader:
+    return DOWNLOADERS_BY_PROC_MODULE[proc_module]()
+
+
+def get_new_downloader() -> Downloader:
+    return make_downloader(ProcModule.CUR_PROC_MODULE)
 
 #
 #

@@ -23,7 +23,7 @@ from app_defines import (
     PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, FMT_DATE, max_progress_value_for_state,
 )
 from app_download import Downloader
-from app_download_defines import DOWNLOADERS_BY_PROC_MODULE
+from app_downloaders import get_new_downloader
 from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_size, sort_files_by_score
 from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
@@ -96,7 +96,7 @@ def retag_files_do() -> None:
     if len(filelist) == 0:
         return
     update_lastpath(filelist[0])
-    module = get_new_proc_module()
+    module = get_new_downloader()
     retagged_count = retag_files(filelist, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
     file_worker_report(retagged_count, len(filelist), 're-tagg')
 
@@ -188,10 +188,6 @@ def open_download_folder() -> None:
             trace(f'Couldn\'t open \'{cur_path}\', error: {res:d}.')
     except Exception:
         trace(f'Couldn\'t open \'{cur_path}\'.')
-
-
-def get_new_proc_module() -> Downloader:
-    return DOWNLOADERS_BY_PROC_MODULE[ProcModule.CUR_PROC_MODULE]()
 
 
 def set_proc_module(dwnmodule: int) -> None:
@@ -426,7 +422,7 @@ def update_frame_cmdline() -> None:
 def start_check_tags_thread(cmdline: List[str]) -> None:
     global dwn
     arg_list = prepare_arglist(cmdline[1:])
-    with get_new_proc_module() as dwn:
+    with get_new_downloader() as dwn:
         dwn.save_cmdline(cmdline)
         dwn.launch_check_tags(arg_list)
 
@@ -607,7 +603,7 @@ def do_download() -> None:
 def start_download_thread(cmdline: List[str]) -> None:
     global dwn
     arg_list = prepare_arglist(cmdline[1:])
-    with get_new_proc_module() as dwn:
+    with get_new_downloader() as dwn:
         dwn.save_cmdline(cmdline)
         dwn.launch_download(arg_list)
 
@@ -768,7 +764,7 @@ def tags_check_threadm() -> Thread:
 
 def dwnm() -> Downloader:
     global dwn
-    dwn = dwn or DOWNLOADERS_BY_PROC_MODULE.get(ProcModule.CUR_PROC_MODULE)()
+    dwn = dwn or get_new_downloader()
     return dwn
 
 # End Helper wrappers
