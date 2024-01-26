@@ -15,7 +15,7 @@ from typing import TypeVar, Collection, Iterable, Sequence
 # internal
 from app_defines import Mem
 from app_gui_defines import SLASH
-from app_utils import normalize_path, Comparable
+from app_utils import Comparable, normalize_path
 
 __all__ = ('FileTypeFilter', 'sort_files_by_type', 'sort_files_by_size', 'sort_files_by_score')
 

@@ -13,7 +13,7 @@ from datetime import datetime
 from os import path, system, makedirs
 from threading import Thread
 from time import sleep as thread_sleep
-from tkinter import messagebox, END
+from tkinter import END, messagebox
 from typing import Optional, List, Tuple
 
 # internal
@@ -27,8 +27,8 @@ from app_downloaders import get_new_downloader
 from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_size, sort_files_by_score
 from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
-    AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, setrootconf, rootm, getrootconf,
-    window_hcookiesm, window_proxym, window_timeoutm, window_retriesm, register_menu, register_submenu, GetRoot, create_base_window_widgets,
+    AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, GetRoot, setrootconf, rootm, getrootconf,
+    window_hcookiesm, window_proxym, window_timeoutm, window_retriesm, register_menu, register_submenu, create_base_window_widgets,
     text_cmdm, get_icon, init_additional_windows, get_global, config_global, is_global_disabled, is_menu_disabled, is_focusing,
     set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list, browse_path, register_menu_command, toggle_console,
     register_submenu_command, register_menu_checkbutton, register_menu_radiobutton, register_menu_separator, get_all_media_files_in_cur_dir,
@@ -43,7 +43,7 @@ from app_gui_defines import (
     OPTION_CMD_RETRIES_CMD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS,
     OPTION_CMD_VERBOSE, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE_CMD, OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI,
     OPTION_CMD_CACHE_PROCCED_HTML,
-    menu_items, menu_item_orig_states, gobject_orig_states, Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys,
+    Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys, menu_items, menu_item_orig_states, gobject_orig_states,
 )
 from app_module import ProcModule
 from app_logger import Logger, trace

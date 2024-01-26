@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from abc import ABC, abstractmethod
 from os import path, curdir, stat
-from tkinter import filedialog, Tk
+from tkinter import Tk, filedialog
 from typing import Union, List, Iterable, Callable, Optional
 
 # internal
@@ -22,9 +22,8 @@ from app_module import ProcModule
 from app_logger import trace
 from app_utils import normalize_path
 from app_validators import (
-    Validator, DummyValidator, ModuleValidator, VideosCBValidator, ImagesCBValidator, ParchiCBValidator, ThreadsCBValidator,
-    DateValidator, JsonValidator, ProxyTypeValidator, ProxyValidator, BoolStrValidator, TimeoutValidator, RetriesValidator,
-    WindowPosValidator,
+    Validator, DummyValidator, ModuleValidator, VideosCBValidator, ImagesCBValidator, ParchiCBValidator, ThreadsCBValidator, DateValidator,
+    JsonValidator, ProxyTypeValidator, ProxyValidator, BoolStrValidator, TimeoutValidator, RetriesValidator, WindowPosValidator,
 )
 
 __all__ = ('Settings',)

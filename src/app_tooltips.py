@@ -7,8 +7,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from abc import abstractmethod, ABC
-from tkinter import Listbox, Toplevel, END, SOLID, Widget
+from abc import ABC, abstractmethod
+from tkinter import Listbox, Toplevel, Widget, END, SOLID
 from typing import Optional, Iterable
 
 __all__ = ('WidgetToolTip',)

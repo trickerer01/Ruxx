@@ -10,8 +10,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from locale import getpreferredencoding
 from threading import Lock as ThreadLock
 from time import localtime, strftime
-from typing import Optional, List
 from tkinter import END, INSERT
+from typing import Optional, List
 
 # internal
 from app_defines import UTF8

@@ -28,9 +28,9 @@ from app_defines import (
 )
 from app_download_base import DownloaderBase
 from app_gui_defines import UNDERSCORE, NEWLINE, NEWLINE_X2
+from app_logger import trace
 from app_module import ProcModule
 from app_network import ThreadedHtmlWorker, DownloadInterruptException, thread_exit
-from app_logger import trace
 from app_revision import __RUXX_DEBUG__, APP_NAME, APP_VERSION
 from app_tagger import append_filtered_tags
 from app_task import extract_neg_and_groups, split_tags_into_tasks

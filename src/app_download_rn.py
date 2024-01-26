@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 
 # internal
 from app_defines import (
-    SITENAME_B_RN, FILE_NAME_PREFIX_RN, MODULE_ABBR_RN, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RN, DownloadModes, ItemInfo, Comment,
+    DownloadModes, ItemInfo, Comment, SITENAME_B_RN, FILE_NAME_PREFIX_RN, MODULE_ABBR_RN, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RN,
     TAGS_CONCAT_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RN, FMT_DATE,
 )
 from app_download import Downloader

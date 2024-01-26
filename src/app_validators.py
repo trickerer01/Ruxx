@@ -16,7 +16,7 @@ from os import path
 from typing import Union, Dict, Tuple
 
 # internal
-from app_defines import FMT_DATE, THREADS_MAX_ITEMS, DownloadModes
+from app_defines import DownloadModes, FMT_DATE, THREADS_MAX_ITEMS
 from app_gui_defines import (
     SLASH, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_PARCHI, OPTION_VALUES_PROXYTYPE,
 )
