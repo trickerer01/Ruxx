@@ -3,7 +3,7 @@
 [![Downloads](https://img.shields.io/github/downloads/trickerer01/Ruxx/total?color=brightgreen&style=flat)](https://github.com/trickerer01/Ruxx/releases/)
 
 ### What the hell?
-Ruxx is a content downloader with a lot of filters for maximum search precision (and ugly GUI). Supported sites are on your right
+Ruxx is a content downloader with a lot of filters for maximum search precision (and ugly GUI). Supported websites are in description, everywhere else ‒ abbreviations only
 
 ### How to use
 - \[Optional] Choose **Module** (website) to use. The icon in the bottom left corner will change accordingly
