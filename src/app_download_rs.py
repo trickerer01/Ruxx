@@ -135,11 +135,11 @@ class DownloaderRs(Downloader):
         item_info = ItemInfo()
         addr = self.extract_local_addr(item)
         item_id = self._extract_id(addr)
+        item_info.id = item_id
         raw_html = self.fetch_html(addr, do_cache=True)
         if raw_html is None:
             trace(f'Warning (W2): Item info was not extracted for {item_id}')
             return item_info
-        item_info.id = item_id
         keywords_meta = raw_html.find('meta', attrs={'name': 'keywords'})
         if keywords_meta:
             tags_list = str(keywords_meta.get('content')).strip(', ').split(', ')

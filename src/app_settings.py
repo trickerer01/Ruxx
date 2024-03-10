@@ -78,6 +78,7 @@ class Settings(ABC):
         'savetags': Setting(Options.SAVE_TAGS, BoolStrValidator(), 'Invalid savetags bool value \'%s\'!'),
         'savesources': Setting(Options.SAVE_SOURCES, BoolStrValidator(), 'Invalid savesources bool value \'%s\'!'),
         'savecomments': Setting(Options.SAVE_COMMENTS, BoolStrValidator(), 'Invalid savecomments bool value \'%s\'!'),
+        'saveinfoperfile': Setting(Options.SAVE_INFO_PER_FILE, BoolStrValidator(), 'Invalid saveinfoperfile bool value \'%s\'!'),
         'extendfilename': Setting(Options.APPEND_SOURCE_AND_TAGS, BoolStrValidator(), 'Invalid extendfilename bool value \'%s\'!'),
         'warndestnonempty': Setting(Options.WARN_NONEMPTY_DEST, BoolStrValidator(), 'Invalid warndestnonempty bool value \'%s\'!'),
         'verbose': Setting(Options.VERBOSE, BoolStrValidator(), 'Invalid verbose bool value \'%s\'!'),

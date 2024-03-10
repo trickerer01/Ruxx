@@ -38,11 +38,11 @@ from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
     OPTION_VALUES_THREADING, OPTION_CMD_VIDEOS, OPTION_CMD_IMAGES, OPTION_CMD_THREADING_CMD, OPTION_CMD_THREADING, OPTION_CMD_FNAMEPREFIX,
     OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS, OPTION_CMD_SAVE_SOURCES,
-    OPTION_CMD_SAVE_COMMENTS, OPTION_CMD_DATEAFTER_CMD, OPTION_CMD_DATEBEFORE_CMD, OPTION_CMD_PATH_CMD, OPTION_CMD_COOKIES_CMD,
-    OPTION_CMD_HEADERS_CMD, OPTION_CMD_PROXY_CMD, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD, OPTION_CMD_TIMEOUT_CMD,
-    OPTION_CMD_RETRIES_CMD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS,
-    OPTION_CMD_VERBOSE, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE_CMD, OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI,
-    OPTION_CMD_CACHE_PROCCED_HTML,
+    OPTION_CMD_SAVE_COMMENTS, OPTION_CMD_SAVE_INFO_PER_FILE, OPTION_CMD_DATEAFTER_CMD, OPTION_CMD_DATEBEFORE_CMD, OPTION_CMD_PATH_CMD,
+    OPTION_CMD_COOKIES_CMD, OPTION_CMD_HEADERS_CMD, OPTION_CMD_PROXY_CMD, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD,
+    OPTION_CMD_TIMEOUT_CMD, OPTION_CMD_RETRIES_CMD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4,
+    OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_VERBOSE, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE_CMD, OPTION_CMD_PARCHI,
+    OPTION_VALUES_PARCHI, OPTION_CMD_CACHE_PROCCED_HTML,
     Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys, menu_items, menu_item_orig_states, gobject_orig_states,
 )
 from app_module import ProcModule
@@ -385,6 +385,10 @@ def prepare_cmdline() -> List[str]:
     addstr = OPTION_CMD_SAVE_COMMENTS[int(getrootconf(Options.SAVE_COMMENTS))]
     if len(addstr) > 0:
         newstr.append(addstr)
+    # save info per file (dump_per_item)
+    addstr = OPTION_CMD_SAVE_INFO_PER_FILE[int(getrootconf(Options.SAVE_INFO_PER_FILE))]
+    if len(addstr) > 0:
+        newstr.append(addstr)
     # extend name with info
     addstr = OPTION_CMD_APPEND_SOURCE_AND_TAGS[int(getrootconf(Options.APPEND_SOURCE_AND_TAGS))]
     if len(addstr) > 0:
@@ -642,6 +646,7 @@ def init_menus() -> None:
     register_menu_checkbutton('Save tags', CVARS.get(Options.SAVE_TAGS))
     register_menu_checkbutton('Save source links', CVARS.get(Options.SAVE_SOURCES))
     register_menu_checkbutton('Save comments', CVARS.get(Options.SAVE_COMMENTS))
+    register_menu_checkbutton('Save info per file', CVARS.get(Options.SAVE_INFO_PER_FILE))
     register_menu_checkbutton('Extend file names with extra info', CVARS.get(Options.APPEND_SOURCE_AND_TAGS))
     register_menu_checkbutton('Warn if download folder is not empty', CVARS.get(Options.WARN_NONEMPTY_DEST))
     register_menu_checkbutton('Verbose log', CVARS.get(Options.VERBOSE))

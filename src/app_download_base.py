@@ -36,6 +36,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.dump_tags = False
         self.dump_sources = False
         self.dump_comments = False
+        self.dump_per_item = False
         self.append_info = False
         self.download_mode = DownloadModes.FULL
         self.download_limit = 0

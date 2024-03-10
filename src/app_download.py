@@ -504,6 +504,7 @@ class Downloader(DownloaderBase):
         self.dump_tags = args.dump_tags or self.dump_tags
         self.dump_sources = args.dump_sources or self.dump_sources
         self.dump_comments = args.dump_comments or self.dump_comments
+        self.dump_per_item = args.dump_per_item or self.dump_per_item
         self.append_info = args.append_info or self.append_info
         self.download_mode = args.dmode or self.download_mode
         self.download_limit = args.dlimit or self.download_limit
@@ -615,14 +616,24 @@ class Downloader(DownloaderBase):
             if conf is False:
                 continue
             trace(f'\nSaving {name}...')
-            filename = f'{self.dest_base}{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
-            if self._has_gui() and path.isfile(filename):
-                if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{filename}\' already exists. Overwrite?'):
-                    trace('Skipped.')
-                    continue
-            with open(filename, 'wt', encoding=UTF8) as dump:
-                for iteminfo in item_info_list:
-                    dump.write(proc(iteminfo))
+            if self.dump_per_item:
+                for iinfo in item_info_list:
+                    ifilename = f'{self.dest_base}{abbrp}!{name}{UNDERSCORE}{iinfo.id}.txt'
+                    if self._has_gui() and path.isfile(ifilename):
+                        if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{ifilename}\' already exists. Overwrite?'):
+                            trace('Skipped.')
+                            continue
+                    with open(ifilename, 'wt', encoding=UTF8) as idump:
+                        idump.write(proc(iinfo))
+            else:
+                filename = f'{self.dest_base}{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
+                if self._has_gui() and path.isfile(filename):
+                    if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{filename}\' already exists. Overwrite?'):
+                        trace('Skipped.')
+                        continue
+                with open(filename, 'wt', encoding=UTF8) as dump:
+                    for iteminfo in item_info_list:
+                        dump.write(proc(iteminfo))
             trace('Done.')
         trace(BR)
 
