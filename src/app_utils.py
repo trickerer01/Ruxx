@@ -14,7 +14,7 @@ from tkinter import messagebox
 try:
     from typing import Protocol
 except Exception:
-    from typing_extensions import Protocol
+    from typing_extensions import Protocol  # noqa
 
 # internal
 from app_defines import FMT_DATE, SUPPORTED_PLATFORMS
