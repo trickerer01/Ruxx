@@ -31,6 +31,7 @@ from app_gui_defines import UNDERSCORE, NEWLINE, NEWLINE_X2
 from app_logger import trace
 from app_module import ProcModule
 from app_network import ThreadedHtmlWorker, DownloadInterruptException, thread_exit
+from app_re import re_favorited_by_tag
 from app_revision import __RUXX_DEBUG__, APP_NAME, APP_VERSION
 from app_tagger import append_filtered_tags
 from app_task import extract_neg_and_groups, split_tags_into_tasks
@@ -79,9 +80,6 @@ class Downloader(DownloaderBase):
                 self.processed_count += 1
         else:
             self.processed_count += 1
-
-    def _tasks_count(self) -> int:
-        return len(self.tags_str_arr)
 
     def save_cmdline(self, cmdline: Iterable[str]):
         self.cmdline = ' '.join(cmdline)
@@ -207,7 +205,7 @@ class Downloader(DownloaderBase):
                 total_count_temp += len(self.items_raw_per_page[k])
             self.total_count = total_count_temp
 
-    def _process_tags(self, tag_str: str) -> None:
+    def _fetch_task_items(self, tag_str: str) -> None:
         self.current_state = DownloaderStates.SEARCHING
         self.url = self._form_tags_search_address(tag_str)
 
@@ -235,8 +233,11 @@ class Downloader(DownloaderBase):
 
             def page_filter(st: DownloaderStates, di: bool) -> int:
                 self.current_state = st
-                trace(f'Looking for {"min" if di else "max"} page by date...')
-                return self._get_page_boundary_by_date(di)
+                if self.favorites_search_user == 0:
+                    trace(f'Looking for {"min" if di else "max"} page by date...')
+                    return self._get_page_boundary_by_date(di)
+                else:
+                    return self.minpage if di else self.maxpage
 
             for fstate, direction in pageargs:  # type: DownloaderStates, bool
                 if direction is True:
@@ -297,23 +298,60 @@ class Downloader(DownloaderBase):
             self.total_count = 1
             self.items_raw_per_task = [self._form_item_string_manually(total_count_or_html)]
 
-        def after_filter(sleep_time: float) -> None:
-            self.total_count = len(self.items_raw_per_task)
-            trace(f'new totalcount: {self.total_count:d}')
+    def _extract_custom_argument_tags(self) -> None:
+        fav_user_tags = list(filter(lambda x: x, [re_favorited_by_tag.fullmatch(t) for t in self.tags_str_arr]))
+        self.favorites_search_user = int(fav_user_tags[-1].group(1)) if fav_user_tags else 0
+        if self.favorites_search_user and self._is_fav_search_conversion_required():
+            fav_user_tags = list(filter(lambda x: x, [re_favorited_by_tag.fullmatch(t) for t in self.tags_str_arr]))
+            [self.tags_str_arr.remove(f.string) for f in fav_user_tags]
+
+    def _try_preprocess_favorites(self) -> None:
+        # all we need here is to gather post ids from user's favorites page(s)
+        if self.favorites_search_user:
+            convert_msg = ', additional search will be performed' if self._is_fav_search_conversion_required() else ''
+            trace(f'Favorites search detected ({self.favorites_search_user:d}){convert_msg}')
+            if self._is_fav_search_conversion_required():
+                try:
+                    self._fetch_task_items(str(self.favorites_search_user))
+                    self._extract_cur_task_infos(set())
+                    ids_list = sorted(int(self.item_info_dict_per_task[full_id].id) for full_id in self.item_info_dict_per_task)
+                    cc = self._get_tags_concat_char()
+                    sc = self._get_idval_equal_seaparator()
+                    ids_tag_base = f'{cc}~{cc}'.join(f'id{sc}{ii:d}' for ii in ids_list)
+                    self.tags_str_arr = [f"({cc}{ids_tag_base}{cc})" if len(ids_list) > 1 else ids_tag_base, *self.tags_str_arr]
+                    self.items_raw_per_task.clear()
+                    self.item_info_dict_per_task.clear()
+                    self.total_count_old = self.total_count = 0
+                except ThreadInterruptException:
+                    trace(f'task {self.current_task_num:d} aborted...')
+                    raise
+                except Exception:
+                    trace(f'task {self.current_task_num:d} failed...')
+                    raise
+            self.favorites_search_user = 0
+
+    def _after_filter(self, sleep_time: float = None) -> None:
+        self.total_count = len(self.items_raw_all if self.current_state == DownloaderStates.DOWNLOADING else self.items_raw_per_task)
+        trace(f'new totalcount: {self.total_count:d}')
+        if sleep_time:
             thread_sleep(sleep_time)
 
-        def apply_filter(state: DownloaderStates, func: Callable[..., None], *args, sleep_time: float = 0.025) -> None:
-            self.current_state = state
-            func(*args)
-            after_filter(sleep_time)
+    def _apply_filter(self, state: DownloaderStates, func: Callable[..., None], *args, sleep_time: float = None) -> None:
+        self.current_state = state
+        func(*args)
+        self._after_filter(sleep_time)
 
-        after_filter(0.1)
+    def _process_tags(self, tag_str: str) -> None:
 
-        apply_filter(DownloaderStates.FILTERING_ITEMS1, self._filter_last_items)
-        apply_filter(DownloaderStates.FILTERING_ITEMS2, self._filter_first_items)
-        apply_filter(DownloaderStates.FILTERING_ITEMS3, self._filter_items_by_type)
-        apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_by_previous_tasks)
-        apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_existing_items)
+        self._fetch_task_items(tag_str)
+
+        self._after_filter(0.025)
+
+        self._apply_filter(DownloaderStates.FILTERING_ITEMS1, self._filter_last_items)
+        self._apply_filter(DownloaderStates.FILTERING_ITEMS2, self._filter_first_items)
+        self._apply_filter(DownloaderStates.FILTERING_ITEMS3, self._filter_items_by_type)
+        self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_by_previous_tasks)
+        self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_existing_items)
 
         # store items info for future processing
         # custom filters may exclude certain items from the infos dict
@@ -321,7 +359,7 @@ class Downloader(DownloaderBase):
         self._extract_cur_task_infos(task_parents)
 
         if self.current_task_num <= self.orig_tasks_count:
-            apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
+            self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
 
         self.items_raw_all = list(unique_everseen(self.items_raw_all + self.items_raw_per_task))  # type: List[str]
         self.item_info_dict_all.update(self.item_info_dict_per_task)
@@ -343,6 +381,21 @@ class Downloader(DownloaderBase):
 
         if self.default_sort:
             self.items_raw_all = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)))  # type: List[str]
+            if self.current_task_num > 1:
+                trace(f'\nApplying overall date filter after {self._tasks_count()} tasks...')
+                self.items_raw_all.reverse()
+                self._apply_filter(DownloaderStates.DOWNLOADING, self._filter_last_items)
+                self._apply_filter(DownloaderStates.DOWNLOADING, self._filter_first_items)
+                self.items_raw_all.reverse()
+                ids_to_preserve = list()
+                ids_to_pop = list()
+                for index in range(len(self.items_raw_all)):
+                    h = self._local_addr_from_string(str(self.items_raw_all[index]))
+                    ids_to_preserve.append(f'{self._get_module_abbr_p()}{self._extract_id(h)}')
+                for ifi in self.item_info_dict_all:
+                    if ifi not in ids_to_preserve:
+                        ids_to_pop.append(ifi)
+                [self.item_info_dict_all.pop(ifi) for ifi in ids_to_pop]
 
         if self.download_limit > 0:
             if self.total_count_all > self.download_limit:
@@ -377,21 +430,23 @@ class Downloader(DownloaderBase):
         skip_all = self.download_mode == DownloadModes.SKIP
         trace(f'\nAll {"skipped" if skip_all else "processed"} ({self.total_count_all:d} item(s))...')
 
-    def _parse_tags(self, tags_base_arr: Iterable[str]) -> None:
+    def _extract_negative_and_groups(self) -> None:
+        self.tags_str_arr, self.neg_and_groups = extract_neg_and_groups(' '.join(self.tags_str_arr))
+
+    def _parse_tags(self) -> None:
         cc = self._get_tags_concat_char()
         sc = self._get_idval_equal_seaparator()
         split_always = self._split_or_group_into_tasks_always()
         # join by ' ' is required by tests, although normally len(args.tags) == 1
-        tags_list, self.neg_and_groups = extract_neg_and_groups(' '.join(tags_base_arr))
-        for t in tags_list:
+        for t in self.tags_str_arr:
             if len(t) > 2 and f'{t[0]}{t[-1]}' == '()' and f'{t[:2]}{t[-2:]}' != f'({cc * 2})':
                 thread_exit(f'Error: invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated by \'{cc}\'')
-        self.tags_str_arr = split_tags_into_tasks(tags_list, cc, sc, split_always)
-        self.orig_tasks_count = self._tasks_count()
         # conflict: non-default sorting
         sort_checker = (lambda s: (s.startswith('order=') and s != 'order=id_desc') if ProcModule.is_rn() else
                                   (s.startswith('sort:') and s != 'sort:id' and s != 'sort:id:desc'))
-        self.default_sort = not any(sort_checker(tag) for tag in tags_list)
+        self.default_sort = not any(sort_checker(tag) for tag in self.tags_str_arr)
+        self.tags_str_arr = split_tags_into_tasks(self.tags_str_arr, cc, sc, split_always)
+        self.orig_tasks_count = self._tasks_count()
         if not self.default_sort:
             if self._tasks_count() > 1:
                 thread_exit('Error: cannot use non-default sorting with multi-task query!')
@@ -447,6 +502,8 @@ class Downloader(DownloaderBase):
     def _check_tags(self) -> None:
         if self._tasks_count() != 1:
             raise ThreadInterruptException('Cannot check tags: more than 1 task was formed')
+        trace('Warning (W1): cheking tags: date filters do not apply')
+        trace('Warning (W1): cheking tags (favorites): negative tags do not apply')
         cur_tags = self.tags_str_arr[0]
         self.url = self._form_tags_search_address(cur_tags)
         total_count_or_html = self._get_items_query_size_or_html(self.url, tries=1)
@@ -470,10 +527,10 @@ class Downloader(DownloaderBase):
     def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:
         ...
 
-    def _launch(self, args: Namespace, thiscall: Callable[[], None]) -> None:
+    def _launch(self, args: Namespace, thiscall: Callable[[], None], enable_preprocessing=True) -> None:
         self.reset_root_thread(current_process())
         try:
-            self._parse_args(args)
+            self._parse_args(args, enable_preprocessing)
             self._at_launch()
             thiscall()
         except (KeyboardInterrupt, ThreadInterruptException):
@@ -491,13 +548,13 @@ class Downloader(DownloaderBase):
 
     def launch_check_tags(self, args: Namespace) -> None:
         """Public, needed by core"""
-        self._launch(args, self._check_tags)
+        self._launch(args, self._check_tags, False)
 
     def launch_get_max_id(self, args: Namespace) -> None:
         """Public, needed by core"""
-        self._launch(args, self._get_max_id)
+        self._launch(args, self._get_max_id, False)
 
-    def _parse_args(self, args: Namespace) -> None:
+    def _parse_args(self, args: Namespace, enable_preprocessing=True) -> None:
         assert hasattr(args, 'tags') and type(args.tags) == list
         ThreadedHtmlWorker._parse_args(self, args)
         self.add_filename_prefix = args.prefix or self.add_filename_prefix
@@ -518,7 +575,12 @@ class Downloader(DownloaderBase):
         self.date_max = args.maxdate or self.date_max
         self.dest_base = normalize_path(args.path) if args.path else self.dest_base
         self.warn_nonempty = args.warn_nonempty or self.warn_nonempty
-        self._parse_tags(args.tags)
+        self.tags_str_arr = args.tags.copy()
+        self._extract_negative_and_groups()
+        self._extract_custom_argument_tags()
+        if enable_preprocessing:
+            self._try_preprocess_favorites()
+        self._parse_tags()
         if self._solve_argument_conflicts():
             thread_sleep(2.0)
 
@@ -554,7 +616,7 @@ class Downloader(DownloaderBase):
             self.item_info_dict_per_task[idstring] = item_info
             if len(item_info.source) < 2:
                 item_info.source = SOURCE_DEFAULT
-            if __RUXX_DEBUG__:
+            if __RUXX_DEBUG__ and self.favorites_search_user == 0:
                 for key in item_info.__slots__:
                     if key in ItemInfo.optional_slots:
                         continue

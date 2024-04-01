@@ -42,6 +42,7 @@ args_argparse_str3 = args_argparse_str2 + ' sort:score'
 args_argparse_str4 = args_argparse_str2_base + ' sort:score:desc score:40'
 args_argparse_str5 = args_argparse_str2_base + ' -header name2=value2'
 args_argparse_str6 = args_argparse_str5 + ' -header Name1=value3 -header NAME2=value4'
+args_argparse_str7 = args_argparse_str1 + ' favorited_by:25000'
 args_tagparse_str1 = (
     'sfw asd ned -nds -proxr sort:id sord:score:asc -rating:explicit score:90 '
     '(t1~t2~t3) (t4~t5) -(t6,t7) -(t8,t9,t10) -(t?1,t*2|t?3|t11,t12*,*t13)'
@@ -218,6 +219,15 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('value4', dwn.add_headers['name2'])
         print(f'{self._testMethodName} passed')
 
+    def test_cmdline7(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str7
+        arglist = prepare_arglist(args.split())
+        with make_downloader(ProcModule.PROC_RX) as dwn:
+            dwn._parse_args(arglist, False)
+            self.assertEqual(25000, dwn.favorites_search_user)
+        print(f'{self._testMethodName} passed')
+
 
 # Tests below require actual connection
 
@@ -312,6 +322,24 @@ class RealDownloadTests(TestCase):
         Logger.init(True, True)
         #                  tag               flag      v      flag            v           flag       v
         argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', gettempdir())
+        arglist = prepare_arglist(argslist)
+        with make_downloader(ProcModule.PROC_RS) as dwn:
+            dwn.launch_download(arglist)
+            self.assertTrue(path.isfile(tempfile_path))
+            remove_file(tempfile_path)
+        print(f'{self._testMethodName} passed')
+
+    def test_down_rs2_fav1(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        # this test actually performs a download
+        fav_user_id = '59309'
+        tempfile_id = '6511644'
+        tempfile_ext = 'jpeg'
+        tempfile_path = f'{normalize_path(gettempdir())}{tempfile_id}.{tempfile_ext}'
+        Logger.init(True, True)
+        #                  tag               flag      v      flag            v           flag       v
+        argslist = (f'favorited_by:{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', gettempdir())
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RS) as dwn:
             dwn.launch_download(arglist)

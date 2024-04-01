@@ -131,6 +131,14 @@ Ruxx doesn't provide a method of authentication natively on either of supported 
     - RS: `user_id`, `pass_hash`
   - Notes:
     - RN `cf_clearance` cookie duration is **15 minutes**
+    
+#### Favorites
+Downloading user's favorites using native tags search functionality is only available with RN (see RN meta tags above), other websites don't implement that neither through tags nor through API  
+In order to enable users to download one's favorites Ruxx implements `favorited_by` tag for other modules as well. It's an extra layer of functionality but here is what you need to use it:
+- Syntax: `favorited_by:X`. `X` = `<user ID>`. User ID you can get from user's favorites page, it's a part of its web address. Note: this syntax is not invalid as RN tag either but it won't do anything there
+- Downloading from RX favorites pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
+- While searching favorites you can use normal filtering as well. Date filter, additional required / excluded tags, etc.
+- Downloading favorites isn't particulary fast, Ruxx will need to fetch info for every item in the list in order to enable filtering
 
 #### Using from console
 - It is possible to use Ruxx as a cmdline tool. In main window you will find `Cmd` section ‒ it generates your cmdline arguments every time you make a change ‒ use those arguments as an example. In console window you may need to escape some of them (path, `OR` groups, tags containing dots, etc.). Most arguments are optional though ‒ the only ones required are `tags` (default module is RX)  

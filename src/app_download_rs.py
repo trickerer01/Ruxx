@@ -30,6 +30,7 @@ __all__ = ('DownloaderRs',)
 
 SITENAME = b64decode(SITENAME_B_RS).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RS
+ITEMS_PER_PAGE_F = 30
 MAX_SEARCH_DEPTH = 240 * ITEMS_PER_PAGE - 1  # set by site devs
 
 
@@ -39,6 +40,9 @@ class DownloaderRs(Downloader):
     """
     def __init__(self) -> None:
         super().__init__()
+
+    def _is_fav_search_conversion_required(self) -> bool:
+        return True
 
     def _get_sitename(self) -> str:
         return SITENAME
@@ -50,7 +54,7 @@ class DownloaderRs(Downloader):
         return FILE_NAME_PREFIX_RS
 
     def _get_items_per_page(self) -> int:
-        return ITEMS_PER_PAGE
+        return ITEMS_PER_PAGE_F if self.favorites_search_user else ITEMS_PER_PAGE
 
     def _get_max_search_depth(self) -> int:
         return MAX_SEARCH_DEPTH
@@ -67,7 +71,14 @@ class DownloaderRs(Downloader):
         return f'{self.url}&page={n:d}'
 
     def _get_all_post_tags(self, raw_html_page: BeautifulSoup) -> list:
-        return raw_html_page.find_all('div', style=re_post_style_rs)
+        if self.favorites_search_user:
+            divs = raw_html_page.find_all('div', class_='thumbnail-preview')
+            for div in divs:
+                tag_a = div.find('a')
+                tag_a['href'] = f"{self._get_sitename()}{tag_a['href']}"
+            return divs
+        else:
+            return raw_html_page.find_all('div', style=re_post_style_rs)
 
     def _local_addr_from_string(self, h: str) -> str:
         return self.extract_local_addr(h)
@@ -224,8 +235,9 @@ class DownloaderRs(Downloader):
 
         self._inc_proc_count()
 
-    def _form_tags_search_address(self, tags: str, *ignored) -> str:
-        return f'{self._get_sitename()}index.php?r=posts/index&q={tags}'
+    def _form_tags_search_address(self, tags: str, *_) -> str:
+        return (f'{self._get_sitename()}index.php?r=favorites/view&id={self.favorites_search_user}' if self.favorites_search_user else
+                f'{self._get_sitename()}index.php?r=posts/index&q={tags}')
 
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
         # find pagination first

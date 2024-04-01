@@ -77,6 +77,11 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.neg_and_groups = list()  # type: List[List[Pattern[str]]]
         self.known_parents = set()  # type: Set[str]
         self.default_sort = True
+        self.favorites_search_user = 0
+
+    @abstractmethod
+    def _is_fav_search_conversion_required(self) -> bool:
+        ...
 
     @abstractmethod
     def _get_module_abbr(self) -> str:
@@ -171,6 +176,9 @@ class DownloaderBase(ThreadedHtmlWorker):
     @abstractmethod
     def _can_extract_item_info_without_fetch(self) -> bool:
         ...
+
+    def _tasks_count(self) -> int:
+        return len(self.tags_str_arr)
 
     def _num_pages(self) -> int:
         return (self.maxpage - self.minpage) + 1
@@ -298,7 +306,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('last items filter is irrelevant! Skipping')
             return
 
-        orig_len = len(self.items_raw_per_task)
+        items_raw_list = self.items_raw_all if self.current_state == DownloaderStates.DOWNLOADING else self.items_raw_per_task
+        orig_len = len(items_raw_list)
         if orig_len < 2:
             trace('less than 2 items: skipping')
             return
@@ -343,10 +352,10 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             if dofinal is True:
                 trace(f'Filtered out {orig_len - cur_index:d} / {orig_len :d} items')
-                del self.items_raw_per_task[cur_index:]
+                del items_raw_list[cur_index:]
                 break
 
-            h = self._local_addr_from_string(str(self.items_raw_per_task[cur_index]))
+            h = self._local_addr_from_string(str(items_raw_list[cur_index]))
             item_id = self._extract_id(h)
 
             def forward() -> Tuple[int, int]:
@@ -374,7 +383,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('first items filter is irrelevant! Skipping')
             return
 
-        orig_len = len(self.items_raw_per_task)
+        items_raw_list = self.items_raw_all if self.current_state == DownloaderStates.DOWNLOADING else self.items_raw_per_task
+        orig_len = len(items_raw_list)
         if orig_len < 2:
             trace('less than 2 items: skipping')
             return
@@ -419,10 +429,10 @@ class DownloaderBase(ThreadedHtmlWorker):
 
             if dofinal is True:
                 trace(f'Filtered out {cur_index:d} / {orig_len :d} items')
-                del self.items_raw_per_task[:cur_index]
+                del items_raw_list[:cur_index]
                 break
 
-            h = self._local_addr_from_string(str(self.items_raw_per_task[cur_index]))
+            h = self._local_addr_from_string(str(items_raw_list[cur_index]))
             item_id = self._extract_id(h)
 
             def forward() -> Tuple[int, int]:

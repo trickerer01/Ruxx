@@ -31,6 +31,7 @@ __all__ = ('DownloaderRn',)
 
 SITENAME = b64decode(SITENAME_B_RN).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RN
+
 MAX_SEARCH_DEPTH = 0
 
 item_info_fields = {'data-post-id': 'id', 'data-tags': 'tags', 'title': 'ext'}
@@ -42,6 +43,9 @@ class DownloaderRn(Downloader):
     """
     def __init__(self) -> None:
         super().__init__()
+
+    def _is_fav_search_conversion_required(self) -> bool:
+        return False
 
     def _get_sitename(self) -> str:
         return SITENAME

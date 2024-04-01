@@ -86,6 +86,7 @@ re_tags_exclude_rs = re_tags_exclude_rx
 re_item_info_part_rx = re_compile(r'([\w5_]+=\"[^"]+\")[> ]')
 re_orig_file_link = re_compile(r'file_url=\"([^"]+)\"')
 re_sample_file_link = re_compile(r'file_url=\"([^"]+)\"')
+re_post_page_rx = re_compile(r'^(?:\?page=post&(?:amp;)?s=list|document\.location=\'\?page=favorites)&.+?$')
 
 re_item_info_part_rn = re_compile(r'([\w\-]+=\"[^"]+\")[/> ]')
 re_shimmie_image_href = re_compile(r'/_images/[^/]+/\d+?')
@@ -95,10 +96,12 @@ re_shimmie_image_href_full = re_compile(r'/_images/[^/]+/(\d+)%20-%20([^">]+)')
 
 re_post_style_rs = re_compile(r'^border-radius: 3px;.+?$')
 re_post_dims_rs = re_compile(r'^Size: (\d+)w x (\d+)h$')
-re_post_page_rs = re_compile(r'^\?r=posts/index&.+?$')
+re_post_page_rs = re_compile(r'^\?r=(?:posts/index|favorites/view&id=\d+)&.+?$')
 re_tag_video_rs = re_compile(r'^\d+fps(?: upscale)?$|video|webm')
 re_comment_page_rs = re_compile(r'^\?r=posts/view&(?:amp;)?id=\d+&(?:amp;)?page=\d+$')
 re_comment_a_rs = re_compile(r'^index\.php\?r=account/profile&(?:amp;)?id=\d+$')
+
+re_favorited_by_tag = re_compile(r'^favorited_by[:=]([^:=]+)$')
 
 #
 #
