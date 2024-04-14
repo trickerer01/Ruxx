@@ -524,6 +524,17 @@ class DownloaderBase(ThreadedHtmlWorker):
         if len(self.neg_and_groups) == 0:
             return
 
+        m_dict = dict()  # type: Dict[str, List[str]]
+
+        def match_neg_group(p: Pattern[str], t: str, pl: List[Pattern[str]]) -> bool:
+            ngm = p.fullmatch(t)
+            if ngm:
+                pp_str = f'-({",".join(pp.pattern[1:-1] for pp in pl)})'
+                if pp_str not in m_dict:
+                    m_dict[pp_str] = list()
+                m_dict[pp_str].append(t)
+            return ngm is not None
+
         abbrp = self._get_module_abbr_p()
         total_count_old = len(self.items_raw_per_task)
         removed_count = 0
@@ -533,7 +544,11 @@ class DownloaderBase(ThreadedHtmlWorker):
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'
             item_info = self.item_info_dict_per_task.get(idstring)
             tags_list = item_info.tags.split(' ')
-            if any(all(any(p.fullmatch(tag) is not None for tag in tags_list) for p in plist) for plist in self.neg_and_groups):
+            m_dict.clear()
+            if any(all(any(match_neg_group(patt, tag, plist) for tag in tags_list) for patt in plist) for plist in self.neg_and_groups):
+                # Note: above algorithm is minimal match, only first matching combination will be reported
+                trace('\n'.join(
+                    f'{abbrp}{item_id} contains excluded tags combination \'{mk}\': {",".join(m_dict[mk])}. Skipped!' for mk in m_dict))
                 if item_id in parents:
                     parents.remove(item_id)
                 if item_info.parent_id in parents:
