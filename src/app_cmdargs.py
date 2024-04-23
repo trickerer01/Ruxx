@@ -33,10 +33,17 @@ __all__ = ('prepare_arglist',)
 DMODES_STR = str(DMODE_CHOICES).replace(' ', '')
 
 
-def prepare_arglist(args: Sequence[str]) -> Namespace:
+def create_parser() -> ArgumentParser:
     parser = ArgumentParser(add_help=False)
-    parser.add_argument('--help', action='help', help=HELP_ARG_HELP)
-    parser.add_argument('--version', action='version', help=HELP_ARG_VERSION, version=f'{APP_NAME} {APP_VERSION}')
+    subs = parser.add_subparsers()
+    par_main = subs.add_parser('cmd', description='Run using normal cmdline', add_help=False)
+    par_main.add_argument('--help', action='help', help=HELP_ARG_HELP)
+    par_main.add_argument('--version', action='version', help=HELP_ARG_VERSION, version=f'{APP_NAME} {APP_VERSION}')
+    return par_main
+
+
+def prepare_arglist(args: Sequence[str]) -> Namespace:
+    parser = create_parser()
     parser.add_argument('-module', default=MODULE_ABBR_RX, help=HELP_ARG_MODULE, choices=MODULE_CHOICES)
     ex1 = parser.add_mutually_exclusive_group(required=False)
     ex1.add_argument('-get_maxid', action=ACTION_STORE_TRUE, help=HELP_ARG_GET_MAXID)
