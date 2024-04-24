@@ -277,8 +277,6 @@ class BaseText(Text):
             idx2 = 999999 if float(str(sel[1])) >= 2.0 else int(str(sel[1]).split('.')[1])
         else:
             idx = idx2 = int(self.index(INSERT).split('.')[1])
-            if (idx > 0 and cur_text[idx - 1] == ' ') or (len(cur_text) > idx and cur_text[idx] == ' '):
-                idx_adjust -= 1
         self._text_override = f'{cur_text[:idx]}{new_text}{cur_text[idx2:]}'
         self.after(1, lambda *_: self.mark_set(INSERT, f'1.{idx + idx_adjust:d}'))
 
