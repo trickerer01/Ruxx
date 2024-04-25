@@ -502,8 +502,6 @@ class Downloader(DownloaderBase):
     def _check_tags(self) -> None:
         if self._tasks_count() != 1:
             raise ThreadInterruptException('Cannot check tags: more than 1 task was formed')
-        trace('Warning (W1): cheking tags: date filters do not apply')
-        trace('Warning (W1): cheking tags (favorites): negative tags do not apply')
         cur_tags = self.tags_str_arr[0]
         self.url = self._form_tags_search_address(cur_tags)
         total_count_or_html = self._get_items_query_size_or_html(self.url, tries=1)
