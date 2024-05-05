@@ -353,7 +353,6 @@ def run_all_tests() -> None:
     if not res.result.wasSuccessful():
         print('Fail')
         sys.exit(-1)
-    sys.exit(0)
 
 #
 #
