@@ -10,7 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from re import compile as re_compile
 
 # internal
-from app_defines import TAG_LENGTH_MIN, TAG_LENGTH_MAX_RX, TAG_LENGTH_MAX_RN
+from app_defines import TAG_LENGTH_MIN, TAG_LENGTH_MAX_RX, TAG_LENGTH_MAX_RN, MODULE_CHOICES
 from app_re_1 import re_tags_exclude_rx_a_i
 from app_re_2 import re_tags_exclude_rx_j_r
 from app_re_3 import re_tags_exclude_rx_s_z_ex
@@ -102,6 +102,8 @@ re_comment_page_rs = re_compile(r'^\?r=posts/view&(?:amp;)?id=\d+&(?:amp;)?page=
 re_comment_a_rs = re_compile(r'^index\.php\?r=account/profile&(?:amp;)?id=\d+$')
 
 re_favorited_by_tag = re_compile(r'^favorited_by[:=]([^:=]+)$')
+
+re_infolist_filename = re_compile(fr'(?:{"|".join(MODULE_CHOICES)})_!(tags|sources|comments)_\d+-\d+\.txt')
 
 #
 #

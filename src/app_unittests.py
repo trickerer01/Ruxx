@@ -24,7 +24,7 @@ from app_utils import normalize_path
 __all__ = ('run_all_tests',)
 
 
-RUN_CONN_TESTS = 1
+RUN_CONN_TESTS = 0
 CUR_PATH = normalize_path(path.abspath(curdir))
 
 args_argparse_str1 = (
@@ -43,6 +43,8 @@ args_argparse_str4 = args_argparse_str2_base + ' sort:score:desc score:40'
 args_argparse_str5 = args_argparse_str2_base + ' -header name2=value2'
 args_argparse_str6 = args_argparse_str5 + ' -header Name1=value3 -header NAME2=value4'
 args_argparse_str7 = args_argparse_str1 + ' favorited_by:25000'
+args_argparse_str8 = args_argparse_str1 + ' -merge_lists'
+args_argparse_str9 = args_argparse_str8 + ' -merge_lists -dump_per_item'
 args_tagparse_str1 = (
     'sfw asd ned -nds -proxr sort:id sord:score:asc -rating:explicit score:90 '
     '(t1~t2~t3) (t4~t5) -(t6,t7) -(t8,t9,t10) -(t?1,t*2|t?3|t11,t12*,*t13)'
@@ -226,6 +228,21 @@ class DownloaderBaseTests(TestCase):
         with make_downloader(ProcModule.PROC_RX) as dwn:
             dwn._parse_args(arglist, False)
             self.assertEqual(25000, dwn.favorites_search_user)
+        print(f'{self._testMethodName} passed')
+
+    def test_cmdline8(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str8
+        arglist = prepare_arglist(args.split())
+        with make_downloader(ProcModule.PROC_RX) as dwn:
+            dwn._parse_args(arglist, False)
+            self.assertTrue(dwn.merge_lists)
+        print(f'{self._testMethodName} passed')
+
+    def test_cmdline9(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str9
+        self.assertRaises(BaseException, prepare_arglist, args.split())
         print(f'{self._testMethodName} passed')
 
 

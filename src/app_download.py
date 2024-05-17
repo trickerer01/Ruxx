@@ -14,9 +14,9 @@ from argparse import Namespace
 from datetime import datetime
 from multiprocessing.dummy import Pool, current_process
 from multiprocessing.pool import ThreadPool
-from os import makedirs, listdir, path
+from os import makedirs, listdir, path, remove
 from time import sleep as thread_sleep
-from typing import Dict, List, Callable, Iterable, Set, MutableSet
+from typing import Dict, List, Callable, Iterable, Set, MutableSet, Match
 
 # requirements
 from iteration_utilities import unique_everseen
@@ -24,14 +24,14 @@ from iteration_utilities import unique_everseen
 # internal
 from app_defines import (
     ThreadInterruptException, DownloaderStates, DownloadModes, ItemInfo, Mem,
-    DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE, UTF8, SOURCE_DEFAULT, PLATFORM_WINDOWS,
+    DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE, UTF8, SOURCE_DEFAULT, PLATFORM_WINDOWS, Comment,
 )
 from app_download_base import DownloaderBase
 from app_gui_defines import UNDERSCORE, NEWLINE, NEWLINE_X2
 from app_logger import trace
 from app_module import ProcModule
 from app_network import ThreadedHtmlWorker, DownloadInterruptException, thread_exit
-from app_re import re_favorited_by_tag
+from app_re import re_favorited_by_tag, re_infolist_filename
 from app_revision import __RUXX_DEBUG__, APP_NAME, APP_VERSION
 from app_tagger import append_filtered_tags
 from app_task import extract_neg_and_groups, split_tags_into_tasks
@@ -560,6 +560,7 @@ class Downloader(DownloaderBase):
         self.dump_sources = args.dump_sources or self.dump_sources
         self.dump_comments = args.dump_comments or self.dump_comments
         self.dump_per_item = args.dump_per_item or self.dump_per_item
+        self.merge_lists = args.merge_lists or self.merge_lists
         self.append_info = args.append_info or self.append_info
         self.download_mode = args.dmode or self.download_mode
         self.download_limit = args.dlimit or self.download_limit
@@ -650,6 +651,9 @@ class Downloader(DownloaderBase):
             except Exception:
                 thread_exit(f'ERROR: Unable to create folder {self.dest_base}!')
 
+        orig_ids = {self.item_info_dict_all[k].id for k in self.item_info_dict_all}
+        merged_files = self._try_merge_info_files()
+        saved_files = list()  # type: List[str]
         self.item_info_dict_all = {
             k: self.item_info_dict_all[k] for k in sorted(self.item_info_dict_all.keys())
         }  # type: Dict[str, ItemInfo]
@@ -659,12 +663,18 @@ class Downloader(DownloaderBase):
         abbrp = self._get_module_abbr_p()
 
         def proc_tags(item_info: ItemInfo) -> str:
+            if iteminfo.id not in orig_ids and not iteminfo.tags:
+                return ''
             return f'{abbrp}{item_info.id}: {format_score(item_info.score)} {item_info.tags.strip()}\n'
 
         def proc_sources(item_info: ItemInfo) -> str:
+            if iteminfo.id not in orig_ids and not iteminfo.source:
+                return ''
             return f'{abbrp}{item_info.id}: {item_info.source.strip()}\n'
 
         def proc_comments(item_info: ItemInfo) -> str:
+            if iteminfo.id not in orig_ids and not iteminfo.comments:
+                return ''
             comments = f'\n{NEWLINE_X2.join(str(c) for c in item_info.comments)}\n' if item_info.comments else ''
             return f'{abbrp}{item_info.id}:{comments}\n'
 
@@ -679,6 +689,7 @@ class Downloader(DownloaderBase):
             if self.dump_per_item:
                 for iinfo in item_info_list:
                     ifilename = f'{self.dest_base}{abbrp}!{name}{UNDERSCORE}{iinfo.id}.txt'
+                    saved_files.append(ifilename)
                     if self._has_gui() and path.isfile(ifilename):
                         if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{ifilename}\' already exists. Overwrite?'):
                             trace('Skipped.')
@@ -687,15 +698,88 @@ class Downloader(DownloaderBase):
                         idump.write(proc(iinfo))
             else:
                 filename = f'{self.dest_base}{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
+                saved_files.append(filename)
                 if self._has_gui() and path.isfile(filename):
                     if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{filename}\' already exists. Overwrite?'):
                         trace('Skipped.')
                         continue
                 with open(filename, 'wt', encoding=UTF8) as dump:
                     for iteminfo in item_info_list:
-                        dump.write(proc(iteminfo))
+                        dump_string = proc(iteminfo)
+                        if dump_string or (iteminfo.id in orig_ids):
+                            dump.write(dump_string)
             trace('Done.')
+        [remove(merged_file) for merged_file in merged_files if merged_file not in saved_files]
         trace(BR)
+
+    def _try_merge_info_files(self) -> List[str]:
+        parsed_files = list()  # type: List[str]
+        if not self.merge_lists:
+            return parsed_files
+        dir_fullpath = normalize_path(f'{self.dest_base}')
+        if not path.isdir(dir_fullpath):
+            return parsed_files
+        abbrp = self._get_module_abbr_p()
+        info_lists = sorted(filter(
+            lambda x: not not x, [re_infolist_filename.fullmatch(f) for f in listdir(dir_fullpath)
+                                  if path.isfile(f'{dir_fullpath}{f}') and f.startswith(f'{abbrp}!')]
+        ), key=lambda m: m.string)  # type: List[Match[str]]
+        if not info_lists:
+            return parsed_files
+        parsed_dict = dict()  # type: Dict[str, ItemInfo]
+        for fmatch in info_lists:
+            fmname = fmatch.string
+            list_type = fmatch.group(1)
+            list_fullpath = f'{dir_fullpath}{fmname}'
+            try:
+                with open(list_fullpath, 'rt') as listfile:
+                    last_idstring = ''
+                    lines = listfile.readlines()
+                    for i, line in enumerate(lines):
+                        line = line.strip('\ufeff')
+                        if line in ('', '\n'):
+                            continue
+                        if line.startswith(abbrp):
+                            delim_idx = line.find(':')
+                            idi = line[len(abbrp):delim_idx]
+                            last_id = int(idi)
+                            last_idstring = f'{(abbrp if self.add_filename_prefix else "")}{last_id:d}'
+                            if last_idstring not in parsed_dict:
+                                ii = ItemInfo()
+                                ii.id = idi
+                                parsed_dict[last_idstring] = ii
+                            ii = parsed_dict[last_idstring]
+                            if len(line) > delim_idx + 2:
+                                if list_type == 'tags':
+                                    tags_idx = line.find(' ', delim_idx + 2) + 1
+                                    score_str = line[delim_idx + 2:tags_idx - 1][1:-1]
+                                    tags_str = line[tags_idx:]
+                                    ii.score = score_str
+                                    ii.tags = tags_str.strip()
+                                else:
+                                    source_str = line[delim_idx + 2:]
+                                    ii.source = source_str.strip()
+                                last_idstring = ''
+                        else:
+                            assert last_idstring
+                            lii = parsed_dict[last_idstring]
+                            new_comment = line.strip().endswith(':') and (lines[i - 1].startswith(abbrp) or lines[i - 1] in ('', '\n'))
+                            if not lii.comments or new_comment:
+                                lii.comments.append(Comment('', ''))
+                            comment = lii.comments[-1]
+                            if new_comment:
+                                comment_author = line.strip()[:-1]
+                                comment.author = comment_author
+                            else:
+                                comment.body += line
+                    parsed_files.append(list_fullpath)
+            except Exception:
+                trace(f'Error reading from {fmname}. Skipped')
+                continue
+        for k in parsed_dict:
+            if k not in self.item_info_dict_all:
+                self.item_info_dict_all[k] = parsed_dict[k]
+        return parsed_files
 
     def _has_gui(self) -> bool:
         return hasattr(self.my_root_thread, 'gui')
