@@ -24,6 +24,7 @@ from app_utils import normalize_path
 from app_validators import (
     Validator, DummyValidator, ModuleValidator, VideosCBValidator, ImagesCBValidator, ParchiCBValidator, ThreadsCBValidator, DateValidator,
     JsonValidator, ProxyTypeValidator, ProxyValidator, BoolStrValidator, TimeoutValidator, RetriesValidator, WindowPosValidator,
+    InfoSaveModeValidator,
 )
 
 __all__ = ('Settings',)
@@ -78,7 +79,7 @@ class Settings(ABC):
         'savetags': Setting(Options.SAVE_TAGS, BoolStrValidator(), 'Invalid savetags bool value \'%s\'!'),
         'savesources': Setting(Options.SAVE_SOURCES, BoolStrValidator(), 'Invalid savesources bool value \'%s\'!'),
         'savecomments': Setting(Options.SAVE_COMMENTS, BoolStrValidator(), 'Invalid savecomments bool value \'%s\'!'),
-        'saveinfoperfile': Setting(Options.SAVE_INFO_PER_FILE, BoolStrValidator(), 'Invalid saveinfoperfile bool value \'%s\'!'),
+        'infosavemode': Setting(Options.INFO_SAVE_MODE, InfoSaveModeValidator(), 'Invalid infosavemode value \'%s\'!'),
         'extendfilename': Setting(Options.APPEND_SOURCE_AND_TAGS, BoolStrValidator(), 'Invalid extendfilename bool value \'%s\'!'),
         'warndestnonempty': Setting(Options.WARN_NONEMPTY_DEST, BoolStrValidator(), 'Invalid warndestnonempty bool value \'%s\'!'),
         'verbose': Setting(Options.VERBOSE, BoolStrValidator(), 'Invalid verbose bool value \'%s\'!'),

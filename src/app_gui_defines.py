@@ -69,7 +69,7 @@ OPTION_CMD_DOWNMODE = ('', '1', '2')
 OPTION_CMD_SAVE_TAGS = ('', '-dump_tags')
 OPTION_CMD_SAVE_SOURCES = ('', '-dump_sources')
 OPTION_CMD_SAVE_COMMENTS = ('', '-dump_comments')
-OPTION_CMD_SAVE_INFO_PER_FILE = ('', '-dump_per_item')
+OPTION_CMD_INFO_SAVE_MODE = ('', '-dump_per_item', '-merge_lists')
 OPTION_CMD_APPEND_SOURCE_AND_TAGS = ('', '-append_info')
 OPTION_CMD_WARN_NONEMPTY_DEST = ('', '-warn_nonempty')
 OPTION_CMD_VERBOSE = ('', '-verbose')
@@ -157,7 +157,7 @@ class Options(IntEnum):
     SAVE_TAGS = auto()
     SAVE_SOURCES = auto()
     SAVE_COMMENTS = auto()
-    SAVE_INFO_PER_FILE = auto()
+    INFO_SAVE_MODE = auto()
     ISCONSOLELOGOPEN = auto()
     APPEND_SOURCE_AND_TAGS = auto()
     WARN_NONEMPTY_DEST = auto()
@@ -212,7 +212,7 @@ CVARS = {
     Options.SAVE_TAGS: 'saveTags',
     Options.SAVE_SOURCES: 'saveSources',
     Options.SAVE_COMMENTS: 'saveComments',
-    Options.SAVE_INFO_PER_FILE: 'saveInfoPerFile',
+    Options.INFO_SAVE_MODE: 'infoSaveMode',
     Options.ISCONSOLELOGOPEN: 'isConsoleOpen',
     Options.APPEND_SOURCE_AND_TAGS: 'appendSourceAndTags',
     Options.ISABOUTOPEN: 'isAboutOpen',
@@ -304,7 +304,7 @@ class Menus(IntEnum):
 
 class SubMenus(IntEnum):
     SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
-    PREFIX, STAGS, SSOURCE, SCOMMENTS, SPERFILE, EXTEND, WNONEMPTY, VERBOSE = 0, 1, 2, 3, 4, 5, 6, 7
+    PREFIX, STAGS, SSOURCE, SCOMMENTS, SNORMAL, SPERFILE, LMERGE, EXTEND, WNONEMPTY, VERBOSE = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
     RX, RN, RS = 0, 1, 2
     HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6
     DOWNLOAD, CHECKTAGS = 0, 2
@@ -326,8 +326,8 @@ class RuxxMenu:
 
 menu_items = {
     Menus.FILE: RuxxMenu(SubMenus.SAVE, SubMenus.LOAD, SubMenus.RESET),
-    Menus.EDIT: RuxxMenu(SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.SPERFILE,
-                         SubMenus.EXTEND, SubMenus.WNONEMPTY, SubMenus.VERBOSE),
+    Menus.EDIT: RuxxMenu(SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.SNORMAL,
+                         SubMenus.SPERFILE, SubMenus.LMERGE, SubMenus.EXTEND, SubMenus.WNONEMPTY, SubMenus.VERBOSE),
     Menus.MODULE: RuxxMenu(SubMenus.RX, SubMenus.RN, SubMenus.RS),
     Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
                                SubMenus.IGNOREPROXY, SubMenus.CACHEMODE),
@@ -337,13 +337,13 @@ menu_items = {
 }
 
 menu_item_orig_states = {
-    Menus.FILE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.EDIT: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.MODULE: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.CONNECTION: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.ACTIONS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.TOOLS: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
-    Menus.DEBUG: (STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL, STATE_NORMAL),
+    Menus.FILE: (STATE_NORMAL,) * 4,
+    Menus.EDIT: (STATE_NORMAL,) * 10,
+    Menus.MODULE: (STATE_NORMAL,) * 3,
+    Menus.CONNECTION: (STATE_NORMAL,) * 7,
+    Menus.ACTIONS: (STATE_NORMAL,) * 3,
+    Menus.TOOLS: (STATE_NORMAL,) * 6,
+    Menus.DEBUG: (STATE_NORMAL,) * 5,
 }
 # end global static
 # hotkeys

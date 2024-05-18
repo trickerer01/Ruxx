@@ -27,7 +27,7 @@ __all__ = (
     'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_kwarg', 'valid_download_mode', 'valid_proxy',
     'valid_positive_int', 'valid_window_position', 'Validator', 'DummyValidator', 'ModuleValidator', 'VideosCBValidator',
     'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator', 'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator',
-    'ParchiCBValidator', 'TimeoutValidator', 'RetriesValidator', 'WindowPosValidator',
+    'ParchiCBValidator', 'TimeoutValidator', 'RetriesValidator', 'WindowPosValidator', 'InfoSaveModeValidator',
 )
 
 
@@ -260,6 +260,15 @@ class WindowPosValidator(StrValidator):
     def __call__(self, val: str) -> bool:
         try:
             _ = valid_window_position(val, self.tk)
+            return True
+        except Exception:
+            return False
+
+
+class InfoSaveModeValidator(IntValidator):
+    def __call__(self, val: int) -> bool:
+        try:
+            _ = valid_positive_int(str(val), ub=2)
             return True
         except Exception:
             return False

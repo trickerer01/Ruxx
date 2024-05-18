@@ -34,7 +34,9 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Edit -> Save tags** ‒ an additional (text) file will be created containing tags for every post
 - **Edit -> Save source links** ‒ an additional (text) file will be created containing source (if present) for every post
 - **Edit -> Save comments** ‒ an additional (text) file will be created containing comments (if present) for every post
-- **Edit -> Save info per file** ‒ create above (checked) text files per each downloaded file (not recommended) 
+- **Edit -> Save info normally** ‒ this is the default tags/sources/comments file save mode, a single file per info category
+- **Edit -> Save info per file** ‒ create above (checked) text files per each downloaded file (not recommended)
+- **Edit -> Save and merge info lists** ‒ gather and parse existing info files, merge and save all infos together, one text file per info category will be stored **and parsed info files will be deleted**
 - **Edit -> Extend file names with extra info** ‒ all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
 - **Edit -> Warn if donwload folder is not empty** ‒ in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
 - **Edit -> Verbose log** ‒ Enable logging of technical messages not related to actual download process. Verbose log is one of proper issue report requirements
