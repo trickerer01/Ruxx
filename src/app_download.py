@@ -132,7 +132,7 @@ class Downloader(DownloaderBase):
         except DownloadInterruptException:
             return
 
-        if self.download_mode == DownloadModes.TOUCH or result.file_size > 0:
+        if self.download_mode == DownloadModes.TOUCH or 0 < result.file_size == result.expected_size:
             result.result_str = f'{result.result_str}done ({result.file_size / Mem.MB:.2f} Mb)'
             with self.item_lock:
                 self.success_count += 1

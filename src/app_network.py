@@ -11,7 +11,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from argparse import Namespace
 from multiprocessing.dummy import current_process
-from os import path, stat, remove as remove_file
+from os import path, stat, remove
 from re import compile as re_compile
 from sys import exc_info
 from threading import Thread, Lock as ThreadLock
@@ -44,6 +44,7 @@ class DownloadInterruptException(BaseException):
 class FileDownloadResult:
     def __init__(self) -> None:
         self.file_size = 0
+        self.expected_size = 0
         self.retries = 0
         self.result_str = ''
 
@@ -140,10 +141,9 @@ class ThreadedHtmlWorker(ThreadedWorker):
             with open(dest, 'wb'):
                 pass
         elif mode == DownloadModes.FULL:
-            expected_size = 0
             with self.make_session() as s:
                 s.stream = True
-                while (not (path.isfile(dest) and result.file_size > 0)) and result.retries < self.retries:
+                while (not (path.isfile(dest) and result.file_size == result.expected_size)) and result.retries < self.retries:
                     if self.is_killed():
                         trace(f'{result.result_str} interrupted', True)
                         raise DownloadInterruptException
@@ -172,7 +172,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                             c_total = content_range_m.group(3) if content_range_m else '0'
                             valid_chunk = True
                             errcode = 0
-                            if len(temp) != exp_size or (not single_chunk and int(c_total) != expected_size):
+                            if len(temp) != exp_size or (not single_chunk and int(c_total) != result.expected_size):
                                 valid_chunk = False
                                 errcode = 1
                             elif etag != self.etags.get(item_id):
@@ -200,18 +200,18 @@ class ThreadedHtmlWorker(ThreadedWorker):
 
                         sreq = s.request('HEAD', link, allow_redirects=False)
                         sreq.raise_for_status()
-                        expected_size = int(sreq.headers.get('content-length', '0'))
+                        result.expected_size = int(sreq.headers.get('content-length', '0'))
                         self.etags[item_id] = sreq.headers.get('etag', item_id)
                         # this code was left here after link replacements had been removed. DO NOT MOVE
                         # reqhost = re_link_host.search(link).group(1)
                         sreq.close()
 
-                        if expected_size == 0:
+                        if result.expected_size == 0:
                             err_msg = f'Warning (W2): fetched {item_id}({ext_char}) file is empty.'
                             raise ValueError(err_msg)
 
                         use_chunked = is_video_ext
-                        chunks = list(range(0, expected_size, DOWNLOAD_CHUNK_SIZE if use_chunked else expected_size))
+                        chunks = list(range(0, result.expected_size, DOWNLOAD_CHUNK_SIZE if use_chunked else result.expected_size))
                         single_chunk = (len(chunks) == 1)
                         with open(dest, 'wb') as outf:
                             i = 0
@@ -220,7 +220,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                 if self.is_killed():
                                     raise ThreadInterruptException
                                 chunk_begin = chunks[i]
-                                chunk_end = expected_size - 1 if i == len(chunks) - 1 else chunks[i + 1] - 1
+                                chunk_end = result.expected_size - 1 if i == len(chunks) - 1 else chunks[i + 1] - 1
                                 expected_chunk_size = (chunk_end - chunk_begin) + 1
                                 try:
                                     download_chunk(outf, chunk_begin, chunk_end, expected_chunk_size, i + 1)
@@ -242,17 +242,19 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                 i += 1
 
                         result.file_size = stat(dest).st_size
-                        if result.file_size != expected_size:
-                            trace(f'Warning (W3): size mismatch for {item_id} ({result.file_size:d} / {expected_size:d}).'
+                        if result.file_size != result.expected_size:
+                            trace(f'Warning (W3): size mismatch for {item_id} ({result.file_size:d} / {result.expected_size:d}).'
                                   f' Retrying file.', True)
                             if path.isfile(dest):
-                                remove_file(dest)
+                                remove(dest)
+                                result.file_size = 0
                             raise IOError
                     except (KeyboardInterrupt, ThreadInterruptException):
                         if path.isfile(dest):
                             result.file_size = stat(dest).st_size
-                            if result.file_size != expected_size:
-                                remove_file(dest)
+                            if result.file_size != result.expected_size:
+                                remove(dest)
+                                result.file_size = 0
                         trace(f'{result.result_str}{("interrupted by user." if current_process() == self.my_root_thread else "")}', True)
                         raise DownloadInterruptException
                     except (HTTPError, Exception) as err:
@@ -268,7 +270,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
                             if __RUXX_DEBUG__:
                                 trace(f'Warning (W3): {item_id} catched HTTPError 416!', True)
                             if path.isfile(dest):
-                                remove_file(dest)
+                                remove(dest)
+                                result.file_size = 0
                         result.retries += 1
                         s_result = f'{result.result_str}{str(exc_info()[0])}: {str(exc_info()[1])} retry {result.retries:d}...'
                         trace(s_result, True)
