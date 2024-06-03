@@ -352,7 +352,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 dofinal = True
 
             if dofinal is True:
-                trace(f'Filtered out {orig_len - cur_index:d} / {orig_len :d} items')
+                trace(f'Filtered out {orig_len - cur_index:d} / {orig_len:d} items')
                 del items_raw_list[cur_index:]
                 break
 
@@ -429,7 +429,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 dofinal = True
 
             if dofinal is True:
-                trace(f'Filtered out {cur_index:d} / {orig_len :d} items')
+                trace(f'Filtered out {cur_index:d} / {orig_len:d} items')
                 del items_raw_list[:cur_index]
                 break
 

@@ -300,7 +300,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                 thread_exit('interrupted by user.', code=1)
             except (Exception, HTTPError,) as err:
                 retries += 1
-                threadname = f'{current_process().getName()}: ' if current_process() != self.my_root_thread else ''
+                threadname = f'{current_process().name}: ' if current_process() != self.my_root_thread else ''
                 if isinstance(err, HTTPError) and err.response.status_code == 404:
                     if r is not None and r.content and len(r.content.decode()) > 2:
                         trace(f'{threadname}received code 404 but received html'

@@ -318,10 +318,11 @@ class RealDownloadTests(TestCase):
         # this test actually performs a download
         tempfile_id = '6579460'
         tempfile_ext = 'png'
-        tempfile_path = f'{normalize_path(gettempdir())}{tempfile_id}.{tempfile_ext}'
+        tempdir = gettempdir()
+        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
-        #                  tag               flag      v      flag            v           flag       v
-        argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', gettempdir())
+        #                  tag               flag      v      flag            v           flag      v
+        argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RX) as dwn:
             dwn.launch_download(arglist)
@@ -335,10 +336,11 @@ class RealDownloadTests(TestCase):
         # this test actually performs a download
         tempfile_id = '7939303'
         tempfile_ext = 'png'
-        tempfile_path = f'{normalize_path(gettempdir())}{tempfile_id}.{tempfile_ext}'
+        tempdir = gettempdir()
+        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
-        #                  tag               flag      v      flag            v           flag       v
-        argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', gettempdir())
+        #                  tag               flag      v      flag            v           flag      v
+        argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RS) as dwn:
             dwn.launch_download(arglist)
@@ -353,10 +355,11 @@ class RealDownloadTests(TestCase):
         fav_user_id = '59309'
         tempfile_id = '6511644'
         tempfile_ext = 'jpeg'
-        tempfile_path = f'{normalize_path(gettempdir())}{tempfile_id}.{tempfile_ext}'
+        tempdir = gettempdir()
+        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
-        #                  tag               flag      v      flag            v           flag       v
-        argslist = (f'favorited_by:{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', gettempdir())
+        #                  tag                        flag      v      flag            v           flag      v
+        argslist = (f'favorited_by:{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RS) as dwn:
             dwn.launch_download(arglist)

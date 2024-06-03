@@ -555,7 +555,7 @@ class Downloader(DownloaderBase):
         self._launch(args, self._get_max_id, False)
 
     def _parse_args(self, args: Namespace, enable_preprocessing=True) -> None:
-        assert hasattr(args, 'tags') and type(args.tags) == list
+        assert hasattr(args, 'tags') and type(args.tags) is list
         ThreadedHtmlWorker._parse_args(self, args)
         self.add_filename_prefix = args.prefix or self.add_filename_prefix
         self.dump_tags = args.dump_tags or self.dump_tags
