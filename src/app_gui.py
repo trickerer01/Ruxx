@@ -56,8 +56,8 @@ from app_validators import DateValidator
 __all__ = ('run_ruxx_gui',)
 
 # loaded
-download_thread = None  # type: Optional[Thread]
-tags_check_thread = None  # type: Optional[Thread]
+download_thread: Optional[Thread] = None
+tags_check_thread: Optional[Thread] = None
 prev_download_state = True
 IS_WIN = sys.platform == PLATFORM_WINDOWS
 IS_RAW = '_sitebuiltins' in sys.modules  # ran from console (shell or IDE)
@@ -68,7 +68,7 @@ CAN_MANIPULATE_CONSOLE = HAS_OWN_CONSOLE and not IS_RAW
 # end loaded
 
 # MODULES
-dwn = None  # type: Optional[Downloader]
+dwn: Optional[Downloader] = None
 # END MODULES
 
 
@@ -213,7 +213,8 @@ def set_proc_module(dwnmodule: int) -> None:
 
 def update_widget_enabled_states() -> None:
     downloading = is_downloading()
-    for i in [m for m in Menus.__members__.values() if m < Menus.MAX_MENUS]:  # type: Menus
+    i: Menus
+    for i in [m for m in Menus.__members__.values() if m < Menus.MAX_MENUS]:
         menu = menu_items.get(i)
         if menu:
             for j in menu.statefuls:
@@ -224,7 +225,8 @@ def update_widget_enabled_states() -> None:
                 else:
                     newstate = STATE_DISABLED if downloading else menu_item_orig_states[i][j]
                 config_menu(i, j, state=newstate)
-    for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:  # type: Globals
+    gi: Globals
+    for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:
         if gi == Globals.COMBOBOX_PARCHI:
             newstate = STATE_DISABLED if not ProcModule.is_rx() else gobject_orig_states[gi]
             config_global(gi, state=newstate)
@@ -236,7 +238,7 @@ def update_widget_enabled_states() -> None:
 
 def update_progressbar() -> None:
     try:
-        progress_value = None  # type: Optional[int]
+        progress_value: Optional[int] = None
         if is_downloading():
             if dwnm().current_state == DownloaderStates.DOWNLOADING:
                 progress_value = PROGRESS_VALUE_NO_DOWNLOAD
@@ -291,7 +293,8 @@ def prepare_cmdline() -> List[str]:
     newstr.append(OPTION_CMD_PATH_CMD)
     newstr.append(f'\'{pathstr}\'')
     # + options
-    addstr = OPTION_CMD_VIDEOS[OPTION_VALUES_VIDEOS.index(str(getrootconf(Options.VIDSETTING)))]  # type: str
+    addstr: str
+    addstr = OPTION_CMD_VIDEOS[OPTION_VALUES_VIDEOS.index(str(getrootconf(Options.VIDSETTING)))]
     if len(addstr) > 0 and not is_global_disabled(Globals.COMBOBOX_VIDEOS):
         newstr.append(addstr)
     addstr = OPTION_CMD_IMAGES[OPTION_VALUES_IMAGES.index(str(getrootconf(Options.IMGSETTING)))]
@@ -540,7 +543,8 @@ def update_download_state() -> None:
     downloading = is_downloading()
     if prev_download_state != downloading:
         update_widget_enabled_states()
-        for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:  # type: Globals
+        gi: Globals
+        for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:
             if gi in (Globals.BUTTON_DOWNLOAD, Globals.MODULE_ICON, Globals.COMBOBOX_PARCHI):
                 pass  # config_global(i, state=gobject_orig_states[i])
             elif gi == Globals.BUTTON_CHECKTAGS:

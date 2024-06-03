@@ -90,7 +90,7 @@ re_andgr_full = re_compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\
 re_negative_meta = re_compile(r'^-[^:]+:.+?$')
 
 last_tags = ''
-last_fulltags = None  # type: Optional[Sequence[str]]
+last_fulltags: Optional[Sequence[str]] = None
 
 
 def reset_last_tags() -> None:
@@ -160,7 +160,8 @@ def parse_tags(tags: str) -> Tuple[bool, Sequence[str]]:
     fulltags = list()
     sort_tags_count = 0
     fav_tags_count = 0
-    for tag in unique_everseen(tags.split(' ')):  # type: str
+    tag: str
+    for tag in unique_everseen(tags.split(' ')):
         if tag.startswith('(') and re_orgr_full().fullmatch(tag):
             try:
                 tag = split_or_group(tag)

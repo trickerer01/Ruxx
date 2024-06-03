@@ -61,7 +61,7 @@ def id_list_from_string(id_str: str) -> List[str]:
 
 
 def parse_file(filepath: str) -> Tuple[bool, List[str]]:
-    id_list = list()  # type: List[str]
+    id_list = list()
     try:
         for line in open(filepath, 'rt', encoding=UTF8).readlines():
             line = line.strip(' \n\ufeff')

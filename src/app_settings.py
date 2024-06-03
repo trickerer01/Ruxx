@@ -34,9 +34,9 @@ class Settings(ABC):
     """
     Settings !Static!
     """
-    INITIAL_SETTINGS = []  # type: List[str]
+    INITIAL_SETTINGS: List[str] = []
     AUTOCONFIG_FILENAMES = ('ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg')
-    on_proc_module_change_callback = None  # type: Optional[Callable[[int], None]]
+    on_proc_module_change_callback: Optional[Callable[[int], None]] = None
 
     @abstractmethod
     def ___this_class_is_static___(self) -> ...:
@@ -168,7 +168,9 @@ class Settings(ABC):
             line = line.strip(' \n\ufeff')  # remove BOM too
             if line.startswith('#') or line == '':  # comment or a newline
                 continue
-            kv_k, kv_v = line.split('=', 1)  # type: str, str
+            kv_k: str
+            kv_v: str
+            kv_k, kv_v = line.split('=', 1)
             if kv_k in Settings.settings:
                 conf = Settings.settings[kv_k].conf
                 val = Settings.settings[kv_k].type(kv_v)

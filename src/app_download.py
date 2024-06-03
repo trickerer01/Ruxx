@@ -239,7 +239,7 @@ class Downloader(DownloaderBase):
                 else:
                     return self.minpage if di else self.maxpage
 
-            for fstate, direction in pageargs:  # type: DownloaderStates, bool
+            for fstate, direction in pageargs:
                 if direction is True:
                     self.minpage = page_filter(fstate, direction)
                 else:
@@ -261,7 +261,8 @@ class Downloader(DownloaderBase):
                     c_page += 1
                     arr_temp.append((n, c_page, self.maxpage))
 
-                with Pool(max(2, self.maxthreads_items // 2)) as active_pool:  # type: ThreadPool
+                active_pool: ThreadPool
+                with Pool(max(2, self.maxthreads_items // 2)) as active_pool:
                     ress = list()
                     for larr in arr_temp:
                         ress.append(active_pool.apply_async(self._get_page_items, args=larr))
@@ -355,13 +356,13 @@ class Downloader(DownloaderBase):
 
         # store items info for future processing
         # custom filters may exclude certain items from the infos dict
-        task_parents = set()  # type: Set[str]
+        task_parents: Set[str] = set()
         self._extract_cur_task_infos(task_parents)
 
         if self.current_task_num <= self.orig_tasks_count:
             self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
 
-        self.items_raw_all = list(unique_everseen(self.items_raw_all + self.items_raw_per_task))  # type: List[str]
+        self.items_raw_all: List[str] = list(unique_everseen(self.items_raw_all + self.items_raw_per_task))
         self.item_info_dict_all.update(self.item_info_dict_per_task)
         if self.current_task_num > 1:
             trace(f'overall totalcount: {self.total_count_all:d}')
@@ -380,7 +381,7 @@ class Downloader(DownloaderBase):
             return
 
         if self.default_sort:
-            self.items_raw_all = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)))  # type: List[str]
+            self.items_raw_all: List[str] = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)))
             if self.current_task_num > 1:
                 trace(f'\nApplying overall date filter after {self._tasks_count()} tasks...')
                 self.items_raw_all.reverse()
@@ -412,7 +413,8 @@ class Downloader(DownloaderBase):
         trace(f'{self.total_count_all:d} item(s) scheduled, {self.maxthreads_items:d} thread(s) max\nWorking...\n')
 
         if self.maxthreads_items > 1 and self.total_count_all > 1:
-            with Pool(self.maxthreads_items) as active_pool:  # type: ThreadPool
+            active_pool: ThreadPool
+            with Pool(self.maxthreads_items) as active_pool:
                 ress = list()
                 for iarr in self.items_raw_all:
                     ress.append(active_pool.apply_async(self._process_item, args=(iarr,)))
@@ -491,7 +493,7 @@ class Downloader(DownloaderBase):
         except Exception:
             trace('download failed...')
             raise
-        self._dump_all_info()
+        self._dump_all_info
         total_files = min(self.success_count + self.fail_count, self.total_count_all)
         success_files = min(self.success_count, self.total_count_all - self.fail_count)
         trace(f'\n{self._tasks_count():d} task(s) completed, {success_files:d} / {total_files:d} item(s) succeded', False, True)
@@ -629,7 +631,8 @@ class Downloader(DownloaderBase):
                 res = self._extract_item_info(item)
                 put_info(res)
         else:  # RS
-            with Pool(self.maxthreads_items) as active_pool:  # type: ThreadPool
+            active_pool: ThreadPool
+            with Pool(self.maxthreads_items) as active_pool:
                 ress = list()
                 for larr in [(elem,) for elem in self.items_raw_per_task]:
                     ress.append(active_pool.apply_async(self._extract_item_info, args=larr))
@@ -641,6 +644,7 @@ class Downloader(DownloaderBase):
                         put_info(res)
                     thread_sleep(0.2)
 
+    @property
     def _dump_all_info(self) -> None:
         if len(self.item_info_dict_all) == 0 or True not in (self.dump_tags, self.dump_sources, self.dump_comments):
             return
@@ -653,10 +657,8 @@ class Downloader(DownloaderBase):
 
         orig_ids = {self.item_info_dict_all[k].id for k in self.item_info_dict_all}
         merged_files = self._try_merge_info_files()
-        saved_files = list()  # type: List[str]
-        self.item_info_dict_all = {
-            k: self.item_info_dict_all[k] for k in sorted(self.item_info_dict_all.keys())
-        }  # type: Dict[str, ItemInfo]
+        saved_files = list()
+        self.item_info_dict_all: Dict[str, ItemInfo] = {k: self.item_info_dict_all[k] for k in sorted(self.item_info_dict_all.keys())}
         item_info_list = list(self.item_info_dict_all.values())
         id_begin = item_info_list[0].id
         id_end = item_info_list[-1].id
@@ -678,11 +680,14 @@ class Downloader(DownloaderBase):
             comments = f'\n{NEWLINE_X2.join(str(c) for c in item_info.comments)}\n' if item_info.comments else ''
             return f'{abbrp}{item_info.id}:{comments}\n'
 
+        name: str
+        proc: Callable[[ItemInfo], str]
+        conf: bool
         for name, proc, conf in (
             ('tags', proc_tags, self.dump_tags),
             ('sources', proc_sources, self.dump_sources),
             ('comments', proc_comments, self.dump_comments)
-        ):  # type: str, Callable[[ItemInfo], str], bool
+        ):
             if conf is False:
                 continue
             trace(f'\nSaving {name}...')
@@ -713,20 +718,20 @@ class Downloader(DownloaderBase):
         trace(BR)
 
     def _try_merge_info_files(self) -> List[str]:
-        parsed_files = list()  # type: List[str]
+        parsed_files = list()
         if not self.merge_lists:
             return parsed_files
         dir_fullpath = normalize_path(f'{self.dest_base}')
         if not path.isdir(dir_fullpath):
             return parsed_files
         abbrp = self._get_module_abbr_p()
-        info_lists = sorted(filter(
+        info_lists: List[Match[str]] = sorted(filter(
             lambda x: not not x, [re_infolist_filename.fullmatch(f) for f in listdir(dir_fullpath)
                                   if path.isfile(f'{dir_fullpath}{f}') and f.startswith(f'{abbrp}!')]
-        ), key=lambda m: m.string)  # type: List[Match[str]]
+        ), key=lambda m: m.string)
         if not info_lists:
             return parsed_files
-        parsed_dict = dict()  # type: Dict[str, ItemInfo]
+        parsed_dict: Dict[str, ItemInfo] = dict()
         for fmatch in info_lists:
             fmname = fmatch.string
             list_type = fmatch.group(1)

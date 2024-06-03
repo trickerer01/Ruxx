@@ -317,7 +317,7 @@ class SubMenus(IntEnum):
 
 class RuxxMenu:
     def __init__(self, *indecies: SubMenus) -> None:
-        self.menu = None  # type: Optional['Menu']  # noqa F821
+        self.menu: Optional['Menu'] = None  # noqa F821
         self.statefuls = set(ind for ind in indecies)
 
     def __bool__(self) -> bool:

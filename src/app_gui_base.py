@@ -60,38 +60,38 @@ __all__ = (
 
 # globals
 # ROOOT
-root = None  # type: Optional[AppRoot]
-rootFrame = None  # type: Optional[BaseFrame]
-rootMenu = None  # type: Optional[Menu]
+root: Optional[AppRoot] = None  # noqa F821
+rootFrame: Optional[BaseFrame] = None  # noqa F821
+rootMenu: Optional[Menu] = None
 # windows
 IS_WIN = sys.platform == PLATFORM_WINDOWS
-window_proxy = None  # type: Optional[ProxyWindow]
-window_hcookies = None  # type: Optional[HeadersAndCookiesWindow]
-window_timeout = None  # type: Optional[ConnectionTimeoutWindow]
-window_retries = None  # type: Optional[ConnectionRetriesWindow]
+window_proxy: Optional[ProxyWindow] = None  # noqa F821
+window_hcookies: Optional[HeadersAndCookiesWindow] = None  # noqa F821
+window_timeout: Optional[ConnectionTimeoutWindow] = None  # noqa F821
+window_retries: Optional[ConnectionRetriesWindow] = None  # noqa F821
 # counters
-c_menu = None  # type: Optional[BaseMenu]
-c_submenu = None  # type: Optional[BaseMenu]
+c_menu: Optional[BaseMenu] = None  # noqa F821
+c_submenu: Optional[BaseMenu] = None  # noqa F821
 # these containers keep technically unbound variables so they arent purged by GC
-int_vars = dict()  # type: Dict[str, IntVar]
-string_vars = dict()  # type: Dict[str, StringVar]
+int_vars: Dict[str, IntVar] = dict()
+string_vars: Dict[str, StringVar] = dict()
 # end globals
 
 # loaded
 console_shown = True
-text_cmd = None  # type: Optional[Text]
+text_cmd: Optional[Text] = None
 # end loaded
 
 # icons
-icons = {ic: None for ic in Icons.__members__.values()}  # type: Dict[Icons, Optional[PhotoImage]]
+icons: Dict[Icons, Optional[PhotoImage]] = {ic: None for ic in Icons.__members__.values()}
 # end icons
 
 re_ask_values = re_compile(r'[^, ]+')
 re_json_entry_value = re_compile(r'^([^: ,]+)[: ,](.+)$')
 
 # GUI grid composition: current column / row universal counters (resettable)
-c_col = None  # type: Optional[int]
-c_row = None  # type: Optional[int]
+c_col: Optional[int] = None
+c_row: Optional[int] = None
 
 
 def set_console_shown(shown: bool) -> None:
@@ -198,7 +198,7 @@ class BaseText(Text):
     CTRL_DELETION_DELIMS = ' ,.!~/-=:;'
 
     def __init__(self, parent=None, *args, **kw) -> None:
-        known_bindings = kw.pop('bindings', {})  # type: Dict[str, Callable[[...], None]]
+        known_bindings: Dict[str, Callable[[...], None]] = kw.pop('bindings', {})
         self._textvariable = kw.pop('textvariable', StringVar(rootm(), '', ''))
         kw.update(height=1, undo=True, maxundo=500, wrap=NONE)
         super().__init__(parent, *args, **kw)
@@ -335,7 +335,7 @@ class BaseText(Text):
 class BaseWindow:
     def __init__(self, parent, init_hidden=True) -> None:
         self.parent = parent
-        self.window = None  # type: Optional[Toplevel]
+        self.window: Optional[Toplevel] = None
         self.visible = False
         self.reinit(init_hidden)
 
@@ -374,8 +374,8 @@ class AwaitableAskWindow(BaseWindow, ABC):
     def __init__(self, parent, title: str) -> None:
         self.title = title or ''
         self.variable = StringVar(parent)
-        self.but_ok = None  # type: Optional[Button]
-        self.but_cancel = None  # type: Optional[Button]
+        self.but_ok: Optional[Button] = None
+        self.but_cancel: Optional[Button] = None
         super().__init__(parent, False)
 
     def config(self) -> None:
@@ -431,7 +431,7 @@ class AskFileTypeFilterWindow(AwaitableAskWindow):
     VALUES = ['Media type', 'Extension']
 
     def __init__(self, parent) -> None:
-        self.cbox = None  # type: Optional[ttk.Combobox]
+        self.cbox: Optional[ttk.Combobox] = None
         super().__init__(parent, 'File types')
 
     def finalize(self) -> None:
@@ -452,7 +452,7 @@ class AskFileTypeFilterWindow(AwaitableAskWindow):
 
 class AskFileSizeFilterWindow(AwaitableAskWindow):
     def __init__(self, parent) -> None:
-        self.entry = None  # type: Optional[BaseText]
+        self.entry: Optional[BaseText] = None
         super().__init__(parent, 'Size thresholds MB')
 
     def finalize(self) -> None:
@@ -474,7 +474,7 @@ class AskFileSizeFilterWindow(AwaitableAskWindow):
 class AskIntWindow(AwaitableAskWindow):
     def __init__(self, parent, validator: Callable[[int], bool], title='Enter number') -> None:
         self.validator = validator or (lambda _: True)
-        self.entry = None  # type: Optional[BaseText]
+        self.entry: Optional[BaseText] = None
         super().__init__(parent, title)
 
     def finalize(self) -> None:
@@ -497,7 +497,7 @@ class AskIntWindow(AwaitableAskWindow):
 
 class AskFileScoreFilterWindow(AwaitableAskWindow):
     def __init__(self, parent) -> None:
-        self.entry = None  # type: Optional[BaseText]
+        self.entry: Optional[BaseText] = None
         super().__init__(parent, 'Score thresholds')
 
     def finalize(self) -> None:
@@ -520,8 +520,8 @@ class LogWindow(BaseWindow):
     log_window_base_height = 120
 
     def __init__(self, parent) -> None:
-        self.text = None  # type: Optional[Text]
-        self.scroll = None  # type: Optional[Scrollbar]
+        self.text: Optional[Text] = None
+        self.scroll: Optional[Scrollbar] = None
         self.firstshow = True
         super().__init__(parent)
 
@@ -584,11 +584,11 @@ class LogWindow(BaseWindow):
 
 class ProxyWindow(BaseWindow):
     def __init__(self, parent) -> None:
-        self.ptype_var = None  # type: Optional[StringVar]
-        self.entry_addr = None  # type: Optional[BaseText]
-        self.but_ok = None  # type: Optional[Button]
-        self.but_cancel = None  # type: Optional[Button]
-        self.err_message = None  # type: Optional[WidgetToolTip]
+        self.ptype_var: Optional[StringVar] = None
+        self.entry_addr: Optional[BaseText] = None
+        self.but_ok: Optional[Button] = None
+        self.but_cancel: Optional[Button] = None
+        self.err_message: Optional[WidgetToolTip] = None
         super().__init__(parent)
 
     def config(self) -> None:
@@ -686,18 +686,18 @@ class HeadersAndCookiesWindow(BaseWindow):
     LBOX_WIDTH = 65
 
     def __init__(self, parent) -> None:
-        self.lbox_h = None  # type: Optional[Listbox]
-        self.bdel_h = None  # type: Optional[Button]
-        self.badd_h = None  # type: Optional[Button]
-        self.entry_h = None  # type: Optional[BaseText]
-        self.err_message_syntax_h = None  # type: Optional[WidgetToolTip]
-        self.err_message_count_h = None  # type: Optional[WidgetToolTip]
-        self.lbox_c = None  # type: Optional[Listbox]
-        self.bdel_c = None  # type: Optional[Button]
-        self.badd_c = None  # type: Optional[Button]
-        self.entry_c = None  # type: Optional[BaseText]
-        self.err_message_syntax_c = None  # type: Optional[WidgetToolTip]
-        self.err_message_count_c = None  # type: Optional[WidgetToolTip]
+        self.lbox_h: Optional[Listbox] = None
+        self.bdel_h: Optional[Button] = None
+        self.badd_h: Optional[Button] = None
+        self.entry_h: Optional[BaseText] = None
+        self.err_message_syntax_h: Optional[WidgetToolTip] = None
+        self.err_message_count_h: Optional[WidgetToolTip] = None
+        self.lbox_c: Optional[Listbox] = None
+        self.bdel_c: Optional[Button] = None
+        self.badd_c: Optional[Button] = None
+        self.entry_c: Optional[BaseText] = None
+        self.err_message_syntax_c: Optional[WidgetToolTip] = None
+        self.err_message_count_c: Optional[WidgetToolTip] = None
         super().__init__(parent)
 
     def config(self) -> None:
@@ -801,7 +801,7 @@ class HeadersAndCookiesWindow(BaseWindow):
 
     @staticmethod
     def _listbox_to_json(lb: Listbox) -> str:
-        ls = {}  # type: Dict[str, str]
+        ls: Dict[str, str] = {}
         for i in range(lb.size()):
             part1, part2 = tuple(str(lb.get(i)).split(':', 1))
             ls.update({part1: part2})
@@ -919,11 +919,11 @@ class ConnectRequestIntWindow(BaseWindow):
         self.baseval = baseval
         self.minmax = minmax
         self.conf_open, self.conf_str, self.conf_str_temp = conf_open, conf_str, conf_str_temp
-        self.var = None  # type: Optional[IntVar]
-        self.entry = None  # type: Optional[BaseText]
-        self.but_ok = None  # type: Optional[Button]
-        self.but_cancel = None  # type: Optional[Button]
-        self.err_message = None  # type: Optional[WidgetToolTip]
+        self.var: Optional[IntVar] = None
+        self.entry: Optional[BaseText] = None
+        self.but_ok: Optional[Button] = None
+        self.but_cancel: Optional[Button] = None
+        self.err_message: Optional[WidgetToolTip] = None
         super().__init__(parent)
 
     def config(self) -> None:
@@ -1403,7 +1403,7 @@ def register_menu_separator() -> None:
 
 
 def get_all_media_files_in_cur_dir() -> Tuple[str]:
-    flist = filedialog.askopenfilenames(initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),))  # type: Tuple[str]
+    flist: Tuple[str] = filedialog.askopenfilenames(initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),))
     return flist
 
 

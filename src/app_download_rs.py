@@ -125,7 +125,7 @@ class DownloaderRs(Downloader):
 
         # items count on all full pages plus items count on last page
         last_thumbs = len(self._get_all_post_tags(raw_html))
-        count = (last - 1) * self._get_items_per_page() + last_thumbs  # type: Union[int, BeautifulSoup]
+        count: Union[int, BeautifulSoup] = (last - 1) * self._get_items_per_page() + last_thumbs
         return count
 
     def _get_image_address(self, h: str) -> Tuple[str, str]:
@@ -160,7 +160,7 @@ class DownloaderRs(Downloader):
         item_info.ext = ext[1:]
         lis = raw_html.find_all('li', class_='general-tag', style='display: block; padding: 5px;')
         for li in lis:
-            li_str = li.text  # type: str
+            li_str: str = li.text
             if li_str.startswith('Size:'):
                 dims = re_post_dims_rs.search(li_str)
                 if dims:
@@ -250,8 +250,8 @@ class DownloaderRs(Downloader):
             comment_divs = raw_html.find_all('div', class_='commentBox')
             for comment_div in comment_divs:
                 author_a = comment_div.find('a', href=re_comment_a_rs)
-                author = author_a.text  # type: str
-                body = comment_div.text.strip()  # type: str
+                author: str = author_a.text
+                body: str = comment_div.text.strip()
                 if '  ' in body:
                     body = body[body.find('  ') + 2:]
                 self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))

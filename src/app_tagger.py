@@ -223,7 +223,7 @@ TAG_ALIASES_STR = (
     'YXJoYW1tZXJfNDBrIjogIndhcmhhbW1lciIsICJ3b2xmZ2lybCI6ICJ3b2xmX2dpcmwiLCAid293IjogIndvcmxkX29mX3dhcmNyYWZ0IiwgInhyYXlfdmlldyI6ICJ4cmF5Ii'
     'wgInplYnJvaWQiOiAiemVicmEiLCAiem9tYmllX2Z1dGEiOiAiem9tYmllIiwgInpvbWJpZXMiOiAiem9tYmllIn0='
 )
-TAG_ALIASES = loads(b64decode(TAG_ALIASES_STR))  # type: Dict[str, str]
+TAG_ALIASES: Dict[str, str] = loads(b64decode(TAG_ALIASES_STR))
 
 
 def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pattern, re_tags_to_exclude: Pattern) -> str:
@@ -231,7 +231,7 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pa
         return base_string
 
     tags_list = tags_str.split(' ')
-    tags_toadd_list = []  # type: List[str]
+    tags_toadd_list: List[str] = []
 
     for tag in tags_list:
         tag = tag.replace('-', '').replace('\'', '')
@@ -282,7 +282,9 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pa
                         del tags_toadd_list[i]
         if do_add:
             if aser_valid:
-                for i, c in enumerate(tag):  # type: int, str
+                i: int
+                c: str
+                for i, c in enumerate(tag):
                     if (i == 0 or tag[i - 1] == UNDERSCORE) and c.isalpha():
                         tag = f'{tag[:i]}{c.upper()}{tag[i + 1:]}'
             tags_toadd_list.append(tag)

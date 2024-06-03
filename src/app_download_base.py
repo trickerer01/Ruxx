@@ -51,7 +51,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.date_max = datetime.today().strftime(FMT_DATE)
         self.dest_base = normalize_path(path.abspath(curdir))
         self.warn_nonempty = False
-        self.tags_str_arr = list()  # type: List[str]
+        self.tags_str_arr: List[str] = list()
         # extra
         self.cmdline = ''
         self.get_max_id = False
@@ -62,7 +62,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.maxpage = 0
         self.success_count = 0
         self.fail_count = 0
-        self.failed_items = list()  # type: List[str]
+        self.failed_items: List[str] = list()
         self.total_count = 0
         self.total_count_old = 0
         self.processed_count = 0
@@ -70,13 +70,13 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.current_task_num = 0
         self.orig_tasks_count = 0
         self.current_state = DownloaderStates.IDLE
-        self.items_raw_per_task = list()  # type: List[str]
-        self.items_raw_per_page = dict()  # type: Dict[int, List[str]]
-        self.items_raw_all = list()  # type: List[str]
-        self.item_info_dict_per_task = dict()  # type: Dict[str, ItemInfo]
-        self.item_info_dict_all = dict()  # type: Dict[str, ItemInfo]
-        self.neg_and_groups = list()  # type: List[List[Pattern[str]]]
-        self.known_parents = set()  # type: Set[str]
+        self.items_raw_per_task: List[str] = list()
+        self.items_raw_per_page: Dict[int, List[str]] = dict()
+        self.items_raw_all: List[str] = list()
+        self.item_info_dict_per_task: Dict[str, ItemInfo] = dict()
+        self.item_info_dict_all: Dict[str, ItemInfo] = dict()
+        self.neg_and_groups: List[List[Pattern[str]]] = list()
+        self.known_parents: Set[str] = set()
         self.default_sort = True
         self.favorites_search_user = 0
 
@@ -462,7 +462,8 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         total_count_temp = self.total_count
 
-        for idx in reversed(range(len(self.items_raw_per_task))):  # type: int
+        idx: int
+        for idx in reversed(range(len(self.items_raw_per_task))):
             self.catch_cancel_or_ctrl_c()
             h = str(self.items_raw_per_task[idx])
             is_vid = self._is_video(h)
@@ -481,7 +482,8 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         total_count_temp = self.total_count
 
-        for idx in reversed(range(len(self.items_raw_per_task))):  # type: int
+        idx: int
+        for idx in reversed(range(len(self.items_raw_per_task))):
             self.catch_cancel_or_ctrl_c()
             full_itemid = f'{self._get_module_abbr_p()}{self._extract_id(self.items_raw_per_task[idx])}'
             if full_itemid in self.item_info_dict_all:
@@ -504,7 +506,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             return
 
         abbrp = self._get_module_abbr_p()
-        for idx in reversed(range(len(self.items_raw_per_task))):  # type: int
+        idx: int
+        for idx in reversed(range(len(self.items_raw_per_task))):
             self.catch_cancel_or_ctrl_c()
             h = self._local_addr_from_string(str(self.items_raw_per_task[idx]))
             item_id = self._extract_id(h)
@@ -525,7 +528,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         if len(self.neg_and_groups) == 0:
             return
 
-        m_dict = dict()  # type: Dict[str, List[str]]
+        m_dict: Dict[str, List[str]] = dict()
 
         def match_neg_group(p: Pattern[str], t: str, pl: List[Pattern[str]]) -> bool:
             ngm = p.fullmatch(t)
@@ -539,7 +542,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         abbrp = self._get_module_abbr_p()
         total_count_old = len(self.items_raw_per_task)
         removed_count = 0
-        for idx in reversed(range(total_count_old)):  # type: int
+        idx: int
+        for idx in reversed(range(total_count_old)):
             h = self._local_addr_from_string(str(self.items_raw_per_task[idx]))
             item_id = self._extract_id(h)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'

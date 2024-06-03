@@ -18,8 +18,8 @@ class ToolTipBase(ABC):
     def __init__(self, widget: Widget, timed: bool, bgcolor='#ffffdd', appear_delay=1000, border_width=1, relief=SOLID) -> None:
         self.widget = widget
         self.timed = timed
-        self.tipwindow = None  # type: Optional[Toplevel]
-        self.id = None  # type: Optional[str]
+        self.tipwindow: Optional[Toplevel] = None
+        self.id: Optional[str] = None
         self.bgcolor = bgcolor or '#ffffdd'
         self.appear_delay = appear_delay or 1000
         self.border_width = border_width or 1
@@ -45,7 +45,7 @@ class ToolTipBase(ABC):
 
     def unschedule(self) -> None:
         my_id = self.id
-        self.id = None  # type: Optional[str]
+        self.id: Optional[str] = None
         if my_id:
             self.widget.after_cancel(my_id)
 
@@ -63,7 +63,7 @@ class ToolTipBase(ABC):
 
     def hidetip(self) -> None:
         tw = self.tipwindow
-        self.tipwindow = None  # type: Optional[Toplevel]
+        self.tipwindow: Optional[Toplevel] = None
         if tw:
             tw.destroy()
 

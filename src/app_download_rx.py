@@ -131,7 +131,7 @@ class DownloaderRx(Downloader):
 
             # items count on all full pages plus items count on last page
             last_thumbs = len(self._get_all_post_tags(raw_html))
-            count = (last - 1) + last_thumbs  # type: Union[int, BeautifulSoup]
+            count: Union[int, BeautifulSoup] = (last - 1) + last_thumbs
             return count
         else:
             raw_html = self.fetch_html(f'{url}&pid=0', tries)

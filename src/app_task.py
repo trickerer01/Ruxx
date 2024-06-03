@@ -31,12 +31,12 @@ def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split
     :param split_always: unconditionally separate all 'or' groups
     :return: list of fully formed tags directly injectable into request query template, len is up to max_or_group_len**2
     """
-    new_tags_str_arr = list()  # type: List[str]
-    or_tags_to_append = list()  # type: List[List[str]]
+    new_tags_str_arr: List[str] = list()
+    or_tags_to_append: List[List[str]] = list()
     has_negative = False
     for g_tags in tag_groups_arr:
         splitted = False
-        add_list = g_tags[2:-2].split('+~+') if len(g_tags) >= len('(+_+~+_+)') else list()  # type: List[str]
+        add_list: List[str] = g_tags[2:-2].split('+~+') if len(g_tags) >= len('(+_+~+_+)') else list()
         if len(add_list) > 1:
             do_split = split_always
             for add_s in add_list:
@@ -56,7 +56,7 @@ def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split
             thread_exit('Error: -tag in \'or\' group found, but no +tags! Cannot search by only -tags', -701)
         tags_multi_list = [f'{cc.join(new_tags_str_arr)}' if len(new_tags_str_arr) > 0 else '']
         for or_tags_list in reversed(or_tags_to_append):
-            toapp = list()  # type: List[str]
+            toapp = list()
             for or_tag in or_tags_list:
                 for tags_string in tags_multi_list:
                     toapp.append(f'{or_tag}{f"{cc}{tags_string}" if len(tags_string) > 0 else ""}')
@@ -83,9 +83,10 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
         ngr = re_negative_and_group.fullmatch(neg_tags_group)
         return [re_compile(rf'^{esc(s)}$') for s in ngr.group(1).split(',')] if ngr else None
 
-    parsed = list()  # type: List[List[Pattern]]
+    parsed = list()
     tags_list = tags_str.split(' ')
-    for tgi in reversed(range(len(tags_list))):  # type: int
+    tgi: int
+    for tgi in reversed(range(len(tags_list))):
         tag_group = tags_list[tgi]
         if len(tag_group) < len('-(a,b)') or tag_group[0:2] != '-(':
             continue
@@ -105,11 +106,12 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
     max_string_len = max_string_lengths.get(ProcModule.get())
     if total_len > max_string_len:
         trace('Warning (W1): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
-        neg_tags_list = list()  # type: List[str]
+        neg_tags_list = list()
         # first pass: wildcarded negative tags - chance to ruin alias is lower (rx)
         # second pass: any negative tags
         for wildcardpass in (True, False):
-            for ti in reversed(range(len(tags_list))):  # type: int
+            ti: int
+            for ti in reversed(range(len(tags_list))):
                 if total_len <= max_string_len:
                     break
                 ntag = tags_list[ti]

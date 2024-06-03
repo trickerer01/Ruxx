@@ -129,7 +129,7 @@ class DownloaderRn(Downloader):
 
         # items count on all full pages plus items count on last page
         last_thumbs = len(self._get_all_post_tags(raw_html))
-        count = (last - 1) * self._get_items_per_page() + last_thumbs  # type: Union[int, BeautifulSoup]
+        count: Union[int, BeautifulSoup] = (last - 1) * self._get_items_per_page() + last_thumbs
         if count == 0 and len(raw_html.find_all('a', attrs={'download': '', 'href': re_shimmie_image_href})) > 0:
             count = raw_html
 
@@ -264,8 +264,8 @@ class DownloaderRn(Downloader):
         comment_divs = raw_html.select('div[class="comment"]')
         for comment_div in comment_divs:
             author_a = comment_div.find('a', class_='username')
-            author = author_a.text  # type: str
-            body = comment_div.text.strip()  # type: str
+            author: str = author_a.text
+            body: str = comment_div.text.strip()
             body = body[body.find(f'{author}: ') + len(f'{author}: '):]
             self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
 

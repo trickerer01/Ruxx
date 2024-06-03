@@ -58,7 +58,7 @@ def thread_exit(err_str='', code=-1) -> None:
 class ThreadedWorker(ABC):
     @abstractmethod
     def __init__(self) -> None:
-        self.my_root_thread = None  # type: Optional[Thread]
+        self.my_root_thread: Optional[Thread] = None
         self.item_lock = ThreadLock()
         self.items_all_lock = ThreadLock()
 
@@ -78,17 +78,17 @@ class ThreadedHtmlWorker(ThreadedWorker):
     def __init__(self) -> None:
         super().__init__()
         self.verbose = False
-        self.raw_html_cache = dict()  # type: Dict[str, Union[BeautifulSoup, bytes]]
+        self.raw_html_cache: Dict[str, Union[BeautifulSoup, bytes]] = dict()
         self.cache_mode = HtmlCacheMode.CACHE_BYTES
-        self.add_headers = structures.CaseInsensitiveDict()  # type: structures.CaseInsensitiveDict[str, str]
-        self.add_cookies = structures.CaseInsensitiveDict()  # type: structures.CaseInsensitiveDict[str, str]
+        self.add_headers: structures.CaseInsensitiveDict[str, str] = structures.CaseInsensitiveDict()
+        self.add_cookies: structures.CaseInsensitiveDict[str, str] = structures.CaseInsensitiveDict()
         self.ignore_proxy = False
         self.ignore_proxy_dwn = False
-        self.proxies = None  # type: Optional[Dict[str, str]]
+        self.proxies: Optional[Dict[str, str]] = None
         self.timeout = CONNECT_TIMEOUT_BASE
         self.retries = CONNECT_RETRIES_BASE
-        self.etags = dict()  # type: Dict[str, str]
-        self.session = None  # type: Optional[Session]
+        self.etags: Dict[str, str] = dict()
+        self.session: Optional[Session] = None
 
     @abstractmethod
     def _get_sitename(self) -> str:
@@ -120,7 +120,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
         if args.cookies:
             self.add_cookies.update(args.cookies)
         for container_base, container_ext in zip((self.add_headers, self.add_cookies), (args.header, args.cookie)):
-            for pair in container_ext or []:  # type: Tuple[str, str]
+            pair: Tuple[str, str]
+            for pair in container_ext or []:
                 if pair[0] in container_base:
                     trace(f'Warning (W1): Overriding json value at \'{pair[0]}\' from \'{container_base[pair[0]]}\' to \'{pair[1]}\'')
                 container_base[pair[0]] = pair[1]
@@ -315,7 +316,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
         if retries >= tries:
             errmsg = f'Unable to connect. Aborting {url}'
             trace(errmsg, True)
-            r = None  # type: Optional[Response]
+            r: Optional[Response] = None
         elif r is None:
             trace('ERROR: Failed to receive any data', True)
         elif len(r.cookies) > 0:

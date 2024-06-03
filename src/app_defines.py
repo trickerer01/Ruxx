@@ -41,7 +41,7 @@ class ItemInfo:
         self.tags = ''
         self.ext = ''
         self.source = ''
-        self.comments = []  # type: List[Comment]
+        self.comments: List[Comment] = []
         self.score = ''
         self.has_children = ''
         self.parent_id = ''
@@ -117,12 +117,12 @@ class DownloadModes(IntEnum):
 
 
 DMODE_DEFAULT = DownloadModes.FULL
-DMODE_CHOICES = {dm.value for dm in DownloadModes.__members__.values()}  # type: Set[int]
+DMODE_CHOICES: Set[int] = {dm.value for dm in DownloadModes.__members__.values()}
 
 STATE_WORK_START = DownloaderStates.SEARCHING
 
 
-STATUSBAR_INFO_MAP = {
+STATUSBAR_INFO_MAP: Dict[DownloaderStates, Tuple[str, Optional[str], Optional[str], Optional[str]]] = {
     DownloaderStates.IDLE: ('Ready', None, None, None),
     DownloaderStates.SEARCHING: ('Searching...', None, None, None),
     DownloaderStates.SCANNING_PAGES1: ('Filtering pages (1/2)... ', 'total_pages', None, None),
@@ -132,8 +132,7 @@ STATUSBAR_INFO_MAP = {
     DownloaderStates.FILTERING_ITEMS3: ('Filtering files (3/4)... ', 'total_count', None, None),
     DownloaderStates.FILTERING_ITEMS4: ('Filtering files (4/4)... ', 'total_count', None, None),
     DownloaderStates.DOWNLOADING: ('Downloading... ', 'processed_count', ' / ', 'total_count_all')
-}  # type: Dict[DownloaderStates, Tuple[str, Optional[str], Optional[str], Optional[str]]]
-
+}
 
 CONNECT_TIMEOUT_BASE = 10
 CONNECT_RETRIES_BASE = 10

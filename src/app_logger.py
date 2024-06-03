@@ -24,10 +24,10 @@ __all__ = ('Logger', 'trace')
 class Logger:
     print_lock = ThreadLock()
 
-    pending_strings = []  # type: List[str]
+    pending_strings: List[str] = []
     is_cmdline = False
     is_disabled = False
-    wnd = None  # type: Optional['LogWindow']  # noqa F821
+    wnd: Optional['LogWindow'] = None  # noqa F821
 
     @staticmethod
     def init(is_cmd: bool, is_disabled=False) -> None:
