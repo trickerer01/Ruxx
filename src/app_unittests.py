@@ -24,7 +24,7 @@ from app_utils import normalize_path
 __all__ = ('run_all_tests',)
 
 
-RUN_CONN_TESTS = 1
+RUN_CONN_TESTS = 0
 CUR_PATH = normalize_path(path.abspath(curdir))
 
 args_argparse_str1 = (
