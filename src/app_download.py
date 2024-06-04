@@ -493,7 +493,7 @@ class Downloader(DownloaderBase):
         except Exception:
             trace('download failed...')
             raise
-        self._dump_all_info
+        self._dump_all_info()
         total_files = min(self.success_count + self.fail_count, self.total_count_all)
         success_files = min(self.success_count, self.total_count_all - self.fail_count)
         trace(f'\n{self._tasks_count():d} task(s) completed, {success_files:d} / {total_files:d} item(s) succeded', False, True)
@@ -644,7 +644,6 @@ class Downloader(DownloaderBase):
                         put_info(res)
                     thread_sleep(0.2)
 
-    @property
     def _dump_all_info(self) -> None:
         if len(self.item_info_dict_all) == 0 or True not in (self.dump_tags, self.dump_sources, self.dump_comments):
             return
