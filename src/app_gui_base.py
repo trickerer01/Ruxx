@@ -58,41 +58,6 @@ __all__ = (
     'register_menu_separator', 'get_all_media_files_in_cur_dir', 'update_lastpath', 'config_menu',
 )
 
-# globals
-# ROOOT
-root: Optional[AppRoot] = None  # noqa F821
-rootFrame: Optional[BaseFrame] = None  # noqa F821
-rootMenu: Optional[Menu] = None
-# windows
-IS_WIN = sys.platform == PLATFORM_WINDOWS
-window_proxy: Optional[ProxyWindow] = None  # noqa F821
-window_hcookies: Optional[HeadersAndCookiesWindow] = None  # noqa F821
-window_timeout: Optional[ConnectionTimeoutWindow] = None  # noqa F821
-window_retries: Optional[ConnectionRetriesWindow] = None  # noqa F821
-# counters
-c_menu: Optional[BaseMenu] = None  # noqa F821
-c_submenu: Optional[BaseMenu] = None  # noqa F821
-# these containers keep technically unbound variables so they arent purged by GC
-int_vars: Dict[str, IntVar] = dict()
-string_vars: Dict[str, StringVar] = dict()
-# end globals
-
-# loaded
-console_shown = True
-text_cmd: Optional[Text] = None
-# end loaded
-
-# icons
-icons: Dict[Icons, Optional[PhotoImage]] = {ic: None for ic in Icons.__members__.values()}
-# end icons
-
-re_ask_values = re_compile(r'[^, ]+')
-re_json_entry_value = re_compile(r'^([^: ,]+)[: ,](.+)$')
-
-# GUI grid composition: current column / row universal counters (resettable)
-c_col: Optional[int] = None
-c_row: Optional[int] = None
-
 
 def set_console_shown(shown: bool) -> None:
     global console_shown
@@ -1409,6 +1374,42 @@ def get_all_media_files_in_cur_dir() -> Tuple[str]:
 
 def update_lastpath(filefullpath: str) -> None:
     setrootconf(Options.LASTPATH, filefullpath[:normalize_path(filefullpath, False).rfind(SLASH) + 1])
+
+
+# globals
+# ROOOT
+root: Optional[AppRoot] = None
+rootFrame: Optional[BaseFrame] = None
+rootMenu: Optional[Menu] = None
+# windows
+IS_WIN = sys.platform == PLATFORM_WINDOWS
+window_proxy: Optional[ProxyWindow] = None
+window_hcookies: Optional[HeadersAndCookiesWindow] = None
+window_timeout: Optional[ConnectionTimeoutWindow] = None
+window_retries: Optional[ConnectionRetriesWindow] = None
+# counters
+c_menu: Optional[BaseMenu] = None
+c_submenu: Optional[BaseMenu] = None
+# these containers keep technically unbound variables so they arent purged by GC
+int_vars: Dict[str, IntVar] = dict()
+string_vars: Dict[str, StringVar] = dict()
+# end globals
+
+# loaded
+console_shown = True
+text_cmd: Optional[Text] = None
+# end loaded
+
+# icons
+icons: Dict[Icons, Optional[PhotoImage]] = {ic: None for ic in Icons.__members__.values()}
+# end icons
+
+re_ask_values = re_compile(r'[^, ]+')
+re_json_entry_value = re_compile(r'^([^: ,]+)[: ,](.+)$')
+
+# GUI grid composition: current column / row universal counters (resettable)
+c_col: Optional[int] = None
+c_row: Optional[int] = None
 
 #
 #
