@@ -86,7 +86,7 @@ re_tags_exclude_rs = re_tags_exclude_rx
 re_item_info_part_rx = re_compile(r'([\w5_]+=\"[^"]+\")[> ]')
 re_orig_file_link = re_compile(r'file_url=\"([^"]+)\"')
 re_sample_file_link = re_compile(r'file_url=\"([^"]+)\"')
-re_post_page_rx = re_compile(r'^(?:\?page=post&(?:amp;)?s=list|document\.location=\'\?page=favorites)&.+?$')
+re_post_page_rx = re_compile(r'^(?:\?page=post&(?:amp;)?s=list|document\.location=\'\?page=favorites|\?page=pool&(?:amp;)?s=show)&.+?$')
 
 re_item_info_part_rn = re_compile(r'([\w\-]+=\"[^"]+\")[/> ]')
 re_shimmie_image_href = re_compile(r'/_images/[^/]+/\d+?')
@@ -102,6 +102,7 @@ re_comment_page_rs = re_compile(r'^\?r=posts/view&(?:amp;)?id=\d+&(?:amp;)?page=
 re_comment_a_rs = re_compile(r'^index\.php\?r=account/profile&(?:amp;)?id=\d+$')
 
 re_favorited_by_tag = re_compile(r'^favorited_by[:=]([^:=]+)$')
+re_pool_tag = re_compile(r'^pool[:=]([^:=]+)$')
 
 re_infolist_filename = re_compile(fr'(?:{"|".join(MODULE_CHOICES)})_!(tags|sources|comments)_\d+-\d+\.txt')
 

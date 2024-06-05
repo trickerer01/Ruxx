@@ -15,7 +15,7 @@ from iteration_utilities import unique_everseen
 
 # internal
 from app_module import ProcModule
-from app_re import re_space_mult, re_favorited_by_tag
+from app_re import re_space_mult, re_favorited_by_tag, re_pool_tag
 
 __all__ = ('reset_last_tags', 'parse_tags')
 
@@ -43,6 +43,14 @@ META_FAV_RX = r'favorited_by:\d+?'
 META_FAV_RN = r'favorited_by=[^:]+?'
 # language=PythonRegExp
 META_FAV_RS = r'favorited_by:\d+?'
+# language=PythonRegExp
+META_POOL_RX = r'pool:\d+?'
+# language=PythonRegExp
+META_POOL_RN = r''
+"""not supported"""
+# language=PythonRegExp
+META_POOL_RS = r''
+"""not supported"""
 # language=PythonRegExp
 RE_ORGR_PART_RX = fr'{TAG_CHAR}+?(?:{META_COUNT_RX})?'
 # language=PythonRegExp
@@ -74,6 +82,11 @@ re_favs = {
     ProcModule.PROC_RX: re_compile(fr'^{META_FAV_RX}$'),
     ProcModule.PROC_RN: re_compile(fr'^{META_FAV_RN}$'),
     ProcModule.PROC_RS: re_compile(fr'^{META_FAV_RS}$'),
+}
+re_pools = {
+    ProcModule.PROC_RX: re_compile(fr'^{META_POOL_RX}$'),
+    ProcModule.PROC_RN: re_compile(fr'^{META_POOL_RN}$'),
+    ProcModule.PROC_RS: re_compile(fr'^{META_POOL_RS}$'),
 }
 re_orgrs_full = {
     ProcModule.PROC_RX: re_compile(fr'^\((?:{RE_ORGR_PART_RX})(?:~{RE_ORGR_PART_RX})+?\)$'),
@@ -112,6 +125,10 @@ def re_sort() -> Pattern:
 
 def re_fav() -> Pattern:
     return re_favs.get(ProcModule.CUR_PROC_MODULE)
+
+
+def re_pool() -> Pattern:
+    return re_pools.get(ProcModule.CUR_PROC_MODULE)
 
 
 def re_orgr_full() -> Pattern:
@@ -159,7 +176,7 @@ def parse_tags(tags: str) -> Tuple[bool, Sequence[str]]:
 
     fulltags = list()
     sort_tags_count = 0
-    fav_tags_count = 0
+    custom_tags_count = 0
     tag: str
     for tag in unique_everseen(tags.split(' ')):
         if tag.startswith('(') and re_orgr_full().fullmatch(tag):
@@ -169,7 +186,12 @@ def parse_tags(tags: str) -> Tuple[bool, Sequence[str]]:
                 return fail()
         elif re_favorited_by_tag.fullmatch(tag):
             if re_fav().fullmatch(tag):
-                fav_tags_count += 1
+                custom_tags_count += 1
+            else:
+                return fail()
+        elif re_pool_tag.fullmatch(tag):
+            if re_pool().fullmatch(tag):
+                custom_tags_count += 1
             else:
                 return fail()
         elif re_sort().fullmatch(tag):
@@ -178,7 +200,7 @@ def parse_tags(tags: str) -> Tuple[bool, Sequence[str]]:
             return fail()
         fulltags.append(tag)
 
-    if len(fulltags) <= sort_tags_count > 0 or fav_tags_count > 1:
+    if len(fulltags) <= sort_tags_count > 0 or custom_tags_count > 1:
         return fail()
 
     last_fulltags = tuple(fulltags)

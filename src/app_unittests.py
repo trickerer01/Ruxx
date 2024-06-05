@@ -45,6 +45,8 @@ args_argparse_str6 = args_argparse_str5 + ' -header Name1=value3 -header NAME2=v
 args_argparse_str7 = args_argparse_str1 + ' favorited_by:25000'
 args_argparse_str8 = args_argparse_str1 + ' -merge_lists'
 args_argparse_str9 = args_argparse_str8 + ' -merge_lists -dump_per_item'
+args_argparse_str10 = args_argparse_str1 + ' pool:33600'
+args_argparse_str11 = args_argparse_str1 + ' pool:33600 favorited_by:25000'
 args_tagparse_str1 = (
     'sfw asd ned -nds -proxr sort:id sord:score:asc -rating:explicit score:90 '
     '(t1~t2~t3) (t4~t5) -(t6,t7) -(t8,t9,t10) -(t?1,t*2|t?3|t11,t12*,*t13)'
@@ -243,6 +245,23 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str9
         self.assertRaises(BaseException, prepare_arglist, args.split())
+        print(f'{self._testMethodName} passed')
+
+    def test_cmdline10(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str10
+        arglist = prepare_arglist(args.split())
+        with make_downloader(ProcModule.PROC_RX) as dwn:
+            dwn._parse_args(arglist, False)
+            self.assertEqual(33600, dwn.pool_search_id)
+        print(f'{self._testMethodName} passed')
+
+    def test_cmdline11(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str11
+        arglist = prepare_arglist(args.split())
+        with make_downloader(ProcModule.PROC_RX) as dwn:
+            self.assertRaises(AssertionError, dwn._parse_args, arglist, False)
         print(f'{self._testMethodName} passed')
 
 

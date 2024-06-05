@@ -57,7 +57,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
     - **by size** ‒ sort by file size (you'll have to provide a threshold, in Megabytes). You can use multiple thesholds, separated by space, in any order: `0.5 10 3.0 5.00`
     - **by score** ‒ sort by post score. Make sure that selected files include score in their names or this won't work. You can use multiple thesholds, separated by space, in any order: `100 250 50 500`
 - **Help -> Tags** ‒ a quick list of tag types and how to use them (for selected module)
-- **Tags checking** ‒ there is a small button near the **Tags** field. When pressed, Ruxx will try to quickly check if this search yields any results, so this won't work with tags which cannot be passed to website's search engine directly (`AND` group, `OR` groups with meta tags, etc.). As a result the **Tags** field will briefly flash green / red. Additionally, if successful, a window will appear showing the number of results found. Note that this number my be not equal to the files count you'll get downloaded, as date filters, file type filters and related posts filter do not apply during this quick check; when using `favorited_by:X` special meta tag negative tags also do not apply (except for RN module where it's supported natively)
+- **Tags checking** ‒ there is a small button near the **Tags** field. When pressed, Ruxx will try to quickly check if this search yields any results, so this won't work with tags which cannot be passed to website's search engine directly (`AND` group, `OR` groups with meta tags, etc.). As a result the **Tags** field will briefly flash green / red. Additionally, if successful, a window will appear showing the number of results found. Note that this number my be not equal to the files count you'll get downloaded, as date filters, file type filters and related posts filter do not apply during this quick check; when using `favorited_by:X` or `pool:X` special meta tags negative tags also do not apply (except for RN module `favorited_by` tag where it's supported natively)
 
 ### Tags syntax
 Ruxx normally allows most symbols for tags search, there are some specifics though:  
@@ -141,6 +141,14 @@ In order to enable users to download one's favorites Ruxx implements `favorited_
 - Downloading from RX favorites pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
 - While searching favorites you can use normal filtering as well. Date filter, additional required / excluded tags, etc.
 - Downloading favorites isn't particulary fast, Ruxx will need to fetch info for every item in the list in order to enable filtering
+    
+#### Pools
+Downloading post pool using native tags search functionality is not possible and only RX implements pool functionality  
+To download RX pool use special `pool` tag:
+- Syntax: `pool:X`. `X` = `<pool ID>`. Pool ID you can get from pool page, it's a part of its web address.
+- Downloading RX pool pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
+- Pool posts can be filtered as well. Date filter, additional required / excluded tags, etc.
+- Same as favorites, downloading using custom tags isn't particulary fast, Ruxx will need to fetch info for every item in the list in order to enable filtering
 
 #### Using from console
 - It is possible to use Ruxx as a cmdline tool. In main window you will find `Cmd` section ‒ it generates your cmdline arguments every time you make a change ‒ use those arguments as an example. In console window you may need to escape some of them (path, `OR` groups, tags containing dots, etc.). Most arguments are optional though ‒ the only ones required are `tags` (default module is RX)  

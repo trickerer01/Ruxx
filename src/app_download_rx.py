@@ -32,6 +32,7 @@ __all__ = ('DownloaderRx',)
 SITENAME = b64decode(SITENAME_B_RX).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RX
 ITEMS_PER_PAGE_F = 50
+ITEMS_PER_PAGE_P = 45
 MAX_SEARCH_DEPTH = 200000 + ITEMS_PER_PAGE - 1  # set by site devs
 
 item_info_fields = {'file_url': 'ext'}
@@ -48,7 +49,7 @@ class DownloaderRx(Downloader):
         return True
 
     def _get_sitename(self) -> str:
-        return SITENAME.replace('api.', '') if self.favorites_search_user else SITENAME
+        return SITENAME.replace('api.', '') if self.favorites_search_user or self.pool_search_id else SITENAME
 
     def _get_module_abbr(self) -> str:
         return MODULE_ABBR_RX
@@ -57,7 +58,7 @@ class DownloaderRx(Downloader):
         return FILE_NAME_PREFIX_RX
 
     def _get_items_per_page(self) -> int:
-        return ITEMS_PER_PAGE_F if self.favorites_search_user else ITEMS_PER_PAGE
+        return ITEMS_PER_PAGE_F if self.favorites_search_user else ITEMS_PER_PAGE_P if self.pool_search_id else ITEMS_PER_PAGE
 
     def _get_max_search_depth(self) -> int:
         return MAX_SEARCH_DEPTH
@@ -71,10 +72,10 @@ class DownloaderRx(Downloader):
         return len(search_err) > 0
 
     def _form_page_num_address(self, n: int) -> str:
-        return f'{self.url}&pid={n * (self._get_items_per_page() if self.favorites_search_user else 1):d}'
+        return f'{self.url}&pid={n * (self._get_items_per_page() if self.favorites_search_user or self.pool_search_id else 1):d}'
 
     def _get_all_post_tags(self, raw_html_page: BeautifulSoup) -> list:
-        if self.favorites_search_user:
+        if self.favorites_search_user or self.pool_search_id:
             divs = raw_html_page.find_all('span', class_='thumb')
             for div in divs:
                 tag_a = div.find('a')
@@ -132,6 +133,30 @@ class DownloaderRx(Downloader):
             # items count on all full pages plus items count on last page
             last_thumbs = len(self._get_all_post_tags(raw_html))
             count: Union[int, BeautifulSoup] = (last - 1) + last_thumbs
+            return count
+        elif self.pool_search_id:
+            raw_html = self.fetch_html(f'{url}&pid=0', tries)
+            if raw_html is None:
+                thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
+            last = 1
+            last_page_buttons = raw_html.find_all('a', href=re_post_page_rx)
+            for but in last_page_buttons:
+                but_str = str(but.text)
+                if but_str.isnumeric():
+                    last = max(last, int(but_str))
+
+            if last > self._get_max_search_depth() // self._get_items_per_page():
+                if not self.get_max_id:
+                    trace('Error: items count got past search depth!')
+                return last * self._get_items_per_page()
+            elif last > 1:
+                raw_html = self.fetch_html(f'{url}&pid={(last - 1) * self._get_items_per_page():d}', do_cache=True)
+                if raw_html is None:
+                    thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-448)
+
+            # items count on all full pages plus items count on last page
+            last_thumbs = len(self._get_all_post_tags(raw_html))
+            count: Union[int, BeautifulSoup] = (last - 1) * self._get_items_per_page() + last_thumbs
             return count
         else:
             raw_html = self.fetch_html(f'{url}&pid=0', tries)
@@ -256,6 +281,7 @@ class DownloaderRx(Downloader):
 
     def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:
         return (f'{self._get_sitename()}index.php?page=favorites&s=view&id={self.favorites_search_user}' if self.favorites_search_user else
+                f'{self._get_sitename()}index.php?page=pool&s=show&id={self.pool_search_id}' if self.pool_search_id else
                 f'{self._get_sitename()}index.php?page=dapi&s=post&q=index&tags={tags}{self._maxlim_str(maxlim)}')
 
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:

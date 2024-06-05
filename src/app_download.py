@@ -31,7 +31,7 @@ from app_gui_defines import UNDERSCORE, NEWLINE, NEWLINE_X2
 from app_logger import trace
 from app_module import ProcModule
 from app_network import ThreadedHtmlWorker, DownloadInterruptException, thread_exit
-from app_re import re_favorited_by_tag, re_infolist_filename
+from app_re import re_favorited_by_tag, re_infolist_filename, re_pool_tag
 from app_revision import __RUXX_DEBUG__, APP_NAME, APP_VERSION
 from app_tagger import append_filtered_tags
 from app_task import extract_neg_and_groups, split_tags_into_tasks
@@ -233,7 +233,7 @@ class Downloader(DownloaderBase):
 
             def page_filter(st: DownloaderStates, di: bool) -> int:
                 self.current_state = st
-                if self.favorites_search_user == 0:
+                if self.favorites_search_user == 0 and self.pool_search_id == 0:
                     trace(f'Looking for {"min" if di else "max"} page by date...')
                     return self._get_page_boundary_by_date(di)
                 else:
@@ -301,10 +301,16 @@ class Downloader(DownloaderBase):
 
     def _extract_custom_argument_tags(self) -> None:
         fav_user_tags = list(filter(lambda x: x, [re_favorited_by_tag.fullmatch(t) for t in self.tags_str_arr]))
-        self.favorites_search_user = int(fav_user_tags[-1].group(1)) if fav_user_tags else 0
+        self._extract_favorite_user(fav_user_tags)
         if self.favorites_search_user and self._is_fav_search_conversion_required():
             fav_user_tags = list(filter(lambda x: x, [re_favorited_by_tag.fullmatch(t) for t in self.tags_str_arr]))
             [self.tags_str_arr.remove(f.string) for f in fav_user_tags]
+        pool_tags = list(filter(lambda x: x, [re_pool_tag.fullmatch(t) for t in self.tags_str_arr]))
+        self._extract_pool_id(pool_tags)
+        if self.pool_search_id:
+            pool_tags = list(filter(lambda x: x, [re_pool_tag.fullmatch(t) for t in self.tags_str_arr]))
+            [self.tags_str_arr.remove(f.string) for f in pool_tags]
+        assert sum(int(not not p) for p in [self.favorites_search_user, self.pool_search_id]) <= 1
 
     def _try_preprocess_favorites(self) -> None:
         # all we need here is to gather post ids from user's favorites page(s)
@@ -329,7 +335,30 @@ class Downloader(DownloaderBase):
                 except Exception:
                     trace(f'task {self.current_task_num:d} failed...')
                     raise
-            self.favorites_search_user = 0
+            self._clean_favorite_user()
+
+    def _try_preprocess_pool(self) -> None:
+        # all we need here is to gather post ids from pool page(s)
+        if self.pool_search_id:
+            trace(f'Pool search detected ({self.pool_search_id:d}), additional search will be performed')
+            try:
+                self._fetch_task_items(str(self.pool_search_id))
+                self._extract_cur_task_infos(set())
+                ids_list = sorted(int(self.item_info_dict_per_task[full_id].id) for full_id in self.item_info_dict_per_task)
+                cc = self._get_tags_concat_char()
+                sc = self._get_idval_equal_seaparator()
+                ids_tag_base = f'{cc}~{cc}'.join(f'id{sc}{ii:d}' for ii in ids_list)
+                self.tags_str_arr = [f"({cc}{ids_tag_base}{cc})" if len(ids_list) > 1 else ids_tag_base, *self.tags_str_arr]
+                self.items_raw_per_task.clear()
+                self.item_info_dict_per_task.clear()
+                self.total_count_old = self.total_count = 0
+            except ThreadInterruptException:
+                trace(f'task {self.current_task_num:d} aborted...')
+                raise
+            except Exception:
+                trace(f'task {self.current_task_num:d} failed...')
+                raise
+            self._clean_pool_id()
 
     def _after_filter(self, sleep_time: float = None) -> None:
         self.total_count = len(self.items_raw_all if self.current_state == DownloaderStates.DOWNLOADING else self.items_raw_per_task)
@@ -581,6 +610,7 @@ class Downloader(DownloaderBase):
         self._extract_custom_argument_tags()
         if enable_preprocessing:
             self._try_preprocess_favorites()
+            self._try_preprocess_pool()
         self._parse_tags()
         if self._solve_argument_conflicts():
             thread_sleep(2.0)
@@ -617,7 +647,7 @@ class Downloader(DownloaderBase):
             self.item_info_dict_per_task[idstring] = item_info
             if len(item_info.source) < 2:
                 item_info.source = SOURCE_DEFAULT
-            if __RUXX_DEBUG__ and self.favorites_search_user == 0:
+            if __RUXX_DEBUG__ and self.favorites_search_user == 0 and self.pool_search_id == 0:
                 for key in item_info.__slots__:
                     if key in ItemInfo.optional_slots:
                         continue

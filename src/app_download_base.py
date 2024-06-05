@@ -11,7 +11,7 @@ from abc import abstractmethod
 from datetime import datetime
 from os import path, curdir, listdir
 from re import compile as re_compile
-from typing import List, Dict, Set, Pattern, MutableSet, Tuple, Union
+from typing import List, Dict, Set, Pattern, MutableSet, Tuple, Union, Optional, Match
 
 # requirements
 from bs4 import BeautifulSoup
@@ -79,6 +79,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.known_parents: Set[str] = set()
         self.default_sort = True
         self.favorites_search_user = 0
+        self.pool_search_id = 0
 
     @abstractmethod
     def _is_fav_search_conversion_required(self) -> bool:
@@ -177,6 +178,18 @@ class DownloaderBase(ThreadedHtmlWorker):
     @abstractmethod
     def _can_extract_item_info_without_fetch(self) -> bool:
         ...
+
+    def _extract_favorite_user(self, fav_user_tags: List[Optional[Match]]) -> None:
+        self.favorites_search_user = int(fav_user_tags[-1].group(1)) if fav_user_tags else 0
+
+    def _clean_favorite_user(self) -> None:
+        self.favorites_search_user = 0
+
+    def _extract_pool_id(self, pool_tags: List[Optional[Match]]) -> None:
+        self.pool_search_id = int(pool_tags[-1].group(1)) if pool_tags else 0
+
+    def _clean_pool_id(self) -> None:
+        self.pool_search_id = 0
 
     def _tasks_count(self) -> int:
         return len(self.tags_str_arr)
