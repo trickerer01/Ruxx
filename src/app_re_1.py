@@ -132,7 +132,7 @@ re_tags_exclude_rx_a_i = (
     r'c(?:hidna|lipse|stasy)|d(?:g(?:y|ing)|it(?:ed)?)|f(?:fects?)|g(?:g(?:plant|s?_[^il].+?)|irls?|ypt(?:ian)?)|'  # e
     r'l(?:astic|d(?:er|ritch)|e(?:ctr(?:ic|o)|gant|mental|namics|vators?)|f(?:_.+?|quest)|i(?:tes?|xirs?)|sworld)|'  # e
     r'm(?:a(?:ciated|nata)|b(?:ers?|lems?|rac(?:e[ds]?|ing))|erge(?:nce)?|o(?:_.+?|ji|t(?:es?|ic?ons?)|s)|p(?:loyee|ress))|'  # e
-    r'n(?:canto|d(?:_.+?|less|os(?:cope|oma))|e(?:m(?:ies|y)|rgy)|g(?:l(?:and|ish)|rish)|joy(?:ing|s)?|t(?:angled|ering)|'  # e
+    r'n(?:canto|d(?:_.+?|less|os(?:cope|oma))|e(?:m(?:ies|y)|rgy)|g(?:l(?:and|ish)|rish)|joy(?:ing|s)?|t(?:angled|ering|ity)|'  # e
     r'v(?:elop(?:ed?|ing)?|y))|'  # en
     r'o(?:nbound)|p(?:i(?:c[\ds]?|sode(?:_?\d|s)?))|q(?:ui(?:d|ne))|'  # e
     r'r(?:a(?:gon|se[dr]?)|e(?:ct(?:ion)?|dar)|o(?:_.+?|g(?:e|os)|tic)|r(?:ings?|or(?:s|tale)?))|'  # e
