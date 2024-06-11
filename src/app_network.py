@@ -24,13 +24,13 @@ from bs4 import BeautifulSoup
 from requests import Session, Response, HTTPError, adapters, structures
 
 # internal
+from app_debug import __RUXX_DEBUG__
 from app_defines import (
     ThreadInterruptException, DownloadModes, HtmlCacheMode, CONNECT_TIMEOUT_BASE, CONNECT_RETRIES_BASE, CONNECT_RETRIES_CHUNK,
     WRITE_CHUNK_SIZE, DOWNLOAD_CHUNK_SIZE, KNOWN_EXTENSIONS_VID,
 )
 from app_gui_defines import SLASH
 from app_logger import trace
-from app_revision import __RUXX_DEBUG__
 
 __all__ = ('ThreadedHtmlWorker', 'DownloadInterruptException', 'thread_exit')
 

@@ -22,6 +22,7 @@ from typing import Dict, List, Callable, Iterable, Set, MutableSet, Match
 from iteration_utilities import unique_everseen
 
 # internal
+from app_debug import __RUXX_DEBUG__
 from app_defines import (
     ThreadInterruptException, DownloaderStates, DownloadModes, ItemInfo, Mem,
     DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE, UTF8, SOURCE_DEFAULT, PLATFORM_WINDOWS, Comment,
@@ -32,7 +33,7 @@ from app_logger import trace
 from app_module import ProcModule
 from app_network import ThreadedHtmlWorker, DownloadInterruptException, thread_exit
 from app_re import re_favorited_by_tag, re_infolist_filename, re_pool_tag
-from app_revision import __RUXX_DEBUG__, APP_NAME, APP_VERSION
+from app_revision import APP_NAME, APP_VERSION
 from app_tagger import append_filtered_tags
 from app_task import extract_neg_and_groups, split_tags_into_tasks
 from app_utils import confirm_yes_no, normalize_path, trim_undersores, format_score

@@ -23,6 +23,7 @@ from tkinter import (
 from typing import Optional, Callable, List, Union, Dict, Iterable, Tuple
 
 # internal
+from app_debug import __RUXX_DEBUG__
 from app_defines import (
     PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE,
     KNOWN_EXTENSIONS_STR, CONNECT_RETRIES_BASE,
@@ -43,7 +44,7 @@ from app_module import ProcModule
 from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, ABOUT_MSG
 from app_logger import Logger
 from app_re import re_space_mult
-from app_revision import __RUXX_DEBUG__, APP_VERSION, APP_NAME
+from app_revision import APP_VERSION, APP_NAME
 from app_tooltips import WidgetToolTip
 from app_utils import normalize_path
 from app_validators import valid_proxy, valid_positive_int, valid_window_position

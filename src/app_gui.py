@@ -18,6 +18,7 @@ from typing import Optional, List, Tuple
 
 # internal
 from app_cmdargs import prepare_arglist
+from app_debug import __RUXX_DEBUG__
 from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP,
     PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, FMT_DATE, max_progress_value_for_state,
@@ -47,7 +48,6 @@ from app_gui_defines import (
 )
 from app_module import ProcModule
 from app_logger import Logger, trace
-from app_revision import __RUXX_DEBUG__
 from app_settings import Settings
 from app_tags_parser import reset_last_tags, parse_tags
 from app_utils import normalize_path, confirm_yes_no, ensure_compatibility
