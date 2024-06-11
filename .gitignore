@@ -11,6 +11,7 @@ version_info.txt
 *.cfg
 *.lnk
 src/curr.py
+src/app_genmsg.py
 src/app_genrev.py
 src/app_grab_tags*.py
 src/app_release.py
