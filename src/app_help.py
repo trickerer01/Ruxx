@@ -12,7 +12,7 @@ from app_revision import APP_NAME, APP_VERSION, APP_REV_DATE
 APP_AUTHOR_NICKNAME = 'trickerer'
 APP_AUTHOR = f'Dmitriy \'{APP_AUTHOR_NICKNAME}\' Komardin'
 APP_ADDRESS = f'github.com/{APP_AUTHOR_NICKNAME}01/{APP_NAME}'
-APP_YEARS = '2020-2023'
+APP_YEARS = '2020-2024'
 APP_BUILD_TYPE_STR = 'Debug' if __RUXX_DEBUG__ else 'Release'
 
 # cmdline args help messages
