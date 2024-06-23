@@ -50,9 +50,9 @@ class FileDownloadResult:
 
 
 def thread_exit(err_str='', code=-1) -> None:
-    trace(err_str, True)
+    trace(f'Exiting with message: \'{err_str}\', code: {code:d}', True)
     thread_sleep(0.15)
-    raise ThreadInterruptException(str(code))
+    raise ThreadInterruptException
 
 
 class ThreadedWorker(ABC):

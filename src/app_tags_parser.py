@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from re import compile as re_compile
-from typing import Optional, Pattern, Sequence, Tuple
+from typing import Optional, Pattern, Sequence, Tuple, List
 
 # requirements
 from iteration_utilities import unique_everseen
@@ -17,7 +17,7 @@ from iteration_utilities import unique_everseen
 from app_module import ProcModule
 from app_re import re_space_mult, re_favorited_by_tag, re_pool_tag
 
-__all__ = ('reset_last_tags', 'parse_tags')
+__all__ = ('reset_last_tags', 'parse_tags', 'convert_taglist')
 
 DEFAULT_TAGS = ('sfw',)
 
@@ -145,6 +145,16 @@ def split_or_group(gr: str) -> str:
     for part in orgr_parts:
         assert not re_negative_meta.fullmatch(part)  # negative meta tags
     return f'( {" ~ ".join(part for part in orgr_parts)} )'
+
+
+def normalize_tag(tag: str) -> str:
+    return tag.replace('+', '%2b').replace(' ', '+')
+
+
+def convert_taglist(taglist: Sequence[str]) -> List[str]:
+    parse_suc, parsed = parse_tags(' '.join(taglist))
+    assert parse_suc, f'Invalid tags: {str(taglist)}'
+    return [normalize_tag(tag) for tag in parsed]
 
 
 def ret_tags(suc: bool, tag_list: Sequence[str]) -> Tuple[bool, Sequence[str]]:

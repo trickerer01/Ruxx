@@ -35,6 +35,7 @@ from app_network import ThreadedHtmlWorker, DownloadInterruptException, thread_e
 from app_re import re_favorited_by_tag, re_infolist_filename, re_pool_tag
 from app_revision import APP_NAME, APP_VERSION
 from app_tagger import append_filtered_tags
+from app_tags_parser import convert_taglist
 from app_task import extract_neg_and_groups, split_tags_into_tasks
 from app_utils import confirm_yes_no, normalize_path, trim_undersores, format_score
 
@@ -326,7 +327,7 @@ class Downloader(DownloaderBase):
                     cc = self._get_tags_concat_char()
                     sc = self._get_idval_equal_seaparator()
                     ids_tag_base = f'{cc}~{cc}'.join(f'id{sc}{ii:d}' for ii in ids_list)
-                    self.tags_str_arr = [f"({cc}{ids_tag_base}{cc})" if len(ids_list) > 1 else ids_tag_base, *self.tags_str_arr]
+                    self.tags_str_arr[0:] = [f"({cc}{ids_tag_base}{cc})" if len(ids_list) > 1 else ids_tag_base, *self.tags_str_arr]
                     self.items_raw_per_task.clear()
                     self.item_info_dict_per_task.clear()
                     self.total_count_old = self.total_count = 0
@@ -349,7 +350,7 @@ class Downloader(DownloaderBase):
                 cc = self._get_tags_concat_char()
                 sc = self._get_idval_equal_seaparator()
                 ids_tag_base = f'{cc}~{cc}'.join(f'id{sc}{ii:d}' for ii in ids_list)
-                self.tags_str_arr = [f"({cc}{ids_tag_base}{cc})" if len(ids_list) > 1 else ids_tag_base, *self.tags_str_arr]
+                self.tags_str_arr[0:] = [f"({cc}{ids_tag_base}{cc})" if len(ids_list) > 1 else ids_tag_base, *self.tags_str_arr]
                 self.items_raw_per_task.clear()
                 self.item_info_dict_per_task.clear()
                 self.total_count_old = self.total_count = 0
@@ -463,7 +464,7 @@ class Downloader(DownloaderBase):
         trace(f'\nAll {"skipped" if skip_all else "processed"} ({self.total_count_all:d} item(s))...')
 
     def _extract_negative_and_groups(self) -> None:
-        self.tags_str_arr, self.neg_and_groups = extract_neg_and_groups(' '.join(self.tags_str_arr))
+        self.tags_str_arr[0:], self.neg_and_groups = extract_neg_and_groups(' '.join(self.tags_str_arr))
 
     def _parse_tags(self) -> None:
         cc = self._get_tags_concat_char()
@@ -477,7 +478,7 @@ class Downloader(DownloaderBase):
         sort_checker = (lambda s: (s.startswith('order=') and s != 'order=id_desc') if ProcModule.is_rn() else
                                   (s.startswith('sort:') and s != 'sort:id' and s != 'sort:id:desc'))
         self.default_sort = not any(sort_checker(tag) for tag in self.tags_str_arr)
-        self.tags_str_arr = split_tags_into_tasks(self.tags_str_arr, cc, sc, split_always)
+        self.tags_str_arr[0:] = split_tags_into_tasks(self.tags_str_arr, cc, sc, split_always)
         self.orig_tasks_count = self._tasks_count()
         if not self.default_sort:
             if self._tasks_count() > 1:
@@ -533,7 +534,8 @@ class Downloader(DownloaderBase):
 
     def _check_tags(self) -> None:
         if self._tasks_count() != 1:
-            raise ThreadInterruptException('Cannot check tags: more than 1 task was formed')
+            trace('Cannot check tags: more than 1 task was formed')
+            raise ThreadInterruptException
         cur_tags = self.tags_str_arr[0]
         self.url = self._form_tags_search_address(cur_tags)
         total_count_or_html = self._get_items_query_size_or_html(self.url, tries=1)
@@ -606,7 +608,7 @@ class Downloader(DownloaderBase):
         self.date_max = args.maxdate or self.date_max
         self.dest_base = normalize_path(args.path) if args.path else self.dest_base
         self.warn_nonempty = args.warn_nonempty or self.warn_nonempty
-        self.tags_str_arr = args.tags.copy()
+        self.tags_str_arr[0:] = convert_taglist(args.tags)
         self._extract_negative_and_groups()
         self._extract_custom_argument_tags()
         if enable_preprocessing:

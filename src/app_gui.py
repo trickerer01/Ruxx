@@ -280,8 +280,8 @@ def prepare_cmdline() -> List[str]:
     # base
     newstr = ['Cmd:']
     # + tags
-    _, tags_list = parse_tags(str(getrootconf(Options.TAGS)))
-    tags_str = ' '.join(tag.replace('+', '%2b').replace(' ', '+') for tag in tags_list)
+    tags_valid, tags_list = parse_tags(str(getrootconf(Options.TAGS)))
+    tags_str = str(getrootconf(Options.TAGS)) if tags_valid else ' '.join(tags_list)
     newstr.append(tags_str)
     # + module
     module_name = ProcModule.get_cur_module_name()
