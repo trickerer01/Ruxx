@@ -565,8 +565,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             m_dict.clear()
             if any(all(any(match_neg_group(patt, tag, plist) for tag in tags_list) for patt in plist) for plist in self.neg_and_groups):
                 # Note: above algorithm is minimal match, only first matching combination will be reported
-                trace('\n'.join(
-                    f'{abbrp}{item_id} contains excluded tags combination \'{mk}\': {",".join(m_dict[mk])}. Skipped!' for mk in m_dict))
+                trace('\n'.join(f'{abbrp}{item_id} contains excluded tags combination \'{mk}\': '
+                                f'{",".join(m_dict[mk])}. Skipped!' for mk in m_dict if len(m_dict[mk]) > 1))
                 if item_id in parents:
                     parents.remove(item_id)
                 if item_info.parent_id in parents:
