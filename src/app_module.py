@@ -10,7 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS
 
 
-class ProcModule(object):
+class ProcModule:
     PROC_RX = 1
     PROC_RN = 2
     PROC_RS = 3
