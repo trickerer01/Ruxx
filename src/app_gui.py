@@ -21,7 +21,8 @@ from app_cmdargs import prepare_arglist
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP,
-    PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, FMT_DATE, max_progress_value_for_state,
+    PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, FMT_DATE,
+    max_progress_value_for_state,
 )
 from app_download import Downloader
 from app_downloaders import get_new_downloader
@@ -32,8 +33,8 @@ from app_gui_base import (
     window_hcookiesm, window_proxym, window_timeoutm, window_retriesm, register_menu, register_submenu, create_base_window_widgets,
     text_cmdm, get_icon, init_additional_windows, get_global, config_global, is_global_disabled, is_menu_disabled, is_focusing,
     set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list, browse_path, register_menu_command, toggle_console,
-    register_submenu_command, register_menu_checkbutton, register_menu_radiobutton, register_menu_separator, get_all_media_files_in_cur_dir,
-    update_lastpath, hotkey_text, config_menu,
+    register_submenu_command, register_menu_checkbutton, register_menu_radiobutton, register_submenu_radiobutton, register_menu_separator,
+    get_all_media_files_in_cur_dir, update_lastpath, hotkey_text, config_menu,
 )
 from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
@@ -44,7 +45,7 @@ from app_gui_defines import (
     OPTION_CMD_TIMEOUT_CMD, OPTION_CMD_RETRIES_CMD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4,
     OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_VERBOSE, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE_CMD, OPTION_CMD_PARCHI,
     OPTION_VALUES_PARCHI, OPTION_CMD_CACHE_PROCCED_HTML,
-    Options, Globals, Menus, SubMenus, Icons, CVARS, hotkeys, menu_items, menu_item_orig_states, gobject_orig_states,
+    Options, Globals, Menus, SubMenus, Icons, InfoSaveModes, CVARS, hotkeys, menu_items, menu_item_orig_states, gobject_orig_states,
 )
 from app_module import ProcModule
 from app_logger import Logger, trace
@@ -646,13 +647,16 @@ def init_menus() -> None:
         config_menu(Menus.FILE, SubMenus.OPENFOLDER, state=STATE_DISABLED)  # disable 'Open download folder'
     # 2) Edit
     register_menu('Edit', Menus.EDIT)
-    register_menu_checkbutton('Prefix file names with \'rx_\'', CVARS.get(Options.FNAMEPREFIX))
+    register_menu_checkbutton(f'Prefix file names with \'{ProcModule.get_cur_module_name()}_\'', CVARS.get(Options.FNAMEPREFIX))
+    register_menu_separator()
     register_menu_checkbutton('Save tags', CVARS.get(Options.SAVE_TAGS))
     register_menu_checkbutton('Save source links', CVARS.get(Options.SAVE_SOURCES))
     register_menu_checkbutton('Save comments', CVARS.get(Options.SAVE_COMMENTS))
-    register_menu_radiobutton('Save info normally', CVARS.get(Options.INFO_SAVE_MODE), 0)
-    register_menu_radiobutton('Save info per file', CVARS.get(Options.INFO_SAVE_MODE), 1)
-    register_menu_radiobutton('Save and merge info lists', CVARS.get(Options.INFO_SAVE_MODE), 2)
+    register_submenu('Save info mode...')
+    register_submenu_radiobutton('per run', CVARS.get(Options.INFO_SAVE_MODE), InfoSaveModes.PER_RUN.value)
+    register_submenu_radiobutton('per file', CVARS.get(Options.INFO_SAVE_MODE), InfoSaveModes.PER_FILE.value)
+    register_submenu_radiobutton('merge info lists', CVARS.get(Options.INFO_SAVE_MODE), InfoSaveModes.MERGE_LISTS.value)
+    register_menu_separator()
     register_menu_checkbutton('Extend file names with extra info', CVARS.get(Options.APPEND_SOURCE_AND_TAGS))
     register_menu_checkbutton('Warn if download folder is not empty', CVARS.get(Options.WARN_NONEMPTY_DEST))
     register_menu_checkbutton('Verbose log', CVARS.get(Options.VERBOSE))
@@ -663,9 +667,9 @@ def init_menus() -> None:
         register_menu_checkbutton('Console', CVARS.get(Options.ISCONSOLELOGOPEN), toggle_console)
     # 4) Module
     register_menu('Module', Menus.MODULE)
-    register_menu_radiobutton('rx', CVARS.get(Options.MODULE), ProcModule.PROC_RX, lambda: set_proc_module(ProcModule.PROC_RX))
-    register_menu_radiobutton('rn', CVARS.get(Options.MODULE), ProcModule.PROC_RN, lambda: set_proc_module(ProcModule.PROC_RN))
-    register_menu_radiobutton('rs', CVARS.get(Options.MODULE), ProcModule.PROC_RS, lambda: set_proc_module(ProcModule.PROC_RS))
+    register_menu_radiobutton(MODULE_ABBR_RX, CVARS.get(Options.MODULE), ProcModule.PROC_RX, lambda: set_proc_module(ProcModule.PROC_RX))
+    register_menu_radiobutton(MODULE_ABBR_RN, CVARS.get(Options.MODULE), ProcModule.PROC_RN, lambda: set_proc_module(ProcModule.PROC_RN))
+    register_menu_radiobutton(MODULE_ABBR_RS, CVARS.get(Options.MODULE), ProcModule.PROC_RS, lambda: set_proc_module(ProcModule.PROC_RS))
     # 5) Connection
     register_menu('Connection', Menus.CONNECTION)
     register_menu_command('Headers / Cookies...', window_hcookiesm().toggle_visibility, Options.ISHCOOKIESOPEN)

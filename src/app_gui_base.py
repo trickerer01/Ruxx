@@ -56,7 +56,7 @@ __all__ = (
     'get_global', 'config_global', 'is_global_disabled', 'is_menu_disabled', 'is_focusing', 'toggle_console', 'hotkey_text',
     'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list', 'ask_filename', 'browse_path',
     'register_menu_command', 'register_submenu_command', 'register_menu_checkbutton', 'register_menu_radiobutton',
-    'register_menu_separator', 'get_all_media_files_in_cur_dir', 'update_lastpath', 'config_menu',
+    'register_submenu_radiobutton', 'register_menu_separator', 'get_all_media_files_in_cur_dir', 'update_lastpath', 'config_menu',
 )
 
 
@@ -1362,6 +1362,12 @@ def register_menu_radiobutton(label: str, variablename: str, value: int, command
     if variablename not in int_vars:
         int_vars[variablename] = IntVar(rootm(), value=value, name=variablename)  # needed so it won't be discarded
     c_menum().add_radiobutton(label=label, command=command, variable=int_vars.get(variablename), value=value, accelerator=hotkey_str)
+
+
+def register_submenu_radiobutton(label: str, variablename: str, value: int, command: Callable = None, hotkey_str: str = None) -> None:
+    if variablename not in int_vars:
+        int_vars[variablename] = IntVar(rootm(), value=value, name=variablename)  # needed so it won't be discarded
+    c_submenum().add_radiobutton(label=label, command=command, variable=int_vars.get(variablename), value=value, accelerator=hotkey_str)
 
 
 def register_menu_separator() -> None:

@@ -34,13 +34,14 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Edit -> Save tags** ‒ an additional (text) file will be created containing tags for every post
 - **Edit -> Save source links** ‒ an additional (text) file will be created containing source (if present) for every post
 - **Edit -> Save comments** ‒ an additional (text) file will be created containing comments (if present) for every post
-- **Edit -> Save info normally** ‒ this is the default tags/sources/comments file save mode, a single file per info category
-- **Edit -> Save info per file** ‒ create above (checked) text files per each downloaded file (not recommended)
-- **Edit -> Save and merge info lists** ‒ gather and parse existing info files, merge and save all infos together, one text file per info category will be stored **and parsed info files will be deleted**
+- **Edit -> Save info mode...** ‒ tags/sources/comments info file save mode
+  - **per run** ‒ create a single file per checked info category for every (non-empty) downloader run, this is the default mode
+  - **per file** ‒ create info files per each downloaded file (not recommended)
+  - **merge info lists** ‒ gather and parse existing info files, merge and save all infos together, one text file per info category will be stored. **Parsed old info files will be deleted**
 - **Edit -> Extend file names with extra info** ‒ all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
-- **Edit -> Warn if donwload folder is not empty** ‒ in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
+- **Edit -> Warn if download folder is not empty** ‒ in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
 - **Edit -> Verbose log** ‒ Enable logging of technical messages not related to actual download process. Verbose log is one of proper issue report requirements
-- **Connection -> Headers / Cookies** \<F3> ‒ solely to work with cloudflare protected websites (RN). You'll have to provide your `cf_clearance` cookie, and the `User-Agent` header has to match the one used in your web browser for target wesite ‒ to find it while browsing said website open `Web Developer tools -> Network`, reload the page and check `request headers`
+- **Connection -> Headers / Cookies** \<F3> ‒ For some websites (RN) and in some other cases you'll have to provide your `cf_clearance` cookie, and the `User-Agent` header has to match the one used in your web browser for target website ‒ to find it while browsing said website open `Web Developer tools -> Network` (or similar), reload the page and check `request headers`
 - **Connection -> Set proxy** \<F4> ‒ you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
 - **Connection -> Set timeout** \<F5> ‒ override connection timeout if need be
 - **Connection -> Set retries count** \<F6> ‒ override connection retries count, may be useful when using proxy
@@ -53,9 +54,9 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Tools -> Un-tag files...** ‒ renames selected Ruxx-downloaded media files, stripping file names of all extra info
 - **Tools -> Re-tag files...** ‒ renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)
 - **Tools -> Sort files into subfolders...** ‒ a set of tools to separate downloaded files if need be:
-    - **by type** ‒ sort by file type (checking file extension). You can separate files by `videos`/`images`/`flash (RN)` or by extension itself. Note that both `jpeg` and `jpg` files will be placed into **jpg** folder
-    - **by size** ‒ sort by file size (you'll have to provide a threshold, in Megabytes). You can use multiple thesholds, separated by space, in any order: `0.5 10 3.0 5.00`
-    - **by score** ‒ sort by post score. Make sure that selected files include score in their names or this won't work. You can use multiple thesholds, separated by space, in any order: `100 250 50 500`
+  - **by type** ‒ sort by file type (checking file extension). You can separate files by `videos`/`images`/`flash (RN)` or by extension itself. Note that both `jpeg` and `jpg` files will be placed into **jpg** folder
+  - **by size** ‒ sort by file size (you'll have to provide a threshold, in Megabytes). You can use multiple thesholds, separated by space, in any order: `0.5 10 3.0 5.00`
+  - **by score** ‒ sort by post score. Make sure that selected files include score in their names or this won't work. You can use multiple thesholds, separated by space, in any order: `100 250 50 500`
 - **Help -> Tags** ‒ a quick list of tag types and how to use them (for selected module)
 - **Tags checking** ‒ there is a small button near the **Tags** field. When pressed, Ruxx will try to quickly check if this search yields any results, so this won't work with tags which cannot be passed to website's search engine directly (`AND` group, `OR` groups with meta tags, etc.). As a result the **Tags** field will briefly flash green / red. Additionally, if successful, a window will appear showing the number of results found. Note that this number my be not equal to the files count you'll get downloaded, as date filters, file type filters and related posts filter do not apply during this quick check; when using `favorited_by:X` or `pool:X` special meta tags negative tags also do not apply (except for RN module `favorited_by` tag where it's supported natively)
 

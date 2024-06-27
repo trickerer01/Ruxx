@@ -286,6 +286,13 @@ BUTTONS_TO_UNFOCUS = (
 # end buttons to unfocus
 
 
+@unique
+class InfoSaveModes(IntEnum):
+    PER_RUN = 0
+    PER_FILE = auto()
+    MERGE_LISTS = auto()
+
+
 # menus
 @unique
 class Menus(IntEnum):
@@ -304,7 +311,7 @@ class Menus(IntEnum):
 
 class SubMenus(IntEnum):
     SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
-    PREFIX, STAGS, SSOURCE, SCOMMENTS, SNORMAL, SPERFILE, LMERGE, EXTEND, WNONEMPTY, VERBOSE = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+    PREFIX, STAGS, SSOURCE, SCOMMENTS, SMODE, EXTEND, WNONEMPTY, VERBOSE = 0, 2, 3, 4, 5, 7, 8, 9
     RX, RN, RS = 0, 1, 2
     HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6
     DOWNLOAD, CHECKTAGS = 0, 2
@@ -326,8 +333,8 @@ class RuxxMenu:
 
 menu_items = {
     Menus.FILE: RuxxMenu(SubMenus.SAVE, SubMenus.LOAD, SubMenus.RESET),
-    Menus.EDIT: RuxxMenu(SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.SNORMAL,
-                         SubMenus.SPERFILE, SubMenus.LMERGE, SubMenus.EXTEND, SubMenus.WNONEMPTY, SubMenus.VERBOSE),
+    Menus.EDIT: RuxxMenu(SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.SMODE,
+                         SubMenus.EXTEND, SubMenus.WNONEMPTY, SubMenus.VERBOSE),
     Menus.MODULE: RuxxMenu(SubMenus.RX, SubMenus.RN, SubMenus.RS),
     Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
                                SubMenus.IGNOREPROXY, SubMenus.CACHEMODE),
