@@ -687,11 +687,10 @@ class Downloader(DownloaderBase):
             except Exception:
                 thread_exit(f'ERROR: Unable to create folder {self.dest_base}!')
 
-        orig_ids = {self.item_info_dict_all[k].id for k in self.item_info_dict_all}
+        orig_ids: Set[str] = {self.item_info_dict_all[k].id for k in self.item_info_dict_all}
         merged_files = self._try_merge_info_files()
         saved_files = list()
-        self.item_info_dict_all: Dict[str, ItemInfo] = {k: self.item_info_dict_all[k] for k in sorted(self.item_info_dict_all.keys())}
-        item_info_list = list(self.item_info_dict_all.values())
+        item_info_list = sorted(self.item_info_dict_all.values())
         id_begin = item_info_list[0].id
         id_end = item_info_list[-1].id
         abbrp = self._get_module_abbr_p()

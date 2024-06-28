@@ -46,6 +46,9 @@ class ItemInfo:
         self.has_children = ''
         self.parent_id = ''
 
+    def __lt__(self, other) -> bool:
+        return int(self.id or 0) < int(other.id or 0)
+
 
 class PageCheck:
     """
