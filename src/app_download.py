@@ -542,7 +542,6 @@ class Downloader(DownloaderBase):
         self.total_count = total_count_or_html if isinstance(total_count_or_html, int) else 1
 
     def _get_max_id(self) -> None:
-        self.get_max_id = True
         self.include_parchi = False
         self.url = self._form_tags_search_address('', 1)
         count_or_html = self._get_items_query_size_or_html(self.url)
@@ -584,6 +583,7 @@ class Downloader(DownloaderBase):
 
     def launch_get_max_id(self, args: Namespace) -> None:
         """Public, needed by core"""
+        self.get_max_id = True
         self._launch(args, self._get_max_id, False)
 
     def _parse_args(self, args: Namespace, enable_preprocessing=True) -> None:
@@ -608,7 +608,7 @@ class Downloader(DownloaderBase):
         self.date_max = args.maxdate or self.date_max
         self.dest_base = normalize_path(args.path) if args.path else self.dest_base
         self.warn_nonempty = args.warn_nonempty or self.warn_nonempty
-        self.tags_str_arr[0:] = convert_taglist(args.tags)
+        self.tags_str_arr[0:] = [] if self.get_max_id else convert_taglist(args.tags)
         self._extract_negative_and_groups()
         self._extract_custom_argument_tags()
         if enable_preprocessing:
