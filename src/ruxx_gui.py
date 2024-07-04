@@ -20,8 +20,12 @@ def run_gui() -> None:
 
 
 if __name__ == '__main__':
-    run_gui()
-    sys.exit(0)
+    if len(sys.argv) <= 1:
+        run_gui()
+        sys.exit(0)
+    else:
+        print('ERROR: Ruxx cmd arguments found. To run CMD use ruxx_cmd.py')
+        sys.exit(-1)
 
 #
 #
