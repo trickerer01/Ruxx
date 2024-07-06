@@ -23,6 +23,7 @@ BUT_CTRL_O = '<Control-o>'
 BUT_CTRL_L = '<Control-l>'
 BUT_CTRL_SHIFT_D = '<Control-Shift-D>'
 BUT_CTRL_SHIFT_C = '<Control-Shift-C>'
+BUT_CTRL_SHIFT_E = '<Control-Shift-E>'
 BUT_CTRL_BACKSPACE = '<Control-BackSpace>'
 BUT_CTRL_DELETE = '<Control-Delete>'
 BUT_F1 = '<F1>'
@@ -168,6 +169,7 @@ class Options(IntEnum):
     WINDOW_POSITION = auto()
     ACTION_DOWNLOAD = auto()  # unbound, internal
     ACTION_CHECKTAGS = auto()  # unbound, internal
+    ACTION_CLEARLOG = auto()  # unbound, internal
     ACTION_OPEN_DWN_FOLDER = auto()  # unbound, internal
 
     def __str__(self) -> str:
@@ -314,7 +316,7 @@ class SubMenus(IntEnum):
     PREFIX, STAGS, SSOURCE, SCOMMENTS, SMODE, EXTEND, WNONEMPTY, VERBOSE = 0, 2, 3, 4, 5, 7, 8, 9
     RX, RN, RS = 0, 1, 2
     HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6
-    DOWNLOAD, CHECKTAGS = 0, 2
+    DOWNLOAD, CHECKTAGS, CLEARLOG = 0, 1, 3
     IDLIST, UNTAG, RETAG, SORT = 0, 2, 3, 5
     DFULL, DSKIP, DTOUCH, DLIMSET, DLIMRESET = 0, 1, 2, 3, 4
 
@@ -348,7 +350,7 @@ menu_item_orig_states = {
     Menus.EDIT: (STATE_NORMAL,) * 10,
     Menus.MODULE: (STATE_NORMAL,) * 3,
     Menus.CONNECTION: (STATE_NORMAL,) * 7,
-    Menus.ACTIONS: (STATE_NORMAL,) * 3,
+    Menus.ACTIONS: (STATE_NORMAL,) * 4,
     Menus.TOOLS: (STATE_NORMAL,) * 6,
     Menus.DEBUG: (STATE_NORMAL,) * 5,
 }
@@ -365,6 +367,7 @@ hotkeys = {
     Options.ISLOADSETTINGSOPEN: BUT_CTRL_O,
     Options.ACTION_DOWNLOAD: BUT_CTRL_SHIFT_D,
     Options.ACTION_CHECKTAGS: BUT_CTRL_SHIFT_C,
+    Options.ACTION_CLEARLOG: BUT_CTRL_SHIFT_E,
     Options.ACTION_OPEN_DWN_FOLDER: BUT_CTRL_L,
 }
 # end hotkeys

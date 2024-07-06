@@ -682,8 +682,9 @@ def init_menus() -> None:
     # 6) Action
     register_menu('Actions', Menus.ACTIONS)
     register_menu_command('Download', do_download, Options.ACTION_DOWNLOAD, True)
-    register_menu_separator()
     register_menu_command('Check tags', check_tags_direct, Options.ACTION_CHECKTAGS, True)
+    register_menu_separator()
+    register_menu_command('Clear log', Logger.wnd.clear, Options.ACTION_CLEARLOG, True)
     # 7) Tools
     register_menu('Tools', Menus.TOOLS)
     register_menu_command('Load from ID list...', load_id_list)

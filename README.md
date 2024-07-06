@@ -50,6 +50,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Connection -> Cache processed HTML** ‒ by default HTML is cached as raw bytes, enabling this makes Ruxx cache HTML after it was processed into manageable form - a little bit faster but consumes much more memory. Mainly affects RS module
 - **Actions -> Download** \<Ctrl+Shift+D> ‒ same as download button
 - **Actions -> Check tags** \<Ctrl+Shift+C> ‒ same as check tags button
+- **Actions -> Clear log** \<Ctrl+Shift+E> ‒ same as clear log button
 - **Tools -> Load from ID list** ‒ Allows you to load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group expression, effectively allowing you to search for those ids. ~~Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details.~~ Re-enabled since version `1.1.284` for all (RX, RS and RN) modules using a workaround, but doesn't run in parallel so be aware of that
 - **Tools -> Un-tag files...** ‒ renames selected Ruxx-downloaded media files, stripping file names of all extra info
 - **Tools -> Re-tag files...** ‒ renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)

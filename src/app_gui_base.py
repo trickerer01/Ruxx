@@ -498,7 +498,7 @@ class LogWindow(BaseWindow):
         upframe = BaseFrame(self.window, height=25)
         upframe.pack(side=TOP, fill=X)
 
-        but_clear = Button(upframe, height=1, text='Clear log', command=self._clear)
+        but_clear = Button(upframe, height=1, text='Clear log', command=self.clear)
         but_clear.pack(fill=X)
 
         self.text = Text(self.window, font=FONT_SANS_SMALL, relief=SUNKEN, bd=1, bg=COLOR_LIGHTGRAY, height=1)
@@ -537,7 +537,7 @@ class LogWindow(BaseWindow):
             self.show()
         setrootconf(Options.ISLOGOPEN, self.visible)
 
-    def _clear(self) -> None:
+    def clear(self) -> None:
         self.text.config(state=STATE_NORMAL)
         self.text.delete(1.0, END)
         self.text.config(state=STATE_DISABLED)
