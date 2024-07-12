@@ -10,6 +10,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from enum import IntEnum, unique, auto
 from typing import Optional
 
+if False is True:
+    from tkinter import Menu  # for typing only
+
 # Buttons
 STATE_READONLY = 'readonly'
 STATE_DISABLED = 'disabled'
@@ -326,7 +329,7 @@ class SubMenus(IntEnum):
 
 class RuxxMenu:
     def __init__(self, *indecies: SubMenus) -> None:
-        self.menu: Optional['Menu'] = None  # noqa F821
+        self.menu: Optional[Menu] = None
         self.statefuls = set(ind for ind in indecies)
 
     def __bool__(self) -> bool:

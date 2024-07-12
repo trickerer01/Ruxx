@@ -18,6 +18,9 @@ from app_defines import UTF8
 from app_gui_defines import STATE_NORMAL, STATE_DISABLED
 from app_utils import find_first_not_of
 
+if False is True:
+    from app_gui_base import LogWindow  # for typing only
+
 __all__ = ('Logger', 'trace')
 
 
@@ -27,7 +30,7 @@ class Logger:
     pending_strings: List[str] = []
     is_cmdline = False
     is_disabled = False
-    wnd: Optional['LogWindow'] = None  # noqa F821
+    wnd: Optional[LogWindow] = None
 
     @staticmethod
     def init(is_cmd: bool, is_disabled=False) -> None:
