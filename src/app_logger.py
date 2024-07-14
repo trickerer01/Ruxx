@@ -30,7 +30,7 @@ class Logger:
     pending_strings: List[str] = []
     is_cmdline = False
     is_disabled = False
-    wnd: Optional[LogWindow] = None
+    wnd: Optional['LogWindow'] = None
 
     @staticmethod
     def init(is_cmd: bool, is_disabled=False) -> None:
