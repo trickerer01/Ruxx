@@ -31,6 +31,7 @@ from app_defines import (
 )
 from app_gui_defines import SLASH
 from app_logger import trace
+from app_module import ProcModule
 
 __all__ = ('ThreadedHtmlWorker', 'DownloadInterruptException', 'thread_exit')
 
@@ -50,7 +51,7 @@ class FileDownloadResult:
 
 
 def thread_exit(err_str='', code=-1) -> None:
-    trace(f'Exiting with message: \'{err_str}\', code: {code:d}', True)
+    trace(f'Exiting with code {code:d}, message:\n{err_str}', True)
     thread_sleep(0.15)
     raise ThreadInterruptException
 
@@ -199,7 +200,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                 raise new_exc
                             ofile.write(temp)
 
-                        sreq = s.request('HEAD', link, allow_redirects=False)
+                        sreq = s.request('HEAD', link, allow_redirects=False, headers={'Bytes': str(10**12)})
                         sreq.raise_for_status()
                         result.expected_size = int(sreq.headers.get('content-length', '0'))
                         self.etags[item_id] = sreq.headers.get('etag', item_id)
@@ -260,13 +261,26 @@ class ThreadedHtmlWorker(ThreadedWorker):
                         raise DownloadInterruptException
                     except (HTTPError, Exception) as err:
                         if isinstance(err, HTTPError) and err.response.status_code == 404:  # RS cdn error
-                            hostname = urlparse(link).hostname or 'unk'
-                            if hostname.startswith('video'):
-                                if __RUXX_DEBUG__:
-                                    trace(f'Warning (W3): {item_id} catched HTTPError 404 (host: {hostname})! '
-                                          f'Trying no-cdn source...', True)
-                                re_vhost_cdn = re_compile(r'-cdn\d')  # video-cdn1.rs
-                                link = re_vhost_cdn.sub('', link)
+                            if ProcModule.is_rs():
+                                hostname = urlparse(link).hostname or 'unk'
+                                if hostname.startswith('video'):
+                                    if __RUXX_DEBUG__:
+                                        trace(f'Warning (W3): {item_id} catched HTTPError 404 (host: {hostname})! '
+                                              f'Trying no-cdn source...', True)
+                                    re_vhost_cdn = re_compile(r'-cdn\d')  # video-cdn1.rs
+                                    link = re_vhost_cdn.sub('', link)
+                            elif ProcModule.is_rz():
+                                assert is_video_ext
+                                valid_link_ends = ('', '720')
+                                for lidx, link_end in enumerate(valid_link_ends):
+                                    lend = f'{link_end}.{ext_full}'
+                                    if link.endswith(lend):
+                                        new_idx = (lidx + 1) % len(valid_link_ends)
+                                        if __RUXX_DEBUG__:
+                                            trace(f'Warning (W3): {item_id} catched HTTPError 404 (ends with \'{link_end}\')! '
+                                                  f'Trying \'{valid_link_ends[new_idx]}\'...', True)
+                                        link = f'{link[:-len(lend)]}{valid_link_ends[new_idx]}.{ext_full}'
+                                        break
                         if isinstance(err, HTTPError) and err.response.status_code == 416:  # Requested range is not satisfiable
                             if __RUXX_DEBUG__:
                                 trace(f'Warning (W3): {item_id} catched HTTPError 416!', True)
@@ -281,7 +295,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
         return result
 
     # threaded
-    def fetch_html(self, url: str, tries=0, do_cache=False) -> Optional[BeautifulSoup]:
+    def fetch_html(self, url: str, tries=0, do_cache=False, method='GET', **kwargs) -> Optional[BeautifulSoup]:
         cached = self.raw_html_cache.get(url, b'')
         if cached:
             return cached if isinstance(cached, BeautifulSoup) else BeautifulSoup(cached, 'html.parser')
@@ -293,7 +307,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
         while retries < tries:
             self.catch_cancel_or_ctrl_c()
             try:
-                r = self.session.request('GET', url, timeout=self.timeout, stream=False, allow_redirects=True)
+                r = self.session.request(method, url, timeout=self.timeout, stream=False, allow_redirects=True, **kwargs)
                 r.raise_for_status()
                 break
             except (KeyboardInterrupt, ThreadInterruptException):

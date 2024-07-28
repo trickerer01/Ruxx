@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from re import compile as re_compile
+from typing import Pattern
 
 # internal
 from app_defines import TAG_LENGTH_MIN, TAG_LENGTH_MAX_RX, TAG_LENGTH_MAX_RN, MODULE_CHOICES
@@ -41,6 +42,7 @@ re_tags_to_process_rn = re_compile(
     fr'[a-z][a-z_]{{{TAG_LENGTH_MIN - 1:d},{TAG_LENGTH_MAX_RN - 1:d}}}|[a-g]ea?st[a-z]{{6}}|[lapymg]{{3}})$'
 )
 re_tags_to_process_rs = re_tags_to_process_rx
+re_tags_to_process_rz = re_tags_to_process_rx
 
 re_tags_exclude_major1 = re_compile(
     r'^(?:(?:digital|original|traditional)_(?:content|media|painting)|[234]d|h(?:d|ero_outfit)|level_up|p(?:ainting|rotagonist)|tagme|'
@@ -82,6 +84,7 @@ re_tags_exclude_rn = re_compile(
     r')$'
 )
 re_tags_exclude_rs = re_tags_exclude_rx
+re_tags_exclude_rz = re_tags_exclude_rx
 
 re_item_info_part_rx = re_compile(r'([\w5_]+=\"[^"]+\")[> ]')
 re_orig_file_link = re_compile(r'file_url=\"([^"]+)\"')
@@ -101,10 +104,15 @@ re_tag_video_rs = re_compile(r'^\d+fps(?: upscale)?$|video|webm')
 re_comment_page_rs = re_compile(r'^\?r=posts/view&(?:amp;)?id=\d+&(?:amp;)?page=\d+$')
 re_comment_a_rs = re_compile(r'^index\.php\?r=account/profile&(?:amp;)?id=\d+$')
 
+re_id_tag = re_compile(r'^id:([<>]=?|=)?(\d+)$')
 re_favorited_by_tag = re_compile(r'^favorited_by[:=]([^:=]+)$')
 re_pool_tag = re_compile(r'^pool[:=]([^:=]+)$')
 
 re_infolist_filename = re_compile(fr'(?:{"|".join(MODULE_CHOICES)})_!(tags|sources|comments)_\d+-\d+\.txt')
+
+
+def prepare_regex_fullmatch(raw_string: str) -> Pattern[str]:
+    return re_compile(rf'^{raw_string}$')
 
 #
 #

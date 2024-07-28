@@ -33,7 +33,7 @@ from app_file_sorter import FileTypeFilter
 from app_gui_defines import (
     BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, STATE_NORMAL,
     TOOLTIP_INVALID_SYNTAX, CVARS, FONT_SANS_MEDIUM, COLUMNSPAN_MAX, BUT_CTRL_A, TOOLTIP_HCOOKIE_ADD_ENTRY, TOOLTIP_HCOOKIE_DELETE,
-    BUT_DELETE, WINDOW_MINSIZE, PADDING_ROOTFRAME_I, IMG_SAVE_DATA, IMG_PROC_RX_DATA, IMG_PROC_RN_DATA, IMG_PROC_RS_DATA,
+    BUT_DELETE, WINDOW_MINSIZE, PADDING_ROOTFRAME_I, IMG_SAVE_DATA, IMG_PROC_RX_DATA, IMG_PROC_RN_DATA, IMG_PROC_RS_DATA, IMG_PROC_RZ_DATA,
     IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL, PADDING_DEFAULT, BUT_CTRL_DELETE,
     OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING, SLASH, BEGIN,
     OPTION_VALUES_PROXYTYPE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT, BUT_CTRL_BACKSPACE,
@@ -41,7 +41,7 @@ from app_gui_defines import (
     Icons, Options, Globals, Menus, SubMenus, menu_items, hotkeys, gobjects,
 )
 from app_module import ProcModule
-from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, ABOUT_MSG
+from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, HELP_TAGS_MSG_RZ, ABOUT_MSG
 from app_logger import Logger
 from app_re import re_space_mult
 from app_revision import APP_VERSION, APP_NAME
@@ -1091,6 +1091,7 @@ def create_base_window_widgets() -> None:
     icons[Icons.RX] = PhotoImage(data=b64decode(IMG_PROC_RX_DATA))
     icons[Icons.RN] = PhotoImage(data=b64decode(IMG_PROC_RN_DATA))
     icons[Icons.RS] = PhotoImage(data=b64decode(IMG_PROC_RS_DATA))
+    icons[Icons.RZ] = PhotoImage(data=b64decode(IMG_PROC_RZ_DATA))
     icons[Icons.OPEN] = PhotoImage(data=b64decode(IMG_OPEN_DATA))
     icons[Icons.SAVE] = PhotoImage(data=b64decode(IMG_SAVE_DATA))
     icons[Icons.DELETE] = PhotoImage(data=b64decode(IMG_DELETE_DATA))
@@ -1296,8 +1297,13 @@ def unfocus_buttons_once() -> None:
 
 
 def help_tags(title: str = 'Tags') -> None:
-    message = HELP_TAGS_MSG_RX if ProcModule.is_rx() else HELP_TAGS_MSG_RN if ProcModule.is_rn() else HELP_TAGS_MSG_RS
-    messagebox.showinfo(title=title, message=message, icon='info')
+    messages = {
+        ProcModule.PROC_RX: HELP_TAGS_MSG_RX,
+        ProcModule.PROC_RN: HELP_TAGS_MSG_RN,
+        ProcModule.PROC_RS: HELP_TAGS_MSG_RS,
+        ProcModule.PROC_RZ: HELP_TAGS_MSG_RZ,
+    }
+    messagebox.showinfo(title=title, message=messages.get(ProcModule.get(), HELP_TAGS_MSG_RX), icon='info')
 
 
 def help_about(title: str = f'About {APP_NAME}', message: str = ABOUT_MSG) -> None:

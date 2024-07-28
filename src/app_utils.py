@@ -11,6 +11,7 @@ import sys
 from abc import abstractmethod
 from datetime import datetime, date
 from tkinter import messagebox
+from typing import Iterable, TypeVar
 try:
     from typing import Protocol
 except Exception:
@@ -21,10 +22,7 @@ from app_defines import FMT_DATE, SUPPORTED_PLATFORMS
 from app_gui_defines import SLASH
 from app_re import re_uscore_mult
 
-__all__ = (
-    'Comparable', 'Protocol', 'ensure_compatibility', 'as_date', 'confirm_yes_no', 'normalize_path', 'trim_undersores', 'format_score',
-    'find_first_not_of',
-)
+T_N1 = TypeVar('T_N1')
 
 
 class Comparable(Protocol):
@@ -38,6 +36,11 @@ class Comparable(Protocol):
 def ensure_compatibility() -> None:
     assert sys.version_info >= (3, 7), 'Minimum python version required is 3.7!'
     assert sys.platform in SUPPORTED_PLATFORMS, f'Unsupported OS \'{sys.platform}\'!'
+
+
+def assert_nonempty(container: Iterable[T_N1], message='') -> Iterable[T_N1]:
+    assert (not not container), message
+    return container
 
 
 # def is_sorted(c: Iterable) -> bool:

@@ -11,7 +11,7 @@ from re import compile as re_compile
 from typing import Tuple, List, Pattern, Optional, Iterable
 
 # internal
-from app_defines import TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN, TAGS_STRING_LENGTH_MAX_RS
+from app_defines import TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN, TAGS_STRING_LENGTH_MAX_RS, TAGS_STRING_LENGTH_MAX_RZ
 from app_module import ProcModule
 from app_network import thread_exit
 from app_logger import trace
@@ -102,6 +102,7 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
         ProcModule.PROC_RX: TAGS_STRING_LENGTH_MAX_RX,
         ProcModule.PROC_RN: TAGS_STRING_LENGTH_MAX_RN,
         ProcModule.PROC_RS: TAGS_STRING_LENGTH_MAX_RS,
+        ProcModule.PROC_RZ: TAGS_STRING_LENGTH_MAX_RZ,
     }
     max_string_len = max_string_lengths.get(ProcModule.get())
     if total_len > max_string_len:

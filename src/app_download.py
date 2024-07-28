@@ -235,7 +235,7 @@ class Downloader(DownloaderBase):
 
             def page_filter(st: DownloaderStates, di: bool) -> int:
                 self.current_state = st
-                if self.favorites_search_user == 0 and self.pool_search_id == 0:
+                if not self.favorites_search_user and self.pool_search_id == 0:
                     trace(f'Looking for {"min" if di else "max"} page by date...')
                     return self._get_page_boundary_by_date(di)
                 else:
@@ -305,23 +305,23 @@ class Downloader(DownloaderBase):
         fav_user_tags = list(filter(lambda x: x, [re_favorited_by_tag.fullmatch(t) for t in self.tags_str_arr]))
         self._extract_favorite_user(fav_user_tags)
         if self.favorites_search_user and self._is_fav_search_conversion_required():
-            fav_user_tags = list(filter(lambda x: x, [re_favorited_by_tag.fullmatch(t) for t in self.tags_str_arr]))
             [self.tags_str_arr.remove(f.string) for f in fav_user_tags]
         pool_tags = list(filter(lambda x: x, [re_pool_tag.fullmatch(t) for t in self.tags_str_arr]))
         self._extract_pool_id(pool_tags)
         if self.pool_search_id:
-            pool_tags = list(filter(lambda x: x, [re_pool_tag.fullmatch(t) for t in self.tags_str_arr]))
             [self.tags_str_arr.remove(f.string) for f in pool_tags]
-        assert sum(int(not not p) for p in [self.favorites_search_user, self.pool_search_id]) <= 1
+        assert not (not not self.favorites_search_user and not not self.pool_search_id)
 
     def _try_preprocess_favorites(self) -> None:
         # all we need here is to gather post ids from user's favorites page(s)
         if self.favorites_search_user:
             convert_msg = ', additional search will be performed' if self._is_fav_search_conversion_required() else ''
-            trace(f'Favorites search detected ({self.favorites_search_user:d}){convert_msg}')
+            trace(f'Favorites search detected ({self.favorites_search_user}){convert_msg}')
             if self._is_fav_search_conversion_required():
+                if self._is_fav_search_single_step():
+                    return
                 try:
-                    self._fetch_task_items(str(self.favorites_search_user))
+                    self._fetch_task_items(self.favorites_search_user)
                     self._extract_cur_task_infos(set())
                     ids_list = sorted(int(self.item_info_dict_per_task[full_id].id) for full_id in self.item_info_dict_per_task)
                     cc = self._get_tags_concat_char()
@@ -374,8 +374,7 @@ class Downloader(DownloaderBase):
         self._after_filter(sleep_time)
 
     def _process_tags(self, tag_str: str) -> None:
-
-        self._fetch_task_items(tag_str)
+        self._fetch_task_items(self._consume_custom_module_tags(tag_str))
 
         self._after_filter(0.025)
 
@@ -392,6 +391,7 @@ class Downloader(DownloaderBase):
 
         if self.current_task_num <= self.orig_tasks_count:
             self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
+            self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_by_module_filters, task_parents)
 
         self.items_raw_all: List[str] = list(unique_everseen(self.items_raw_all + self.items_raw_per_task))
         self.item_info_dict_all.update(self.item_info_dict_per_task)
@@ -536,7 +536,7 @@ class Downloader(DownloaderBase):
         if self._tasks_count() != 1:
             trace('Cannot check tags: more than 1 task was formed')
             raise ThreadInterruptException
-        cur_tags = self.tags_str_arr[0]
+        cur_tags = self._consume_custom_module_tags(self.tags_str_arr[0])
         self.url = self._form_tags_search_address(cur_tags)
         total_count_or_html = self._get_items_query_size_or_html(self.url, tries=1)
         self.total_count = total_count_or_html if isinstance(total_count_or_html, int) else 1
@@ -650,7 +650,7 @@ class Downloader(DownloaderBase):
             self.item_info_dict_per_task[idstring] = item_info
             if len(item_info.source) < 2:
                 item_info.source = SOURCE_DEFAULT
-            if __RUXX_DEBUG__ and self.favorites_search_user == 0 and self.pool_search_id == 0:
+            if __RUXX_DEBUG__ and not self.favorites_search_user and self.pool_search_id == 0:
                 for key in item_info.__slots__:
                     if key in ItemInfo.optional_slots:
                         continue

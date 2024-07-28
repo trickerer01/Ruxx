@@ -44,6 +44,9 @@ class DownloaderRs(Downloader):
     def _is_fav_search_conversion_required(self) -> bool:
         return True
 
+    def _is_fav_search_single_step(self) -> bool:
+        return False
+
     def _get_sitename(self) -> str:
         return SITENAME
 
@@ -191,6 +194,9 @@ class DownloaderRs(Downloader):
 
     def _can_extract_item_info_without_fetch(self) -> bool:
         return False
+
+    def _consume_custom_module_tags(self, tags: str) -> str:
+        return tags
 
     def _send_to_download(self, raw: str, item_id: str, is_video: bool) -> None:
         address, fmt = self._get_video_address(raw) if is_video else self._get_image_address(raw)

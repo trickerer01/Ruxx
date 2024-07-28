@@ -75,6 +75,15 @@ HELP_TAGS_MSG_RN = (
     '\'tag=value\'      \tmeta tags (id<999999, score>=1337, etc.)\n'
 )
 HELP_TAGS_MSG_RS = HELP_TAGS_MSG_RX
+HELP_TAGS_MSG_RZ = (
+    'Here is a quick list of supported tag patterns:\n\n'
+    '\'tag_1\'          \tplain text tag\n'
+    '\'-tag1\'          \texclude tag \'tag1\'\n'
+    '\'tag1 tag_2\'     \ttag1 AND tag_2\n'
+    '\'(tag1~tag2)\'    \ttag1 OR tag2 (can be chained)\n'
+    '\'-(tag1,tag2)\'   \tNOT BOTH tag1 AND tag2 (can be chained)\n'
+    '\'tag:value\'      \tmeta tags (favorited_by:x, id>y, etc.)\n'
+)
 ABOUT_MSG = f'{APP_NAME} version {APP_VERSION} ({APP_REV_DATE}) {APP_BUILD_TYPE_STR}\n© {APP_YEARS} {APP_AUTHOR}\n<{APP_ADDRESS}>'
 # end help messages
 

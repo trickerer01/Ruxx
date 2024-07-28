@@ -78,11 +78,15 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.neg_and_groups: List[List[Pattern[str]]] = list()
         self.known_parents: Set[str] = set()
         self.default_sort = True
-        self.favorites_search_user = 0
+        self.favorites_search_user = ''
         self.pool_search_id = 0
 
     @abstractmethod
     def _is_fav_search_conversion_required(self) -> bool:
+        ...
+
+    @abstractmethod
+    def _is_fav_search_single_step(self) -> bool:
         ...
 
     @abstractmethod
@@ -179,11 +183,15 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _can_extract_item_info_without_fetch(self) -> bool:
         ...
 
+    @abstractmethod
+    def _consume_custom_module_tags(self, tags: str) -> str:
+        ...
+
     def _extract_favorite_user(self, fav_user_tags: List[Optional[Match]]) -> None:
-        self.favorites_search_user = int(fav_user_tags[-1].group(1)) if fav_user_tags else 0
+        self.favorites_search_user = str(fav_user_tags[-1].group(1)) if fav_user_tags else 0
 
     def _clean_favorite_user(self) -> None:
-        self.favorites_search_user = 0
+        self.favorites_search_user = ''
 
     def _extract_pool_id(self, pool_tags: List[Optional[Match]]) -> None:
         self.pool_search_id = int(pool_tags[-1].group(1)) if pool_tags else 0
@@ -534,6 +542,10 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         if total_count_temp != self.total_count:
             trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')
+
+    def _filter_items_by_module_filters(self, parents: MutableSet[str]) -> None:
+        trace('Filtering out items using module filters...')
+        return
 
     def _filter_items_matching_negative_and_groups(self, parents: MutableSet[str]) -> None:
         trace('Filtering out items using custom filters...')
