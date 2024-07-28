@@ -23,7 +23,6 @@ re_not_a_letter = re_compile(r'[^a-z]+')
 re_wtag = re_compile(r'^(?:[^?*]*[?*]).*?$')
 
 
-
 def is_wtag(tag: str) -> bool:
     return not not re_wtag.fullmatch(tag)
 
