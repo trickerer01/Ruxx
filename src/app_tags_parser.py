@@ -22,7 +22,7 @@ __all__ = ('reset_last_tags', 'parse_tags', 'convert_taglist')
 DEFAULT_TAGS = ('sfw',)
 
 # language=PythonRegExp
-TAG_CHAR = r'[a-zÀ-ʯА-я\d_+\-/!()*\'.]'
+TAG_CHAR = r'[a-zÀ-ʯА-я\d_%+\-/!()*\'.]'
 # language=PythonRegExp
 META_CHAR = r'[a-z\d_\-.]'
 # language=PythonRegExp
@@ -85,7 +85,7 @@ re_metas = {
     ProcModule.PROC_RX: re_compile(fr'^{META_CHAR}+?{META_COUNT_RX}$'),
     ProcModule.PROC_RN: re_compile(fr'^{META_CHAR}+?{META_COUNT_RN}$'),
     ProcModule.PROC_RS: re_compile(fr'^{META_CHAR}+?{META_COUNT_RS}$'),
-    ProcModule.PROC_RZ: re_compile(fr'^(?:id|favorited_by){META_COUNT_RZ}$'),
+    ProcModule.PROC_RZ: re_compile(fr'^(?:id|favorited_by|score){META_COUNT_RZ}$'),
 }
 re_sorts = {
     ProcModule.PROC_RX: re_compile(fr'^{META_SORT_RX}$'),

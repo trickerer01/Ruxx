@@ -111,6 +111,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
     - sort: `sort:X[:Y]`. `X` = `<sort type>`, ex. `score`, `id` (default). `Y` = `<sort direction>` (optional), `asc` or `desc` (default)
 - RZ meta tags:
   - **id**: `id:X` (OR `id:=X`), `id:>X`, `id:<Y`, `id:>=X`, `id:<=Y`. `X`,`Y` = `<post ID>`
+  - **score**: `score:X` (OR `score:=X`), `score:>X`, `score:<Y`, `score:>=X`, `score:<=Y`. `X`,`Y` = `<number>`
  3. `OR` groups
 - Ruxx syntax for `OR` group is simplified compared to what you would normally use for RX: `(tag1~tag2~...~tagN)` instead of `( tag1 ~ tag2 ~ ... ~ tagN )`
 - Ruxx allows using `OR` groups for all modules, not just RX
@@ -124,6 +125,10 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 5. Tag limits
 - Any valid search query requires at least one positive non-sorting tag to search for. Search query cannot be formed using just `sort:...` tag or `-tags` only
 - Very long search queries will cause website to return empty result. Generally this happens when trying to add too many `-tags` to narrow down the search. If resulting query is too long Ruxx will automatically create a specific negative group from excessive `-tags` and use them as additional filter. The message will be given as follows: `<X> 'excluded tags combination' custom filter(s) parsed`
+- Some websites also put a limit on the number of tags used. While most of the time this is a soft limit (web interface), sometimes they also apply a hard limit (api internals), namely:
+  - `RZ`: `3` `tag` and `3` `-tag` max
+- In that case all extra `-tags` will be converted into a negative group and used locally as an internal filter (and mess up 'check tags' results). Note that this only applies to `-tags`, exceeding positive tag limit will result in an error
+- It is recommended to manually convert all wildcarded `-t*ags` into a single negative group to prevent unwanted tag expansion (see below) resulting in too many `-tags`, it's simple really: `'-a -b -c -d* -f*g*h*j' -> '-a -b -c -(*,d*|f*g*h*j)'`
 6. Tag validation
 - Some websites do not operate on a concept of partial tag matching at all, namely:
   - `RZ`
@@ -141,6 +146,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
      - 'pale_eyes'
      - 'pale_soles'
     ```
+- To force a non-wildcarded tag without validation surround it with `%`, ex: `%mumbling%` (1 post, unlisted), or, if negative: `-%mumbling%`
 
 #### User credentials
 Ruxx doesn't provide a method of authentication natively on either of supported sites. To use your identity during search you need to follow 3 simple steps:

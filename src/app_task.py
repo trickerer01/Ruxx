@@ -104,25 +104,33 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
         ProcModule.PROC_RS: TAGS_STRING_LENGTH_MAX_RS,
         ProcModule.PROC_RZ: TAGS_STRING_LENGTH_MAX_RZ,
     }
+    max_tagss = {
+        ProcModule.PROC_RX: 0,
+        ProcModule.PROC_RN: 0,
+        ProcModule.PROC_RS: 0,
+        ProcModule.PROC_RZ: 3,
+    }
+    max_tags = max_tagss.get(ProcModule.get())
+    neg_tags_list_all = list(filter(lambda x: x.startswith('-'), tags_list))
     max_string_len = max_string_lengths.get(ProcModule.get())
-    if total_len > max_string_len:
+    if total_len > max_string_len or (max_tags and len(neg_tags_list_all) > max_tags):
         trace('Warning (W1): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
         neg_tags_list = list()
         # first pass: wildcarded negative tags - chance to ruin alias is lower (rx)
         # second pass: any negative tags
         for wildcardpass in (True, False):
             ti: int
-            for ti in reversed(range(len(tags_list))):
-                if total_len <= max_string_len:
+            for ti in reversed(range(len(neg_tags_list_all))):
+                if total_len <= max_string_len and len(neg_tags_list_all) <= max_tags:
                     break
-                ntag = tags_list[ti]
+                ntag = neg_tags_list_all[ti]
                 if wildcardpass is True and ntag.rfind('*') == -1:
                     continue
-                if ntag.startswith('-'):
-                    neg_tags_list.append(ntag[1:])
-                    total_len -= len(ntag) + 1
-                    del tags_list[ti]
-        if total_len > max_string_len:
+                neg_tags_list.append(ntag[1:])
+                total_len -= len(ntag) + 1
+                del neg_tags_list_all[ti]
+                del tags_list[tags_list.index(ntag)]
+        if total_len > max_string_len or (max_tags and len(neg_tags_list_all) > max_tags):
             thread_exit('Fatal: extracting negative tags doesn\'t reduce total tags length enough! Aborting...', -609)
         assert len(neg_tags_list) > 0
         extracted_neg_group_str = f'-(*,{"|".join(reversed(neg_tags_list))})'

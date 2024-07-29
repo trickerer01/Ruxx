@@ -187,6 +187,9 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _consume_custom_module_tags(self, tags: str) -> str:
         ...
 
+    def _execute_module_filters(self, parents: MutableSet[str]) -> None:
+        pass
+
     def _extract_favorite_user(self, fav_user_tags: List[Optional[Match]]) -> None:
         self.favorites_search_user = str(fav_user_tags[-1].group(1)) if fav_user_tags else 0
 
@@ -543,10 +546,6 @@ class DownloaderBase(ThreadedHtmlWorker):
         if total_count_temp != self.total_count:
             trace(f'Filtered out {total_count_temp - self.total_count:d} / {total_count_temp:d} items!')
 
-    def _filter_items_by_module_filters(self, parents: MutableSet[str]) -> None:
-        trace('Filtering out items using module filters...')
-        return
-
     def _filter_items_matching_negative_and_groups(self, parents: MutableSet[str]) -> None:
         trace('Filtering out items using custom filters...')
 
@@ -567,6 +566,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         abbrp = self._get_module_abbr_p()
         total_count_old = len(self.items_raw_per_task)
         removed_count = 0
+        removed_messages: List[str] = list()
         idx: int
         for idx in reversed(range(total_count_old)):
             h = self._local_addr_from_string(str(self.items_raw_per_task[idx]))
@@ -577,8 +577,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             m_dict.clear()
             if any(all(any(match_neg_group(patt, tag, plist) for tag in tags_list) for patt in plist) for plist in self.neg_and_groups):
                 # Note: above algorithm is minimal match, only first matching combination will be reported
-                trace('\n'.join(f'{abbrp}{item_id} contains excluded tags combination \'{mk}\': '
-                                f'{",".join(m_dict[mk])}. Skipped!' for mk in m_dict if len(m_dict[mk]) > 1))
+                removed_messages.append('\n'.join(f'{abbrp}{item_id} contains excluded tags combination \'{mk}\': '
+                                        f'{",".join(m_dict[mk])}. Skipped!' for mk in m_dict if len(m_dict[mk]) > 1))
                 if item_id in parents:
                     parents.remove(item_id)
                 if item_info.parent_id in parents:
@@ -588,7 +588,12 @@ class DownloaderBase(ThreadedHtmlWorker):
                 removed_count += 1
 
         if removed_count > 0:
+            trace('\n'.join(removed_messages))
             trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
+
+    def _filter_items_by_module_filters(self, parents: MutableSet[str]) -> None:
+        trace('Filtering out items using module filters...')
+        self._execute_module_filters(parents)
 
 #
 #

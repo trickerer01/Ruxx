@@ -15,7 +15,7 @@ from app_download_rx import DownloaderRx
 from app_download_rz import DownloaderRz
 from app_module import ProcModule
 
-__all__ = ('make_downloader', 'get_new_downloader')
+__all__ = ('get_new_downloader',)
 
 
 DOWNLOADERS_BY_PROC_MODULE = {
@@ -26,14 +26,13 @@ DOWNLOADERS_BY_PROC_MODULE = {
 }
 
 
-def make_downloader(proc_module: int, set_module=True) -> Downloader:  # TODO
-    if set_module:
-        ProcModule.set(proc_module)
+def make_downloader(proc_module: int) -> Downloader:
+    ProcModule.set(proc_module)
     return DOWNLOADERS_BY_PROC_MODULE[proc_module]()
 
 
 def get_new_downloader() -> Downloader:
-    return make_downloader(ProcModule.CUR_PROC_MODULE, False)
+    return make_downloader(ProcModule.CUR_PROC_MODULE)
 
 #
 #

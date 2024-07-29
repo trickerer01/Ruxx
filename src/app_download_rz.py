@@ -25,10 +25,10 @@ from app_download import Downloader
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
-    re_tags_to_process_rz, re_tags_exclude_rz, prepare_regex_fullmatch, re_id_tag,
+    re_tags_to_process_rz, re_tags_exclude_rz, prepare_regex_fullmatch, re_id_tag_rz, re_score_tag_rz,
 
 )
-from app_tagger import is_wtag, normalize_wtag
+from app_tagger import is_wtag, normalize_wtag, no_validation_tag
 from app_utils import assert_nonempty
 
 __all__ = ('DownloaderRz',)
@@ -55,6 +55,7 @@ class DownloaderRz(Downloader):
     def __init__(self) -> None:
         super().__init__()
         self.id_tags: Dict[str, List[int]] = {k: list() for k in ('=', '>', '<', '>=', '<=')}
+        self.score_tags: Dict[str, List[int]] = {k: list() for k in ('=', '>', '<', '>=', '<=')}
         self.positive_tags: List[str] = list()
         self.negative_tags: List[str] = list()
         self.expand_cache: Dict[str, List[str]] = dict()
@@ -145,7 +146,7 @@ class DownloaderRz(Downloader):
         item_json = self.parse_json(h)
         img_links = sorted(filter(None, [link for link in item_json['imageLinks'] if link['type'] in (3, )]),
                            key=lambda link: link['type'])
-        addr, ext = self.extract_file_url(img_links[0])
+        addr, ext = self._extract_file_url(img_links[0])
 
         def hi_res_addr() -> Tuple[str, str]:
             if not addr.endswith(f'pic.{ext}'):
@@ -162,15 +163,18 @@ class DownloaderRz(Downloader):
         else:
             address, fmt = hi_res_addr()
 
-        return f'{self._get_sitename()}{address}' if address.startswith('/') else address, fmt
+        startsym = addr[0]
+        addr = addr if startsym == 'h' else f'{self._get_sitename()}{addr[1 if startsym == "/" else 0:]}'
+        return addr, fmt
 
     def _get_video_address(self, h: str) -> Tuple[str, str]:
         item_json = self.parse_json(h)
         video_links = list(filter(None, [link for link in item_json['imageLinks'] if link['type'] in (11,)]))
-        addr, ext = self.extract_file_url(video_links[0])
+        addr, ext = self._extract_file_url(video_links[0])
         if not addr.endswith(f'mov.{ext}') and not addr.endswith(f'mov720.{ext}'):
             addr = addr[:addr.rfind('mov') + len('mov')] + f'.{ext}'
-        addr = f'{self._get_sitename()}{addr}' if addr.startswith('/') else addr
+        startsym = addr[0]
+        addr = addr if startsym == 'h' else f'{self._get_sitename()}{addr[1 if startsym == "/" else 0:]}'
         return addr, ext
 
     def _extract_item_info(self, item: str) -> ItemInfo:
@@ -216,7 +220,7 @@ class DownloaderRz(Downloader):
     def _consume_custom_module_tags(self, tags: str) -> str:
         self.negative_tags.clear()
         self.positive_tags.clear()
-        [self.id_tags[k].clear() for k in self.id_tags]
+        [[d[k].clear() for k in d] for d in (self.id_tags, self.score_tags)]
         if not tags:
             return tags
         taglist = tags.split(TAGS_CONCAT_CHAR_RZ)
@@ -228,8 +232,13 @@ class DownloaderRz(Downloader):
                     self.negative_tags.append(ctag[1:])
                     del taglist[idx]
             else:
-                id_match = re_id_tag.fullmatch(ctag)
-                if id_match:
+                id_match = re_id_tag_rz.fullmatch(ctag)
+                score_match = re_score_tag_rz.fullmatch(ctag)
+                if score_match:
+                    sign = score_match.group(1) or '='  # could be 'id:123', '=' is assumed
+                    score_ = int(score_match.group(2))
+                    self.score_tags[sign].append(score_)
+                elif id_match:
                     sign = id_match.group(1) or '='  # could be 'id:123', '=' is assumed
                     id_ = int(id_match.group(2))
                     self.id_tags[sign].append(id_)
@@ -239,7 +248,11 @@ class DownloaderRz(Downloader):
         if not self.positive_tags and not self.favorites_search_user:
             thread_exit('Fatal: [RZ] no positive non-meta tags found!', -703)
         self._validate_tags(self.positive_tags)
+        if len(self.positive_tags) > 3:
+            thread_exit('Fatal: [RZ] maximum positive tags exceeded, search results will be undefined!', -704)
         self._validate_tags(self.negative_tags, True)
+        if len(self.negative_tags) > 3:
+            thread_exit('Fatal: [RZ] maximum negative tags exceeded, search results will be undefined!', -705)
         for tlist in (self.positive_tags, self.negative_tags):
             for tidx in range(len(tlist)):
                 tlist[tidx] = tlist[tidx].replace('_', '%20')
@@ -329,10 +342,16 @@ class DownloaderRz(Downloader):
         return parsed_json
 
     @staticmethod
-    def extract_file_url(h: dict) -> Tuple[str, str]:
+    def _extract_file_url(h: dict) -> Tuple[str, str]:
         file_url = h['url'][1:] if h['url'].startswith('/') else h['url']
         file_ext = file_url[file_url.rfind('.') + 1:]
         return file_url, file_ext
+
+    @staticmethod
+    def _extract_score(addr: str) -> str:
+        raw = str(addr)  # not a mistake
+        id_idx = raw.find('\'likes\': ') + len('\'likes\': ')
+        return raw[id_idx:raw.find(',', id_idx + 1)]
 
     def _maxlim_str(self, maxlim: int) -> str:
         return f'&Take={maxlim or self._get_items_per_page():d}'
@@ -345,22 +364,27 @@ class DownloaderRz(Downloader):
 
     def _expand_tags(self, pwtag: str, explode: bool) -> Iterable[str]:
         expanded_tags = set()
-        if not is_wtag(pwtag) or not explode:
-            if pwtag in TAG_NUMS_DECODED_RZ:
+        is_w = is_wtag(pwtag)
+        if not is_w or not explode:
+            nvtag = no_validation_tag(pwtag) if not is_w else ''
+            if nvtag:
+                expanded_tags.add(nvtag)
+            elif pwtag in TAG_NUMS_DECODED_RZ:
                 expanded_tags.add(pwtag)
         else:
             trace(f'Expanding tags from wtag \'{pwtag}\'...')
             if pwtag in self.expand_cache:
                 expanded_tags.update(set(self.expand_cache[pwtag]))
-                expanded_tags = expanded_tags.union(self.expand_cache[pwtag])
             else:
                 self.expand_cache[pwtag] = list()
                 pat = prepare_regex_fullmatch(normalize_wtag(pwtag))
                 for tag in TAG_NUMS_DECODED_RZ:
                     if pat.fullmatch(tag):
-                        trace(f' - \'{tag}\'')
                         expanded_tags.add(tag)
                         self.expand_cache[pwtag].append(tag)
+                if self.expand_cache[pwtag]:
+                    n = '\n - '
+                    trace(f'{n[1:]}{n.join(self.expand_cache[pwtag])}')
         return expanded_tags
 
     def _validate_tags(self, taglist: List[str], explode=False) -> None:
@@ -370,7 +394,7 @@ class DownloaderRz(Downloader):
             tag = taglist[tidx]
             try:
                 extags = list(assert_nonempty(self._expand_tags(tag, explode)))
-                if len(extags) > 1:
+                if len(extags) > 1 or extags[0] != tag:
                     taglist_temp = taglist[tidx + 1:]
                     del taglist[tidx:]
                     taglist.extend(extags)
@@ -383,30 +407,30 @@ class DownloaderRz(Downloader):
             n = '\n - '
             thread_exit(f'Fatal: Invalid RZ tags found:\n - {n.join(sorted(inavlid_tags))}', -702)
 
-    def _filter_items_by_module_filters(self, parents: MutableSet[str]) -> None:
-        trace('Filtering out items using module filters...')
-
-        if all(not self.id_tags[k] for k in self.id_tags):
+    def _run_compare_filters(self, parents: MutableSet[str], filter_type: str, compare_tags: Dict[str, List[int]],
+                             extact_func: Callable[[str], str]) -> None:
+        if all(not compare_tags[k] for k in compare_tags):
             return
-
         abbrp = self._get_module_abbr_p()
         total_count_old = len(self.items_raw_per_task)
         removed_count = 0
+        removed_messages: List[str] = list()
         idx: int
         for idx in reversed(range(total_count_old)):
             self.catch_cancel_or_ctrl_c()
             h = self.items_raw_per_task[idx]
             item_id = self._extract_id(h)
-            item_id_i = int(item_id)
+            comp_v_s = extact_func(h)
+            comp_v_i = int(comp_v_s)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'
             item_info = self.item_info_dict_per_task.get(idstring)
             unmatch = False
-            for k in self.id_tags:
-                # if unmatch:
-                #     break
-                for cid in self.id_tags[k]:
-                    if not id_compares[k](item_id_i, cid):
-                        trace(f'{abbrp}{item_id} id unmatch by {item_id_i:d} {k} {cid:d}!')
+            for k in compare_tags:
+                if unmatch:
+                    break
+                for csc in compare_tags[k]:
+                    if not id_compares[k](comp_v_i, csc):
+                        removed_messages.append(f'{abbrp}{item_id} {filter_type} unmatch by {comp_v_i:d} {k} {csc:d}!')
                         unmatch = True
                         break
             if unmatch:
@@ -417,9 +441,19 @@ class DownloaderRz(Downloader):
                 del self.item_info_dict_per_task[idstring]
                 del self.items_raw_per_task[idx]
                 removed_count += 1
-
         if removed_count > 0:
+            trace('\n'.join(removed_messages))
             trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
+
+    def _id_filters(self, parents: MutableSet[str]) -> None:
+        self._run_compare_filters(parents, 'id', self.id_tags, self._extract_id)
+
+    def _score_filters(self, parents: MutableSet[str]) -> None:
+        self._run_compare_filters(parents, 'score', self.score_tags, self._extract_score)
+
+    def _execute_module_filters(self, parents: MutableSet[str]) -> None:
+        self._id_filters(parents)
+        self._score_filters(parents)
 #
 #
 #########################################

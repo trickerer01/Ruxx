@@ -16,11 +16,15 @@ from app_gui_defines import UNDERSCORE
 from app_re import re_replace_symbols, re_tags_exclude_major1, re_tags_exclude_major2, re_numbered_or_counted_tag
 from app_utils import trim_undersores
 
-__all__ = ('append_filtered_tags', 'is_wtag', 'normalize_wtag')
+__all__ = ('append_filtered_tags', 'is_wtag', 'normalize_wtag', 'no_validation_tag')
 
 re_meta_group = re_compile(r'^([^(]+)\(([^)]+)\).*?$')
 re_not_a_letter = re_compile(r'[^a-z]+')
 re_wtag = re_compile(r'^(?:[^?*]*[?*]).*?$')
+
+
+def no_validation_tag(tag: str) -> str:
+    return tag[1:-1] if len(tag) > 2 and f'{tag[0]}{tag[-1]}' == '%%' else ''
 
 
 def is_wtag(tag: str) -> bool:
