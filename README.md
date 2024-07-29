@@ -21,7 +21,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - *Images* ‒ some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you can also filter all the images out
 - *Parent posts / child posts* ‒ this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX only
 - *Threading* ‒ the number of download threads to use. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
-- *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset do default. RX, RN and RZ only
+- *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset to default. RX, RN and RZ only
 
 #### Misc & Tools
 - **File -> Save settings...** \<Ctrl+S> ‒ allows you to save current run parameters to a config file for later or as a template. `Note that only recognized parameters will be loaded - missing parameters will just stay unchanged without any errors given, so if you want to not save some parameters (ex. window position) just remove associated rows from the file`
