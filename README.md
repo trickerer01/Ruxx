@@ -186,6 +186,9 @@ To download RX pool use special `pool` tag:
 - To run Ruxx directly using python target `ruxx_cmd.py` or `ruxx_gui.py`
   - `python ruxx_cmd.py <...args>` - run Ruxx command
   - `python ruxx_gui.py` - run Ruxx GUI
+- ...or just use `ruxx.py` universally
+  - `python ruxx.py <...args>` - run Ruxx command
+  - `python ruxx.py <no args>` - run Ruxx GUI
 
 Invoke `Ruxx --help` or `python ruxx_cmd.py --help` for full help
 
