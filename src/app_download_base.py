@@ -90,6 +90,10 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
+    def _has_native_id_filter(self) -> bool:
+        ...
+
+    @abstractmethod
     def _get_module_abbr(self) -> str:
         ...
 

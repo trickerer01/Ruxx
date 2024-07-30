@@ -226,8 +226,13 @@ class Downloader(DownloaderBase):
             trace(f'Total {self.total_count:d} item(s) found across {self._num_pages():d} page(s)')
 
             if 0 < self._get_max_search_depth() < self.total_count:
-                trace('\nFATAL: too many possible matches, won\'t be able to fetch html for all the pages!\nTry adding an ID filter.')
+                if self._has_native_id_filter():
+                    trace('\nFATAL: too many possible matches, won\'t be able to fetch html for all the pages!\nTry adding an ID filter.')
                 return
+            elif 0 < self._get_max_search_depth() == self.total_count:
+                pages_depth = (self._get_max_search_depth() + self._get_items_per_page() - 1) // self._get_items_per_page()
+                trace(f'\nWarning (W3): too many possible matches, can only fetch html for {pages_depth:d} pages!\n')
+                thread_sleep(4.0)
 
             self.total_pages = self._num_pages()
 

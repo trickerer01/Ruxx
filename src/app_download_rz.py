@@ -3,6 +3,7 @@
 Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 """
 #########################################
+# TODO: fix sources extraction in normal search (not just fav)
 #
 #
 
@@ -35,7 +36,7 @@ __all__ = ('DownloaderRz',)
 
 SITENAME = b64decode(SITENAME_B_RZ).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RZ
-MAX_SEARCH_DEPTH = 0
+MAX_SEARCH_DEPTH = 12000  # 200 pages
 
 item_info_fields = {'likes': 'score', 'comments': 'comments_'}
 
@@ -66,6 +67,9 @@ class DownloaderRz(Downloader):
     def _is_fav_search_single_step(self) -> bool:
         return True
 
+    def _has_native_id_filter(self) -> bool:
+        return False
+
     def _get_sitename(self) -> str:
         return SITENAME
 
@@ -93,7 +97,7 @@ class DownloaderRz(Downloader):
         return f'{self.url}&Skip={n * self._get_items_per_page():d}'
 
     def _get_all_post_tags(self, raw_html_page: BeautifulSoup) -> list:
-        return loads(raw_html_page.text)['items']
+        return self.parse_json(raw_html_page.text)['items']
 
     def _local_addr_from_string(self, h: str) -> str:
         return h
@@ -140,7 +144,7 @@ class DownloaderRz(Downloader):
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
 
-        return int(loads(raw_html.text)['totalCount'])
+        return int(self.parse_json(raw_html.text)['totalCount'])
 
     def _get_image_address(self, h: str) -> Tuple[str, str]:
         item_json = self.parse_json(h)
@@ -227,6 +231,7 @@ class DownloaderRz(Downloader):
         idx: int
         for idx in reversed(range(len(taglist))):
             ctag = taglist[idx]
+            # ctag = ctag.replace('%2b', '+')
             if ctag.startswith('-'):
                 if len(ctag) > 1:
                     self.negative_tags.append(ctag[1:])
@@ -327,10 +332,14 @@ class DownloaderRz(Downloader):
     @staticmethod
     def parse_json(raw: str) -> dict:
         item_json_base = (
-            raw.replace('"', '\"')
+            raw.replace('{"', '{\'').replace('"}', '\'}').replace('["', '[\'').replace('"]', '\']')
+               .replace('": ', '\': ').replace(': "', ': \'').replace('", ', '\', ').replace(', "', ', \'')
+               .replace('":', '\':').replace(':"', ':\'').replace('",', '\',').replace(',"', ',\'')
+               .replace('\\', '/').replace('"', '\'')
                .replace('{\'', '{"').replace('\'}', '"}').replace('[\'', '["').replace('\']', '"]')
                .replace('\': ', '": ').replace(': \'', ': "').replace('\', ', '", ').replace(', \'', ', "')
-               .replace(': None,', ': "None",').replace('\\', '/')
+               .replace('\':', '":').replace(':\'', ':"').replace('\',', '",').replace(',\'', ',"')
+               .replace(': None,', ': "None",').replace(', ":"', ', ":\'').replace(',":"', ',":\'')
         )
         try:
             parsed_json = loads(item_json_base)
@@ -369,8 +378,10 @@ class DownloaderRz(Downloader):
             nvtag = no_validation_tag(pwtag) if not is_w else ''
             if nvtag:
                 expanded_tags.add(nvtag)
-            elif pwtag in TAG_NUMS_DECODED_RZ:
-                expanded_tags.add(pwtag)
+            else:
+                pwntag = pwtag.replace('%2b', '+')
+                if pwntag in TAG_NUMS_DECODED_RZ:
+                    expanded_tags.add(pwtag)
         else:
             trace(f'Expanding tags from wtag \'{pwtag}\'...')
             if pwtag in self.expand_cache:
