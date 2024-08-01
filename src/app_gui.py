@@ -21,7 +21,8 @@ from app_cmdargs import prepare_arglist
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP,
-    PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, MODULE_ABBR_RZ, FMT_DATE,
+    PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, MODULE_ABBR_RZ, MODULE_ABBR_RP,
+    FMT_DATE,
     max_progress_value_for_state,
 )
 from app_download import Downloader
@@ -203,7 +204,8 @@ def set_proc_module(dwnmodule: int) -> None:
     if GetRoot() is not None:
         config_menu(Menus.EDIT, SubMenus.PREFIX, label=prefix_opt_text)
         # icon
-        icontypes = {ProcModule.PROC_RX: Icons.RX, ProcModule.PROC_RN: Icons.RN, ProcModule.PROC_RS: Icons.RS, ProcModule.PROC_RZ: Icons.RZ}
+        icontypes = {ProcModule.PROC_RX: Icons.RX, ProcModule.PROC_RN: Icons.RN, ProcModule.PROC_RS: Icons.RS,
+                     ProcModule.PROC_RZ: Icons.RZ, ProcModule.PROC_RP: Icons.RP}
         config_global(Globals.MODULE_ICON, image=get_icon(icontypes.get(ProcModule.get(), Icons.RX)))
         # enable/disable features specific to the module
         update_widget_enabled_states()
@@ -675,6 +677,7 @@ def init_menus() -> None:
     register_menu_radiobutton(MODULE_ABBR_RN, CVARS.get(Options.MODULE), ProcModule.PROC_RN, lambda: set_proc_module(ProcModule.PROC_RN))
     register_menu_radiobutton(MODULE_ABBR_RS, CVARS.get(Options.MODULE), ProcModule.PROC_RS, lambda: set_proc_module(ProcModule.PROC_RS))
     register_menu_radiobutton(MODULE_ABBR_RZ, CVARS.get(Options.MODULE), ProcModule.PROC_RZ, lambda: set_proc_module(ProcModule.PROC_RZ))
+    register_menu_radiobutton(MODULE_ABBR_RP, CVARS.get(Options.MODULE), ProcModule.PROC_RP, lambda: set_proc_module(ProcModule.PROC_RP))
     # 5) Connection
     register_menu('Connection', Menus.CONNECTION)
     register_menu_command('Headers / Cookies...', window_hcookiesm().toggle_visibility, Options.ISHCOOKIESOPEN)

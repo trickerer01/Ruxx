@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from base64 import b64decode
-from typing import Tuple, Optional, Pattern, Union
+from typing import Tuple, Optional, Pattern, Union, Dict
 
 # requirements
 from bs4 import BeautifulSoup
@@ -40,6 +40,12 @@ class DownloaderRs(Downloader):
     """
     def __init__(self) -> None:
         super().__init__()
+
+    def _get_module_specific_default_headers(self) -> Dict[str, str]:
+        return {}
+
+    def _get_module_specific_default_cookies(self) -> Dict[str, str]:
+        return {}
 
     def _is_fav_search_conversion_required(self) -> bool:
         return True
@@ -250,7 +256,7 @@ class DownloaderRs(Downloader):
 
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
         # find pagination first
-        full_item_id = f'{self._get_module_abbr_p()}{item_id}'
+        full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
         comment_page_as = raw_html.find_all('a', href=re_comment_page_rs)
         cpages = max(int(a.text) for a in comment_page_as) if comment_page_as else 1
         for cpage in range(cpages):

@@ -16,43 +16,43 @@ from bs4 import BeautifulSoup
 
 # internal
 from app_defines import (
-    DownloadModes, ItemInfo, Comment, SITENAME_B_RX, FILE_NAME_PREFIX_RX, MODULE_ABBR_RX, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RX,
-    TAGS_CONCAT_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RX, FMT_DATE,
+    DownloadModes, ItemInfo, Comment, SITENAME_B_RP, FILE_NAME_PREFIX_RP, MODULE_ABBR_RP, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RP,
+    TAGS_CONCAT_CHAR_RP, ID_VALUE_SEPARATOR_CHAR_RP, FMT_DATE,
 )
 from app_download import Downloader
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
-    re_tags_to_process_rx, re_tags_exclude_rx, re_item_info_part_xml, re_orig_file_link, re_sample_file_link,
-    re_post_page_rx,
+    re_tags_to_process_rp, re_tags_exclude_rp, re_item_info_part_xml, re_orig_file_link, re_sample_file_link,
+    re_favorited_by_tag, re_item_filename,
 )
 
-__all__ = ('DownloaderRx',)
+__all__ = ('DownloaderRp',)
 
-SITENAME = b64decode(SITENAME_B_RX).decode()
-ITEMS_PER_PAGE = ITEMS_PER_PAGE_RX
-ITEMS_PER_PAGE_F = 50
-ITEMS_PER_PAGE_P = 45
-MAX_SEARCH_DEPTH = 200000 + ITEMS_PER_PAGE - 1  # set by site devs
+SITENAME = b64decode(SITENAME_B_RP).decode()
+ITEMS_PER_PAGE = ITEMS_PER_PAGE_RP
 
-item_info_fields = {'file_url': 'ext'}
+MAX_SEARCH_DEPTH = 0
+
+item_info_fields = {'file_name': 'ext', 'score': 'score_'}
 
 
-class DownloaderRx(Downloader):
+class DownloaderRp(Downloader):
     """
-    DownloaderRx
+    DownloaderRp
     """
     def __init__(self) -> None:
         super().__init__()
+        self._base_cookies = {'ui-tnc-agreed': 'true', 'ui-image-zoom': 'both'}
 
     def _get_module_specific_default_headers(self) -> Dict[str, str]:
         return {}
 
     def _get_module_specific_default_cookies(self) -> Dict[str, str]:
-        return {}
+        return self._base_cookies
 
     def _is_fav_search_conversion_required(self) -> bool:
-        return True
+        return False
 
     def _is_fav_search_single_step(self) -> bool:
         return False
@@ -61,16 +61,16 @@ class DownloaderRx(Downloader):
         return True
 
     def _get_sitename(self) -> str:
-        return SITENAME.replace('api.', '') if self.favorites_search_user or self.pool_search_id else SITENAME
+        return SITENAME
 
     def _get_module_abbr(self) -> str:
-        return MODULE_ABBR_RX
+        return MODULE_ABBR_RP
 
     def _get_module_abbr_p(self) -> str:
-        return FILE_NAME_PREFIX_RX
+        return FILE_NAME_PREFIX_RP
 
     def _get_items_per_page(self) -> int:
-        return ITEMS_PER_PAGE_F if self.favorites_search_user else ITEMS_PER_PAGE_P if self.pool_search_id else ITEMS_PER_PAGE
+        return ITEMS_PER_PAGE
 
     def _get_max_search_depth(self) -> int:
         return MAX_SEARCH_DEPTH
@@ -78,23 +78,14 @@ class DownloaderRx(Downloader):
     def _form_item_string_manually(self, *ignored) -> str:
         raise NotImplementedError
 
-    def _is_search_overload_page(self, raw_html_page: BeautifulSoup) -> bool:
-        # <h1>Search is overloaded! Try again later...</h1>
-        search_err = raw_html_page.find_all('h1', string='Search is overloaded! Try again later...')
-        return len(search_err) > 0
+    def _is_search_overload_page(self, *ignored) -> bool:
+        return False
 
     def _form_page_num_address(self, n: int) -> str:
-        return f'{self.url}&pid={n * (self._get_items_per_page() if self.favorites_search_user or self.pool_search_id else 1):d}'
+        return f'{self.url}&page={n + 1:d}'
 
     def _get_all_post_tags(self, raw_html_page: BeautifulSoup) -> list:
-        if self.favorites_search_user or self.pool_search_id:
-            divs = raw_html_page.find_all('span', class_='thumb')
-            for div in divs:
-                tag_a = div.find('a')
-                tag_a['href'] = f"{self._get_sitename()}{tag_a['href']}"
-            return divs
-        else:
-            return raw_html_page.find_all('post')
+        return raw_html_page.find_all('tag')
 
     def _local_addr_from_string(self, h: str) -> str:
         return h
@@ -113,69 +104,18 @@ class DownloaderRx(Downloader):
 
     def _extract_post_date(self, raw: str) -> str:
         try:
-            # 'Mon Jan 06 21:51:58 +0000 2020' -> '06-01-2020'
-            date_idx = raw.find('created_at="') + len('created_at="')
-            d = datetime.strptime(raw[date_idx:raw.find('"', date_idx + 1)], '%a %b %d %X %z %Y')
+            # '2017-04-19 16:15:13.053663' -> '19-04-2017'
+            date_idx = raw.find(' date="') + len(' date="')
+            d = datetime.strptime(raw[date_idx:raw.find(' ', date_idx + 1)], '%Y-%m-%d')
             return d.strftime(FMT_DATE)
         except Exception:
             thread_exit(f'Unable to extract post date from raw: {raw}', -446)
 
-    def _get_items_query_size_or_html(self, url: str, tries: int = None) -> int:
-        if self.favorites_search_user:
-            raw_html = self.fetch_html(f'{url}&pid=0', tries)
-            if raw_html is None:
-                thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
-            last = 1
-            last_page_buttons = raw_html.find_all('a', onclick=re_post_page_rx)
-            for but in last_page_buttons:
-                href = str(but.get('onclick', '=0'))
-                begin_idx = href.rfind('=') + 1
-                end_idx = href.find('\'', begin_idx + 1)
-                last = max(last, 1 + int(href[begin_idx:end_idx]))
-
-            if last > self._get_max_search_depth() // self._get_items_per_page():
-                if not self.get_max_id:
-                    trace('Error: items count got past search depth!')
-                return last * self._get_items_per_page()
-            elif last > 1:
-                raw_html = self.fetch_html(f'{url}&pid={last - 1:d}', do_cache=True)
-                if raw_html is None:
-                    thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-448)
-
-            # items count on all full pages plus items count on last page
-            last_thumbs = len(self._get_all_post_tags(raw_html))
-            count: Union[int, BeautifulSoup] = (last - 1) + last_thumbs
-            return count
-        elif self.pool_search_id:
-            raw_html = self.fetch_html(f'{url}&pid=0', tries)
-            if raw_html is None:
-                thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
-            last = 1
-            last_page_buttons = raw_html.find_all('a', href=re_post_page_rx)
-            for but in last_page_buttons:
-                but_str = str(but.text)
-                if but_str.isnumeric():
-                    last = max(last, int(but_str))
-
-            if last > self._get_max_search_depth() // self._get_items_per_page():
-                if not self.get_max_id:
-                    trace('Error: items count got past search depth!')
-                return last * self._get_items_per_page()
-            elif last > 1:
-                raw_html = self.fetch_html(f'{url}&pid={(last - 1) * self._get_items_per_page():d}', do_cache=True)
-                if raw_html is None:
-                    thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-448)
-
-            # items count on all full pages plus items count on last page
-            last_thumbs = len(self._get_all_post_tags(raw_html))
-            count: Union[int, BeautifulSoup] = (last - 1) * self._get_items_per_page() + last_thumbs
-            return count
-        else:
-            raw_html = self.fetch_html(f'{url}&pid=0', tries)
-            if raw_html is None:
-                thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
-
-            return int(raw_html.find('posts').get('count'))
+    def _get_items_query_size_or_html(self, url: str, tries=0) -> Union[int, BeautifulSoup]:
+        raw_html = self.fetch_html(f'{url}&page=1', tries, do_cache=True)
+        if raw_html is None:
+            thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
+        return int(raw_html.find('posts').get('count'))
 
     def _get_image_address(self, h: str) -> Tuple[str, str]:
         def hi_res_addr() -> Tuple[str, str]:
@@ -231,25 +171,33 @@ class DownloaderRx(Downloader):
         return item_info
 
     def get_re_tags_to_process(self) -> Pattern:
-        return re_tags_to_process_rx
+        return re_tags_to_process_rp
 
     def get_re_tags_to_exclude(self) -> Pattern:
-        return re_tags_exclude_rx
+        return re_tags_exclude_rp
 
     def _get_tags_concat_char(self) -> str:
-        return TAGS_CONCAT_CHAR_RX
+        return TAGS_CONCAT_CHAR_RP
 
     def _get_idval_equal_seaparator(self) -> str:
-        return ID_VALUE_SEPARATOR_CHAR_RX
+        return ID_VALUE_SEPARATOR_CHAR_RP
 
     def _split_or_group_into_tasks_always(self) -> bool:
-        return False
+        return True
 
     def _can_extract_item_info_without_fetch(self) -> bool:
         return True
 
     def _consume_custom_module_tags(self, tags: str) -> str:
-        return tags
+        if not tags:
+            return tags
+        taglist = tags.split(TAGS_CONCAT_CHAR_RP)
+        if len(taglist) > 3:
+            thread_exit('Fatal: [RP] maximum tags limit exceeded, search results will be undefined!', -706)
+        for tidx, tag in enumerate(taglist):
+            if re_favorited_by_tag.fullmatch(tag):
+                taglist[tidx] = tag.replace('favorited_by', 'upvoted_by')
+        return TAGS_CONCAT_CHAR_RP.join(taglist)
 
     def _send_to_download(self, raw: str, item_id: str, is_video: bool) -> None:
         address, fmt = self._get_video_address(raw) if is_video else self._get_image_address(raw)
@@ -265,9 +213,11 @@ class DownloaderRx(Downloader):
         item_id = self._extract_id(h)
 
         if self.dump_comments is True:
-            raw_html = self.fetch_html(self._form_comments_search_address(item_id))
+            raw_html = self.fetch_html(f'{self._get_sitename()}post/view/{item_id}')
             if raw_html is None:
-                trace(f'Warning (W3): ProcItem: unable to retreive comments for {item_id}!', True)
+                trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
+                self._inc_proc_count()
+                return
             else:
                 self._extract_comments(raw_html, item_id)
 
@@ -295,16 +245,16 @@ class DownloaderRx(Downloader):
         self._inc_proc_count()
 
     def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:
-        return (f'{self._get_sitename()}index.php?page=favorites&s=view&id={self.favorites_search_user}' if self.favorites_search_user else
-                f'{self._get_sitename()}index.php?page=pool&s=show&id={self.pool_search_id}' if self.pool_search_id else
-                f'{self._get_sitename()}index.php?page=dapi&s=post&q=index&tags={tags}{self._maxlim_str(maxlim)}')
+        return f'{self._get_sitename()}api/danbooru/find_posts?tags={tags}{self._maxlim_str(maxlim)}'
 
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
+        # no pagination
         full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
-        comment_divs = raw_html.find_all('comment')
+        comment_divs = raw_html.select('div[class="comment"]')
         for comment_div in comment_divs:
-            author = comment_div.get('creator')
-            body = comment_div.get('body')
+            author_a = comment_div.find(class_='username')
+            author: str = author_a.text
+            body: str = comment_div.find('span', class_='bbcode').text.strip()
             self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
 
     @staticmethod
@@ -313,7 +263,9 @@ class DownloaderRx(Downloader):
         if file_re_res is None:
             return '', ''
         file_url = file_re_res.group(1)
-        file_ext = file_url[file_url.rfind('.') + 1:]
+        filename_re_res = re_item_filename.search(h)
+        filename = filename_re_res.group(1)
+        file_ext = filename[filename.rfind('.') + 1:]
         return file_url, file_ext
 
     @staticmethod
@@ -322,14 +274,13 @@ class DownloaderRx(Downloader):
         if sample_re_res is None:
             return '', ''
         file_url = sample_re_res.group(1)
-        file_ext = file_url[file_url.rfind('.') + 1:]
+        filename_re_res = re_item_filename.search(h)
+        filename = filename_re_res.group(1)
+        file_ext = filename[filename.rfind('.') + 1:]
         return file_url, file_ext
 
     def _maxlim_str(self, maxlim: int) -> str:
         return f'&limit={maxlim or self._get_items_per_page():d}'
-
-    def _form_comments_search_address(self, post_id: str) -> str:
-        return f'{self._get_sitename()}index.php?page=dapi&s=comment&q=index&post_id={post_id}'
 
 #
 #

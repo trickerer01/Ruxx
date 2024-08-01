@@ -61,6 +61,12 @@ class DownloaderRz(Downloader):
         self.negative_tags: List[str] = list()
         self.expand_cache: Dict[str, List[str]] = dict()
 
+    def _get_module_specific_default_headers(self) -> Dict[str, str]:
+        return {}
+
+    def _get_module_specific_default_cookies(self) -> Dict[str, str]:
+        return {}
+
     def _is_fav_search_conversion_required(self) -> bool:
         return True
 
@@ -254,10 +260,10 @@ class DownloaderRz(Downloader):
             thread_exit('Fatal: [RZ] no positive non-meta tags found!', -703)
         self._validate_tags(self.positive_tags)
         if len(self.positive_tags) > 3:
-            thread_exit('Fatal: [RZ] maximum positive tags exceeded, search results will be undefined!', -704)
+            thread_exit('Fatal: [RZ] maximum positive tags limit exceeded, search results will be undefined!', -704)
         self._validate_tags(self.negative_tags, True)
         if len(self.negative_tags) > 3:
-            thread_exit('Fatal: [RZ] maximum negative tags exceeded, search results will be undefined!', -705)
+            thread_exit('Fatal: [RZ] maximum negative tags limit exceeded, search results will be undefined!', -705)
         for tlist in (self.positive_tags, self.negative_tags):
             for tidx in range(len(tlist)):
                 tlist[tidx] = tlist[tidx].replace('_', '%20')
@@ -280,7 +286,7 @@ class DownloaderRz(Downloader):
             pass
 
         if self.dump_sources:
-            full_item_id = f'{self._get_module_abbr_p()}{item_id}'
+            full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
             if full_item_id not in self.item_info_dict_per_task or not self.item_info_dict_per_task[full_item_id].source:
                 raw_html = self.fetch_html(f'{self._get_sitename()}post/{item_id}')
                 if raw_html is None:

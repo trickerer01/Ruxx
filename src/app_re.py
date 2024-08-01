@@ -43,6 +43,7 @@ re_tags_to_process_rn = re_compile(
 )
 re_tags_to_process_rs = re_tags_to_process_rx
 re_tags_to_process_rz = re_tags_to_process_rx
+re_tags_to_process_rp = re_tags_to_process_rn
 
 re_tags_exclude_major1 = re_compile(
     r'^(?:(?:digital|original|traditional)_(?:content|media|painting)|[234]d|h(?:d|ero_outfit)|level_up|p(?:ainting|rotagonist)|tagme|'
@@ -85,10 +86,12 @@ re_tags_exclude_rn = re_compile(
 )
 re_tags_exclude_rs = re_tags_exclude_rx
 re_tags_exclude_rz = re_tags_exclude_rx
+re_tags_exclude_rp = re_tags_exclude_rn
 
-re_item_info_part_rx = re_compile(r'([\w5_]+=\"[^"]+\")[> ]')
+re_item_info_part_xml = re_compile(r'([\w5_]+=\"[^"]+\")[> ]')
 re_orig_file_link = re_compile(r'file_url=\"([^"]+)\"')
 re_sample_file_link = re_compile(r'file_url=\"([^"]+)\"')
+re_item_filename = re_compile(r'file_name=\"([^"]+)\"')
 re_post_page_rx = re_compile(r'^(?:\?page=post&(?:amp;)?s=list|document\.location=\'\?page=favorites|\?page=pool&(?:amp;)?s=show)&.+?$')
 
 re_item_info_part_rn = re_compile(r'([\w\-]+=\"[^"]+\")[/> ]')

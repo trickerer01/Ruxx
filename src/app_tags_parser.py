@@ -34,6 +34,8 @@ META_COUNT_RS = r':(?:(?:[<>]=?|=)?[a-z\d_]+?|[a-z\d_]+:[a-z\d_]+?)'
 # language=PythonRegExp
 META_COUNT_RZ = r':(?:[<>]=?)?[^:]+?'
 # language=PythonRegExp
+META_COUNT_RP = r'(?:[<>]=?|=)[a-z\d_]+?'
+# language=PythonRegExp
 META_SORT_RX = r'sort(?::[^:]+?){1,2}'
 # language=PythonRegExp
 META_SORT_RN = r'order=(?:id|score)_desc'
@@ -43,13 +45,17 @@ META_SORT_RS = r'sort(?::[^:]+?){1,2}'
 META_SORT_RZ = r''
 """not supported"""
 # language=PythonRegExp
+META_SORT_RP = r'order=(?:id|score)_desc'
+# language=PythonRegExp
 META_FAV_RX = r'favorited_by:\d+?'
 # language=PythonRegExp
-META_FAV_RN = r'favorited_by=[^:]+?'
+META_FAV_RN = r'favorited_by=[^:=]+?'
 # language=PythonRegExp
 META_FAV_RS = r'favorited_by:\d+?'
 # language=PythonRegExp
 META_FAV_RZ = r'favorited_by:[^:]+?'
+# language=PythonRegExp
+META_FAV_RP = r'favorited_by=[^:=]+?'
 # language=PythonRegExp
 META_POOL_RX = r'pool:\d+?'
 # language=PythonRegExp
@@ -62,6 +68,9 @@ META_POOL_RS = r''
 META_POOL_RZ = r''
 """not supported"""
 # language=PythonRegExp
+META_POOL_RP = r''
+"""not supported"""
+# language=PythonRegExp
 RE_ORGR_PART_RX = fr'{TAG_CHAR}+?(?:{META_COUNT_RX})?'
 # language=PythonRegExp
 RE_ORGR_PART_RN = fr'{TAG_CHAR}+?(?:{META_COUNT_RN})?'
@@ -69,6 +78,8 @@ RE_ORGR_PART_RN = fr'{TAG_CHAR}+?(?:{META_COUNT_RN})?'
 RE_ORGR_PART_RS = fr'{TAG_CHAR}+?(?:{META_COUNT_RS})?'
 # language=PythonRegExp
 RE_ORGR_PART_RZ = fr'{TAG_CHAR}+?'
+# language=PythonRegExp
+RE_ORGR_PART_RP = fr'{TAG_CHAR}+?(?:{META_COUNT_RP})?'
 
 # language=PythonRegExp
 ANDGR_CHAR = r'[a-zÀ-ʯА-я\d_+\-/!()*\'.|?]'
@@ -80,42 +91,49 @@ re_plains = {
     ProcModule.PROC_RN: re_compile(fr'^-?{TAG_CHAR}+?$'),
     ProcModule.PROC_RS: re_compile(fr'^-?{TAG_CHAR}+?$'),
     ProcModule.PROC_RZ: re_compile(fr'^-?{TAG_CHAR}+?$'),
+    ProcModule.PROC_RP: re_compile(fr'^-?{TAG_CHAR}+?$'),
 }
 re_metas = {
     ProcModule.PROC_RX: re_compile(fr'^{META_CHAR}+?{META_COUNT_RX}$'),
     ProcModule.PROC_RN: re_compile(fr'^{META_CHAR}+?{META_COUNT_RN}$'),
     ProcModule.PROC_RS: re_compile(fr'^{META_CHAR}+?{META_COUNT_RS}$'),
     ProcModule.PROC_RZ: re_compile(fr'^(?:id|favorited_by|score){META_COUNT_RZ}$'),
+    ProcModule.PROC_RP: re_compile(fr'^{META_CHAR}+?{META_COUNT_RP}$'),
 }
 re_sorts = {
     ProcModule.PROC_RX: re_compile(fr'^{META_SORT_RX}$'),
     ProcModule.PROC_RN: re_compile(fr'^{META_SORT_RN}$'),
     ProcModule.PROC_RS: re_compile(fr'^{META_SORT_RS}$'),
     ProcModule.PROC_RZ: re_compile(fr'^{META_SORT_RZ}$'),
+    ProcModule.PROC_RP: re_compile(fr'^{META_SORT_RP}$'),
 }
 re_favs = {
     ProcModule.PROC_RX: re_compile(fr'^{META_FAV_RX}$'),
     ProcModule.PROC_RN: re_compile(fr'^{META_FAV_RN}$'),
     ProcModule.PROC_RS: re_compile(fr'^{META_FAV_RS}$'),
     ProcModule.PROC_RZ: re_compile(fr'^{META_FAV_RZ}$'),
+    ProcModule.PROC_RP: re_compile(fr'^{META_FAV_RP}$'),
 }
 re_pools = {
     ProcModule.PROC_RX: re_compile(fr'^{META_POOL_RX}$'),
     ProcModule.PROC_RN: re_compile(fr'^{META_POOL_RN}$'),
     ProcModule.PROC_RS: re_compile(fr'^{META_POOL_RS}$'),
     ProcModule.PROC_RZ: re_compile(fr'^{META_POOL_RZ}$'),
+    ProcModule.PROC_RP: re_compile(fr'^{META_POOL_RP}$'),
 }
 re_orgrs_full = {
     ProcModule.PROC_RX: re_compile(fr'^\((?:{RE_ORGR_PART_RX})(?:~{RE_ORGR_PART_RX})+?\)$'),
     ProcModule.PROC_RN: re_compile(fr'^\((?:{RE_ORGR_PART_RN})(?:~{RE_ORGR_PART_RN})+?\)$'),
     ProcModule.PROC_RS: re_compile(fr'^\((?:{RE_ORGR_PART_RS})(?:~{RE_ORGR_PART_RS})+?\)$'),
     ProcModule.PROC_RZ: re_compile(fr'^\((?:{RE_ORGR_PART_RZ})(?:~{RE_ORGR_PART_RZ})+?\)$'),
+    ProcModule.PROC_RP: re_compile(fr'^\((?:{RE_ORGR_PART_RP})(?:~{RE_ORGR_PART_RP})+?\)$'),
 }
 re_orgrs_full_s = {
     ProcModule.PROC_RX: re_compile(fr'^\( (?:{RE_ORGR_PART_RX})(?: ~ {RE_ORGR_PART_RX})+? \)$'),
     ProcModule.PROC_RN: re_compile(fr'^\( (?:{RE_ORGR_PART_RN})(?: ~ {RE_ORGR_PART_RN})+? \)$'),
     ProcModule.PROC_RS: re_compile(fr'^\( (?:{RE_ORGR_PART_RS})(?: ~ {RE_ORGR_PART_RS})+? \)$'),
     ProcModule.PROC_RZ: re_compile(fr'^\( (?:{RE_ORGR_PART_RZ})(?: ~ {RE_ORGR_PART_RZ})+? \)$'),
+    ProcModule.PROC_RP: re_compile(fr'^\( (?:{RE_ORGR_PART_RP})(?: ~ {RE_ORGR_PART_RP})+? \)$'),
 }
 re_andgr_full = re_compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$')
 

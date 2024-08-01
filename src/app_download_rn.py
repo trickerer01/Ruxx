@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from base64 import b64decode
 from datetime import datetime
-from typing import Tuple, Optional, Pattern, Union
+from typing import Tuple, Optional, Pattern, Union, Dict
 
 # requirements
 from bs4 import BeautifulSoup
@@ -43,6 +43,12 @@ class DownloaderRn(Downloader):
     """
     def __init__(self) -> None:
         super().__init__()
+
+    def _get_module_specific_default_headers(self) -> Dict[str, str]:
+        return {}
+
+    def _get_module_specific_default_cookies(self) -> Dict[str, str]:
+        return {}
 
     def _is_fav_search_conversion_required(self) -> bool:
         return False
@@ -220,7 +226,7 @@ class DownloaderRn(Downloader):
                 return
             else:
                 self._extract_comments(raw_html, item_id)
-                full_item_id = f'{self._get_module_abbr_p()}{item_id}'
+                full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
                 orig_source_div = raw_html.find('div', style=re_shimmie_orig_source)
                 if orig_source_div:
                     self.item_info_dict_per_task[full_item_id].source = orig_source_div.text
@@ -269,7 +275,7 @@ class DownloaderRn(Downloader):
 
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
         # no pagination
-        full_item_id = f'{self._get_module_abbr_p()}{item_id}'
+        full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
         comment_divs = raw_html.select('div[class="comment"]')
         for comment_div in comment_divs:
             author_a = comment_div.find('a', class_='username')

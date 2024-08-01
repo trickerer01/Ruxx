@@ -95,6 +95,14 @@ class ThreadedHtmlWorker(ThreadedWorker):
     def _get_sitename(self) -> str:
         ...
 
+    @abstractmethod
+    def _get_module_specific_default_headers(self) -> Dict[str, str]:
+        ...
+
+    @abstractmethod
+    def _get_module_specific_default_cookies(self) -> Dict[str, str]:
+        ...
+
     def make_session(self) -> Session:
         s = Session()
         s.adapters.clear()
@@ -116,6 +124,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
         self.proxies = {'http': str(args.proxy), 'https': str(args.proxy)} if args.proxy else None
         self.timeout = args.timeout or self.timeout
         self.retries = args.retries or self.retries
+        self.add_headers.update(self._get_module_specific_default_headers())
+        self.add_cookies.update(self._get_module_specific_default_cookies())
         if args.headers:
             self.add_headers.update(args.headers)
         if args.cookies:

@@ -15,8 +15,9 @@ from iteration_utilities import unique_everseen
 
 # internal
 from app_defines import (
-    UTF8, FILE_NAME_PREFIX_RX, FILE_NAME_PREFIX_RN, FILE_NAME_PREFIX_RS, FILE_NAME_PREFIX_RZ,
+    UTF8, FILE_NAME_PREFIX_RX, FILE_NAME_PREFIX_RN, FILE_NAME_PREFIX_RS, FILE_NAME_PREFIX_RZ, FILE_NAME_PREFIX_RP,
     ID_VALUE_SEPARATOR_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RS, ID_VALUE_SEPARATOR_CHAR_RZ,
+    ID_VALUE_SEPARATOR_CHAR_RP,
 )
 from app_module import ProcModule
 
@@ -30,18 +31,21 @@ idval_eq_separators = {
     ProcModule.PROC_RN: ID_VALUE_SEPARATOR_CHAR_RN,
     ProcModule.PROC_RS: ID_VALUE_SEPARATOR_CHAR_RS,
     ProcModule.PROC_RZ: ID_VALUE_SEPARATOR_CHAR_RZ,
+    ProcModule.PROC_RP: ID_VALUE_SEPARATOR_CHAR_RP,
 }
 idstring_patterns = {
     ProcModule.PROC_RX: re_compile(fr'^(?:{FILE_NAME_PREFIX_RX}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RX}?)?\d+?)*$'),
     ProcModule.PROC_RN: re_compile(fr'^(?:{FILE_NAME_PREFIX_RN}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RN}?)?\d+?)*$'),
     ProcModule.PROC_RS: re_compile(fr'^(?:{FILE_NAME_PREFIX_RS}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RS}?)?\d+?)*$'),
     ProcModule.PROC_RZ: re_compile(fr'^(?:{FILE_NAME_PREFIX_RZ}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RZ}?)?\d+?)*$'),
+    ProcModule.PROC_RP: re_compile(fr'^(?:{FILE_NAME_PREFIX_RP}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RP}?)?\d+?)*$'),
 }
 prefix_optional_patterns = {
     ProcModule.PROC_RX: re_compile(fr'{FILE_NAME_PREFIX_RX}?'),
     ProcModule.PROC_RN: re_compile(fr'{FILE_NAME_PREFIX_RN}?'),
     ProcModule.PROC_RS: re_compile(fr'{FILE_NAME_PREFIX_RS}?'),
     ProcModule.PROC_RZ: re_compile(fr'{FILE_NAME_PREFIX_RZ}?'),
+    ProcModule.PROC_RP: re_compile(fr'{FILE_NAME_PREFIX_RP}?'),
 }
 
 

@@ -3,7 +3,7 @@
 Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 """
 #########################################
-# TODO: RZ tests
+#
 #
 
 # native
@@ -15,6 +15,7 @@ from unittest import TestCase, main as run_tests
 # internal
 from app_cmdargs import prepare_arglist
 from app_defines import DownloadModes, ThreadInterruptException, DEFAULT_HEADERS, DATE_MIN_DEFAULT
+# noinspection PyProtectedMember
 from app_downloaders import make_downloader
 from app_logger import Logger
 from app_module import ProcModule
@@ -73,9 +74,15 @@ item_str01_rs = (
     'alt="Image: 7939303" style="width: 220px; height: 100%; object-fit: cover; object-position: center;"/></a></div>'
 )
 item_str01_rz = (
-    "{'posted': '2024-02-04T22:13:44.781382', 'likes': 53, 'views': 1574, 'comments': 0, 'type': 1, 'status': 2, 'uploaderId': 9741,"
-    " 'attributes': 1, 'uploader': None, 'duration': '00:00:30.0003580', 'error': None, 'tagsWithType': None, "
+    "{'posted': '2024-02-04T22:13:44.781382', 'likes': 53, 'views': 1574, 'comments': 0, 'type': 1, 'status': 2, 'uploaderId': 9741, "
+    "'attributes': 1, 'uploader': None, 'duration': '00:00:30.0003580', 'error': None, 'tagsWithType': None, "
     "'tags': ['pastakudasai', '69', 'tagme', 'video'], 'sources': None, 'id': 3788448, 'created': '2024-02-04T22:08:30.396999'}"
+)
+item_str01_rp = (
+    '<posts count="1" offset="0"><tag author="TinyToonFan9" date="2024-07-26 04:52:59" file_name="1f7aa65042312f.jpg" '
+    'file_url="/96/ff/96ff9088317591963b1f7aa65042312f" height="1663" id="6436541" md5="96ff9088317591963b1f7aa65042312f" '
+    'preview_height="192" preview_url="/_thumbs/96ff9088317591963b1f7aa65042312f/thumb.jpg" preview_width="115" rating="?" '
+    'score="0" source="Zesker-1071936-Ysera_-_World_of_Warcraft.jpg" tags="World_of_Warcraft Ysera Zeskerr" width="1000"></tag></posts>'
 )
 
 
@@ -162,6 +169,16 @@ class DownloaderBaseTests(TestCase):
             dwn._parse_args(arglist)
             self.assertEqual('3788448', dwn._extract_id(dwn._local_addr_from_string(item_str01_rz)))
             self.assertEqual('04-02-2024', dwn._extract_post_date(item_str01_rz))
+        print(f'{self._testMethodName} passed')
+
+    def test_item01_rp(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str01
+        arglist = prepare_arglist(args.split())
+        with make_downloader(ProcModule.PROC_RP) as dwn:
+            dwn._parse_args(arglist)
+            self.assertEqual('6436541', dwn._extract_id(item_str01_rp))
+            self.assertEqual('26-07-2024', dwn._extract_post_date(item_str01_rp))
         print(f'{self._testMethodName} passed')
 
     def test_cmdline01(self) -> None:
@@ -296,7 +313,7 @@ class ConnTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RX) as dwn:
             dwn._parse_args(arglist)
-            dwn.url = dwn._form_tags_search_address(dwn.tags_str_arr[0])
+            dwn.url = dwn._form_tags_search_address(dwn._consume_custom_module_tags(dwn.tags_str_arr[0]))
             dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
             self.assertEqual(1, dwn.total_count)
         print(f'{self._testMethodName} passed')
@@ -311,7 +328,7 @@ class ConnTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RS) as dwn:
             dwn._parse_args(arglist)
-            dwn.url = dwn._form_tags_search_address(dwn.tags_str_arr[0])
+            dwn.url = dwn._form_tags_search_address(dwn._consume_custom_module_tags(dwn.tags_str_arr[0]))
             dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
             self.assertEqual(1, dwn.total_count)
         print(f'{self._testMethodName} passed')
@@ -325,6 +342,21 @@ class ConnTests(TestCase):
         argslist = ('tiara', 'dark_elf', 'toes', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RZ) as dwn:
+            dwn._parse_args(arglist)
+            dwn.url = dwn._form_tags_search_address(dwn._consume_custom_module_tags(dwn.tags_str_arr[0]))
+            dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
+            self.assertEqual(1, dwn.total_count)
+        print(f'{self._testMethodName} passed')
+
+    def test_connect_rp01(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
+        Logger.init(True, True)
+        #               tag           tag        flag     v      flag      v      flag            v           flag      v
+        argslist = ('id=5915464', '-severals', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
+        arglist = prepare_arglist(argslist)
+        with make_downloader(ProcModule.PROC_RP) as dwn:
             dwn._parse_args(arglist)
             dwn.url = dwn._form_tags_search_address(dwn._consume_custom_module_tags(dwn.tags_str_arr[0]))
             dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
@@ -441,8 +473,8 @@ class RealDownloadTests(TestCase):
         if not RUN_CONN_TESTS:
             return
         # this test actually performs a download
-        fav_user = 'mikaiika'  # Tansan00
-        tempfile_id = '3794645'  # 3325543
+        fav_user = 'mikaiika'  # 'Tansan00'
+        tempfile_id = '3794645'  # '3325543'
         tempfile_ext = 'jpg'
         tempdir = gettempdir()
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
@@ -451,6 +483,43 @@ class RealDownloadTests(TestCase):
         argslist = (f'favorited_by:{fav_user}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RZ) as dwn:
+            dwn.launch_download(arglist)
+            self.assertTrue(path.isfile(tempfile_path))
+            remove_file(tempfile_path)
+        print(f'{self._testMethodName} passed')
+
+    def test_down_rp01(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        # this test actually performs a download
+        tempfile_id = '5915464'
+        tempfile_ext = 'jpg'
+        tempdir = gettempdir()
+        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
+        Logger.init(True, True)
+        #                  tag              flag      v      flag            v           flag      v
+        argslist = (f'id={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
+        arglist = prepare_arglist(argslist)
+        with make_downloader(ProcModule.PROC_RP) as dwn:
+            dwn.launch_download(arglist)
+            self.assertTrue(path.isfile(tempfile_path))
+            remove_file(tempfile_path)
+        print(f'{self._testMethodName} passed')
+
+    def test_down_rp02_fav1(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        # this test actually performs a download
+        fav_user = 'avoidthenoid'
+        tempfile_id = '440995'
+        tempfile_ext = 'jpg'
+        tempdir = gettempdir()
+        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
+        Logger.init(True, True)
+        #                 tag                      flag      v      flag            v           flag      v
+        argslist = (f'favorited_by={fav_user}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
+        arglist = prepare_arglist(argslist)
+        with make_downloader(ProcModule.PROC_RP) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)

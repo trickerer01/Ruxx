@@ -11,7 +11,9 @@ from re import compile as re_compile
 from typing import Tuple, List, Pattern, Optional, Iterable
 
 # internal
-from app_defines import TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN, TAGS_STRING_LENGTH_MAX_RS, TAGS_STRING_LENGTH_MAX_RZ
+from app_defines import (
+    TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN, TAGS_STRING_LENGTH_MAX_RS, TAGS_STRING_LENGTH_MAX_RZ, TAGS_STRING_LENGTH_MAX_RP,
+)
 from app_module import ProcModule
 from app_network import thread_exit
 from app_logger import trace
@@ -103,18 +105,21 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
         ProcModule.PROC_RN: TAGS_STRING_LENGTH_MAX_RN,
         ProcModule.PROC_RS: TAGS_STRING_LENGTH_MAX_RS,
         ProcModule.PROC_RZ: TAGS_STRING_LENGTH_MAX_RZ,
+        ProcModule.PROC_RP: TAGS_STRING_LENGTH_MAX_RP,
     }
-    max_tagss = {
-        ProcModule.PROC_RX: 0,
-        ProcModule.PROC_RN: 0,
-        ProcModule.PROC_RS: 0,
-        ProcModule.PROC_RZ: 3,
+    max_neg_tagss = {
+        ProcModule.PROC_RX: (0, False),
+        ProcModule.PROC_RN: (0, False),
+        ProcModule.PROC_RS: (0, False),
+        ProcModule.PROC_RZ: (3, True),
+        ProcModule.PROC_RP: (3, False),
     }
-    max_tags = max_tagss.get(ProcModule.get())
+    max_tags_neg, max_is_separate = max_neg_tagss[ProcModule.get()]
     neg_tags_list_all = list(filter(lambda x: x.startswith('-'), tags_list))
-    max_string_len = max_string_lengths.get(ProcModule.get())
-    if total_len > max_string_len or (max_tags and len(neg_tags_list_all) > max_tags):
-        trace('Warning (W1): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
+    max_tags = max(0, max_tags_neg - (0 if max_is_separate else (len(tags_list) - len(neg_tags_list_all))) if max_tags_neg else 10**9)
+    max_string_len = max_string_lengths[ProcModule.get()]
+    if total_len > max_string_len or len(neg_tags_list_all) > max_tags:
+        trace('Warning (W3): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
         neg_tags_list = list()
         # first pass: wildcarded negative tags - chance to ruin alias is lower (rx)
         # second pass: any negative tags
@@ -130,7 +135,7 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
                 total_len -= len(ntag) + 1
                 del neg_tags_list_all[ti]
                 del tags_list[tags_list.index(ntag)]
-        if total_len > max_string_len or (max_tags and len(neg_tags_list_all) > max_tags):
+        if total_len > max_string_len or len(neg_tags_list_all) > max_tags:
             thread_exit('Fatal: extracting negative tags doesn\'t reduce total tags length enough! Aborting...', -609)
         assert len(neg_tags_list) > 0
         extracted_neg_group_str = f'-(*,{"|".join(reversed(neg_tags_list))})'
