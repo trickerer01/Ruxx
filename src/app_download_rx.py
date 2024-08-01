@@ -9,6 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from base64 import b64decode
 from datetime import datetime
+from multiprocessing.dummy import current_process
 from typing import Tuple, Pattern, Union, Dict
 
 # requirements
@@ -217,18 +218,23 @@ class DownloaderRx(Downloader):
         return addr, ext
 
     def _extract_item_info(self, item: str) -> ItemInfo:
-        item_info = ItemInfo()
-        for part in re_item_info_part_xml.findall(item):
-            name, value = tuple(str(part).split('=', 1))
-            name = item_info_fields.get(name, name)
-            if name == 'ext':  # special case: file_url -> ext -> extract ext
-                value = value[value.rfind('.') + 1:]
-            if name in item_info.__slots__:
-                while name == 'id' and not value[0].isnumeric():  # id=p1234567
-                    value = value[1:]
-                item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
-
-        return item_info
+        try:
+            item_info = ItemInfo()
+            if self.is_killed():
+                return item_info
+            for part in re_item_info_part_xml.findall(item):
+                name, value = tuple(str(part).split('=', 1))
+                name = item_info_fields.get(name, name)
+                if name == 'ext':  # special case: file_url -> ext -> extract ext
+                    value = value[value.rfind('.') + 1:]
+                if name in item_info.__slots__:
+                    while name == 'id' and not value[0].isnumeric():  # id=p1234567
+                        value = value[1:]
+                    item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
+            return item_info
+        except Exception:
+            self._on_thread_exception(current_process().getName())
+            raise
 
     def get_re_tags_to_process(self) -> Pattern:
         return re_tags_to_process_rx
@@ -261,38 +267,42 @@ class DownloaderRx(Downloader):
         if self.is_killed():
             return
 
-        h = raw
-        item_id = self._extract_id(h)
+        try:
+            h = raw
+            item_id = self._extract_id(h)
 
-        if self.dump_comments is True:
-            raw_html = self.fetch_html(self._form_comments_search_address(item_id))
-            if raw_html is None:
-                trace(f'Warning (W3): ProcItem: unable to retreive comments for {item_id}!', True)
+            if self.dump_comments is True:
+                raw_html = self.fetch_html(self._form_comments_search_address(item_id))
+                if raw_html is None:
+                    trace(f'Warning (W3): ProcItem: unable to retreive comments for {item_id}!', True)
+                else:
+                    self._extract_comments(raw_html, item_id)
+
+            if self.download_mode == DownloadModes.SKIP:
+                self._inc_proc_count()
+                return
+
+            orig_item = re_orig_file_link.search(h)
+
+            if self.add_filename_prefix is True:
+                item_id = f'{self._get_module_abbr_p()}{item_id}'
+
+            if orig_item:
+                if len(orig_item.groupdict()) > 1:
+                    trace(f'Warning (W1): ProcItem: {len(orig_item.groupdict()):d} items for {item_id}', True)
+
+                is_vid = self._is_video(h)
+                if is_vid:
+                    self._process_video(h, item_id)
+                else:
+                    self._process_image(h, item_id)
             else:
-                self._extract_comments(raw_html, item_id)
+                trace(f'Warning (W2): unable to extract file url from {h}, deleted?', True)
 
-        if self.download_mode == DownloadModes.SKIP:
             self._inc_proc_count()
-            return
-
-        orig_item = re_orig_file_link.search(h)
-
-        if self.add_filename_prefix is True:
-            item_id = f'{self._get_module_abbr_p()}{item_id}'
-
-        if orig_item:
-            if len(orig_item.groupdict()) > 1:
-                trace(f'Warning (W1): ProcItem: {len(orig_item.groupdict()):d} items for {item_id}', True)
-
-            is_vid = self._is_video(h)
-            if is_vid:
-                self._process_video(h, item_id)
-            else:
-                self._process_image(h, item_id)
-        else:
-            trace(f'Warning (W2): unable to extract file url from {h}, deleted?', True)
-
-        self._inc_proc_count()
+        except Exception:
+            self._on_thread_exception(current_process().getName())
+            raise
 
     def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:
         return (f'{self._get_sitename()}index.php?page=favorites&s=view&id={self.favorites_search_user}' if self.favorites_search_user else

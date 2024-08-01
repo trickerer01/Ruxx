@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from base64 import b64decode
+from multiprocessing.dummy import current_process
 from typing import Tuple, Optional, Pattern, Union, Dict
 
 # requirements
@@ -155,36 +156,41 @@ class DownloaderRs(Downloader):
             assert False
 
     def _extract_item_info(self, item: str) -> ItemInfo:
-        item_info = ItemInfo()
-        addr = self.extract_local_addr(item)
-        item_id = self._extract_id(addr)
-        item_info.id = item_id
-        raw_html = self.fetch_html(addr, do_cache=True)
-        if raw_html is None:
-            trace(f'Warning (W2): Item info was not extracted for {item_id}')
+        try:
+            item_info = ItemInfo()
+            if self.is_killed():
+                return item_info
+            addr = self.extract_local_addr(item)
+            item_id = self._extract_id(addr)
+            item_info.id = item_id
+            raw_html = self.fetch_html(addr, do_cache=True)
+            if raw_html is None:
+                trace(f'Warning (W2): Item info was not extracted for {item_id}')
+                return item_info
+            keywords_meta = raw_html.find('meta', attrs={'name': 'keywords'})
+            if keywords_meta:
+                tags_list = str(keywords_meta.get('content')).strip(', ').split(', ')
+                item_info.tags = ' '.join(tag.replace(' ', '_') for tag in tags_list)
+            orig_href = self._extract_orig_link(raw_html)
+            ext = orig_href[orig_href.rfind('.'):] if orig_href else ''
+            item_info.ext = ext[1:]
+            lis = raw_html.find_all('li', class_='general-tag', style='display: block; padding: 5px;')
+            for li in lis:
+                li_str: str = li.text
+                if li_str.startswith('Size:'):
+                    dims = re_post_dims_rs.search(li_str)
+                    if dims:
+                        w, h = tuple(dims.groups())
+                        item_info.height = h
+                        item_info.width = w
+                elif li_str.startswith('Score:'):
+                    score_span = li.find('span')
+                    if score_span:
+                        item_info.score = score_span.text
             return item_info
-        keywords_meta = raw_html.find('meta', attrs={'name': 'keywords'})
-        if keywords_meta:
-            tags_list = str(keywords_meta.get('content')).strip(', ').split(', ')
-            item_info.tags = ' '.join(tag.replace(' ', '_') for tag in tags_list)
-        orig_href = self._extract_orig_link(raw_html)
-        ext = orig_href[orig_href.rfind('.'):] if orig_href else ''
-        item_info.ext = ext[1:]
-        lis = raw_html.find_all('li', class_='general-tag', style='display: block; padding: 5px;')
-        for li in lis:
-            li_str: str = li.text
-            if li_str.startswith('Size:'):
-                dims = re_post_dims_rs.search(li_str)
-                if dims:
-                    w, h = tuple(dims.groups())
-                    item_info.height = h
-                    item_info.width = w
-            elif li_str.startswith('Score:'):
-                score_span = li.find('span')
-                if score_span:
-                    item_info.score = score_span.text
-
-        return item_info
+        except Exception:
+            self._on_thread_exception(current_process().getName())
+            raise
 
     def get_re_tags_to_process(self) -> Pattern:
         return re_tags_to_process_rs
@@ -217,38 +223,42 @@ class DownloaderRs(Downloader):
         if self.is_killed():
             return
 
-        h = self.extract_local_addr(raw)
-        item_id = self._extract_id(h)
+        try:
+            h = self.extract_local_addr(raw)
+            item_id = self._extract_id(h)
 
-        raw_html = BeautifulSoup()
-        if self.download_mode != DownloadModes.SKIP or self.dump_comments is True:
-            raw_html = self.fetch_html(h)
-            if raw_html is None:
-                trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
+            raw_html = BeautifulSoup()
+            if self.download_mode != DownloadModes.SKIP or self.dump_comments is True:
+                raw_html = self.fetch_html(h)
+                if raw_html is None:
+                    trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
+                    self._inc_proc_count()
+                    return
+                else:
+                    self._extract_comments(raw_html, item_id)
+
+            if self.download_mode == DownloadModes.SKIP:
                 self._inc_proc_count()
                 return
-            else:
-                self._extract_comments(raw_html, item_id)
 
-        if self.download_mode == DownloadModes.SKIP:
+            if self.add_filename_prefix is True:
+                item_id = f'{self._get_module_abbr_p()}{item_id}'
+
+            is_vid = self._is_video(raw)
+            href = self._extract_sample_link(raw_html) if (self.low_res and not is_vid) else self._extract_orig_link(raw_html)
+
+            if href:
+                if is_vid:
+                    self._process_video(href, item_id)
+                else:
+                    self._process_image(href, item_id)
+            else:
+                trace(f'Warning (W2): ProcItem: no content for {item_id}, seems like post was deleted', True)
+
             self._inc_proc_count()
-            return
-
-        if self.add_filename_prefix is True:
-            item_id = f'{self._get_module_abbr_p()}{item_id}'
-
-        is_vid = self._is_video(raw)
-        href = self._extract_sample_link(raw_html) if (self.low_res and not is_vid) else self._extract_orig_link(raw_html)
-
-        if href:
-            if is_vid:
-                self._process_video(href, item_id)
-            else:
-                self._process_image(href, item_id)
-        else:
-            trace(f'Warning (W2): ProcItem: no content for {item_id}, seems like post was deleted', True)
-
-        self._inc_proc_count()
+        except Exception:
+            self._on_thread_exception(current_process().getName())
+            raise
 
     def _form_tags_search_address(self, tags: str, *_) -> str:
         return (f'{self._get_sitename()}index.php?r=favorites/view&id={self.favorites_search_user}' if self.favorites_search_user else

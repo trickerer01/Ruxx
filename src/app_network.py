@@ -324,6 +324,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                 thread_exit('interrupted by user.', code=1)
             except (Exception, HTTPError,) as err:
                 retries += 1
+                sleep_time = 1.0
                 threadname = f'{current_process().name}: ' if current_process() != self.my_root_thread else ''
                 if isinstance(err, HTTPError) and err.response.status_code == 404:
                     if r is not None and r.content and len(r.content.decode()) > 2:
@@ -332,9 +333,15 @@ class ThreadedHtmlWorker(ThreadedWorker):
                         break
                     trace(f'{threadname}catched err 404 {str(exc_info()[0])}: {str(exc_info()[1])}. Aborting...', True)
                     return None
-                trace(f'{threadname}catched {str(exc_info()[0])}: {str(exc_info()[1])}.'
-                      f'{f" Reconnecting... {retries:d}" if retries < tries else ""}', True)
-                thread_sleep(1)
+                elif isinstance(err, HTTPError) and err.response.status_code == 429:  # Too Many Requests
+                    sleep_time += float(min(9, retries))
+                    if __RUXX_DEBUG__:
+                        trace(f'{threadname}catched {str(exc_info()[0])}: {str(exc_info()[1])}.'
+                              f'{f" Reconnecting in {sleep_time:.1f} sec... {retries:d}" if retries < tries else ""}', True)
+                else:
+                    trace(f'{threadname}catched {str(exc_info()[0])}: {str(exc_info()[1])}.'
+                          f'{f" Reconnecting in {sleep_time:.1f} sec... {retries:d}" if retries < tries else ""}', True)
+                thread_sleep(sleep_time)
                 continue
 
         if retries >= tries:

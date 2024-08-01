@@ -15,8 +15,9 @@ from datetime import datetime
 from multiprocessing.dummy import Pool, current_process
 from multiprocessing.pool import ThreadPool
 from os import makedirs, listdir, path, remove
+from threading import Thread, Lock as ThreadLock
 from time import sleep as thread_sleep
-from typing import Dict, List, Callable, Iterable, Set, MutableSet, Match
+from typing import Dict, List, Callable, Iterable, Set, MutableSet, Match, Optional
 
 # requirements
 from iteration_utilities import unique_everseen
@@ -54,6 +55,9 @@ class Downloader(DownloaderBase):
     @abstractmethod
     def __init__(self) -> None:
         super().__init__()
+        self._exception_checker: Optional[Thread] = None
+        self._thread_exception_lock = ThreadLock()
+        self._thread_exceptions: Dict[str, List[str]] = dict()
 
     @property
     def total_count_all(self) -> int:
@@ -74,6 +78,30 @@ class Downloader(DownloaderBase):
         if self.session:
             self.session.close()
             self.session = None
+        self._thread_exceptions.clear()
+        if self._exception_checker:
+            self._exception_checker.join()
+            self._exception_checker = None
+
+    def _start_exception_checker(self) -> None:
+        self._exception_checker = Thread(target=self._thread_exceptions_checker)
+        self._exception_checker.start()
+
+    def _thread_exceptions_checker(self) -> None:
+        while not self.is_killed():
+            with self._thread_exception_lock:
+                if not all(not excl for excl in self._thread_exceptions):
+                    break
+            thread_sleep(0.5)
+
+    # threaded
+    def _on_thread_exception(self, thread_name: str) -> None:
+        import traceback
+        with self._thread_exception_lock:
+            if thread_name not in self._thread_exceptions:
+                self._thread_exceptions[thread_name] = list()
+            self._thread_exceptions[thread_name].append(traceback.format_exc())
+            self.my_root_thread.killed = True
 
     # threaded
     def _inc_proc_count(self) -> None:
@@ -164,6 +192,9 @@ class Downloader(DownloaderBase):
 
     # threaded
     def _get_page_items(self, n: int, c_page: int, page_max: int) -> None:
+        if self.is_killed():
+            return
+
         items_per_page = self._get_items_per_page()
         pnum = n + 1
         prev_c = (c_page - 1) * items_per_page
@@ -172,40 +203,48 @@ class Downloader(DownloaderBase):
         if not self.get_max_id:
             trace(f'page: {pnum:d} / {page_max + 1:d}\t({prev_c + 1:d}-{curmax_c:d} / {self.total_count_old:d})', True)
 
-        while True:
-            try:
-                raw_html_page = self.fetch_html(self._form_page_num_address(n))
-                if raw_html_page is None:
-                    trace(f'ERROR: ProcPage: unable to retreive html for page {pnum:d}!', True)
-                    raise ConnectionError
+        try:
+            while True:
+                if self.is_killed():
+                    return
+                try:
+                    raw_html_page = self.fetch_html(self._form_page_num_address(n))
+                    if raw_html_page is None:
+                        trace(f'ERROR: ProcPage: unable to retreive html for page {pnum:d}!', True)
+                        raise ConnectionError
 
-                if self._is_search_overload_page(raw_html_page):
-                    trace(f'Warning (W2): search was dropped on page {pnum:d} (too many threads?), retrying...', True)
-                    raise KeyError
+                    if self._is_search_overload_page(raw_html_page):
+                        trace(f'Warning (W2): search was dropped on page {pnum:d} (too many threads?), retrying...', True)
+                        raise KeyError
 
-                items_raw_temp = self._get_all_post_tags(raw_html_page)
-                if len(items_raw_temp) == 0:
-                    trace(f'ERROR: ProcPage: cannot find picture or video on page {pnum:d}, retrying...', True)
-                    if __RUXX_DEBUG__:
-                        trace(f'HTML:\n{str(raw_html_page)}', True)
-                    raise KeyError
+                    items_raw_temp = self._get_all_post_tags(raw_html_page)
+                    if len(items_raw_temp) == 0:
+                        trace(f'ERROR: ProcPage: cannot find picture or video on page {pnum:d}, retrying...', True)
+                        if __RUXX_DEBUG__:
+                            trace(f'HTML:\n{str(raw_html_page)}', True)
+                        raise KeyError
 
-                break
+                    break
+                except ConnectionError:
+                    return
+                except KeyError:
+                    items_raw_temp = list()
+                    thread_sleep(min(10.0, max(CONNECT_TIMEOUT_BASE / 4, self.timeout / 2)))
+                    continue
 
-            except ConnectionError:
-                return
-            except KeyError:
-                items_raw_temp = list()
-                thread_sleep(min(10.0, max(CONNECT_TIMEOUT_BASE / 4, self.timeout / 2)))
-                continue
+            # convert to pure strings
+            self.items_raw_per_page[n] = [str(item) for item in items_raw_temp]
+            with self.items_all_lock:
+                total_count_temp = 0
+                for k in self.items_raw_per_page:
+                    total_count_temp += len(self.items_raw_per_page[k])
+                self.total_count = total_count_temp
 
-        # convert to pure strings
-        self.items_raw_per_page[n] = [str(item) for item in items_raw_temp]
-        with self.items_all_lock:
-            total_count_temp = 0
-            for k in self.items_raw_per_page:
-                total_count_temp += len(self.items_raw_per_page[k])
-            self.total_count = total_count_temp
+            if ProcModule.is_rp():
+                thread_sleep(1.0)
+        except Exception:
+            self._on_thread_exception(current_process().getName())
+            raise
 
     def _fetch_task_items(self, tag_str: str) -> None:
         self.current_state = DownloaderStates.SEARCHING
@@ -269,7 +308,7 @@ class Downloader(DownloaderBase):
                     arr_temp.append((n, c_page, self.maxpage))
 
                 active_pool: ThreadPool
-                with Pool(max(2, self.maxthreads_items // 2)) as active_pool:
+                with Pool(max(2, self.maxthreads_items // (4 if ProcModule.is_rp() else 2))) as active_pool:
                     ress = list()
                     for larr in arr_temp:
                         ress.append(active_pool.apply_async(self._get_page_items, args=larr))
@@ -565,18 +604,22 @@ class Downloader(DownloaderBase):
 
     def _launch(self, args: Namespace, thiscall: Callable[[], None], enable_preprocessing=True) -> None:
         self.reset_root_thread(current_process())
+        self._start_exception_checker()
         try:
             self._parse_args(args, enable_preprocessing)
             self._at_launch()
             thiscall()
         except (KeyboardInterrupt, ThreadInterruptException):
             trace(f'\nInterrupted by {str(sys.exc_info()[0])}!\n', True)
-            self.my_root_thread.killed = True
         except Exception:
             import traceback
             trace(f'Unhandled exception: {str(sys.exc_info()[0])}!\n{traceback.format_exc()}', True)
         finally:
             self.current_state = DownloaderStates.IDLE
+            self.my_root_thread.killed = True
+        if self._thread_exceptions and self.maxthreads_items > 1:
+            n = '\n'
+            trace(f'Catched thread exception(s):\n{n.join(n.join(self._thread_exceptions[exck]) for exck in self._thread_exceptions)}')
 
     def launch_download(self, args: Namespace) -> None:
         """Public, needed by core"""

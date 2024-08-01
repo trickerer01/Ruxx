@@ -11,6 +11,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from base64 import b64decode
 from datetime import datetime
 from json import loads
+from multiprocessing.dummy import current_process
 from typing import Tuple, Pattern, List, Dict, Iterable, Callable, MutableSet
 
 # requirements
@@ -188,26 +189,32 @@ class DownloaderRz(Downloader):
         return addr, ext
 
     def _extract_item_info(self, item: str) -> ItemInfo:
-        item_info = ItemInfo()
-        item_info.height, item_info.width = '?', '?'
-        item_json = self.parse_json(item)
-        for name in item_json:
-            value = item_json[name]
-            name = item_info_fields.get(name, name)
-            if name == 'tags':
-                item_info.tags = ' '.join(sorted(t.replace(' ', '_') for t in value))
-            elif name == 'sources':
-                if value and len(value) > 0 and value[0]:
-                    item_info.source = value[0]
-            elif name == 'imageLinks':
-                try:
-                    item_info.ext = next(filter(None, [link['url'][link['url'].rfind('.') + 1:] for link in value if link['type'] == 11]))
-                except Exception:
-                    item_info.ext = 'mp4' if item_json.get('type', 0) == 1 else 'jpg'
-            elif name in item_info.__slots__:
-                item_info.__setattr__(name, str(value).replace('\n', ' ').replace('"', '').strip())
-
-        return item_info
+        try:
+            item_info = ItemInfo()
+            if self.is_killed():
+                return item_info
+            item_info.height, item_info.width = '?', '?'
+            item_json = self.parse_json(item)
+            for name in item_json:
+                value = item_json[name]
+                name = item_info_fields.get(name, name)
+                if name == 'tags':
+                    item_info.tags = ' '.join(sorted(t.replace(' ', '_') for t in value))
+                elif name == 'sources':
+                    if value and len(value) > 0 and value[0]:
+                        item_info.source = value[0]
+                elif name == 'imageLinks':
+                    try:
+                        item_info.ext = next(filter(
+                            None, [link['url'][link['url'].rfind('.') + 1:] for link in value if link['type'] == 11]))
+                    except Exception:
+                        item_info.ext = 'mp4' if item_json.get('type', 0) == 1 else 'jpg'
+                elif name in item_info.__slots__:
+                    item_info.__setattr__(name, str(value).replace('\n', ' ').replace('"', '').strip())
+            return item_info
+        except Exception:
+            self._on_thread_exception(current_process().getName())
+            raise
 
     def get_re_tags_to_process(self) -> Pattern:
         return re_tags_to_process_rz
@@ -279,50 +286,55 @@ class DownloaderRz(Downloader):
         if self.is_killed():
             return
 
-        h = raw
-        item_id = self._extract_id(h)
+        try:
+            h = raw
+            item_id = self._extract_id(h)
 
-        if self.dump_comments is True:
-            pass
+            if self.dump_comments is True:
+                pass
 
-        if self.dump_sources:
-            full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
-            if full_item_id not in self.item_info_dict_per_task or not self.item_info_dict_per_task[full_item_id].source:
-                raw_html = self.fetch_html(f'{self._get_sitename()}post/{item_id}')
-                if raw_html is None:
-                    trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
-                    self._inc_proc_count()
-                    return
+            if self.dump_sources:
+                full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
+                if full_item_id not in self.item_info_dict_per_task or not self.item_info_dict_per_task[full_item_id].source:
+                    raw_html = self.fetch_html(f'{self._get_sitename()}post/{item_id}')
+                    if raw_html is None:
+                        trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
+                        self._inc_proc_count()
+                        return
+                    else:
+                        orig_source_div = raw_html.find('div', class_='source')
+                        if orig_source_div and orig_source_div.parent:
+                            self.item_info_dict_per_task[full_item_id].source = (
+                                orig_source_div.parent.find('a', class_='link').get('href', ''))
+
+            if self.download_mode == DownloadModes.SKIP:
+                self._inc_proc_count()
+                return
+
+            item_json = self.parse_json(raw)
+            is_vid = self._is_video(h)
+            orig_items = list(filter(None, [link for link in item_json['imageLinks']
+                                            if link['type'] in ((10, 11, 12, 40, 41) if is_vid else (2, 3, 4, 5))]))
+
+            if self.add_filename_prefix is True:
+                item_id = f'{self._get_module_abbr_p()}{item_id}'
+
+            if orig_items:
+                if len(orig_items) > 1:
+                    # trace(f'Warning (W1): ProcItem: {len(orig_items):d} items for {item_id}', True)
+                    del orig_items[1:]
+
+                if is_vid:
+                    self._process_video(h, item_id)
                 else:
-                    orig_source_div = raw_html.find('div', class_='source')
-                    if orig_source_div and orig_source_div.parent:
-                        self.item_info_dict_per_task[full_item_id].source = orig_source_div.parent.find('a', class_='link').get('href', '')
-
-        if self.download_mode == DownloadModes.SKIP:
-            self._inc_proc_count()
-            return
-
-        item_json = self.parse_json(raw)
-        is_vid = self._is_video(h)
-        orig_items = list(filter(None, [link for link in item_json['imageLinks']
-                                        if link['type'] in ((10, 11, 12, 40, 41) if is_vid else (2, 3, 4, 5))]))
-
-        if self.add_filename_prefix is True:
-            item_id = f'{self._get_module_abbr_p()}{item_id}'
-
-        if orig_items:
-            if len(orig_items) > 1:
-                # trace(f'Warning (W1): ProcItem: {len(orig_items):d} items for {item_id}', True)
-                del orig_items[1:]
-
-            if is_vid:
-                self._process_video(h, item_id)
+                    self._process_image(h, item_id)
             else:
-                self._process_image(h, item_id)
-        else:
-            trace(f'Warning (W2): unable to extract file url from {h}, deleted?', True)
+                trace(f'Warning (W2): unable to extract file url from {h}, deleted?', True)
 
-        self._inc_proc_count()
+            self._inc_proc_count()
+        except Exception:
+            self._on_thread_exception(current_process().getName())
+            raise
 
     def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:
         assert not tags

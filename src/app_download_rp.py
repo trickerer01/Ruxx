@@ -9,6 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from base64 import b64decode
 from datetime import datetime
+from multiprocessing.dummy import current_process
 from typing import Tuple, Pattern, Union, Dict
 
 # requirements
@@ -157,18 +158,23 @@ class DownloaderRp(Downloader):
         return addr, ext
 
     def _extract_item_info(self, item: str) -> ItemInfo:
-        item_info = ItemInfo()
-        for part in re_item_info_part_xml.findall(item):
-            name, value = tuple(str(part).split('=', 1))
-            name = item_info_fields.get(name, name)
-            if name == 'ext':  # special case: file_url -> ext -> extract ext
-                value = value[value.rfind('.') + 1:]
-            if name in item_info.__slots__:
-                while name == 'id' and not value[0].isnumeric():  # id=p1234567
-                    value = value[1:]
-                item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
-
-        return item_info
+        try:
+            item_info = ItemInfo()
+            if self.is_killed():
+                return item_info
+            for part in re_item_info_part_xml.findall(item):
+                name, value = tuple(str(part).split('=', 1))
+                name = item_info_fields.get(name, name)
+                if name == 'ext':  # special case: file_url -> ext -> extract ext
+                    value = self.extract_file_url(item)[1]
+                if name in item_info.__slots__:
+                    while name == 'id' and not value[0].isnumeric():  # id=p1234567
+                        value = value[1:]
+                    item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
+            return item_info
+        except Exception:
+            self._on_thread_exception(current_process().getName())
+            raise
 
     def get_re_tags_to_process(self) -> Pattern:
         return re_tags_to_process_rp
@@ -209,40 +215,44 @@ class DownloaderRp(Downloader):
         if self.is_killed():
             return
 
-        h = raw
-        item_id = self._extract_id(h)
+        try:
+            h = raw
+            item_id = self._extract_id(h)
 
-        if self.dump_comments is True:
-            raw_html = self.fetch_html(f'{self._get_sitename()}post/view/{item_id}')
-            if raw_html is None:
-                trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
+            if self.dump_comments is True:
+                raw_html = self.fetch_html(f'{self._get_sitename()}post/view/{item_id}')
+                if raw_html is None:
+                    trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
+                    self._inc_proc_count()
+                    return
+                else:
+                    self._extract_comments(raw_html, item_id)
+
+            if self.download_mode == DownloadModes.SKIP:
                 self._inc_proc_count()
                 return
-            else:
-                self._extract_comments(raw_html, item_id)
 
-        if self.download_mode == DownloadModes.SKIP:
+            orig_item = re_orig_file_link.search(h)
+
+            if self.add_filename_prefix is True:
+                item_id = f'{self._get_module_abbr_p()}{item_id}'
+
+            if orig_item:
+                if len(orig_item.groupdict()) > 1:
+                    trace(f'Warning (W1): ProcItem: {len(orig_item.groupdict()):d} items for {item_id}', True)
+
+                is_vid = self._is_video(h)
+                if is_vid:
+                    self._process_video(h, item_id)
+                else:
+                    self._process_image(h, item_id)
+            else:
+                trace(f'Warning (W2): unable to extract file url from {h}, deleted?', True)
+
             self._inc_proc_count()
-            return
-
-        orig_item = re_orig_file_link.search(h)
-
-        if self.add_filename_prefix is True:
-            item_id = f'{self._get_module_abbr_p()}{item_id}'
-
-        if orig_item:
-            if len(orig_item.groupdict()) > 1:
-                trace(f'Warning (W1): ProcItem: {len(orig_item.groupdict()):d} items for {item_id}', True)
-
-            is_vid = self._is_video(h)
-            if is_vid:
-                self._process_video(h, item_id)
-            else:
-                self._process_image(h, item_id)
-        else:
-            trace(f'Warning (W2): unable to extract file url from {h}, deleted?', True)
-
-        self._inc_proc_count()
+        except Exception:
+            self._on_thread_exception(current_process().getName())
+            raise
 
     def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:
         return f'{self._get_sitename()}api/danbooru/find_posts?tags={tags}{self._maxlim_str(maxlim)}'
@@ -257,15 +267,24 @@ class DownloaderRp(Downloader):
             body: str = comment_div.find('span', class_='bbcode').text.strip()
             self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
 
-    @staticmethod
-    def extract_file_url(h: str) -> Tuple[str, str]:
+    def extract_file_url(self, h: str) -> Tuple[str, str]:
         file_re_res = re_orig_file_link.search(h)
         if file_re_res is None:
             return '', ''
         file_url = file_re_res.group(1)
         filename_re_res = re_item_filename.search(h)
         filename = filename_re_res.group(1)
-        file_ext = filename[filename.rfind('.') + 1:]
+        value = filename
+        if '.' in value:
+            value = value[value.rfind('.') + 1:]
+        elif len(value) > 4:
+            for formatname in ('jpg', 'png', 'gif', 'mp4', 'webm'):
+                if formatname in value:
+                    value = formatname
+        if len(value) > 4:
+            trace(f'Warning (W2): can\'t extract format for {self._get_module_abbr_p()}{self._extract_id(h)}!', True)
+            value = 'jpg'
+        file_ext = value
         return file_url, file_ext
 
     @staticmethod

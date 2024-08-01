@@ -9,6 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from base64 import b64decode
 from datetime import datetime
+from multiprocessing.dummy import current_process
 from typing import Tuple, Optional, Pattern, Union, Dict
 
 # requirements
@@ -170,18 +171,23 @@ class DownloaderRn(Downloader):
             assert False
 
     def _extract_item_info(self, item: str) -> ItemInfo:
-        item_info = ItemInfo()
-        for part in re_item_info_part_rn.findall(item):
-            name, value = tuple(str(part).split('=', 1))
-            if name == 'id':  # special case id (thumb_...): skip
-                continue
-            name = item_info_fields.get(name, name)
-            if name == 'ext':  # special case: title -> ext -> extract ext
-                value = value[value.rfind(' ') + 1:]
-            if name in item_info.__slots__:
-                item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
-
-        return item_info
+        try:
+            item_info = ItemInfo()
+            if self.is_killed():
+                return item_info
+            for part in re_item_info_part_rn.findall(item):
+                name, value = tuple(str(part).split('=', 1))
+                if name == 'id':  # special case id (thumb_...): skip
+                    continue
+                name = item_info_fields.get(name, name)
+                if name == 'ext':  # special case: title -> ext -> extract ext
+                    value = value[value.rfind(' ') + 1:]
+                if name in item_info.__slots__:
+                    item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
+            return item_info
+        except Exception:
+            self._on_thread_exception(current_process().getName())
+            raise
 
     def get_re_tags_to_process(self) -> Pattern:
         return re_tags_to_process_rn
@@ -214,61 +220,65 @@ class DownloaderRn(Downloader):
         if self.is_killed():
             return
 
-        h = self.extract_local_addr(raw)
-        item_id = self._extract_id(h)
+        try:
+            h = self.extract_local_addr(raw)
+            item_id = self._extract_id(h)
 
-        raw_html = BeautifulSoup()
-        if self.download_mode != DownloadModes.SKIP or self.dump_sources is True or self.dump_comments is True:
-            raw_html = self.fetch_html(f'{self._get_sitename()}{h}')
-            if raw_html is None:
-                trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
+            raw_html = BeautifulSoup()
+            if self.download_mode != DownloadModes.SKIP or self.dump_sources is True or self.dump_comments is True:
+                raw_html = self.fetch_html(f'{self._get_sitename()}{h}')
+                if raw_html is None:
+                    trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
+                    self._inc_proc_count()
+                    return
+                else:
+                    self._extract_comments(raw_html, item_id)
+                    full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
+                    orig_source_div = raw_html.find('div', style=re_shimmie_orig_source)
+                    if orig_source_div:
+                        self.item_info_dict_per_task[full_item_id].source = orig_source_div.text
+                    # we can't extract actual score without account credentials AND cf_clearance, but favorites will do just fine
+                    favorited_by_div = raw_html.find('h3', string='Favorited By')
+                    if favorited_by_div:
+                        fav_sib = favorited_by_div.findNextSibling()
+                        score_text = fav_sib.text[:max(fav_sib.text.find(' '), 0)]
+                        self.item_info_dict_per_task[full_item_id].score = score_text
+
+            if self.download_mode == DownloadModes.SKIP:
                 self._inc_proc_count()
                 return
-            else:
-                self._extract_comments(raw_html, item_id)
-                full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
-                orig_source_div = raw_html.find('div', style=re_shimmie_orig_source)
-                if orig_source_div:
-                    self.item_info_dict_per_task[full_item_id].source = orig_source_div.text
-                # we can't extract actual score without account credentials AND cf_clearance, but favorites will do just fine
-                favorited_by_div = raw_html.find('h3', string='Favorited By')
-                if favorited_by_div:
-                    fav_sib = favorited_by_div.findNextSibling()
-                    score_text = fav_sib.text[:max(fav_sib.text.find(' '), 0)]
-                    self.item_info_dict_per_task[full_item_id].score = score_text
 
-        if self.download_mode == DownloadModes.SKIP:
+            img_items = raw_html.find_all('img', id='main_image')
+            mp4_items = raw_html.find_all('source', type='video/mp4')
+            webm_items = raw_html.find_all('source', type='video/webm')
+            swf_items = raw_html.find_all('embed', type='application/x-shockwave-flash')
+
+            imgs = len(img_items) != 0
+            mp4s = len(mp4_items) != 0
+            wbms = len(webm_items) != 0
+            swfs = len(swf_items) != 0
+
+            if self.add_filename_prefix is True:
+                item_id = f'{self._get_module_abbr_p()}{item_id}'
+
+            if imgs or mp4s or wbms or swfs:
+                if len(img_items) > 1:
+                    trace(f'Warning (W1): ProcItem: more than 1 pic for {item_id}', True)
+                if len(mp4_items) > 1 or len(webm_items) > 1:
+                    trace(f'Warning (W1): ProcItem: more than 1 vid for {item_id}', True)
+
+                if imgs:
+                    self._process_image(str(img_items[0]), item_id)
+                else:
+                    vsrc = swf_items if not (wbms or mp4s) else webm_items if (self.prefer_webm and wbms) or not mp4s else mp4_items
+                    self._process_video(str(vsrc[0]), item_id)
+            else:
+                trace(f'Warning (W2): ProcItem: no content for {item_id}, seems like post was deleted', True)
+
             self._inc_proc_count()
-            return
-
-        img_items = raw_html.find_all('img', id='main_image')
-        mp4_items = raw_html.find_all('source', type='video/mp4')
-        webm_items = raw_html.find_all('source', type='video/webm')
-        swf_items = raw_html.find_all('embed', type='application/x-shockwave-flash')
-
-        imgs = len(img_items) != 0
-        mp4s = len(mp4_items) != 0
-        wbms = len(webm_items) != 0
-        swfs = len(swf_items) != 0
-
-        if self.add_filename_prefix is True:
-            item_id = f'{self._get_module_abbr_p()}{item_id}'
-
-        if imgs or mp4s or wbms or swfs:
-            if len(img_items) > 1:
-                trace(f'Warning (W1): ProcItem: more than 1 pic for {item_id}', True)
-            if len(mp4_items) > 1 or len(webm_items) > 1:
-                trace(f'Warning (W1): ProcItem: more than 1 vid for {item_id}', True)
-
-            if imgs:
-                self._process_image(str(img_items[0]), item_id)
-            else:
-                vsrc = swf_items if not (wbms or mp4s) else webm_items if (self.prefer_webm and wbms) or not mp4s else mp4_items
-                self._process_video(str(vsrc[0]), item_id)
-        else:
-            trace(f'Warning (W2): ProcItem: no content for {item_id}, seems like post was deleted', True)
-
-        self._inc_proc_count()
+        except Exception:
+            self._on_thread_exception(current_process().getName())
+            raise
 
     def _form_tags_search_address(self, tags: str, *ignored) -> str:
         return f'{self._get_sitename()}post/list/{tags}{self._get_tags_concat_char()}order%253Did_desc/'
