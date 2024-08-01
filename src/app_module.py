@@ -71,7 +71,7 @@ class ProcModule:
 
     @staticmethod
     def is_rp() -> bool:
-        return ProcModule.get() is ProcModule.PROC_RZ
+        return ProcModule.get() is ProcModule.PROC_RP
 
 
 PROC_MODULES_BY_ABBR = {
