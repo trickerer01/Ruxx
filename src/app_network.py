@@ -210,7 +210,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                 raise new_exc
                             ofile.write(temp)
 
-                        sreq = s.request('HEAD', link, allow_redirects=False, headers={'Bytes': str(10**12)})
+                        sreq = s.request('HEAD', link, timeout=self.timeout, allow_redirects=False, headers={'Bytes': str(10**12)})
                         sreq.raise_for_status()
                         result.expected_size = int(sreq.headers.get('content-length', '0'))
                         self.etags[item_id] = sreq.headers.get('etag', item_id)
