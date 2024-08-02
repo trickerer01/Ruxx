@@ -517,8 +517,8 @@ class Downloader(DownloaderBase):
         split_always = self._split_or_group_into_tasks_always()
         # join by ' ' is required by tests, although normally len(args.tags) == 1
         for t in self.tags_str_arr:
-            if len(t) > 2 and f'{t[0]}{t[-1]}' == '()' and f'{t[:2]}{t[-2:]}' != f'({cc * 2})':
-                thread_exit(f'Error: invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated by \'{cc}\'')
+            if len(t) > 2 and f'{t[0]}{t[-1]}' == '()' and f'{t[:2]}{t[-2:]}' != f'({"+" * 2})':
+                thread_exit(f'Error: invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated by \'+\'')
         # conflict: non-default sorting
         sort_checker = (lambda s: (s.startswith('order=') and s != 'order=id_desc') if ProcModule.is_rn() else
                                   (s.startswith('sort:') and s != 'sort:id' and s != 'sort:id:desc'))
