@@ -37,6 +37,7 @@ MAX_SEARCH_DEPTH = 0
 
 item_info_fields = {'file_name': 'ext', 'score': 'score_'}
 
+valid_extensions = ('jpg', 'jpeg', 'png', 'gif', 'mp4', 'webm')
 ext_pet_content_type = {
     'application/mp4': 'mp4',
     'image/gif': 'gif',
@@ -176,6 +177,13 @@ class DownloaderRp(Downloader):
             item_info = ItemInfo()
             if self.is_killed():
                 return item_info
+            while '=\'' in item:
+                qidx = item.find('=\'') + 1
+                qend_idx = item.find('\'', qidx + 1)
+                if qend_idx < qidx or (qend_idx < len(item) and item[qend_idx + 1] not in ' >'):
+                    break
+                oq, dq = "'", '"'
+                item = f'{item[:qidx]}"{item[qidx + 1:qend_idx].replace(dq, oq)}"{item[qend_idx + 1:]}'
             for part in re_item_info_part_xml.findall(item):
                 name, value = tuple(str(part).split('=', 1))
                 name = item_info_fields.get(name, name)
@@ -282,6 +290,9 @@ class DownloaderRp(Downloader):
             self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
 
     def extract_file_url(self, h: str) -> Tuple[str, str]:
+        fullid = f'{self._get_module_abbr_p()}{self._extract_id(h)}'
+        if fullid in self._file_name_ext_cache:
+            return self._file_name_ext_cache[fullid]
         file_re_res = re_orig_file_link.search(h)
         if file_re_res is None:
             return '', ''
@@ -290,25 +301,26 @@ class DownloaderRp(Downloader):
         filename = filename_re_res.group(1)
         value = filename
         if '.' in value:
-            value = value[value.rfind('.') + 1:]
-        elif len(value) > 4:
-            for formatname in ('jpg', 'png', 'gif', 'mp4', 'webm'):
+            value = value[value.rfind('.') + 1:].strip('."\'\n\\/')
+            value = value if value in valid_extensions else ''
+        if len(value) not in (3, 4):
+            for formatname in valid_extensions:
                 if formatname in value:
                     value = formatname
                     break
-        fullid = f'{self._get_module_abbr_p()}{self._extract_id(h)}'
-        if len(value) > 4:
-            trace(f'Warning (W2): can\'t extract format for {fullid} from filename, fetching head...', True)
+        if len(value) not in (3, 4):
+            trace(f'Warning (W2): can\'t extract format for {fullid} from filename, fetching content type...', True)
             r = self.wrap_request(file_url, tries=self.retries, method='HEAD')
             if r is not None:
                 content_type = r.headers.get('Content-Type', '')
                 value = ext_pet_content_type.get(content_type, value)
-                if len(value) > 4 and '/' in content_type:
+                if len(value) not in (3, 4) and '/' in content_type:
                     value = content_type[content_type.find('/') + 1:]
-        if len(value) > 4:
+        if len(value) not in (3, 4):
             trace(f'Warning (W3): unable to retrieve format for {fullid} from url, setting to default...', True)
             value = 'jpg'
         file_ext = value
+        self._file_name_ext_cache[fullid] = (file_url, file_ext)
         return file_url, file_ext
 
     @staticmethod

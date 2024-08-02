@@ -17,7 +17,7 @@ from multiprocessing.pool import ThreadPool
 from os import makedirs, listdir, path, remove
 from threading import Thread, Lock as ThreadLock
 from time import sleep as thread_sleep
-from typing import Dict, List, Callable, Iterable, Set, MutableSet, Match, Optional
+from typing import Dict, List, Callable, Iterable, Set, MutableSet, Match, Optional, Tuple
 
 # requirements
 from iteration_utilities import unique_everseen
@@ -58,6 +58,7 @@ class Downloader(DownloaderBase):
         self._exception_checker: Optional[Thread] = None
         self._thread_exception_lock = ThreadLock()
         self._thread_exceptions: Dict[str, List[str]] = dict()
+        self._file_name_ext_cache: Dict[str, Tuple[str, str]] = dict()
 
     @property
     def total_count_all(self) -> int:
@@ -74,6 +75,7 @@ class Downloader(DownloaderBase):
 
     def __cleanup(self) -> None:
         # self.current_state = DownloaderStates.IDLE
+        # self._file_name_ext_cache.clear()  # do not
         self.raw_html_cache.clear()
         if self.session:
             self.session.close()
