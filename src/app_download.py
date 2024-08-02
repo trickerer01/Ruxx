@@ -508,7 +508,8 @@ class Downloader(DownloaderBase):
         trace(f'\nAll {"skipped" if skip_all else "processed"} ({self.total_count_all:d} item(s))...')
 
     def _extract_negative_and_groups(self) -> None:
-        self.tags_str_arr[0:], self.neg_and_groups = extract_neg_and_groups(' '.join(self.tags_str_arr))
+        split_always = self._split_or_group_into_tasks_always()
+        self.tags_str_arr[0:], self.neg_and_groups = extract_neg_and_groups(' '.join(self.tags_str_arr), split_always)
 
     def _parse_tags(self) -> None:
         cc = self._get_tags_concat_char()

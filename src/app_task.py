@@ -70,11 +70,12 @@ def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split
     return [cc.join(tag_groups_arr)]
 
 
-def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[str]]]]:
+def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str], List[List[Pattern[str]]]]:
     """
     Separates tags string into fully formed tags and negative tag patterns\n
     Ex. 'a b (+c+~+d+) -(ff,gg)' => (['a', 'b' , '(+c+~+d+)'], [[re_compile(r'^ff$'), re_compile(r'^gg$')]])\n
     :param tags_str: provided string of tags separated by space
+    :param split_always: unconditionally separate all 'or' groups
     :return: 1) list of fully-formed tags without negative groups, 2) list of zero or more tag pattern lists
     """
     def form_plist(neg_tags_group: str) -> Optional[List[Pattern]]:
@@ -99,7 +100,7 @@ def extract_neg_and_groups(tags_str: str) -> Tuple[List[str], List[List[Pattern[
 
     total_len = len(tags_list) - 1  # concat chars count
     for t in tags_list:  # + length of each tag
-        total_len += max(len(ogt) for ogt in t.split('+~+')) if ProcModule.is_rn() and t.startswith('(+') else len(t)
+        total_len += max(len(ogt) for ogt in t.split('+~+')) if split_always and t.startswith('(+') else len(t)
     max_string_lengths = {
         ProcModule.PROC_RX: TAGS_STRING_LENGTH_MAX_RX,
         ProcModule.PROC_RN: TAGS_STRING_LENGTH_MAX_RN,
