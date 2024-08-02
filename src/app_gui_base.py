@@ -1393,18 +1393,27 @@ def update_lastpath(filefullpath: str) -> None:
 
 # globals
 # ROOOT
-root: Optional[AppRoot] = None
-rootFrame: Optional[BaseFrame] = None
-rootMenu: Optional[Menu] = None
+# root: Optional[AppRoot] = None
+# rootFrame: Optional[BaseFrame] = None
+# rootMenu: Optional[Menu] = None
+root = None  # type: Optional[AppRoot]
+rootFrame = None  # type: Optional[BaseFrame]
+rootMenu = None  # type: Optional[Menu]
 # windows
 IS_WIN = sys.platform == PLATFORM_WINDOWS
-window_proxy: Optional[ProxyWindow] = None
-window_hcookies: Optional[HeadersAndCookiesWindow] = None
-window_timeout: Optional[ConnectionTimeoutWindow] = None
-window_retries: Optional[ConnectionRetriesWindow] = None
+# window_proxy: Optional[ProxyWindow] = None
+# window_hcookies: Optional[HeadersAndCookiesWindow] = None
+# window_timeout: Optional[ConnectionTimeoutWindow] = None
+# window_retries: Optional[ConnectionRetriesWindow] = None
+window_proxy = None  # type: Optional[ProxyWindow]
+window_hcookies = None  # type: Optional[HeadersAndCookiesWindow]
+window_timeout = None  # type: Optional[ConnectionTimeoutWindow]
+window_retries = None  # type: Optional[ConnectionRetriesWindow]
 # counters
-c_menu: Optional[BaseMenu] = None
-c_submenu: Optional[BaseMenu] = None
+# c_menu: Optional[BaseMenu] = None
+# c_submenu: Optional[BaseMenu] = None
+c_menu = None  # type: Optional[BaseMenu]
+c_submenu = None  # type: Optional[BaseMenu]
 # these containers keep technically unbound variables so they arent purged by GC
 int_vars: Dict[str, IntVar] = dict()
 string_vars: Dict[str, StringVar] = dict()
@@ -1412,7 +1421,8 @@ string_vars: Dict[str, StringVar] = dict()
 
 # loaded
 console_shown = True
-text_cmd: Optional[Text] = None
+# text_cmd: Optional[Text] = None
+text_cmd = None  # type: Optional[Text]
 # end loaded
 
 # icons
@@ -1423,8 +1433,10 @@ re_ask_values = re_compile(r'[^, ]+')
 re_json_entry_value = re_compile(r'^([^: ,]+)[: ,](.+)$')
 
 # GUI grid composition: current column / row universal counters (resettable)
-c_col: Optional[int] = None
-c_row: Optional[int] = None
+# c_col: Optional[int] = None
+# c_row: Optional[int] = None
+c_col = None  # type: Optional[int]
+c_row = None  # type: Optional[int]
 
 #
 #
