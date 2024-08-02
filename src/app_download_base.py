@@ -577,7 +577,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             item_id = self._extract_id(h)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'
             item_info = self.item_info_dict_per_task.get(idstring)
-            tags_list = item_info.tags.split(' ')
+            tags_list = item_info.tags.lower().split(' ')
             m_dict.clear()
             if any(all(any(match_neg_group(patt, tag, plist) for tag in tags_list) for patt in plist) for plist in self.neg_and_groups):
                 # Note: above algorithm is minimal match, only first matching combination will be reported

@@ -37,6 +37,20 @@ MAX_SEARCH_DEPTH = 0
 
 item_info_fields = {'file_name': 'ext', 'score': 'score_'}
 
+ext_pet_content_type = {
+    'application/mp4': 'mp4',
+    'image/gif': 'gif',
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'video/h263': 'mp4',
+    'video/h264': 'mp4',
+    'video/h265': 'mp4',
+    'video/mp4': 'mp4',
+    'video/webm': 'webm',
+    'video/vp8': 'webm',
+    'video/vp9': 'webm',
+}
+
 
 class DownloaderRp(Downloader):
     """
@@ -281,8 +295,18 @@ class DownloaderRp(Downloader):
             for formatname in ('jpg', 'png', 'gif', 'mp4', 'webm'):
                 if formatname in value:
                     value = formatname
+                    break
+        fullid = f'{self._get_module_abbr_p()}{self._extract_id(h)}'
         if len(value) > 4:
-            trace(f'Warning (W2): can\'t extract format for {self._get_module_abbr_p()}{self._extract_id(h)}!', True)
+            trace(f'Warning (W2): can\'t extract format for {fullid} from filename, fetching head...', True)
+            r = self.wrap_request(file_url, tries=self.retries, method='HEAD')
+            if r is not None:
+                content_type = r.headers.get('Content-Type', '')
+                value = ext_pet_content_type.get(content_type, value)
+                if len(value) > 4 and '/' in content_type:
+                    value = content_type[content_type.find('/') + 1:]
+        if len(value) > 4:
+            trace(f'Warning (W3): unable to retrieve format for {fullid} from url, setting to default...', True)
             value = 'jpg'
         file_ext = value
         return file_url, file_ext

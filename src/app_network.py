@@ -305,17 +305,12 @@ class ThreadedHtmlWorker(ThreadedWorker):
         return result
 
     # threaded
-    def fetch_html(self, url: str, tries=0, do_cache=False, method='GET', **kwargs) -> Optional[BeautifulSoup]:
-        cached = self.raw_html_cache.get(url, b'')
-        if cached:
-            return cached if isinstance(cached, BeautifulSoup) else BeautifulSoup(cached, 'html.parser')
-
-        tries = tries or self.retries
-
-        r = None
+    def wrap_request(self, url: str, tries: int, method: str, **kwargs) -> Optional[Response]:
+        r: Optional[Response] = None
         retries = 0
         while retries < tries:
             self.catch_cancel_or_ctrl_c()
+            r = None
             try:
                 r = self.session.request(method, url, timeout=self.timeout, stream=False, allow_redirects=True, **kwargs)
                 r.raise_for_status()
@@ -347,7 +342,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
         if retries >= tries:
             errmsg = f'Unable to connect. Aborting {url}'
             trace(errmsg, True)
-            r: Optional[Response] = None
+            r = None
         elif r is None:
             trace('ERROR: Failed to receive any data', True)
         elif len(r.cookies) > 0:
@@ -355,10 +350,17 @@ class ThreadedHtmlWorker(ThreadedWorker):
             self.add_cookies = r.cookies.copy()
             self.add_cookies.update(t)
 
+        return r
+
+    # threaded
+    def fetch_html(self, url: str, tries=0, do_cache=False, method='GET', **kwargs) -> Optional[BeautifulSoup]:
+        cached = self.raw_html_cache.get(url, b'')
+        if cached:
+            return cached if isinstance(cached, BeautifulSoup) else BeautifulSoup(cached, 'html.parser')
+        r = self.wrap_request(url, tries or self.retries, method, **kwargs)
         result = BeautifulSoup(r.content, 'html.parser') if r is not None else None
         if result and do_cache:
             self.raw_html_cache[url] = result if self.cache_mode == HtmlCacheMode.CACHE_BS else r.content
-
         return result
 
 #
