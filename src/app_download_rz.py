@@ -3,7 +3,7 @@
 Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 """
 #########################################
-# TODO: fix sources extraction in normal search (not just fav)
+#
 #
 #
 
@@ -21,7 +21,7 @@ from bs4 import BeautifulSoup
 from app_bigstrings import TAG_NUMS_DECODED_RZ
 from app_defines import (
     DownloadModes, ItemInfo, SITENAME_B_RZ, FILE_NAME_PREFIX_RZ, MODULE_ABBR_RZ, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RZ,
-    TAGS_CONCAT_CHAR_RZ, ID_VALUE_SEPARATOR_CHAR_RZ, FMT_DATE,
+    TAGS_CONCAT_CHAR_RZ, ID_VALUE_SEPARATOR_CHAR_RZ, FMT_DATE, SOURCE_DEFAULT,
 )
 from app_download import Downloader
 from app_logger import trace
@@ -295,7 +295,7 @@ class DownloaderRz(Downloader):
 
             if self.dump_sources:
                 full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
-                if full_item_id not in self.item_info_dict_per_task or not self.item_info_dict_per_task[full_item_id].source:
+                if full_item_id not in self.item_info_dict_per_task or self.item_info_dict_per_task[full_item_id].source == SOURCE_DEFAULT:
                     raw_html = self.fetch_html(f'{self._get_sitename()}post/{item_id}')
                     if raw_html is None:
                         trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
