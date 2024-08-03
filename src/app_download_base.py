@@ -10,7 +10,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from abc import abstractmethod
 from datetime import datetime
 from os import path, curdir, listdir
-from re import compile as re_compile
 from typing import List, Dict, Set, Pattern, MutableSet, Tuple, Union, Optional, Match
 
 # requirements
@@ -533,15 +532,18 @@ class DownloaderBase(ThreadedHtmlWorker):
         if len(curdirfiles) == 0:
             return
 
+        def file_matches(filename: str, iid: str) -> bool:
+            return (filename.startswith(f'{iid}.') or filename.startswith(f'{iid}_')
+                    or filename.startswith(f'{abbrp}{iid}.') or filename.startswith(f'{abbrp}{iid}_'))
+
         abbrp = self._get_module_abbr_p()
         idx: int
         for idx in reversed(range(len(self.items_raw_per_task))):
             self.catch_cancel_or_ctrl_c()
             h = self._local_addr_from_string(str(self.items_raw_per_task[idx]))
             item_id = self._extract_id(h)
-            rex_cdfile = re_compile(fr'^(?:{abbrp})?{item_id}[._].*?$')
             for f_idx in reversed(range(len(curdirfiles))):
-                if rex_cdfile.fullmatch(curdirfiles[f_idx]) is not None:
+                if file_matches(curdirfiles[f_idx], item_id):
                     del curdirfiles[f_idx]
                     del self.items_raw_per_task[idx]
                     self.total_count -= 1
