@@ -72,6 +72,7 @@ class PageCheck:
 @unique
 class DownloaderStates(IntEnum):
     IDLE = 0
+    LAUNCHING = auto()
     SEARCHING = auto()
     SCANNING_PAGES1 = auto()
     SCANNING_PAGES2 = auto()
@@ -127,6 +128,7 @@ STATE_WORK_START = DownloaderStates.SEARCHING
 
 STATUSBAR_INFO_MAP: Dict[DownloaderStates, Tuple[str, Optional[str], Optional[str], Optional[str]]] = {
     DownloaderStates.IDLE: ('Ready', None, None, None),
+    DownloaderStates.LAUNCHING: ('Launching...', None, None, None),
     DownloaderStates.SEARCHING: ('Searching...', None, None, None),
     DownloaderStates.SCANNING_PAGES1: ('Filtering pages (1/2)... ', 'total_pages', None, None),
     DownloaderStates.SCANNING_PAGES2: ('Filtering pages (2/2)... ', 'total_pages', None, None),

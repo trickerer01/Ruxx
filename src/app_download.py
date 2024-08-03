@@ -90,7 +90,7 @@ class Downloader(DownloaderBase):
         self._exception_checker.start()
 
     def _thread_exceptions_checker(self) -> None:
-        while not self.is_killed():
+        while self.current_state != DownloaderStates.IDLE:
             with self._thread_exception_lock:
                 if not all(not excl for excl in self._thread_exceptions):
                     break
@@ -606,6 +606,7 @@ class Downloader(DownloaderBase):
         ...
 
     def _launch(self, args: Namespace, thiscall: Callable[[], None], enable_preprocessing=True) -> None:
+        self.current_state = DownloaderStates.LAUNCHING
         self.reset_root_thread(current_process())
         self._start_exception_checker()
         try:
@@ -619,7 +620,6 @@ class Downloader(DownloaderBase):
             trace(f'Unhandled exception: {str(sys.exc_info()[0])}!\n{traceback.format_exc()}', True)
         finally:
             self.current_state = DownloaderStates.IDLE
-            self.my_root_thread.killed = True
         if self._thread_exceptions and self.maxthreads_items > 1:
             n = '\n'
             trace(f'Catched thread exception(s):\n{n.join(n.join(self._thread_exceptions[exck]) for exck in self._thread_exceptions)}')
