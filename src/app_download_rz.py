@@ -459,7 +459,8 @@ class DownloaderRz(Downloader):
                     break
                 for csc in compare_tags[k]:
                     if not id_compares[k](comp_v_i, csc):
-                        removed_messages.append(f'{abbrp}{item_id} {filter_type} unmatch by {comp_v_i:d} {k} {csc:d}!')
+                        if self.verbose:
+                            removed_messages.append(f'{abbrp}{item_id} {filter_type} unmatch by {comp_v_i:d} {k} {csc:d}!')
                         unmatch = True
                         break
             if unmatch:

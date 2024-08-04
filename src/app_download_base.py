@@ -564,6 +564,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             ngm = p.fullmatch(t)
             if ngm:
                 pp_str = f'-({",".join(pp.pattern[1:-1] for pp in pl)})'
+                if len(pp_str) > 50:
+                    pp_str = f'{pp_str[:47]}...'
                 if pp_str not in m_dict:
                     m_dict[pp_str] = list()
                 m_dict[pp_str].append(t)
@@ -583,8 +585,9 @@ class DownloaderBase(ThreadedHtmlWorker):
             m_dict.clear()
             if any(all(any(match_neg_group(patt, tag, plist) for tag in tags_list) for patt in plist) for plist in self.neg_and_groups):
                 # Note: above algorithm is minimal match, only first matching combination will be reported
-                removed_messages.append('\n'.join(f'{abbrp}{item_id} contains excluded tags combination \'{mk}\': '
-                                        f'{",".join(m_dict[mk])}. Skipped!' for mk in m_dict if len(m_dict[mk]) > 1))
+                if self.verbose:
+                    removed_messages.append('\n'.join(f'{abbrp}{item_id} contains excluded tags combination \'{mk}\': '
+                                            f'{",".join(m_dict[mk])}. Skipped!' for mk in m_dict if len(m_dict[mk]) > 1))
                 if item_id in parents:
                     parents.remove(item_id)
                 if item_info.parent_id in parents:
