@@ -545,7 +545,7 @@ class Downloader(DownloaderBase):
         if self.download_mode != DownloadModes.FULL:
             trace(f'{BR}\n\n(Emulation Mode)')
         trace(f'\n{BR}\n{APP_NAME} core ver {APP_VERSION}')
-        trace(f'Starting {self._get_module_abbr()}_manual', False, True)
+        trace(f'Starting {self._get_module_abbr().upper()} downloader', timestamp=True)
         trace(f'\n{len(self.neg_and_groups):d} \'excluded tags combination\' custom filter(s) parsed')
         trace(f'{self._tasks_count():d} task(s) scheduled:\n{NEWLINE.join(self.tags_str_arr)}\n\n{BR}')
         self.current_task_num = 0
@@ -687,6 +687,11 @@ class Downloader(DownloaderBase):
             if self.date_min != DATE_MIN_DEFAULT or self.date_max != datetime.today().strftime(FMT_DATE):
                 trace('Warning (W1): RS module is unable to filter by date. Disabled')
                 self.date_min, self.date_max = DATE_MIN_DEFAULT, datetime.today().strftime(FMT_DATE)
+                ret = True
+        if ProcModule.is_rz():
+            if self.dump_comments:
+                trace('Warning (W1): RZ module is unable to collect comments. Disabled!')
+                self.dump_comments = False
                 ret = True
         return ret
 
