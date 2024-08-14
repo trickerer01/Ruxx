@@ -220,7 +220,7 @@ re_tags_exclude_rx_a_i = (
     r'j(?:ect(?:ed|ion)?)|k(?:_.+?|b(?:lot|unny)|eyes?|s|tober|y)|laid|m(?:ate|on)|n(?:er(?:tube)?|ie|ocent|uendo)?|'  # in
     r's(?:ane|e(?:ct_(!?girl).+?|rt(?:ed|i(?:ng|on))?|t)|i(?:des?|gnias?)|tagram|ult(?:ed|s)?)|'  # in
     r't(?:act|e(?:nse(?:_.+?)?|r(?:iors?|n(?:al|et|s)?|rac.+?|se(?:.+?)|view))|ima(?:l|te)|ro)|'  # in
-    r'u(?:it|mimi|yasha)|v(?:a(?:ded|lid|sion)|i(?:sible|t(?:ation|e[ds]?|ing))))|'  # in
+    r'u(?:it|mimi|yasha)|v(?:a(?:ded|lid|sion)|e(?:ntory)|i(?:sible|t(?:ation|e[ds]?|ing))))|'  # in
     r'o(?:n\d)|p(?:ad|hone|od)|r(?:a(?:deon|y)|r(?:itated|umatio)|ony?)|s(?:lands?|sue(?:_.+?|s)?)|t(?:aly|ems?|s_.+?)|zuocha)'  # i
 )
 
