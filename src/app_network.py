@@ -18,6 +18,7 @@ from threading import Thread, Lock as ThreadLock
 from time import sleep as thread_sleep
 from typing import Optional, Dict, IO, Union, Tuple
 from urllib.parse import urlparse
+from warnings import filterwarnings
 
 # requirements
 from bs4 import BeautifulSoup
@@ -34,6 +35,8 @@ from app_logger import trace
 from app_module import ProcModule
 
 __all__ = ('ThreadedHtmlWorker', 'DownloadInterruptException', 'thread_exit')
+
+filterwarnings('ignore', category=UserWarning)
 
 re_content_range_str = re_compile(r'bytes (\d+)-(\d+)?(?:/(\d+))?')
 
