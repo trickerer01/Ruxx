@@ -151,6 +151,9 @@ class ThreadedHtmlWorker(ThreadedWorker):
         ext_char = ext_full[0]
         is_video_ext = ext_full in KNOWN_EXTENSIONS_VID
         touch_mode = mode == DownloadModes.TOUCH
+        oldlink = link
+        if ProcModule.is_rx():
+            link = link.replace('api-cdn-mp4.', 'ws-cdn-video.')
 
         result = FileDownloadResult()
         result.result_str = f'[{current_process().getName()}]{" <touch>" if touch_mode else ""} {item_id}({ext_char})... '
@@ -297,6 +300,11 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                                   f'Trying \'{valid_link_ends[new_idx]}\'...', True)
                                         link = f'{link[:-len(lend)]}{valid_link_ends[new_idx]}.{ext_full}'
                                         break
+                            elif ProcModule.is_rx():
+                                if link != oldlink:
+                                    trace(f'Warning (W3): {item_id} catched HTTPError 404 for normalized link. '
+                                          f'Switching to slow link \'{oldlink}\'...', True)
+                                    link = oldlink
                         if isinstance(err, HTTPError) and err.response.status_code == 416:  # Requested range is not satisfiable
                             if __RUXX_DEBUG__:
                                 trace(f'Warning (W3): {item_id} catched HTTPError 416!', True)
