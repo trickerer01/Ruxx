@@ -157,15 +157,15 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 - Any valid search query requires at least one positive non-sorting tag to search for. Search query cannot be formed using just `sort:...` tag or `-tags` only
 - Very long search queries will cause website to return empty result. Generally this happens when trying to add too many `-tags` to narrow down the search. If resulting query is too long Ruxx will automatically create a specific negative group from excessive `-tags` and use them as additional filter. The message will be given as follows: `<X> 'excluded tags combination' custom filter(s) parsed`
 - Some websites also put a limit on the number of tags used. While most of the time this is a soft limit (web interface), sometimes they also apply a hard limit (api internals), namely:
-  - `RZ`: max `3` `tag`s; max `3` `-tag`s
-  - `RP`: max `3` `tag`s *+* `-tag`s
-  - `EN`: max `40` `tag`s *+* `-tag`s
+  - `RZ`: max `3` `tags`, max `3` `-tags`, `6` `total`
+  - `RP`: max `3` `tags & -tags`, `3` `total`
+  - `EN`: max `40` `tags & -tags`, `40` `total`, max `1` `wildcard`
 - In that case all extra `-tags` will be converted into a negative group and used locally as an internal filter (and mess up 'check tags' results). Note that this only applies to `-tags`, exceeding positive tag limit will result in an error
 - It is recommended to manually convert all wildcarded `-t*ags` into a single negative group to prevent unwanted tag expansion (see below) resulting in too many `-tags`, it's simple really: `'-a -b -c -d* -f*g*h*j' -> '-a -b -c -(*,d*|f*g*h*j)'`
 6. Tag validation
 - Some websites do not operate on a concept of partial tag matching at all, namely:
   - `RZ`
-- All `tag`, `-tag` and tags in `OR` group have to be valid in order to get any search results. Tags are considered valid only if they:
+- All `tags`, `-tags` and `tags` in `OR` group have to be valid in order to get any search results. Tags are considered valid only if they:
   - have at least 10 posts tagged with them
   - do not contain any special symbols like `\r`,`\t`, etc., also `&` and unicode escaped sequences like `\u00a0`
 - Wildcarded tags are expanded as follows:
@@ -185,7 +185,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 Ruxx doesn't provide a method of authentication natively on either of supported sites. To use your identity during search you need to follow 3 simple steps:
 - Log in normally using web browser
 - Open `Web Developer tools -> Network` and reload the page, look for `request headers`
-- Open `Headers / Cookies` window `<F3>` and fill the tables accordingly:
+- Open `Headers / Cookies` window `<F3>` and fill Ruxx connection tables accordingly:
   - Headers: `User-Agent` (remove existing value first)
   - Cookies:
     - RX: `cf_clearance`, `user_id`, `pass_hash`

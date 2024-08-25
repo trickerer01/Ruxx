@@ -210,7 +210,7 @@ TAGS_STRING_LENGTH_MAX_RN = 300  # real value is unknown, tested up to 2400 but 
 TAGS_STRING_LENGTH_MAX_RS = 7000  # real value is unknown, last tested: 6600
 TAGS_STRING_LENGTH_MAX_RZ = 7000  # real value is unknown, has max tags limit
 TAGS_STRING_LENGTH_MAX_RP = 300  # real value is unknown, has max tags limit
-TAGS_STRING_LENGTH_MAX_EN = 3300  # real value is unknown
+TAGS_STRING_LENGTH_MAX_EN = 3300  # real value is unknown, has max tags limit
 
 ACTION_STORE_TRUE = 'store_true'
 ACTION_APPEND = 'append'
