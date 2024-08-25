@@ -68,7 +68,7 @@ class Settings(ABC):
         'datemax': Setting(Options.DATEMAX, DateValidator(), 'Invalid date value \'%s\'!'),
         'headers': Setting(Options.HEADER_ADD_STR, JsonValidator(), 'Invalid headers json \'%s\'!'),
         'cookies': Setting(Options.COOKIE_ADD_STR, JsonValidator(), 'Invalid cookies json \'%s\'!'),
-        'proxytype': Setting(Options.PROXYTYPE, ProxyTypeValidator(), 'Invalid proxy type value \'%s\'!'),
+        'proxytype': Setting(Options.PROXYTYPE, ProxyTypeValidator(), 'Invalid proxytype value \'%s\'!'),
         'proxy': Setting(Options.PROXYSTRING, ProxyValidator(), 'Invalid proxy value \'%s\'!'),
         'ignoreproxy': Setting(Options.IGNORE_PROXY, BoolStrValidator(), 'Invalid ignoreproxy bool value \'%s\'!'),
         'ignoreproxydwn': Setting(Options.PROXY_NO_DOWNLOAD, BoolStrValidator(), 'Invalid ignoreproxydwn bool value \'%s\'!'),
@@ -83,6 +83,7 @@ class Settings(ABC):
         'extendfilename': Setting(Options.APPEND_SOURCE_AND_TAGS, BoolStrValidator(), 'Invalid extendfilename bool value \'%s\'!'),
         'warndestnonempty': Setting(Options.WARN_NONEMPTY_DEST, BoolStrValidator(), 'Invalid warndestnonempty bool value \'%s\'!'),
         'verbose': Setting(Options.VERBOSE, BoolStrValidator(), 'Invalid verbose bool value \'%s\'!'),
+        'revealmodulenames': Setting(Options.REVEALNAMES, BoolStrValidator(), 'Invalid revealmodulenames bool value \'%s\'!'),
         'windowposition': Setting(Options.WINDOW_POSITION, WindowPosValidator(), 'Invalid windowposition value \'%s\'!'),
     }
 

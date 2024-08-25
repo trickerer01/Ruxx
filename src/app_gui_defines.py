@@ -129,6 +129,7 @@ class Icons(IntEnum):
 @unique
 class Options(IntEnum):
     ISLOGOPEN = 0
+    REVEALNAMES = auto()
     VIDSETTING = auto()
     IMGSETTING = auto()
     PARCHISETTING = auto()
@@ -185,6 +186,7 @@ class Options(IntEnum):
 # array
 CVARS = {
     Options.ISLOGOPEN: 'isLogOpen',
+    Options.REVEALNAMES: 'revealNames',
     Options.VIDSETTING: 'vidsetting',
     Options.IMGSETTING: 'imgsetting',
     Options.PARCHISETTING: 'parchisetting',

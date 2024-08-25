@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from abc import ABC, abstractmethod
 from tkinter import Listbox, Toplevel, Widget, END, SOLID
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Union, Callable
 
 __all__ = ('WidgetToolTip',)
 
@@ -73,17 +73,19 @@ class ToolTipBase(ABC):
 
 
 class WidgetToolTip(ToolTipBase):
-    def __init__(self, widget: Widget, items: Iterable[str], **kwargs) -> None:
+    def __init__(self, widget: Widget, items: Union[Iterable[str], Callable[[], Iterable[str]]], **kwargs) -> None:
         super().__init__(widget, **kwargs)
-        self.items = list(items or ('Tooltip is missing!',))
+        self.items = items if callable(items) else list(items or ('Tooltip is missing!',))
 
     def _showcontents(self) -> None:
-        box = Listbox(self.tipwindow, background=self.bgcolor, relief=self.relief, borderwidth=self.border_width, height=len(self.items))
+        contents = self.items() if callable(self.items) else self.items
+        box = Listbox(self.tipwindow, background=self.bgcolor, relief=self.relief, borderwidth=self.border_width,
+                      height=len(contents))
         if self.timed:
             box.bind('<ButtonPress>', self.leave)
 
         box.pack()
-        for item in self.items:
+        for item in contents:
             box.insert(END, item)
         # autoconfig width
         box.configure(width=0)

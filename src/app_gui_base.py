@@ -26,7 +26,7 @@ from typing import Optional, Callable, List, Union, Dict, Iterable, Tuple
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
     PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE,
-    KNOWN_EXTENSIONS_STR, CONNECT_RETRIES_BASE,
+    KNOWN_EXTENSIONS_STR, CONNECT_RETRIES_BASE, SITENAME_B_RX, SITENAME_B_RN, SITENAME_B_RS, SITENAME_B_RZ, SITENAME_B_RP, SITENAME_B_EN,
 )
 from app_file_parser import prepare_tags_list
 from app_file_sorter import FileTypeFilter
@@ -102,8 +102,8 @@ def first_column() -> Optional[int]:
     return next_column()
 
 
-def attach_tooltip(widget: Widget, contents: Iterable[str], appeardelay=TOOLTIP_DELAY_DEFAULT, border_width: int = None,
-                   relief: str = None, bgcolor: str = None, timed=False) -> WidgetToolTip:
+def attach_tooltip(widget: Widget, contents: Union[Iterable[str], Callable[[], Iterable[str]]], appeardelay=TOOLTIP_DELAY_DEFAULT,
+                   border_width: int = None, relief: str = None, bgcolor: str = None, timed=False) -> WidgetToolTip:
     return WidgetToolTip(widget, contents, timed=timed, bgcolor=bgcolor, appear_delay=appeardelay, border_width=border_width,
                          relief=relief)
 
@@ -1223,6 +1223,7 @@ def create_base_window_widgets() -> None:
     ib1 = Label(sb_frame, borderwidth=1, relief=FLAT, anchor=W, image=get_icon(Icons.RX))
     ib1.pack(expand=NO, side=LEFT)
     register_global(Globals.MODULE_ICON, ib1)
+    attach_tooltip(ib1, lambda: [get_cur_module_sitename()], relief=FLAT)
 
     sb1 = Label(sb_frame, borderwidth=1, relief=SUNKEN, anchor=W, text='Ready', bg=COLOR_DARKGRAY,
                 textvariable=StringVar(rootm(), '', CVARS.get(Options.STATUS)))
@@ -1285,6 +1286,21 @@ def get_curdir(prioritize_last_path=True) -> str:
         return lastloc if len(lastloc) > 0 else curloc if path.isdir(curloc) else path.abspath(curdir)
     else:
         return curloc if path.isdir(curloc) else lastloc if len(lastloc) > 0 else path.abspath(curdir)
+
+
+def get_cur_module_sitename() -> str:
+    if int(getrootconf(Options.REVEALNAMES)) == 0:
+        return ProcModule.get_cur_module_name().upper()
+
+    sitenames_b = {
+        ProcModule.PROC_RX: SITENAME_B_RX,
+        ProcModule.PROC_RN: SITENAME_B_RN,
+        ProcModule.PROC_RS: SITENAME_B_RS,
+        ProcModule.PROC_RZ: SITENAME_B_RZ,
+        ProcModule.PROC_RP: SITENAME_B_RP,
+        ProcModule.PROC_EN: SITENAME_B_EN,
+    }
+    return (b64decode(sitenames_b.get(ProcModule.get(), '')) or b'UNK ').decode()[:-1].replace('https://', '').replace('api.', '')
 
 
 # def unfocus_buttons() -> None:

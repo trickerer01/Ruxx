@@ -29,6 +29,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **File -> Reset all settings** ‒ resets all settings to initial ones. If autoconfigured this will reset to those parameters. Window position is unaffected by this action
 - **File -> Open download folder** \<Ctrl+L> ‒ open currently selected destination folder (**Path**), Windows only
 - **View -> Log** ‒ open a log window, if you want some readable output
+- **View -> Reveal module names** ‒ toggles between module abbreviation and website real name shown in module icon tooltip
 - **Edit -> Prefix file names with \<prefix>** ‒ all downloaded files will be named accordingly and not as just numbers. This option is enabled by default
 - **Edit -> Save tags** ‒ an additional (text) file will be created containing tags for every post
 - **Edit -> Save source links** ‒ an additional (text) file will be created containing source (if present) for every post
