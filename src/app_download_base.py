@@ -54,6 +54,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         # extra
         self.cmdline = ''
         self.get_max_id = False
+        self.check_tags = False
 
         # results
         self.url = ''
@@ -78,7 +79,11 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.known_parents: Set[str] = set()
         self.default_sort = True
         self.favorites_search_user = ''
-        self.pool_search_id = 0
+        self.pool_search_str = ''
+
+    @abstractmethod
+    def _is_pool_search_conversion_required(self) -> bool:
+        ...
 
     @abstractmethod
     def _is_fav_search_conversion_required(self) -> bool:
@@ -200,10 +205,10 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.favorites_search_user = ''
 
     def _extract_pool_id(self, pool_tags: List[Optional[Match]]) -> None:
-        self.pool_search_id = int(pool_tags[-1].group(1)) if pool_tags else 0
+        self.pool_search_str = pool_tags[-1].group(1) if pool_tags else ''
 
     def _clean_pool_id(self) -> None:
-        self.pool_search_id = 0
+        self.pool_search_str = ''
 
     def _tasks_count(self) -> int:
         return len(self.tags_str_arr)
@@ -400,7 +405,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 trace(f'Info: TagProc_filter: {item_id} exceeds min date ({post_date} < {self.date_min}), shuffling backwards...')
                 forward_lim, step_direction = backward()
             else:
-                trace(f'Info: TagProc_filter: {item_id} does not exceed min date - stepping forward...')
+                trace(f'Info: TagProc_filter: {item_id} does not exceed min date ({post_date} >= {self.date_min}) - stepping forward...')
                 backward_lim, step_direction = forward()
 
     def _filter_first_items(self) -> None:
@@ -477,7 +482,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 trace(f'Info: TagProc_filter: {item_id} exceeds max date ({post_date} > {self.date_max}), stepping forward...')
                 backward_lim, step_direction = forward()
             else:
-                trace(f'Info: TagProc_filter: {item_id} does not exceed max date - stepping backwards...')
+                trace(f'Info: TagProc_filter: {item_id} does not exceed max date ({post_date} <= {self.date_max}) - stepping backwards...')
                 forward_lim, step_direction = backward()
 
     def _filter_items_by_type(self) -> None:

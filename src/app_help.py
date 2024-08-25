@@ -85,6 +85,7 @@ HELP_TAGS_MSG_RZ = (
     '\'tag:value\'      \tmeta tags (favorited_by:x, id>y, etc.)\n'
 )
 HELP_TAGS_MSG_RP = HELP_TAGS_MSG_RN
+HELP_TAGS_MSG_EN = HELP_TAGS_MSG_RX
 ABOUT_MSG = f'{APP_NAME} version {APP_VERSION} ({APP_REV_DATE}) {APP_BUILD_TYPE_STR}\n© {APP_YEARS} {APP_AUTHOR}\n<{APP_ADDRESS}>'
 # end help messages
 

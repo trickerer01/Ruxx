@@ -22,7 +22,7 @@ from app_debug import __RUXX_DEBUG__
 from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP,
     PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, MODULE_ABBR_RZ, MODULE_ABBR_RP,
-    FMT_DATE,
+    MODULE_ABBR_EN, FMT_DATE,
     max_progress_value_for_state,
 )
 from app_download import Downloader
@@ -205,7 +205,7 @@ def set_proc_module(dwnmodule: int) -> None:
         config_menu(Menus.EDIT, SubMenus.PREFIX, label=prefix_opt_text)
         # icon
         icontypes = {ProcModule.PROC_RX: Icons.RX, ProcModule.PROC_RN: Icons.RN, ProcModule.PROC_RS: Icons.RS,
-                     ProcModule.PROC_RZ: Icons.RZ, ProcModule.PROC_RP: Icons.RP}
+                     ProcModule.PROC_RZ: Icons.RZ, ProcModule.PROC_RP: Icons.RP, ProcModule.PROC_EN: Icons.EN}
         config_global(Globals.MODULE_ICON, image=get_icon(icontypes.get(ProcModule.get(), Icons.RX)))
         # enable/disable features specific to the module
         update_widget_enabled_states()
@@ -235,7 +235,7 @@ def update_widget_enabled_states() -> None:
     gi: Globals
     for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:
         if gi == Globals.COMBOBOX_PARCHI:
-            newstate = STATE_DISABLED if not ProcModule.is_rx() else gobject_orig_states[gi]
+            newstate = STATE_DISABLED if not ProcModule.is_rx() and not ProcModule.is_en() else gobject_orig_states[gi]
             config_global(gi, state=newstate)
         elif gi in {Globals.FIELD_DATEMIN, Globals.FIELD_DATEMAX}:
             newstate = STATE_DISABLED if ProcModule.is_rs() else gobject_orig_states[gi]
@@ -678,6 +678,7 @@ def init_menus() -> None:
     register_menu_radiobutton(MODULE_ABBR_RS, CVARS.get(Options.MODULE), ProcModule.PROC_RS, lambda: set_proc_module(ProcModule.PROC_RS))
     register_menu_radiobutton(MODULE_ABBR_RZ, CVARS.get(Options.MODULE), ProcModule.PROC_RZ, lambda: set_proc_module(ProcModule.PROC_RZ))
     register_menu_radiobutton(MODULE_ABBR_RP, CVARS.get(Options.MODULE), ProcModule.PROC_RP, lambda: set_proc_module(ProcModule.PROC_RP))
+    register_menu_radiobutton(MODULE_ABBR_EN, CVARS.get(Options.MODULE), ProcModule.PROC_EN, lambda: set_proc_module(ProcModule.PROC_EN))
     # 5) Connection
     register_menu('Connection', Menus.CONNECTION)
     register_menu_command('Headers / Cookies...', window_hcookiesm().toggle_visibility, Options.ISHCOOKIESOPEN)

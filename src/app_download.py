@@ -242,7 +242,7 @@ class Downloader(DownloaderBase):
                     total_count_temp += len(self.items_raw_per_page[k])
                 self.total_count = total_count_temp
 
-            if ProcModule.is_rp():
+            if ProcModule.is_rp() or ProcModule.is_en():
                 thread_sleep(1.0)
         except Exception:
             self._on_thread_exception(current_process().getName())
@@ -281,7 +281,7 @@ class Downloader(DownloaderBase):
 
             def page_filter(st: DownloaderStates, di: bool) -> int:
                 self.current_state = st
-                if not self.favorites_search_user and self.pool_search_id == 0:
+                if not self.favorites_search_user and not self.pool_search_str:
                     trace(f'Looking for {"min" if di else "max"} page by date...')
                     return self._get_page_boundary_by_date(di)
                 else:
@@ -354,9 +354,9 @@ class Downloader(DownloaderBase):
             [self.tags_str_arr.remove(f.string) for f in fav_user_tags]
         pool_tags = list(filter(lambda x: x, [re_pool_tag.fullmatch(t) for t in self.tags_str_arr]))
         self._extract_pool_id(pool_tags)
-        if self.pool_search_id:
+        if self.pool_search_str and self._is_pool_search_conversion_required():
             [self.tags_str_arr.remove(f.string) for f in pool_tags]
-        assert not (not not self.favorites_search_user and not not self.pool_search_id)
+        assert not (not not self.favorites_search_user and not not self.pool_search_str)
 
     def _try_preprocess_favorites(self) -> None:
         # all we need here is to gather post ids from user's favorites page(s)
@@ -387,25 +387,27 @@ class Downloader(DownloaderBase):
 
     def _try_preprocess_pool(self) -> None:
         # all we need here is to gather post ids from pool page(s)
-        if self.pool_search_id:
-            trace(f'Pool search detected ({self.pool_search_id:d}), additional search will be performed')
-            try:
-                self._fetch_task_items(str(self.pool_search_id))
-                self._extract_cur_task_infos(set())
-                ids_list = sorted(int(self.item_info_dict_per_task[full_id].id) for full_id in self.item_info_dict_per_task)
-                cc = self._get_tags_concat_char()
-                sc = self._get_idval_equal_seaparator()
-                ids_tag_base = f'{cc}~{cc}'.join(f'id{sc}{ii:d}' for ii in ids_list)
-                self.tags_str_arr[0:] = [f"({cc}{ids_tag_base}{cc})" if len(ids_list) > 1 else ids_tag_base, *self.tags_str_arr]
-                self.items_raw_per_task.clear()
-                self.item_info_dict_per_task.clear()
-                self.total_count_old = self.total_count = 0
-            except ThreadInterruptException:
-                trace(f'task {self.current_task_num:d} aborted...')
-                raise
-            except Exception:
-                trace(f'task {self.current_task_num:d} failed...')
-                raise
+        if self.pool_search_str:
+            convert_msg = ', additional search will be performed' if self._is_pool_search_conversion_required() else ''
+            trace(f'Pool search detected ({self.pool_search_str}){convert_msg}')
+            if self._is_pool_search_conversion_required():
+                try:
+                    self._fetch_task_items(self.pool_search_str)
+                    self._extract_cur_task_infos(set())
+                    ids_list = sorted(int(self.item_info_dict_per_task[full_id].id) for full_id in self.item_info_dict_per_task)
+                    cc = self._get_tags_concat_char()
+                    sc = self._get_idval_equal_seaparator()
+                    ids_tag_base = f'{cc}~{cc}'.join(f'id{sc}{ii:d}' for ii in ids_list)
+                    self.tags_str_arr[0:] = [f"({cc}{ids_tag_base}{cc})" if len(ids_list) > 1 else ids_tag_base, *self.tags_str_arr]
+                    self.items_raw_per_task.clear()
+                    self.item_info_dict_per_task.clear()
+                    self.total_count_old = self.total_count = 0
+                except ThreadInterruptException:
+                    trace(f'task {self.current_task_num:d} aborted...')
+                    raise
+                except Exception:
+                    trace(f'task {self.current_task_num:d} failed...')
+                    raise
             self._clean_pool_id()
 
     def _after_filter(self, sleep_time: float = None) -> None:
@@ -614,7 +616,7 @@ class Downloader(DownloaderBase):
             self._at_launch()
             thiscall()
         except (KeyboardInterrupt, ThreadInterruptException):
-            trace(f'\nInterrupted by {str(sys.exc_info()[0])}!\n', True)
+            trace(f'\nInterrupted by \'{sys.exc_info()[0].__name__}\'!\n', True)
         except Exception:
             import traceback
             trace(f'Unhandled exception: {str(sys.exc_info()[0])}!\n{traceback.format_exc()}', True)
@@ -630,6 +632,7 @@ class Downloader(DownloaderBase):
 
     def launch_check_tags(self, args: Namespace) -> None:
         """Public, needed by core"""
+        self.check_tags = True
         self._launch(args, self._check_tags, False)
 
     def launch_get_max_id(self, args: Namespace) -> None:
@@ -685,13 +688,18 @@ class Downloader(DownloaderBase):
                 self.dump_sources = False
                 ret = True
             if self.date_min != DATE_MIN_DEFAULT or self.date_max != datetime.today().strftime(FMT_DATE):
-                trace('Warning (W1): RS module is unable to filter by date. Disabled')
+                trace('Warning (W1): RS module is unable to filter by date. Disabled!')
                 self.date_min, self.date_max = DATE_MIN_DEFAULT, datetime.today().strftime(FMT_DATE)
                 ret = True
         if ProcModule.is_rz():
             if self.dump_comments:
                 trace('Warning (W1): RZ module is unable to collect comments. Disabled!')
                 self.dump_comments = False
+                ret = True
+        if ProcModule.is_en():
+            if self.dump_comments and self.maxthreads_items > 2 and not self.check_tags and not self.get_max_id:
+                trace('Warning (W1): EN module can\'t fetch comments faster than 2/sec due to API limitation. Forcing 2 download threads!')
+                self.maxthreads_items = 2
                 ret = True
         return ret
 
@@ -706,7 +714,7 @@ class Downloader(DownloaderBase):
             self.item_info_dict_per_task[idstring] = item_info
             if len(item_info.source) < 2:
                 item_info.source = SOURCE_DEFAULT
-            if __RUXX_DEBUG__ and not self.favorites_search_user and self.pool_search_id == 0:
+            if __RUXX_DEBUG__ and not self.favorites_search_user and not self.pool_search_str:
                 for key in item_info.__slots__:
                     if key in ItemInfo.optional_slots:
                         continue

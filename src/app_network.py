@@ -57,6 +57,9 @@ def thread_exit(err_str='', code=-1) -> None:
 
 
 class ThreadedWorker(ABC):
+    """
+    ThreadedWorker !Abstract!
+    """
     @abstractmethod
     def __init__(self) -> None:
         self.my_root_thread: Optional[Thread] = None
@@ -75,6 +78,9 @@ class ThreadedWorker(ABC):
 
 
 class ThreadedHtmlWorker(ThreadedWorker):
+    """
+    ThreadedHtmlWorker !Abstract!
+    """
     @abstractmethod
     def __init__(self) -> None:
         super().__init__()
@@ -124,8 +130,6 @@ class ThreadedHtmlWorker(ThreadedWorker):
         self.proxies = {'http': str(args.proxy), 'https': str(args.proxy)} if args.proxy else None
         self.timeout = args.timeout or self.timeout
         self.retries = args.retries or self.retries
-        self.add_headers.update(self._get_module_specific_default_headers())
-        self.add_cookies.update(self._get_module_specific_default_cookies())
         if args.headers:
             self.add_headers.update(args.headers)
         if args.cookies:
@@ -136,10 +140,12 @@ class ThreadedHtmlWorker(ThreadedWorker):
                 if pair[0] in container_base:
                     trace(f'Warning (W1): Overriding json value at \'{pair[0]}\' from \'{container_base[pair[0]]}\' to \'{pair[1]}\'')
                 container_base[pair[0]] = pair[1]
+        self.add_headers.update(self._get_module_specific_default_headers())
+        self.add_cookies.update(self._get_module_specific_default_cookies())
         self.session = self.make_session()
 
     # threaded
-    def download_file(self, link: str, item_id: str, dest: str, mode: DownloadModes) -> FileDownloadResult:
+    def download_file(self, link: str, item_id: str, dest: str, mode=DownloadModes.FULL) -> FileDownloadResult:
         fullname = dest[dest.rfind(SLASH) + 1:]
         ext_full = fullname[fullname.rfind('.') + 1:]
         ext_char = ext_full[0]

@@ -68,6 +68,9 @@ class DownloaderRz(Downloader):
     def _get_module_specific_default_cookies(self) -> Dict[str, str]:
         return {}
 
+    def _is_pool_search_conversion_required(self) -> bool:
+        return True
+
     def _is_fav_search_conversion_required(self) -> bool:
         return True
 

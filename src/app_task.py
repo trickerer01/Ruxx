@@ -13,6 +13,7 @@ from typing import Tuple, List, Pattern, Optional, Iterable
 # internal
 from app_defines import (
     TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN, TAGS_STRING_LENGTH_MAX_RS, TAGS_STRING_LENGTH_MAX_RZ, TAGS_STRING_LENGTH_MAX_RP,
+    TAGS_STRING_LENGTH_MAX_EN,
 )
 from app_module import ProcModule
 from app_network import thread_exit
@@ -107,6 +108,7 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str]
         ProcModule.PROC_RS: TAGS_STRING_LENGTH_MAX_RS,
         ProcModule.PROC_RZ: TAGS_STRING_LENGTH_MAX_RZ,
         ProcModule.PROC_RP: TAGS_STRING_LENGTH_MAX_RP,
+        ProcModule.PROC_EN: TAGS_STRING_LENGTH_MAX_EN,
     }
     max_neg_tagss = {
         ProcModule.PROC_RX: (0, False),
@@ -114,20 +116,37 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str]
         ProcModule.PROC_RS: (0, False),
         ProcModule.PROC_RZ: (3, True),
         ProcModule.PROC_RP: (3, False),
+        ProcModule.PROC_EN: (40, False),
     }
-    max_tags_neg, max_is_separate = max_neg_tagss[ProcModule.get()]
+    max_wildcardss = {
+        ProcModule.PROC_RX: 0,
+        ProcModule.PROC_RN: 0,
+        ProcModule.PROC_RS: 0,
+        ProcModule.PROC_RZ: 0,
+        ProcModule.PROC_RP: 0,
+        ProcModule.PROC_EN: 1,
+    }
+    max_tags_all, max_is_separate = max_neg_tagss[ProcModule.get()]
+    max_wtags_all = max_wildcardss[ProcModule.get()]
     neg_tags_list_all = list(filter(lambda x: x.startswith('-'), tags_list))
-    max_tags = max(0, max_tags_neg - (0 if max_is_separate else (len(tags_list) - len(neg_tags_list_all))) if max_tags_neg else 10**9)
+    w_tags_list_all = list(filter(lambda x: '*' in x, tags_list))
+    max_ntags = max(0, max_tags_all - (0 if max_is_separate else (len(tags_list) - len(neg_tags_list_all))) if max_tags_all else 10**9)
+    max_wtags = max_wtags_all or 10**9
     max_string_len = max_string_lengths[ProcModule.get()]
-    if total_len > max_string_len or len(neg_tags_list_all) > max_tags:
-        trace('Warning (W3): total tags length exceeds acceptable limit, trying to extract negative tags into negative group...')
+
+    def tags_fixed() -> None:
+        return total_len <= max_string_len and len(neg_tags_list_all) <= max_ntags and len(w_tags_list_all) <= max_wtags
+
+    if not tags_fixed():
+        trace('Warning (W3): either total tags length, maximum negative tags count or maximum wildcarded tags count '
+              'exceeds acceptable limit, trying to extract negative tags into negative group...')
         neg_tags_list = list()
         # first pass: wildcarded negative tags - chance to ruin alias is lower (rx)
         # second pass: any negative tags
         for wildcardpass in (True, False):
             ti: int
             for ti in reversed(range(len(neg_tags_list_all))):
-                if total_len <= max_string_len and len(neg_tags_list_all) <= max_tags:
+                if tags_fixed():
                     break
                 ntag = neg_tags_list_all[ti]
                 if wildcardpass is True and ntag.rfind('*') == -1:
@@ -136,7 +155,9 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str]
                 total_len -= len(ntag) + 1
                 del neg_tags_list_all[ti]
                 del tags_list[tags_list.index(ntag)]
-        if total_len > max_string_len or len(neg_tags_list_all) > max_tags:
+                if wildcardpass is True and ntag in w_tags_list_all:
+                    del w_tags_list_all[w_tags_list_all.index(ntag)]
+        if not tags_fixed():
             thread_exit('Fatal: extracting negative tags doesn\'t reduce total tags length enough! Aborting...', -609)
         assert len(neg_tags_list) > 0
         extracted_neg_group_str = f'-(*,{"|".join(reversed(neg_tags_list))})'
@@ -144,6 +165,9 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str]
         plist = form_plist(extracted_neg_group_str)
         assert plist is not None
         parsed.append(plist)
+    if 0 < max_tags_all < len(tags_list) - (len(neg_tags_list_all) if max_is_separate else 0):
+        thread_exit(f'Fatal: max tags exceeded for {ProcModule.get_cur_module_name().upper()} '
+                    f'({len(tags_list):d} > {max_tags_all:d}), final tags: \'{" ".join(tags_list)}\'')
 
     return tags_list, parsed
 

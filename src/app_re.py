@@ -44,6 +44,7 @@ re_tags_to_process_rn = re_compile(
 re_tags_to_process_rs = re_tags_to_process_rx
 re_tags_to_process_rz = re_tags_to_process_rx
 re_tags_to_process_rp = re_tags_to_process_rn
+re_tags_to_process_en = re_tags_to_process_rx
 
 re_tags_exclude_major1 = re_compile(
     r'^(?:(?:digital|original|traditional)_(?:content|media|painting)|[234]d|h(?:d|ero_outfit)|level_up|p(?:ainting|rotagonist)|tagme|'
@@ -87,6 +88,7 @@ re_tags_exclude_rn = re_compile(
 re_tags_exclude_rs = re_tags_exclude_rx
 re_tags_exclude_rz = re_tags_exclude_rx
 re_tags_exclude_rp = re_tags_exclude_rn
+re_tags_exclude_en = re_tags_exclude_rx
 
 re_item_info_part_xml = re_compile(r'([\w5_]+=\"[^"]+\")[> ]')
 re_orig_file_link = re_compile(r'file_url=\"([^"]+)\"')
@@ -110,7 +112,7 @@ re_comment_a_rs = re_compile(r'^index\.php\?r=account/profile&(?:amp;)?id=\d+$')
 re_id_tag_rz = re_compile(r'^id:([<>]=?|=)?(\d+)$')
 re_score_tag_rz = re_compile(r'^score:([<>]=?|=)?(\d+)$')
 
-re_favorited_by_tag = re_compile(r'^favorited_by[:=]([^:=]+)$')
+re_favorited_by_tag = re_compile(r'^favorited_by[:=]!?([^:=]+)$')
 re_pool_tag = re_compile(r'^pool[:=]([^:=]+)$')
 
 re_infolist_filename = re_compile(fr'(?:{"|".join(MODULE_CHOICES)})_!(tags|sources|comments)_\d+-\d+\.txt')

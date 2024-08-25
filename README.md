@@ -19,9 +19,9 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 #### Filters
 - *Videos* ‒ some websites serve videos in multiple formats, here you can select a prefered one. **Redundant since 01.05.2021 (RX internal changes)**. You may also exclude videos altogether
 - *Images* ‒ some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you can also filter all the images out
-- *Parent posts / child posts* ‒ this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX only
+- *Parent posts / child posts* ‒ this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX and EN only
 - *Threading* ‒ the number of download threads to use. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
-- *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset to default. RX, RN, RZ and RP only
+- *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset to default. RX, RN, RZ, RP and EN only
 
 #### Misc & Tools
 - **File -> Save settings...** \<Ctrl+S> ‒ allows you to save current run parameters to a config file for later or as a template. `Note that only recognized parameters will be loaded - missing parameters will just stay unchanged without any errors given, so if you want to not save some parameters (ex. window position) just remove associated rows from the file`
@@ -44,17 +44,17 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Connection -> Set proxy** \<F4> ‒ you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
 - **Connection -> Set timeout** \<F5> ‒ override connection timeout if need be
 - **Connection -> Set retries count** \<F6> ‒ override connection retries count, may be useful when using proxy
-- **Connection -> Download without proxy** ‒ you can use this option for RX if only the main domain is blocked in your country
+- **Connection -> Download without proxy** ‒ you can use this option if only the main domain of the selected module's website is blocked in your country
 - **Connection -> Ignore proxy** ‒ this is just a switch to disable proxy temporarily without wiping it
 - **Connection -> Cache processed HTML** ‒ by default HTML is cached as raw bytes, enabling this makes Ruxx cache HTML after it was processed into manageable form - a little bit faster but consumes much more memory. Mainly affects RS module
 - **Actions -> Download** \<Ctrl+Shift+D> ‒ same as download button
 - **Actions -> Check tags** \<Ctrl+Shift+C> ‒ same as check tags button
 - **Actions -> Clear log** \<Ctrl+Shift+E> ‒ same as clear log button
-- **Tools -> Load from ID list** ‒ Allows you to load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group expression, effectively allowing you to search for those ids. ~~Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details.~~ Re-enabled since version `1.1.284` for all modules using a workaround, but doesn't run in parallel so be aware of that
+- **Tools -> Load from ID list** ‒ Allows you to load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group [expression](#tags-syntax), effectively allowing you to search for those ids. ~~Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details.~~ Re-enabled since version `1.1.284` for all modules using a workaround, but doesn't run in parallel so be aware of that
 - **Tools -> Un-tag files...** ‒ renames selected Ruxx-downloaded media files, stripping file names of all extra info
 - **Tools -> Re-tag files...** ‒ renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)
 - **Tools -> Sort files into subfolders...** ‒ a set of tools to separate downloaded files if need be:
-  - **by type** ‒ sort by file type (checking file extension). You can separate files by `videos`/`images`/`flash (RN)` or by extension itself. Note that both `jpeg` and `jpg` files will be placed into **jpg** folder
+  - **by type** ‒ sort by file type (checking file extension). You can separate files by `videos`/`images`/`flash (RN, EN)` or by extension itself. Note that both `jpeg` and `jpg` files will be placed into **jpg** folder
   - **by size** ‒ sort by file size (you'll have to provide a threshold, in Megabytes). You can use multiple thesholds, separated by space, in any order: `0.5 10 3.0 5.00`
   - **by score** ‒ sort by post score. Make sure that selected files include score in their names or this won't work. You can use multiple thesholds, separated by space, in any order: `100 250 50 500`
 - **Help -> Tags** ‒ a quick list of tag types and how to use them (for selected module)
@@ -64,14 +64,15 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 Ruxx normally allows most symbols for tags search, there are some specifics though:  
 1. Wildcards
 - Most modules support asterisk symbol `*` as wildcard in tags (any number of any symbols). You can use any number of wildcards in tags in any place: `b*m*e_cit*` instead of `baltimore_city`. For some search engines `*` is just a symbol normal tag may contain, namely: RZ; but you can still use wildcarded `-t*ags`.
-  - Note that there is a bug in RX search engine which breaks frontal wildcards: `*_city` will work for RN, RS and RP, but RX will return default result (all)
+  - Note that there is a bug in RX search engine which breaks frontal wildcards: `*_city` will work for RN, RS, RP and EN, but RX will return default result (all)
 2. Meta tags
-- Meta tags describe not the posted artwork but the post itself. RX, RN, RS, RZ and RP all support meta tags:
+- Meta tags describe not the posted artwork but the post itself. RX, RN, RS, RZ, RP and EN all support meta tags:
   - RX syntax: _name_**:**_value_ OR _name_**:=**_value_
   - RN syntax: _name_**=**_value_
   - RS syntax: _name_**:**_value_
   - RZ syntax: _name_**:**_value_
   - RP syntax: _name_**=**_value_
+  - EN syntax: _name_**:**_value_
 - Some meta `-tags` can be used for exclusion: `-rating:explicit`
 - Some meta tags support wildcards. Rules are very strict so this feature is yet to be enabled
 - Some meta tags support inequality. These metatags can be used to set a range, ex. `id:>X id:<Y`. See below for more syntax
@@ -122,13 +123,32 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
     - height: `height=X`, `height>X`, `height<Y`, `height>=X`, `height<=Y`. `X`,`Y` = `<number>`
     - poster: `poster=X`. `X` = `<uploader name>`
     - order: `order=X`. `X` = `<sort type>`, `id_desc` or `score_desc`
+- EN meta tags:
+  - **id**: `id:X`, `id:>X`, `id:<Y`, `id:>=X`, `id:<=Y`. `X`,`Y` = `<post ID>`
+  - **score**: `score:X`, `score:>X`, `score:<X`, `score:>=X`, `score:<=X`. `X`,`Y` = `<number>`.
+  - **favorited_by**: `favorited_by:X`, `favoritedby:X` or `fav:X`. `X` = `<user name>`
+  - Rarely used ones:
+    - parent: `parent:X`. `X` = `<post ID>`
+    - width: `width:X`, `width:>X`, `width:<Y`, `width:>=X`, `width:<=Y`. `X`,`Y` = `<number>`
+    - height: `height:X`, `height:>X`, `height:<Y`, `height:>=X`, `height:<=Y`. `X`,`Y` = `<number>`
+    - user: `user:X`. `X` = `<uploader name>`
+    - rating: `rating:X`. `X` = `<rating name>`, ex. `safe`, `questionable`, `explicit`
+    - md5: `md5:X`, `X` = `<MD5 hash>`
+    - source:
+    - updated:
+    - sort: `sort:X[_asc|_desc]`. `X` = `<sort type>`, ex. `score`, `id` (default `id_desc`)
+  - EN tags with range also support following range syntax:
+    - `<type>:X..` (ex. `score:5000..` is equal to `score:>=5000`)
+    - `<type>:..X` (ex. `score:..-500` <=> `score:<=-500`)
+    - `<type>:X..` (ex. `id:5000000..` <=> `id:>=5000000`)
+    - `<type>:X..Y` (ex. `score:90..99` <=> `score:>=90 score:<=99`)
 3. `OR` groups
 - Ruxx syntax for `OR` group is simplified compared to what you would normally use for RX: `(tag1~tag2~...~tagN)` instead of `( tag1 ~ tag2 ~ ... ~ tagN )`
-- Ruxx allows using `OR` groups for all modules, not just RX
+- Ruxx allows using `OR` groups with any module, regardless of whether website supports it natively or not
 - The syntax is also the same for all modules, don't use curvy brackets for RS
 - `OR` group can't be negative and needs to be unwrapped:
   - `-(tag1~tag2~tag3)` => `-tag1 -tag2 -tag3`
-- Since using meta tags in `OR` groups `(id:=X~score:=Y)` is broken (RX) or straight impossible (RS, RN, RZ, RP), Ruxx will always unwrap such groups to process them properly
+- Since using meta tags in `OR` groups `(id:=X~score:=Y)` is broken (RX), not always reliable (EN) or straight impossible (RS, RN, RZ, RP), Ruxx will always unwrap such groups to process them properly
 4. Negative groups
 - Syntax: `-(tag1,tag2,...,tagN)`. Ruxx allows to filter out tag combinations (posts where all tags in group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for `any symbol` and `any number of any symbols` repectively. You can also use pipe symbol `|` for direct regex `OR` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regular expressions `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
     - Important note: unlike normal `-tags`, negative group will not check tag aliases
@@ -138,6 +158,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 - Some websites also put a limit on the number of tags used. While most of the time this is a soft limit (web interface), sometimes they also apply a hard limit (api internals), namely:
   - `RZ`: max `3` `tag`s; max `3` `-tag`s
   - `RP`: max `3` `tag`s *+* `-tag`s
+  - `EN`: max `40` `tag`s *+* `-tag`s
 - In that case all extra `-tags` will be converted into a negative group and used locally as an internal filter (and mess up 'check tags' results). Note that this only applies to `-tags`, exceeding positive tag limit will result in an error
 - It is recommended to manually convert all wildcarded `-t*ags` into a single negative group to prevent unwanted tag expansion (see below) resulting in too many `-tags`, it's simple really: `'-a -b -c -d* -f*g*h*j' -> '-a -b -c -(*,d*|f*g*h*j)'`
 6. Tag validation
@@ -169,26 +190,35 @@ Ruxx doesn't provide a method of authentication natively on either of supported 
     - RX: `cf_clearance`, `user_id`, `pass_hash`
     - RN: `cf_clearance`, `shm_user`, `shm_session`
     - RS: `user_id`, `pass_hash`
-    - RP: `<TODO>`
+    - RP: ?? (registration disabled)
+    - EN: `_danbooru_session`, `remember`
   - Notes:
     - RN `cf_clearance` cookie duration is **15 minutes**
 
 #### Favorites
-Downloading user's favorites using native tags search functionality is only available with RN and RP (see meta tags above), other websites don't implement that neither through tags nor through API  
-In order to enable users to download one's favorites Ruxx implements `favorited_by` tag for other modules as well. It's an extra layer of functionality but here is what you need to use it:
-- Syntax: `favorited_by:X`. `X` = `<user ID>`. User ID you can get from user's favorites page, it's a part of its web address. Note: this syntax is not invalid as RN / RP tag either but it won't do anything there
+Downloading user's favorites using native tags search functionality is only available with RN, RP and EN (see meta tags above), other websites don't implement that neither through tags nor through API. In order to enable users to download one's favorites Ruxx implements `favorited_by` tag for other modules as well. It's an extra layer of functionality but here is what you need to use it:
+- Syntax: `favorited_by:X`. `X` = `<user ID>`. User ID you can get from user's favorites page, it's a part of its web address. Note: this syntax is not invalid as RN / RP / EN tag either but it won't do anything there
 - Downloading from RX favorites pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
 - While searching favorites you can use normal filtering as well. Date filter, additional required / excluded tags, etc.
 - Downloading favorites isn't particulary fast, Ruxx will need to fetch info for every item in the list in order to enable filtering
 - RZ module stands out here: although RZ doesn't support meta tags except `id:x` types it can still use `favorited_by:name / id` tag, `tags` / `-tags` can't be used (negative groups can), at the same time it doesn't suffer any slowdown
 
 #### Pools
-Downloading post pool using native tags search functionality is not possible and only RX implements pool functionality  
+Downloading post pool using native tags search functionality is not possible and only RX and EN implement pool functionality  
 To download RX pool use special `pool` tag:
-- Syntax: `pool:X`. `X` = `<pool ID>`. Pool ID you can get from pool page, it's a part of its web address.
+- Syntax: `pool:X`. `X` = `<pool ID>`. Pool ID you can get from pool page, it's a part of its web address
+- EN module also supports pool name syntax: `pool:Y`. `Y` = `<pool name>`. Pool name must be in lower case and with all spaces replaced with underscores, ex. `'Long Night' -> 'pool:long_night'`
 - Downloading RX pool pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
 - Pool posts can be filtered as well. Date filter, additional required / excluded tags, etc.
-- Same as favorites, downloading using custom tags isn't particulary fast, Ruxx will need to fetch info for every item in the list in order to enable filtering
+- Same as favorites, downloading using custom tags isn't particulary fast (RX), Ruxx will need to fetch info for every item in the list in order to enable filtering
+
+##### Sets
+EN module also allows creating post sets. Essentially they are no different from pools:
+- Syntax: `set:X`, `X` = `<set ID>`. Set ID can be extracted from set page address
+- EN also supports set name syntax: `set:Y`. `Y` = `<set shortname>`. Important: set's short name isn't equal to its name in set list and is only listed on its own page!
+- This is a native meta tag so:
+  - posts can be filtered further if needed
+  - download process suffers no speed penalty
 
 #### Using from console
 - It is possible to use Ruxx as a cmdline tool. In main window you will find `Cmd` section ‒ it generates your cmdline arguments every time you make a change ‒ use those arguments as an example. In console window you may need to escape some of them (path, `OR` groups, tags containing dots, etc.). Most arguments are optional though ‒ the only ones required are `tags` (default module is RX)  

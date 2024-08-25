@@ -9,6 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 from app_download import Downloader
+from app_download_en import DownloaderEn
 from app_download_rn import DownloaderRn
 from app_download_rp import DownloaderRp
 from app_download_rs import DownloaderRs
@@ -25,6 +26,7 @@ DOWNLOADERS_BY_PROC_MODULE = {
     ProcModule.PROC_RS: DownloaderRs,
     ProcModule.PROC_RZ: DownloaderRz,
     ProcModule.PROC_RP: DownloaderRp,
+    ProcModule.PROC_EN: DownloaderEn,
 }
 
 
