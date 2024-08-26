@@ -12,7 +12,7 @@ from datetime import datetime
 from json import loads
 from multiprocessing.dummy import current_process
 from time import sleep as thread_sleep
-from typing import Tuple, Pattern, Dict
+from typing import Tuple, Pattern, Dict, MutableSet, List
 
 # requirements
 from bs4 import BeautifulSoup
@@ -42,6 +42,7 @@ MAX_SEARCH_DEPTH_PAGES = 750
 MAX_SEARCH_DEPTH = MAX_SEARCH_DEPTH_PAGES * ITEMS_PER_PAGE  # set by site devs
 
 item_info_fields = {'file_url': 'ext', 'post_id': 'id'}
+tag_blacklisted_always = 'en_always_blacklisted'
 
 
 class DownloaderEn(Downloader):
@@ -101,6 +102,7 @@ class DownloaderEn(Downloader):
         base_json = loads(raw_html_page.text)
         posts = list()
         for p in base_json['posts']:
+            post_tags_list = list()
             post_id = str(p['id'])
             pfile = p['file'] or p['sample']['alternates'].get('original')
             assert pfile
@@ -109,13 +111,11 @@ class DownloaderEn(Downloader):
                              str((next(filter(None, pfile['urls'])) or p['file']['url']) if 'urls' in pfile else None))
                 assert post_furl
             except (StopIteration, AssertionError):
-                post_md5 = p['file']['md5']
-                post_ext_orig = p['file']['ext']
-                post_furl = f'{SITENAME.replace("//", "//static1.")}data/{post_md5[:2]}/{post_md5[2:4]}/{post_md5}.{post_ext_orig}'
+                post_tags_list.append(tag_blacklisted_always)
+                post_furl = f'{SITENAME}help/blacklist#default'
             post_surl = str(p['sample']['url'] or post_furl)
             post_fheight = str(pfile['height'])
             post_fwidth = str(pfile['width'])
-            post_tags_list = list()
             [post_tags_list.extend(li) for li in p['tags'].values()]
             post_tags = ' '.join(post_tags_list)
             post_source = ' '.join(p['sources'])
@@ -359,6 +359,32 @@ class DownloaderEn(Downloader):
     def _form_comments_search_address(self, post_id: str) -> str:
         return (f'{self._get_sitename()}comments.json?commit=Search&group_by=comment&search[order]=id_asc'
                 f'&search[post_tags_match]=id:{post_id}&limit={self._get_items_per_page():d}')
+
+    def _execute_module_filters(self, parents: MutableSet[str]) -> None:
+        abbrp = self._get_module_abbr_p()
+        total_count_old = len(self.items_raw_per_task)
+        removed_count = 0
+        removed_messages: List[str] = list()
+        idx: int
+        for idx in reversed(range(total_count_old)):
+            self.catch_cancel_or_ctrl_c()
+            h = self.items_raw_per_task[idx]
+            item_id = self._extract_id(h)
+            idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'
+            item_info = self.item_info_dict_per_task.get(idstring)
+            if tag_blacklisted_always in item_info.tags:
+                removed_messages.append(f'{abbrp}{item_id} is \'young -rating:s\' and is always blacklisted unless you log in, skipped!')
+                if item_id in parents:
+                    parents.remove(item_id)
+                if item_info.parent_id in parents:
+                    parents.remove(item_info.parent_id)
+                del self.item_info_dict_per_task[idstring]
+                del self.items_raw_per_task[idx]
+                self.filtered_out_ids_cache.add(idstring)
+                removed_count += 1
+        if removed_count > 0:
+            trace('\n'.join(removed_messages))
+            trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
 
 #
 #
