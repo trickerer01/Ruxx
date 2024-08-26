@@ -447,10 +447,12 @@ class Downloader(DownloaderBase):
 
         if len(task_parents) > 0:
             trace(f'\nParent post(s) detected! Scheduling {len(task_parents):d} extra task(s)!')
+            parent_messages = list()
             for parent in sorted(task_parents):
                 new_task_str = f'parent{self._get_idval_equal_seaparator()}{parent}'
-                trace(f' {new_task_str}')
                 self.tags_str_arr.append(new_task_str)
+                parent_messages.append(f' {new_task_str}')
+            trace('\n'.join(parent_messages))
             self.known_parents.update(task_parents)
 
     def _download_all(self) -> None:
