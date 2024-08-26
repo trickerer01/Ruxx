@@ -11,6 +11,7 @@ from base64 import b64decode
 from datetime import datetime
 from json import loads
 from multiprocessing.dummy import current_process
+from time import sleep as thread_sleep
 from typing import Tuple, Pattern, Dict
 
 # requirements
@@ -166,6 +167,7 @@ class DownloaderEn(Downloader):
             divider = 1
             direction = 1
             while last_count == 0 or last_count >= self._get_items_per_page():
+                thread_sleep(1.0)
                 page += max((MAX_SEARCH_DEPTH_PAGES - 1) // divider, 1) * direction
                 if __RUXX_DEBUG__:
                     trace(f'page {page + 1:d}...')
