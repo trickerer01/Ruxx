@@ -170,7 +170,7 @@ class DownloaderEn(Downloader):
                 if (page == MAX_SEARCH_DEPTH_PAGES - 1 and last_count == self._get_items_per_page()) or (page == 0 and last_count == 0):
                     break
                 thread_sleep(1.0)
-                page += max((MAX_SEARCH_DEPTH_PAGES - 1) // divider, 1) * direction
+                page += min(MAX_SEARCH_DEPTH_PAGES - 1, max(MAX_SEARCH_DEPTH_PAGES // divider, 1)) * direction
                 if __RUXX_DEBUG__:
                     trace(f'page {page + 1:d}...')
                 raw_html = self.fetch_html(self._form_page_num_address(page), do_cache=True)
