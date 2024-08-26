@@ -167,6 +167,8 @@ class DownloaderEn(Downloader):
             divider = 1
             direction = 1
             while last_count == 0 or last_count >= self._get_items_per_page():
+                if (page == MAX_SEARCH_DEPTH_PAGES - 1 and last_count == self._get_items_per_page()) or (page == 0 and last_count == 0):
+                    break
                 thread_sleep(1.0)
                 page += max((MAX_SEARCH_DEPTH_PAGES - 1) // divider, 1) * direction
                 if __RUXX_DEBUG__:

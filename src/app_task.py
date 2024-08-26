@@ -138,10 +138,10 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str]
     def tags_fixed() -> None:
         return total_len <= max_string_len and len(neg_tags_list_all) <= max_ntags and len(w_tags_list_all) <= max_wtags
 
+    neg_tags_list = list()
     if not tags_fixed():
         trace('Warning (W3): either total tags length, maximum negative tags count or maximum wildcarded tags count '
               'exceeds acceptable limit, trying to extract negative tags into negative group...')
-        neg_tags_list = list()
         # first pass: wildcarded negative tags - chance to ruin alias is lower (rx)
         # second pass: any negative tags
         for wildcardpass in (True, False):
@@ -170,7 +170,7 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str]
         thread_exit(f'Fatal: max tags exceeded for {ProcModule.get_cur_module_name().upper()} '
                     f'({len(tags_list):d} > {max_tags_all:d}), final tags: \'{" ".join(tags_list)}\'')
 
-    if __RUXX_DEBUG__:
+    if __RUXX_DEBUG__ and len(neg_tags_list) > 0:
         trace(f'Resulting args: {" ".join(tags_list)}')
 
     return tags_list, parsed
