@@ -552,7 +552,7 @@ def update_download_state() -> None:
         update_widget_enabled_states()
         gi: Globals
         for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:
-            if gi in (Globals.BUTTON_DOWNLOAD, Globals.MODULE_ICON, Globals.COMBOBOX_PARCHI):
+            if gi in (Globals.BUTTON_DOWNLOAD, Globals.MODULE_ICON):
                 pass  # config_global(i, state=gobject_orig_states[i])
             elif gi == Globals.BUTTON_CHECKTAGS:
                 if not is_cheking_tags():
