@@ -30,7 +30,7 @@ CUR_PATH = normalize_path(path.abspath(curdir))
 
 args_argparse_str01 = (
     'sfw asd ned -nds -proxr '
-    '-timeout 13 -retries 56 -dmode 0 -skip_img -skip_vid -lowres -noproxy -proxynodown -prefix -dump_tags -dump_sources -append_info'
+    '-timeout 13 -retries 56 -dmode full -skip_img -skip_vid -lowres -noproxy -proxynodown -prefix -dump_tags -dump_sources -append_info'
 )
 args_argparse_str02_base = (
     'sfw asd ned -nds -proxt '
@@ -323,8 +323,8 @@ class ConnTests(TestCase):
             return
         # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
         Logger.init(True, True)
-        #                tag           tag        flag     v      flag      v      flag            v           flag      v
-        argslist = ('id:=2000000', '-severals', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
+        #                tag           tag        flag       v       flag      v      flag            v           flag      v
+        argslist = ('id:=2000000', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RX) as dwn:
             dwn._parse_args(arglist)
@@ -336,10 +336,10 @@ class ConnTests(TestCase):
     def test_connect_rs01(self) -> None:
         if not RUN_CONN_TESTS:
             return
-        # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
+        # connection and downloading for rx is performed using same web address, we are free to use dry run here
         Logger.init(True, True)
-        #                tag           tag        flag     v      flag      v      flag            v           flag      v
-        argslist = ('id:=7939303', '-severals', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
+        #                tag           tag        flag       v       flag      v      flag            v           flag      v
+        argslist = ('id:=7939303', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RS) as dwn:
             dwn._parse_args(arglist)
@@ -351,10 +351,10 @@ class ConnTests(TestCase):
     def test_connect_rz01(self) -> None:
         if not RUN_CONN_TESTS:
             return
-        # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
+        # connection and downloading for rx is performed using same web address, we are free to use dry run here
         Logger.init(True, True)
-        #             tag       tag       tag      flag     v      flag      v      flag            v           flag      v
-        argslist = ('tiara', 'dark_elf', 'toes', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
+        #             tag       tag       tag      flag       v       flag      v      flag            v           flag      v
+        argslist = ('tiara', 'dark_elf', 'toes', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RZ) as dwn:
             dwn._parse_args(arglist)
@@ -366,10 +366,10 @@ class ConnTests(TestCase):
     def test_connect_rp01(self) -> None:
         if not RUN_CONN_TESTS:
             return
-        # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
+        # connection and downloading for rx is performed using same web address, we are free to use dry run here
         Logger.init(True, True)
-        #               tag           tag        flag     v      flag      v      flag            v           flag      v
-        argslist = ('id=5915464', '-severals', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
+        #               tag           tag        flag       v       flag      v      flag            v           flag      v
+        argslist = ('id=5915464', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RP) as dwn:
             dwn._parse_args(arglist)
@@ -381,10 +381,10 @@ class ConnTests(TestCase):
     def test_connect_en01(self) -> None:
         if not RUN_CONN_TESTS:
             return
-        # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
+        # connection and downloading for rx is performed using same web address, we are free to use dry run here
         Logger.init(True, True)
-        #               tag           tag        flag     v      flag      v      flag            v           flag      v
-        argslist = ('id:4322823', '-severals', '-dmode', '1', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
+        #               tag           tag        flag       v       flag      v      flag            v           flag      v
+        argslist = ('id:4322823', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_EN) as dwn:
             dwn._parse_args(arglist)
@@ -399,8 +399,8 @@ class ItemFilterTests(TestCase):
         if not RUN_CONN_TESTS:
             return
         Logger.init(True, True)
-        #              tag         flag     v      flag      v     flag      v         flag          v           flag          v
-        argslist = ('moonlight', '-dmode', '1', '-threads', '8', '-path', CUR_PATH, '-mindate', '01-01-2012', '-maxdate', '01-12-2023')
+        #              tag         flag       v       flag      v     flag      v         flag          v           flag          v
+        argslist = ('moonlight', '-dmode', 'skip', '-threads', '8', '-path', CUR_PATH, '-mindate', '01-01-2012', '-maxdate', '01-12-2023')
         # this search yields at least 3200 results (before date filter)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RX) as dwn:
@@ -415,10 +415,10 @@ class RealDownloadTests(TestCase):
     def test_down_rx01(self) -> None:
         if not RUN_CONN_TESTS:
             return
-        # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
+        # connection and downloading for rx is performed using same web address, we are free to use dry run here
         Logger.init(True, True)
-        #                tag           tag        flag     v      flag      v      flag            v           flag      v
-        argslist = ('id:=2000000', '-overflow', '-dmode', '1', '-threads', '2', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
+        #                tag           tag        flag       v       flag      v      flag            v           flag      v
+        argslist = ('id:=2000000', '-overflow', '-dmode', 'skip', '-threads', '2', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.PROC_RX) as dwn:
             dwn.launch_download(arglist)

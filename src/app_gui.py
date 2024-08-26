@@ -22,7 +22,7 @@ from app_debug import __RUXX_DEBUG__
 from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP,
     PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, MODULE_ABBRU_RX, MODULE_ABBRU_RN, MODULE_ABBRU_RS, MODULE_ABBRU_RZ,
-    MODULE_ABBRU_RP, MODULE_ABBRU_EN, FMT_DATE,
+    MODULE_ABBRU_RP, MODULE_ABBRU_EN, FMT_DATE, DMODE_CHOICES,
     max_progress_value_for_state,
 )
 from app_download import Downloader
@@ -714,9 +714,9 @@ def init_menus() -> None:
     # 9) Debug
     if __RUXX_DEBUG__:
         register_menu('Debug', Menus.DEBUG)
-        register_menu_radiobutton('Download: full', CVARS.get(Options.DOWNLOAD_MODE), DownloadModes.FULL.value)
-        register_menu_radiobutton('Download: skip', CVARS.get(Options.DOWNLOAD_MODE), DownloadModes.SKIP.value)
-        register_menu_radiobutton('Download: touch', CVARS.get(Options.DOWNLOAD_MODE), DownloadModes.TOUCH.value)
+        register_menu_radiobutton('Download: full', CVARS.get(Options.DOWNLOAD_MODE), DMODE_CHOICES.index(DownloadModes.FULL))
+        register_menu_radiobutton('Download: skip', CVARS.get(Options.DOWNLOAD_MODE), DMODE_CHOICES.index(DownloadModes.SKIP))
+        register_menu_radiobutton('Download: touch', CVARS.get(Options.DOWNLOAD_MODE), DMODE_CHOICES.index(DownloadModes.TOUCH))
         register_menu_command('Set download limit (0)...', set_download_limit)
         register_menu_command('Reset download limit', reset_download_limit)
 

@@ -675,11 +675,11 @@ class Downloader(DownloaderBase):
     def _solve_argument_conflicts(self) -> bool:
         ret = False
         if self.prefer_webm:
-            trace('Warning (W1): \'-webm\' option is deprecated and will be removed in near future')
+            trace('Warning (W1): \'-webm\' option is deprecated and will be removed in near future. Ignored!')
             ret = True
-        if ProcModule.is_rn() or ProcModule.is_rs():
+        if not ProcModule.is_rx() and not ProcModule.is_en():
             if self.include_parchi:
-                trace('Warning (W1): RN module is unable to collect parent posts. Disabled!')
+                trace('Warning (W1): only RX and EN modules are able to collect parent posts. Disabled!')
                 self.include_parchi = False
                 ret = True
         if ProcModule.is_rs():

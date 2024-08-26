@@ -16,7 +16,7 @@ from os import path
 from typing import Union, Dict, Tuple
 
 # internal
-from app_defines import DownloadModes, FMT_DATE, THREADS_MAX_ITEMS
+from app_defines import DMODE_CHOICES, FMT_DATE, THREADS_MAX_ITEMS
 from app_gui_defines import (
     SLASH, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_PARCHI, OPTION_VALUES_PROXYTYPE,
 )
@@ -39,22 +39,20 @@ def valid_proxy_type(ptype: str) -> str:
         raise ArgumentError
 
 
-def valid_proxy(prox: str, check_type=True) -> str:
+def valid_proxy(prox: str, with_type=True) -> str:
     if len(prox) == 0:
         return prox
     try:
-        if check_type is True:
-            from urllib.parse import urlparse
+        from urllib.parse import urlparse
+        if with_type is False:
+            assert '://' not in prox
+            url = urlparse(f'{OPTION_VALUES_PROXYTYPE[0]}://{prox}')
+        else:
             url = urlparse(prox)
-            pv, pp = tuple(url.netloc.split(':', 1))
-            pt, pva, ppi = valid_proxy_type(url.scheme), IPv4Address(pv), int(pp)
-            assert 20 < ppi < 65535
-            return f'{pt}://{str(pva)}:{ppi:d}'
-
-        pv, pp = tuple(prox.split(':', 1))
-        pva, ppi = IPv4Address(pv), int(pp)
-        assert 20 < ppi < 65535
-        return f'{str(pva)}:{ppi:d}'
+        _ = valid_proxy_type(url.scheme)
+        _ = IPv4Address(url.hostname)
+        assert 20 < url.port < 65535
+        return prox
     except Exception:
         raise ArgumentError
 
@@ -109,9 +107,10 @@ def valid_path(pathstr: str) -> str:
         raise ArgumentError
 
 
-def valid_download_mode(mode: str) -> DownloadModes:
+def valid_download_mode(mode: str) -> str:
     try:
-        return DownloadModes(int(mode))
+        assert mode in DMODE_CHOICES
+        return mode
     except Exception:
         raise ArgumentError
 

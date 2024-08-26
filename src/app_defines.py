@@ -7,7 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 from enum import IntEnum, auto, unique
-from typing import Dict, Tuple, Optional, Set, List
+from typing import Dict, Tuple, Optional, List
 
 
 class Comment:
@@ -110,18 +110,14 @@ PROGRESS_VALUE_DOWNLOAD = max_progress_value_for_state(DownloaderStates.DOWNLOAD
 PROGRESS_VALUE_NO_DOWNLOAD = PROGRESS_BAR_MAX - PROGRESS_VALUE_DOWNLOAD
 
 
-@unique
-class DownloadModes(IntEnum):
-    FULL = 0
-    SKIP = auto()
-    TOUCH = auto()
-
-    def __str__(self) -> str:
-        return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
+class DownloadModes:
+    FULL = 'full'
+    SKIP = 'skip'
+    TOUCH = 'touch'
 
 
 DMODE_DEFAULT = DownloadModes.FULL
-DMODE_CHOICES: Set[int] = {dm.value for dm in DownloadModes.__members__.values()}
+DMODE_CHOICES = (DownloadModes.FULL, DownloadModes.SKIP, DownloadModes.TOUCH)
 
 STATE_WORK_START = DownloaderStates.SEARCHING
 
