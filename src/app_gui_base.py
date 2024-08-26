@@ -12,7 +12,6 @@ import ctypes
 import sys
 from abc import ABC, abstractmethod
 from base64 import b64decode
-from datetime import datetime
 from json import dumps as json_dumps, loads as json_loads
 from os import curdir, path
 from re import compile as re_compile
@@ -25,7 +24,7 @@ from typing import Optional, Callable, List, Union, Dict, Iterable, Tuple
 # internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE,
+    PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, CONNECT_TIMEOUT_BASE, DATE_MAX_DEFAULT,
     KNOWN_EXTENSIONS_STR, CONNECT_RETRIES_BASE, SITENAME_B_RX, SITENAME_B_RN, SITENAME_B_RS, SITENAME_B_RZ, SITENAME_B_RP, SITENAME_B_EN,
 )
 from app_file_parser import prepare_tags_list
@@ -1162,7 +1161,7 @@ def create_base_window_widgets() -> None:
                          sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_datemax_t = BaseText(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.DATEMAX)))
     register_global(Globals.FIELD_DATEMAX, op_datemax_t)
-    op_datemax_t.insert(END, datetime.today().strftime(FMT_DATE))
+    op_datemax_t.insert(END, DATE_MAX_DEFAULT)
     op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if IS_WIN else 1))
     attach_tooltip(op_datemax_t, TOOLTIP_DATE)
 
@@ -1339,7 +1338,7 @@ def load_id_list() -> None:
             setrootconf(Options.TAGS, file_tags)
             # reset settings for immediate downloading
             setrootconf(Options.DATEMIN, DATE_MIN_DEFAULT)
-            setrootconf(Options.DATEMAX, datetime.today().strftime(FMT_DATE))
+            setrootconf(Options.DATEMAX, DATE_MAX_DEFAULT)
         else:
             messagebox.showwarning(message=f'Unable to load ids from {filepath[filepath.rfind("/") + 1:]}!')
 

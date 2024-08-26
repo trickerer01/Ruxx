@@ -22,7 +22,7 @@ from app_debug import __RUXX_DEBUG__
 from app_defines import (
     DownloaderStates, DownloadModes, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP,
     PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, MODULE_ABBRU_RX, MODULE_ABBRU_RN, MODULE_ABBRU_RS, MODULE_ABBRU_RZ,
-    MODULE_ABBRU_RP, MODULE_ABBRU_EN, FMT_DATE, DMODE_CHOICES,
+    MODULE_ABBRU_RP, MODULE_ABBRU_EN, FMT_DATE, DMODE_CHOICES, DATE_MAX_DEFAULT,
     max_progress_value_for_state,
 )
 from app_download import Downloader
@@ -316,7 +316,6 @@ def prepare_cmdline() -> List[str]:
         newstr.append(addstr)
     # date min / max
     if not is_global_disabled(Globals.FIELD_DATEMIN) and not is_global_disabled(Globals.FIELD_DATEMAX):
-        today_str = datetime.today().strftime(FMT_DATE)
         for datestr in ((Options.DATEMIN, OPTION_CMD_DATEAFTER_CMD), (Options.DATEMAX, OPTION_CMD_DATEBEFORE_CMD)):
             while True:
                 try:
@@ -324,13 +323,13 @@ def prepare_cmdline() -> List[str]:
                     assert DateValidator()(addstr)
                     if (
                             (datestr[0] == Options.DATEMIN and addstr != DATE_MIN_DEFAULT) or
-                            (datestr[0] == Options.DATEMAX and addstr != today_str)
+                            (datestr[0] == Options.DATEMAX and addstr != DATE_MAX_DEFAULT)
                     ):
                         newstr.append(datestr[1])
                         newstr.append(addstr)
                     break
                 except Exception:
-                    setrootconf(datestr[0], DATE_MIN_DEFAULT if datestr[0] == Options.DATEMIN else today_str)
+                    setrootconf(datestr[0], DATE_MIN_DEFAULT if datestr[0] == Options.DATEMIN else DATE_MAX_DEFAULT)
     # headers
     addstr = window_hcookiesm().get_json_h()
     if len(addstr) > 2 and addstr != DEFAULT_HEADERS:  # != "'{}'"

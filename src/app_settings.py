@@ -13,14 +13,14 @@ from tkinter import Tk, filedialog
 from typing import Union, List, Iterable, Callable, Optional
 
 # internal
-from app_defines import Mem, UTF8
+from app_defines import Mem, UTF8, DATE_MIN_DEFAULT, LAUCH_DATE
 from app_gui_base import window_hcookiesm, getrootconf, setrootconf, int_vars, get_curdir, ask_filename, rootm
 from app_gui_defines import (
     Options, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_PARCHI, OPTION_VALUES_THREADING, CVARS, SLASH,
 )
 from app_module import ProcModule
 from app_logger import trace
-from app_utils import normalize_path
+from app_utils import normalize_path, as_date
 from app_validators import (
     Validator, DummyValidator, ModuleValidator, VideosCBValidator, ImagesCBValidator, ParchiCBValidator, ThreadsCBValidator, DateValidator,
     JsonValidator, ProxyTypeValidator, ProxyValidator, BoolStrValidator, TimeoutValidator, RetriesValidator, WindowPosValidator,
@@ -160,7 +160,12 @@ class Settings(ABC):
                 myval = f'{rootm().winfo_x():.0f}x{rootm().winfo_y():.0f}'
             else:
                 myval = getrootconf(conf)
-            settings_strlist.append(to_cfg_line(k, myval))
+            if conf == Options.DATEMIN and as_date(myval) <= as_date(DATE_MIN_DEFAULT):
+                continue
+            elif conf == Options.DATEMAX and as_date(myval) >= LAUCH_DATE:
+                continue
+            else:
+                settings_strlist.append(to_cfg_line(k, myval))
         return settings_strlist
 
     @staticmethod

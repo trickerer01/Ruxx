@@ -11,7 +11,6 @@ from __future__ import annotations
 import sys
 from abc import abstractmethod
 from argparse import Namespace
-from datetime import datetime
 from multiprocessing.dummy import Pool, current_process
 from multiprocessing.pool import ThreadPool
 from os import makedirs, listdir, path, remove
@@ -25,8 +24,8 @@ from iteration_utilities import unique_everseen
 # internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    ThreadInterruptException, DownloaderStates, DownloadModes, ItemInfo, Mem,
-    DATE_MIN_DEFAULT, FMT_DATE, CONNECT_TIMEOUT_BASE, UTF8, SOURCE_DEFAULT, PLATFORM_WINDOWS, Comment,
+    ThreadInterruptException, DownloaderStates, DownloadModes, ItemInfo, Comment, Mem,
+    DATE_MIN_DEFAULT, CONNECT_TIMEOUT_BASE, UTF8, SOURCE_DEFAULT, PLATFORM_WINDOWS, DATE_MAX_DEFAULT,
 )
 from app_download_base import DownloaderBase
 from app_gui_defines import UNDERSCORE, NEWLINE, NEWLINE_X2
@@ -532,7 +531,7 @@ class Downloader(DownloaderBase):
         if not self.default_sort:
             if self._tasks_count() > 1:
                 thread_exit('Error: cannot use non-default sorting with multi-task query!')
-            if self.date_min != DATE_MIN_DEFAULT or self.date_max != datetime.today().strftime(FMT_DATE):
+            if self.date_min != DATE_MIN_DEFAULT or self.date_max != DATE_MAX_DEFAULT:
                 thread_exit('Error: cannot use both sort tag and date filter at the same time!')
 
     def _process_all_tags(self) -> None:
@@ -687,9 +686,9 @@ class Downloader(DownloaderBase):
                 trace('Warning (W1): RS module is unable to collect sources. Disabled!')
                 self.dump_sources = False
                 ret = True
-            if self.date_min != DATE_MIN_DEFAULT or self.date_max != datetime.today().strftime(FMT_DATE):
+            if self.date_min != DATE_MIN_DEFAULT or self.date_max != DATE_MAX_DEFAULT:
                 trace('Warning (W1): RS module is unable to filter by date. Disabled!')
-                self.date_min, self.date_max = DATE_MIN_DEFAULT, datetime.today().strftime(FMT_DATE)
+                self.date_min, self.date_max = DATE_MIN_DEFAULT, DATE_MAX_DEFAULT
                 ret = True
         if ProcModule.is_rz():
             if self.dump_comments:

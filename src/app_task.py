@@ -11,6 +11,7 @@ from re import compile as re_compile
 from typing import Tuple, List, Pattern, Optional, Iterable
 
 # internal
+from app_debug import __RUXX_DEBUG__
 from app_defines import (
     TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN, TAGS_STRING_LENGTH_MAX_RS, TAGS_STRING_LENGTH_MAX_RZ, TAGS_STRING_LENGTH_MAX_RP,
     TAGS_STRING_LENGTH_MAX_EN,
@@ -168,6 +169,9 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str]
     if 0 < max_tags_all < len(tags_list) - (len(neg_tags_list_all) if max_is_separate else 0):
         thread_exit(f'Fatal: max tags exceeded for {ProcModule.get_cur_module_name().upper()} '
                     f'({len(tags_list):d} > {max_tags_all:d}), final tags: \'{" ".join(tags_list)}\'')
+
+    if __RUXX_DEBUG__:
+        trace(f'Resulting args: {" ".join(tags_list)}')
 
     return tags_list, parsed
 

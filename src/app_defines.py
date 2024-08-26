@@ -6,6 +6,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+from datetime import datetime
 from enum import IntEnum, auto, unique
 from typing import Dict, Tuple, Optional, List
 
@@ -192,6 +193,8 @@ MODULE_CHOICES = (MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, MODULE_ABBR_RZ
 
 DATE_MIN_DEFAULT = '01-01-1970'
 FMT_DATE = '%d-%m-%Y'
+LAUCH_DATE = datetime.today().date()
+DATE_MAX_DEFAULT = LAUCH_DATE.strftime(FMT_DATE)
 ITEMS_PER_PAGE_RX = 1000  # fixed 42 for html, up to 1000 for dapi
 ITEMS_PER_PAGE_RN = 63  # fixed 63
 ITEMS_PER_PAGE_RS = 42  # fixed 42

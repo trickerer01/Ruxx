@@ -8,7 +8,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from abc import abstractmethod
-from datetime import datetime
 from os import path, curdir, listdir
 from typing import List, Dict, Set, Pattern, MutableSet, Tuple, Union, Optional, Match
 
@@ -16,7 +15,7 @@ from typing import List, Dict, Set, Pattern, MutableSet, Tuple, Union, Optional,
 from bs4 import BeautifulSoup
 
 # internal
-from app_defines import DownloadModes, DownloaderStates, ItemInfo, PageCheck, DATE_MIN_DEFAULT, FMT_DATE
+from app_defines import DownloadModes, DownloaderStates, ItemInfo, PageCheck, DATE_MIN_DEFAULT, DATE_MAX_DEFAULT, LAUCH_DATE
 from app_logger import trace
 from app_network import ThreadedHtmlWorker, thread_exit
 from app_utils import normalize_path, as_date
@@ -47,7 +46,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.prefer_webm = False
         self.low_res = False
         self.date_min = DATE_MIN_DEFAULT
-        self.date_max = datetime.today().strftime(FMT_DATE)
+        self.date_max = DATE_MAX_DEFAULT
         self.dest_base = normalize_path(path.abspath(curdir))
         self.warn_nonempty = False
         self.tags_str_arr: List[str] = list()
@@ -220,7 +219,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         if 1 <= self._num_pages() <= 2:
             trace('Only a page or two! Skipping')
             pnum = self.minpage if minpage else self.maxpage
-        elif minpage is True and as_date(self.date_max) >= datetime.today().date():
+        elif minpage is True and as_date(self.date_max) >= LAUCH_DATE:
             trace('Min page: max date irrelevant! Skipping')
             pnum = self.minpage
         elif minpage is False and as_date(self.date_min) <= as_date(DATE_MIN_DEFAULT):
@@ -412,7 +411,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         # Filter out all trailing items if needed (front page)
         trace('Filtering trailing front items...')
 
-        if as_date(self.date_max) >= datetime.today().date():
+        if as_date(self.date_max) >= LAUCH_DATE:
             trace('first items filter is irrelevant! Skipping')
             return
 
@@ -474,7 +473,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             def backward() -> Tuple[int, int]:
                 return cur_index, -1
 
-            raw_html_item = self._get_item_html(h) if as_date(self.date_max) < datetime.today().date() else None
+            raw_html_item = self._get_item_html(h) if as_date(self.date_max) < LAUCH_DATE else None
             post_date = self._extract_post_date(raw_html_item) if raw_html_item is not None else None
             exceed_date = (as_date(post_date) > as_date(self.date_max)) if post_date is not None else False
 
