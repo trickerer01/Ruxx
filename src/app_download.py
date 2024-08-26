@@ -76,6 +76,7 @@ class Downloader(DownloaderBase):
         # self.current_state = DownloaderStates.IDLE
         # self._file_name_ext_cache.clear()  # do not
         self.raw_html_cache.clear()
+        self.filtered_out_ids_cache.clear()
         if self.session:
             self.session.close()
             self.session = None

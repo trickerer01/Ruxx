@@ -473,6 +473,7 @@ class DownloaderRz(Downloader):
                     parents.remove(item_info.parent_id)
                 del self.item_info_dict_per_task[idstring]
                 del self.items_raw_per_task[idx]
+                self.filtered_out_ids_cache.add(idstring)
                 removed_count += 1
         if removed_count > 0:
             trace('\n'.join(removed_messages))

@@ -76,6 +76,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.item_info_dict_all: Dict[str, ItemInfo] = dict()
         self.neg_and_groups: List[List[Pattern[str]]] = list()
         self.known_parents: Set[str] = set()
+        self.filtered_out_ids_cache: Set[str] = set()
         self.default_sort = True
         self.favorites_search_user = ''
         self.pool_search_str = ''
@@ -517,7 +518,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         for idx in reversed(range(len(self.items_raw_per_task))):
             self.catch_cancel_or_ctrl_c()
             full_itemid = f'{self._get_module_abbr_p()}{self._extract_id(self.items_raw_per_task[idx])}'
-            if full_itemid in self.item_info_dict_all:
+            if full_itemid in self.item_info_dict_all or full_itemid in self.filtered_out_ids_cache:
                 del self.items_raw_per_task[idx]
                 self.total_count -= 1
 
@@ -598,6 +599,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                     parents.remove(item_info.parent_id)
                 del self.item_info_dict_per_task[idstring]
                 del self.items_raw_per_task[idx]
+                self.filtered_out_ids_cache.add(idstring)
                 removed_count += 1
 
         if removed_count > 0:
