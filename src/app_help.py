@@ -85,7 +85,18 @@ HELP_TAGS_MSG_RZ = (
     '\'tag:value\'      \tmeta tags (favorited_by:x, id>y, etc.)\n'
 )
 HELP_TAGS_MSG_RP = HELP_TAGS_MSG_RN
-HELP_TAGS_MSG_EN = HELP_TAGS_MSG_RX
+HELP_TAGS_MSG_EN = (
+    'Here is a quick list of supported tag patterns:\n\n'
+    '\'tag1\'           \tplain text tag\n'
+    '\'ta*\'            \ttag starting with \'ta\'\n'
+    '\'*ag1\'           \ttag ending with \'ag1\'\n'
+    '\'t*1\'            \ttag starting with \'t\' and ending with \'1\'\n'
+    '\'-tag1\'          \texclude tag \'tag1\'\n'
+    '\'tag1 tag2\'      \ttag1 AND tag2\n'
+    '\'(tag1~tag2)\'    \ttag1 OR tag2 (can be chained)\n'
+    '\'-(tag1,tag2)\'   \tNOT BOTH tag1 AND tag2 (can be chained)\n'
+    '\'tag:value\'      \tmeta tags (id:999999, score:>=1337, etc.)\n'
+)
 ABOUT_MSG = f'{APP_NAME} version {APP_VERSION} ({APP_REV_DATE}) {APP_BUILD_TYPE_STR}\n© {APP_YEARS} {APP_AUTHOR}\n<{APP_ADDRESS}>'
 # end help messages
 
