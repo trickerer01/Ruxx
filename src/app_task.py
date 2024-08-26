@@ -161,7 +161,7 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str]
             thread_exit('Fatal: extracting negative tags doesn\'t reduce total tags length enough! Aborting...', -609)
         assert len(neg_tags_list) > 0
         extracted_neg_group_str = f'-(*,{"|".join(reversed(neg_tags_list))})'
-        trace(f'Info: extractd negative group: {extracted_neg_group_str}')
+        trace(f'Info: extracted negative group: {extracted_neg_group_str}')
         plist = form_plist(extracted_neg_group_str)
         assert plist is not None
         parsed.append(plist)
