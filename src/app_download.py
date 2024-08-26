@@ -561,7 +561,7 @@ class Downloader(DownloaderBase):
             cur_task_tags = self.tags_str_arr[self.current_task_num - 1]
             extra_task_num = self.current_task_num - self.orig_tasks_count
             extra_task_str = f'[extra {extra_task_num:d}] ' if extra_task_num > 0 else ''
-            trace(f'\n{extra_task_str}task {self.current_task_num:d} in progress...\n{cur_task_tags}\n')
+            trace(f'\n{extra_task_str}task {self.current_task_num:d} / {self._tasks_count():d} in progress...\n{cur_task_tags}\n')
             try:
                 self._process_tags(cur_task_tags)
             except ThreadInterruptException:
