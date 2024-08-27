@@ -117,7 +117,7 @@ class DownloaderEn(Downloader):
             post_fheight = str(pfile['height'])
             post_fwidth = str(pfile['width'])
             [post_tags_list.extend(li) for li in p['tags'].values()]
-            post_tags = ' '.join(post_tags_list)
+            post_tags = ' '.join(post_tags_list).replace('"', '\'')
             post_source = ' '.join(p['sources'])
             post_score = str(p['score']['total'])
             post_haschildren = str(p['relationships']['has_children']).lower()
