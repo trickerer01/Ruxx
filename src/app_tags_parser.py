@@ -26,17 +26,17 @@ TAG_CHAR = r'[a-zÀ-ʯА-я\d_%+\-/!()*\'.]'
 # language=PythonRegExp
 META_CHAR = r'[a-z\d_\-.]'
 # language=PythonRegExp
-META_COUNT_RX = r':(?:(?:[<>]=?|=)?[a-z\d_]+?|[a-z\d_]+:[a-z\d_]+?)'
+META_COUNT_RX = r':(?:(?:[<>]=?|=)?[a-z\d\-_]+?|[a-z\d_]+:[a-z\d_]+?)'
 # language=PythonRegExp
-META_COUNT_RN = r'(?:[<>]=?|=)[a-z\d_]+?'
+META_COUNT_RN = r'(?:[<>]=?|=)[a-z\d\-_]+?'
 # language=PythonRegExp
-META_COUNT_RS = r':(?:(?:[<>]=?|=)?[a-z\d_]+?|[a-z\d_]+:[a-z\d_]+?)'
+META_COUNT_RS = r':(?:(?:[<>]=?|=)?[a-z\d\-_]+?|[a-z\d_]+:[a-z\d_]+?)'
 # language=PythonRegExp
 META_COUNT_RZ = r':(?:[<>]=?)?[^:]+?'
 # language=PythonRegExp
-META_COUNT_RP = r'(?:[<>]=?|=)[a-z\d_]+?'
+META_COUNT_RP = r'(?:[<>]=?|=)[a-z\d\-_]+?'
 # language=PythonRegExp
-META_COUNT_EN = r':(?:[<>]=?|!)?[a-z\d_.]+?'
+META_COUNT_EN = r':(?:[<>]=?|!)?[a-z\d\-_.]+?'
 # language=PythonRegExp
 META_SORT_RX = r'sort(?::[^:]+?){1,2}'
 # language=PythonRegExp
