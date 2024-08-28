@@ -638,7 +638,7 @@ class ProxyWindow(BaseWindow):
     def ask(self) -> None:
         if self.visible is False:
             self.show()
-            self.select_all()
+        self.select_all()
 
     def on_destroy(self) -> None:
         self.cancel()
