@@ -24,10 +24,10 @@ from app_module import ProcModule
 from app_utils import Protocol, normalize_path
 
 __all__ = (
-    'valid_thread_count', 'valid_date', 'valid_path', 'valid_json', 'valid_kwarg', 'valid_download_mode', 'valid_proxy',
+    'valid_thread_count', 'valid_date', 'valid_folder_path', 'valid_json', 'valid_kwarg', 'valid_download_mode', 'valid_proxy',
     'valid_positive_int', 'valid_window_position', 'Validator', 'DummyValidator', 'ModuleValidator', 'VideosCBValidator',
     'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator', 'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator',
-    'ParchiCBValidator', 'TimeoutValidator', 'RetriesValidator', 'WindowPosValidator', 'InfoSaveModeValidator',
+    'ParchiCBValidator', 'TimeoutValidator', 'RetriesValidator', 'WindowPosValidator', 'InfoSaveModeValidator', 'FolderPathValidator',
 )
 
 
@@ -98,7 +98,7 @@ def valid_thread_count(val: str) -> int:
         raise ArgumentError
 
 
-def valid_path(pathstr: str) -> str:
+def valid_folder_path(pathstr: str) -> str:
     try:
         newpath = normalize_path(path.abspath(path.expanduser(pathstr.strip('\'"'))))
         assert path.isdir(newpath[:(newpath.find(SLASH) + 1)])
@@ -167,10 +167,10 @@ class ModuleValidator(IntValidator):
         return ProcModule.PROC_MODULE_MIN - 1 <= val <= ProcModule.PROC_MODULE_MAX - 1
 
 
-class PathValidator(StrValidator):
+class FolderPathValidator(StrValidator):
     def __call__(self, val: str) -> bool:
         try:
-            _ = valid_path(val)
+            _ = valid_folder_path(val)
             return True
         except Exception:
             return False

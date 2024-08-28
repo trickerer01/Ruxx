@@ -24,7 +24,7 @@ from app_utils import normalize_path, as_date
 from app_validators import (
     Validator, DummyValidator, ModuleValidator, VideosCBValidator, ImagesCBValidator, ParchiCBValidator, ThreadsCBValidator, DateValidator,
     JsonValidator, ProxyTypeValidator, ProxyValidator, BoolStrValidator, TimeoutValidator, RetriesValidator, WindowPosValidator,
-    InfoSaveModeValidator,
+    InfoSaveModeValidator, FolderPathValidator,
 )
 
 __all__ = ('Settings',)
@@ -37,6 +37,7 @@ class Settings(ABC):
     INITIAL_SETTINGS: List[str] = []
     AUTOCONFIG_FILENAMES = ('ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg')
     on_proc_module_change_callback: Optional[Callable[[int], None]] = None
+    on_init_autocompletion_callback: Optional[Callable[[str], None]] = None
 
     @abstractmethod
     def ___this_class_is_static___(self) -> ...:
@@ -84,6 +85,8 @@ class Settings(ABC):
         'warndestnonempty': Setting(Options.WARN_NONEMPTY_DEST, BoolStrValidator(), 'Invalid warndestnonempty bool value \'%s\'!'),
         'verbose': Setting(Options.VERBOSE, BoolStrValidator(), 'Invalid verbose bool value \'%s\'!'),
         'revealmodulenames': Setting(Options.REVEALNAMES, BoolStrValidator(), 'Invalid revealmodulenames bool value \'%s\'!'),
+        'autocompletion': Setting(Options.AUTOCOMPLETION_ENABLE, BoolStrValidator(), 'Invalid autocompletion bool value \'%s\'!'),
+        'taglistspath': Setting(Options.TAGLISTS_PATH, FolderPathValidator(), 'Invalid taglistspath path value \'%s\'!'),
         'windowposition': Setting(Options.WINDOW_POSITION, WindowPosValidator(), 'Invalid windowposition value \'%s\'!'),
     }
 
@@ -102,8 +105,10 @@ class Settings(ABC):
     }
 
     @staticmethod
-    def initialize(*, tk: Tk, on_proc_module_change_callback: Callable[[int], None]):
+    def initialize(*, tk: Tk, on_proc_module_change_callback: Callable[[int], None],
+                   on_init_autocompletion_callback: Callable[[str], None]):
         Settings.on_proc_module_change_callback = on_proc_module_change_callback
+        Settings.on_init_autocompletion_callback = on_init_autocompletion_callback
         for s in Settings.settings.values():
             s.check.tk = tk
 
@@ -192,6 +197,8 @@ class Settings(ABC):
                 elif conf == Options.WINDOW_POSITION:
                     if set_window_pos:
                         rootm().set_position(*(float(dim) for dim in str(val).split('x', 1)))
+                elif conf == Options.TAGLISTS_PATH:
+                    Settings.on_init_autocompletion_callback(val)
                 elif conf in Settings.duplicating_settings:
                     [setrootconf(cnf, val) for cnf in (conf, Settings.duplicating_settings.get(conf))]
                 elif conf in Settings.combobox_setting_arrays:

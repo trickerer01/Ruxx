@@ -58,6 +58,8 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
   - **by type** ‒ sort by file type (checking file extension). You can separate files by `videos`/`images`/`flash (RN, EN)` or by extension itself. Note that both `jpeg` and `jpg` files will be placed into **jpg** folder
   - **by size** ‒ sort by file size (you'll have to provide a threshold, in Megabytes). You can use multiple thesholds, separated by space, in any order: `0.5 10 3.0 5.00`
   - **by score** ‒ sort by post score. Make sure that selected files include score in their names or this won't work. You can use multiple thesholds, separated by space, in any order: `100 250 50 500`
+- **Tools -> Enable autocompletion** ‒ this feature allows [tag autocompletion](#tag-autocompletion) within **Tags** field
+- **Tools -> Autocomplete tag...** \<Ctrl+Space> ‒ trigger autocompletion at current cursor position. Note that the hotkey will only work when focusing the **Tags** field
 - **Help -> Tags** ‒ a quick list of tag types and how to use them (for selected module)
 - **Tags checking** ‒ there is a small button near the **Tags** field. When pressed, Ruxx will try to quickly check if this search yields any results, so this won't work with tags which cannot be passed to website's search engine directly (`AND` group, `OR` groups with meta tags, etc.). As a result the **Tags** field will briefly flash green / red. Additionally, if successful, a window will appear showing the number of results found. Note that this number my be not equal to the files count you'll get downloaded, as date filters, file type filters and related posts filter do not apply during this quick check; when using `favorited_by:X` or `pool:X` special meta tags negative tags also do not apply (except for RN module's `favorited_by` tag where it's supported natively)
 
@@ -180,6 +182,23 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
      - 'pale_soles'
     ```
 - To force a non-wildcarded tag without validation surround it with `%`, ex: `%mumbling%` (1 post, unlisted), or, if negative: `-%mumbling%`
+
+#### Tag autocompletion
+Ruxx provide lists of known tags for all modules (except RS), which can also be used to attempt to complete whatever word typed in **Tags** field
+- Enable this feature by selecting **Tools -> Enable autocompletion**. You will be asked for a folder location - the folder containing tag list files. Once selected the following message will be logged (or similar):
+  ```
+  Found 5 tag lists:
+   - <full path to folder>/rx_tags.txt
+   - <full path to folder>/rn_tags.txt
+   - <full path to folder>/rz_tags.txt
+   - <full path to folder>/rp_tags.txt
+   - <full path to folder>/en_tags.txt
+  ```
+  Notes:
+  - This can also be a parent folder if tag lists folder is default-named (`2tags/`)
+  - If tag lists exist inside current directory, or default-named tag lists folder inside current directory, tag lists will be found automatically
+- Once autocompletion is enabled a new hotkey will become available `<Ctrl+Space>`, the first time you use it Ruxx will attempt to load current module tags into storage - this will require a little extra memory, that memory is also freed if autocompletion feature get disabled again
+- If you prefer autocompletion to be enabled by default it is strongly recommended to save setting to *autoconfig* file
 
 #### User credentials
 Ruxx doesn't provide a method of authentication natively on either of supported sites. To use your identity during search you need to follow 3 simple steps:

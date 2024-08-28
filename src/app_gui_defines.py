@@ -29,6 +29,7 @@ BUT_CTRL_SHIFT_C = '<Control-Shift-C>'
 BUT_CTRL_SHIFT_E = '<Control-Shift-E>'
 BUT_CTRL_BACKSPACE = '<Control-BackSpace>'
 BUT_CTRL_DELETE = '<Control-Delete>'
+BUT_CTRL_SPACE = '<Control-space>'
 BUT_F1 = '<F1>'
 BUT_F2 = '<F2>'
 BUT_F3 = '<F3>'
@@ -125,7 +126,7 @@ class Icons(IntEnum):
         return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
-# existing config vars
+# targetable options: either having stored variables or hotkeys attached
 @unique
 class Options(IntEnum):
     ISLOGOPEN = 0
@@ -174,16 +175,19 @@ class Options(IntEnum):
     ISSAVESETTINGSOPEN = auto()
     ISLOADSETTINGSOPEN = auto()
     WINDOW_POSITION = auto()
+    AUTOCOMPLETION_ENABLE = auto()
+    TAGLISTS_PATH = auto()
     ACTION_DOWNLOAD = auto()  # unbound, internal
     ACTION_CHECKTAGS = auto()  # unbound, internal
     ACTION_CLEARLOG = auto()  # unbound, internal
     ACTION_OPEN_DWN_FOLDER = auto()  # unbound, internal
+    ACTION_AUTOCOMPLETE_TAG = auto()  # unbound, internal
 
     def __str__(self) -> str:
         return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
-# array
+# config vars
 CVARS = {
     Options.ISLOGOPEN: 'isLogOpen',
     Options.REVEALNAMES: 'revealNames',
@@ -228,6 +232,8 @@ CVARS = {
     Options.ISABOUTOPEN: 'isAboutOpen',
     Options.WARN_NONEMPTY_DEST: 'warnNonEmptyFolder',
     Options.VERBOSE: 'verbose',
+    Options.AUTOCOMPLETION_ENABLE: 'autocompletionEnable',
+    Options.TAGLISTS_PATH: 'taglistsPath',
     Options.WINDOW_POSITION: 'windowPosition',
 }
 # end config vars
@@ -256,6 +262,7 @@ class Globals(IntEnum):
         return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
+# widget quick lookup table
 gobjects = {
     Globals.COMBOBOX_VIDEOS: None,
     Globals.COMBOBOX_IMAGES: None,
@@ -319,13 +326,14 @@ class Menus(IntEnum):
         return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
+# submenus with changing states
 class SubMenus(IntEnum):
     SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
     PREFIX, STAGS, SSOURCE, SCOMMENTS, SMODE, EXTEND, WNONEMPTY, VERBOSE = 0, 2, 3, 4, 5, 7, 8, 9
     RX, RN, RS, RZ, RP, EN = 0, 1, 2, 3, 4, 5
     HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6
     DOWNLOAD, CHECKTAGS, CLEARLOG = 0, 1, 3
-    IDLIST, UNTAG, RETAG, SORT = 0, 2, 3, 5
+    IDLIST, UNTAG, RETAG, SORT, AUTOCOMPLETEE, AUTOCOMPLETER = 0, 2, 3, 5, 7, 8
     DFULL, DSKIP, DTOUCH, DLIMSET, DLIMRESET = 0, 1, 2, 3, 4
 
     def __str__(self) -> str:
@@ -349,7 +357,7 @@ menu_items = {
     Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
                                SubMenus.IGNOREPROXY, SubMenus.CACHEMODE),
     Menus.ACTIONS: RuxxMenu(SubMenus.DOWNLOAD, SubMenus.CHECKTAGS),
-    Menus.TOOLS: RuxxMenu(SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT),
+    Menus.TOOLS: RuxxMenu(SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT, SubMenus.AUTOCOMPLETEE, SubMenus.AUTOCOMPLETER),
     Menus.DEBUG: RuxxMenu(SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH, SubMenus.DLIMSET, SubMenus.DLIMRESET),
 }
 
@@ -359,7 +367,7 @@ menu_item_orig_states = {
     Menus.MODULE: (STATE_NORMAL,) * 6,
     Menus.CONNECTION: (STATE_NORMAL,) * 7,
     Menus.ACTIONS: (STATE_NORMAL,) * 4,
-    Menus.TOOLS: (STATE_NORMAL,) * 6,
+    Menus.TOOLS: (STATE_NORMAL,) * 9,
     Menus.DEBUG: (STATE_NORMAL,) * 5,
 }
 # end global static
@@ -377,6 +385,7 @@ hotkeys = {
     Options.ACTION_CHECKTAGS: BUT_CTRL_SHIFT_C,
     Options.ACTION_CLEARLOG: BUT_CTRL_SHIFT_E,
     Options.ACTION_OPEN_DWN_FOLDER: BUT_CTRL_L,
+    Options.ACTION_AUTOCOMPLETE_TAG: BUT_CTRL_SPACE,
 }
 # end hotkeys
 # tooltips

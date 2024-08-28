@@ -10,7 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import ctypes
 import sys
 from datetime import datetime
-from os import path, system, makedirs
+from os import path, system, makedirs, getcwd
 from threading import Thread
 from time import sleep as thread_sleep
 from tkinter import END, messagebox
@@ -35,7 +35,7 @@ from app_gui_base import (
     text_cmdm, get_icon, init_additional_windows, get_global, config_global, is_global_disabled, is_menu_disabled, is_focusing,
     set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list, browse_path, register_menu_command, toggle_console,
     register_submenu_command, register_menu_checkbutton, register_menu_radiobutton, register_submenu_radiobutton, register_menu_separator,
-    get_all_media_files_in_cur_dir, update_lastpath, hotkey_text, config_menu,
+    get_all_media_files_in_cur_dir, update_lastpath, toggle_autocompletion, trigger_autocomplete_tag, hotkey_text, config_menu,
 )
 from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
@@ -51,6 +51,7 @@ from app_gui_defines import (
 from app_module import ProcModule
 from app_logger import Logger, trace
 from app_settings import Settings
+from app_tagger import TagsDB
 from app_tags_parser import reset_last_tags, parse_tags
 from app_utils import normalize_path, confirm_yes_no, ensure_compatibility
 from app_validators import DateValidator
@@ -192,6 +193,34 @@ def open_download_folder() -> None:
         trace(f'Couldn\'t open \'{cur_path}\'.')
 
 
+def report_autocompletion_db_size() -> None:
+    n = '\n - '
+    trace(f'Found {len(TagsDB.DBFiles):d} tag lists:{n}{n.join(TagsDB.DBFiles.values())}')
+
+
+def init_autocompletion(loc='', force=True) -> None:
+    if int(getrootconf(Options.AUTOCOMPLETION_ENABLE)) == 1:
+        if force is False:
+            return
+        elif not loc:
+            loc = getcwd()
+    if TagsDB.try_set_basepath(loc, traverse=False):
+        setrootconf(Options.TAGLISTS_PATH, loc)
+        setrootconf(Options.AUTOCOMPLETION_ENABLE, 1)
+        report_autocompletion_db_size()
+
+
+def toggle_autocompletion_wrapper() -> None:
+    init_state = int(getrootconf(Options.AUTOCOMPLETION_ENABLE))
+    toggle_autocompletion()
+    new_state = int(getrootconf(Options.AUTOCOMPLETION_ENABLE))
+    if new_state == 1:
+        report_autocompletion_db_size()
+    elif init_state != new_state:
+        messagebox.showerror('Nope', 'No tag lists found!')
+    update_widget_enabled_states()
+
+
 def set_proc_module(dwnmodule: int) -> None:
     global dwn
 
@@ -226,6 +255,8 @@ def update_widget_enabled_states() -> None:
                 elif i == Menus.EDIT and j == SubMenus.SSOURCE and ProcModule.is_rs():  # Save sources, disabled for RS
                     newstate = STATE_DISABLED
                 elif i == Menus.EDIT and j == SubMenus.SCOMMENTS and ProcModule.is_rz():
+                    newstate = STATE_DISABLED
+                elif i == Menus.TOOLS and j == SubMenus.AUTOCOMPLETER and TagsDB.empty():
                     newstate = STATE_DISABLED
                 elif i == Menus.TOOLS and j == SubMenus.IDLIST and ProcModule.is_rz():
                     newstate = STATE_DISABLED
@@ -705,6 +736,9 @@ def init_menus() -> None:
     register_submenu_command('by type', sort_files_by_type_do)
     register_submenu_command('by size', sort_files_by_size_do)
     register_submenu_command('by score', sort_files_by_score_do)
+    register_menu_separator()
+    register_menu_checkbutton('Enable autocompletion', CVARS.get(Options.AUTOCOMPLETION_ENABLE), toggle_autocompletion_wrapper)
+    register_menu_command('Autocomplete tag...', trigger_autocomplete_tag, Options.ACTION_AUTOCOMPLETE_TAG)
     # 8) Help
     register_menu('Help')
     register_menu_command('Tags', help_tags)
@@ -769,9 +803,13 @@ def init_gui() -> None:
     rootm().option_add('*Dialog.msg.width', 0)
     rootm().option_add('*Dialog.msg.wrapLength', 0)
     # Init Settings system
-    Settings.initialize(tk=rootm(), on_proc_module_change_callback=set_proc_module)
+    Settings.initialize(tk=rootm(), on_proc_module_change_callback=set_proc_module, on_init_autocompletion_callback=init_autocompletion)
     Settings.try_pick_autoconfig()
     Settings.save_initial_settings()
+    # Init autocompletion from current folder
+    init_autocompletion(force=False)
+    # Final widget states update
+    update_widget_enabled_states()
     # Main window binding, BG fix-ups and main loop
     rootm().finalize()
 

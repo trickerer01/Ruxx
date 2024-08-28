@@ -7,20 +7,106 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from os import path
 from re import compile as re_compile
-from typing import Pattern, List
+from typing import Pattern, List, Dict, Tuple
 
 # internal
 from app_bigstrings import TAG_ALIASES
+from app_defines import MODULE_CHOICES, TAG_AUTOCOMPLETE_LENGTH_MIN, TAG_AUTOCOMPLETE_NUMBER_MAX, UTF8
 from app_gui_defines import UNDERSCORE
 from app_re import re_replace_symbols, re_tags_exclude_major1, re_tags_exclude_major2, re_numbered_or_counted_tag
-from app_utils import trim_undersores
+from app_utils import trim_undersores, normalize_path
 
-__all__ = ('append_filtered_tags', 'is_wtag', 'normalize_wtag', 'no_validation_tag')
+__all__ = ('TagsDB', 'append_filtered_tags', 'is_wtag', 'normalize_wtag', 'no_validation_tag')
 
 re_meta_group = re_compile(r'^([^(]+)\(([^)]+)\).*?$')
 re_not_a_letter = re_compile(r'[^a-z]+')
 re_wtag = re_compile(r'^(?:[^?*]*[?*]).*?$')
+
+
+class TagsDB:
+    DB: Dict[str, Dict[str, int]] = dict()
+    DBFiles: Dict[str, str] = dict()
+
+    @staticmethod
+    def try_set_basepath(basepath: str, *, traverse=True) -> int:
+        def collect_talist_names(fpath: str, paths_dict: Dict[str, str]) -> None:
+            for module in MODULE_CHOICES:
+                taglist_name = f'{module}_tags.txt'
+                taglist_path = f'{fpath}{taglist_name}'
+                if path.isfile(taglist_path):
+                    paths_dict[module] = taglist_path
+
+        folder = normalize_path(basepath, False)
+        TagsDB.clear()
+        while not TagsDB.DBFiles:
+            folder_up, tail = tuple(path.split(folder))
+            for folder_path in (f'{folder}/', f'{folder}/2tags/'):
+                if path.isdir(folder_path):
+                    tlpaths: Dict[str, str] = dict()
+                    collect_talist_names(folder_path, tlpaths)
+                    if tlpaths:
+                        TagsDB.DBFiles.update(tlpaths)
+            if not tail or not traverse:
+                break
+            folder = folder_up
+        return len(TagsDB.DBFiles)
+
+    @staticmethod
+    def clear() -> None:
+        TagsDB.DB.clear()
+        TagsDB.DBFiles.clear()
+
+    @staticmethod
+    def empty() -> bool:
+        return not TagsDB.DBFiles
+
+    @staticmethod
+    def _load(module: str) -> None:
+        if module in TagsDB.DB:
+            return
+        TagsDB.DB[module] = dict()
+        try:
+            with open(TagsDB.DBFiles.get(module, ''), 'rt', encoding=UTF8) as dbfile:
+                lines = dbfile.readlines()
+                for idx, line in enumerate(lines):
+                    try:
+                        kv_k, kv_v = tuple(line.strip(' ,\'\n\ufeff').split('\': \'', 1))
+                        ivalue = int(kv_v[:kv_v.find(' ')])
+                        TagsDB.DB[module][kv_k] = ivalue
+                    except Exception:
+                        continue
+        except FileNotFoundError:
+            return
+
+    @staticmethod
+    def _get_tag_matches(module: str, value: str) -> List[Tuple[str, int]]:
+        arr = list(TagsDB.DB[module].keys())
+        lb, ub = 0, len(arr)
+        while lb < ub:
+            mid = (lb + ub) // 2
+            if arr[mid] < value:
+                lb = mid + 1
+            else:
+                ub = mid
+        ub = len(arr)
+        gmatches: List[str] = list()
+        while lb < ub:
+            if len(gmatches) >= TAG_AUTOCOMPLETE_NUMBER_MAX * 5 or not arr[lb].startswith(value):
+                break
+            gmatches.append(arr[lb])
+            lb += 1
+        glist = [(g, TagsDB.DB[module][g]) for g in sorted(gmatches, reverse=True, key=lambda gmatch: TagsDB.DB[module][gmatch])]
+        return glist[:TAG_AUTOCOMPLETE_NUMBER_MAX]
+
+    @staticmethod
+    def autocomplete_tag(module: str, tag: str) -> List[Tuple[str, int]]:
+        matches = list()
+        if len(tag) >= TAG_AUTOCOMPLETE_LENGTH_MIN:
+            TagsDB._load(module)
+            matches.extend((mtag[len(tag):], count) for mtag, count in TagsDB._get_tag_matches(module, tag))
+        return matches
 
 
 def no_validation_tag(tag: str) -> str:

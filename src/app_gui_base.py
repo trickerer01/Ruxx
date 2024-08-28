@@ -37,7 +37,7 @@ from app_gui_defines import (
     BUT_CTRL_DELETE, OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
     SLASH, BEGIN, OPTION_VALUES_PROXYTYPE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
     BUT_CTRL_BACKSPACE, STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, BUTTONS_TO_UNFOCUS,
-    PADDING_DEFAULT,
+    PADDING_DEFAULT, BUT_CTRL_SPACE,
     Icons, Options, Globals, Menus, SubMenus, menu_items, hotkeys, gobjects,
 )
 from app_module import ProcModule
@@ -45,6 +45,7 @@ from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, HELP_
 from app_logger import Logger
 from app_re import re_space_mult
 from app_revision import APP_VERSION, APP_NAME
+from app_tagger import TagsDB
 from app_tooltips import WidgetToolTip
 from app_utils import normalize_path
 from app_validators import valid_proxy, valid_positive_int, valid_window_position
@@ -57,6 +58,7 @@ __all__ = (
     'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list', 'ask_filename', 'browse_path',
     'register_menu_command', 'register_submenu_command', 'register_menu_checkbutton', 'register_menu_radiobutton',
     'register_submenu_radiobutton', 'register_menu_separator', 'get_all_media_files_in_cur_dir', 'update_lastpath', 'config_menu',
+    'toggle_autocompletion', 'trigger_autocomplete_tag',
 )
 
 
@@ -200,6 +202,7 @@ class BaseText(Text):
         self.bind(BUT_RETURN, lambda e: parent_event(BUT_RETURN, e))
         self.bind(BUT_CTRL_BACKSPACE, self.on_event_ctrl_backspace)
         self.bind(BUT_CTRL_DELETE, self.on_event_ctrl_delete)
+        self.bind(BUT_CTRL_SPACE, self.on_event_ctrl_space)
 
     def clear(self) -> None:
         self.delete(BEGIN, END)
@@ -233,8 +236,10 @@ class BaseText(Text):
             self.mark_set(INSERT, end_index)
 
     def _handle_paste(self, *_) -> None:
+        self._handle_paste_text(self.clipboard_get())
+
+    def _handle_paste_text(self, pasted_text: str, force=False) -> None:
         cur_text = self.gettext()
-        pasted_text = self.clipboard_get()
         new_text = re_space_mult.sub(r' ', pasted_text.replace('\n', ' '))
         idx_adjust = len(new_text)
         sel = self.tag_ranges(SEL)
@@ -244,6 +249,8 @@ class BaseText(Text):
         else:
             idx = idx2 = int(self.index(INSERT).split('.')[1])
         self._text_override = f'{cur_text[:idx]}{new_text}{cur_text[idx2:]}'
+        if force:
+            self._on_widget_change()
         self.after(1, lambda *_: self.mark_set(INSERT, f'1.{idx + idx_adjust:d}'))
 
     def _on_var_change(self, *_) -> None:
@@ -296,6 +303,33 @@ class BaseText(Text):
                     next_idx -= 1
                 break
         self.delete(INSERT, f'1.{next_idx:d}')
+
+    def on_event_ctrl_space(self, *_) -> None:
+        if int(getrootconf(Options.AUTOCOMPLETION_ENABLE)) == 0:
+            return
+        if self.tag_ranges(SEL):
+            return
+        my_str = self.gettext()
+        cur_idx = int(self.index(INSERT).split('.')[1])
+        end_idx = int(self.index(f'{END}-1c').split('.')[1]) - 1
+        prev_idx = min(cur_idx, end_idx)
+        while prev_idx > 0:
+            if my_str[prev_idx] == ' ':
+                prev_idx = min(prev_idx + 1, end_idx, cur_idx)
+                break
+            prev_idx -= 1
+        atext = my_str[prev_idx:cur_idx]
+        autocompletions = TagsDB.autocomplete_tag(ProcModule.get_cur_module_name(), atext)
+        if not autocompletions:
+            return
+        if len(autocompletions) == 1:
+            if autocompletions[0][0]:
+                self._handle_paste_text(autocompletions[0][0], True)
+            return
+        om = BaseMenu(self)
+        for mtag, count in autocompletions:
+            om.add_command(label=f'{atext}{mtag} ({count:d})', command=lambda t=mtag: self._handle_paste_text(t, True))
+        om.tk_popup(self.winfo_rootx() + self.bbox(INSERT)[0], self.winfo_rooty() + self.bbox(INSERT)[1] + 18)
 
 
 class BaseWindow:
@@ -1104,6 +1138,7 @@ def create_base_window_widgets() -> None:
 
     # validators
     string_vars[CVARS.get(Options.LASTPATH)] = StringVar(rootm(), '', CVARS.get(Options.LASTPATH))
+    string_vars[CVARS.get(Options.TAGLISTS_PATH)] = StringVar(rootm(), '', CVARS.get(Options.TAGLISTS_PATH))
 
     # Options #
     #  Videos
@@ -1273,8 +1308,8 @@ def toggle_console() -> None:
 
 def hotkey_text(option: Options) -> str:
     return (
-        hotkeys.get(option).upper()
-               .replace('CONTROL', 'Ctrl').replace('SHIFT', 'Shift').replace('-', '+').replace('<', '').replace('>', '')
+        hotkeys[option].strip('<>').replace('-', '+').upper()
+                       .replace('CONTROL', 'Ctrl').replace('SHIFT', 'Shift').replace('ALT', 'Alt').replace('SPACE', 'Space')
     )
 
 
@@ -1407,6 +1442,29 @@ def get_all_media_files_in_cur_dir() -> Tuple[str]:
 
 def update_lastpath(filefullpath: str) -> None:
     setrootconf(Options.LASTPATH, filefullpath[:normalize_path(filefullpath, False).rfind(SLASH) + 1])
+
+
+def toggle_autocompletion() -> None:
+    # current state is AFTER being toggled
+    cur_state = int(getrootconf(Options.AUTOCOMPLETION_ENABLE))
+    if cur_state == 1:
+        last_path = str(getrootconf(Options.TAGLISTS_PATH)) or get_curdir()
+        if TagsDB.try_set_basepath(last_path):
+            setrootconf(Options.TAGLISTS_PATH, last_path)
+        else:
+            loc = str(filedialog.askdirectory(initialdir=last_path, mustexist=1,
+                                              title='Select a directory where tag lists are located (rx_tags.txt, rn_tags.txt, etc.)'))
+            if len(loc) > 0 and (not last_path or loc != last_path) and TagsDB.try_set_basepath(loc):
+                setrootconf(Options.TAGLISTS_PATH, loc)
+            else:
+                setrootconf(Options.AUTOCOMPLETION_ENABLE, 0)
+    else:
+        TagsDB.clear()
+        setrootconf(Options.TAGLISTS_PATH, '')
+
+
+def trigger_autocomplete_tag() -> None:
+    get_global(Globals.FIELD_TAGS).on_event_ctrl_space()
 
 
 # globals
