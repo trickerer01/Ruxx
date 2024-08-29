@@ -1188,7 +1188,7 @@ def create_base_window_widgets() -> None:
     op_datemin_t = BaseText(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.DATEMIN)))
     register_global(Globals.FIELD_DATEMIN, op_datemin_t)
     op_datemin_t.insert(END, DATE_MIN_DEFAULT)
-    op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if IS_WIN else 1))
+    op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (1.5 if IS_WIN else 1))
     attach_tooltip(op_datemin_t, TOOLTIP_DATE)
     #  Date max
     opframe_datemax = ttk.LabelFrame(root_framem(), text='Date max')
@@ -1197,7 +1197,7 @@ def create_base_window_widgets() -> None:
     op_datemax_t = BaseText(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.DATEMAX)))
     register_global(Globals.FIELD_DATEMAX, op_datemax_t)
     op_datemax_t.insert(END, DATE_MAX_DEFAULT)
-    op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (3 if IS_WIN else 1))
+    op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (1.5 if IS_WIN else 1))
     attach_tooltip(op_datemax_t, TOOLTIP_DATE)
 
     # Tags #
