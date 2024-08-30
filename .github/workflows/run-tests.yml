@@ -4,11 +4,15 @@ on:
   push:
     branches:
       - 'main'
+    paths:
+      - 'src/*.py'
   pull_request:
     types:
       - opened
       - reopened
       - synchronize
+    paths:
+      - 'src/*.py'
 
 permissions:
   contents: read
