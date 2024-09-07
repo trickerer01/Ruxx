@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 import sys
-from os import path, curdir, remove as remove_file
+from os import path, curdir, remove as remove_file, stat
 from tempfile import gettempdir
 from unittest import TestCase, main as run_tests
 
@@ -496,6 +496,7 @@ class RealDownloadTests(TestCase):
         with make_downloader(ProcModule.PROC_RZ) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
+            self.assertEqual(195230, stat(tempfile_path).st_size)
             remove_file(tempfile_path)
         print(f'{self._testMethodName} passed')
 
