@@ -177,9 +177,9 @@ class DownloaderRz(Downloader):
         else:
             address, fmt = hi_res_addr()
 
-        startsym = addr[0]
-        addr = addr if startsym == 'h' else f'{self._get_sitename()}{addr[1 if startsym == "/" else 0:]}'
-        return addr, fmt
+        startsym = address[0]
+        address = address if startsym == 'h' else f'{self._get_sitename()}{address[1 if startsym == "/" else 0:]}'
+        return address, fmt
 
     def _get_video_address(self, h: str) -> Tuple[str, str]:
         item_json = self.parse_json(h)
