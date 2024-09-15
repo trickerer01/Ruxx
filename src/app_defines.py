@@ -227,6 +227,8 @@ KNOWN_EXTENSIONS_IMG = ('swf', 'png', 'jpg', 'jpeg', 'gif')
 KNOWN_EXTENSIONS = KNOWN_EXTENSIONS_VID + KNOWN_EXTENSIONS_IMG
 KNOWN_EXTENSIONS_STR = ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)
 
+INT_BOUNDS_DEFAULT = (0, 0)
+
 
 class ThreadInterruptException(Exception):
     pass

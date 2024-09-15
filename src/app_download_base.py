@@ -94,7 +94,11 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def _has_native_id_filter(self) -> bool:
+    def _supports_native_id_filter(self) -> bool:
+        ...
+
+    @abstractmethod
+    def _get_id_bounds(self) -> Tuple[int, int]:
         ...
 
     @abstractmethod
@@ -215,6 +219,109 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     def _num_pages(self) -> int:
         return (self.maxpage - self.minpage) + 1
+
+    def _get_page_boundary_by_id(self, minpage: bool, boundary: int) -> int:
+        if 1 <= self._num_pages() <= 2 or boundary == 0:
+            pnum = self.minpage if minpage else self.maxpage
+        else:
+            p_chks = list()
+            for i in range(self.maxpage + 3):
+                p_chks.append(PageCheck())
+
+            lim_backw = self.minpage - 1
+            lim_forw = self.maxpage + 1
+
+            dofinal = False
+            cur_step = 0
+            pdivider = 1
+            step_dir = 1  # forward
+            pnum = self.minpage
+
+            while True:
+                self.catch_cancel_or_ctrl_c()
+
+                if dofinal is True:
+                    trace(f'{"min" if minpage else "max"} page reached: {pnum + 1:d}')
+                    break
+
+                cur_step += 1
+                trace(f'step {cur_step:d}')
+
+                pdivider = min(pdivider * 2, self._num_pages())
+                pnum += (self._num_pages() // pdivider) * step_dir
+                trace(f'page {pnum + 1:d} (div {pdivider:d}, step {step_dir:d})')
+
+                half_div = pdivider > self._num_pages() // 2
+
+                if pnum < self.minpage:
+                    trace('Page < minpage, returning minpage!')
+                    pnum = self.minpage
+                    break
+                if pnum > self.maxpage:
+                    trace('Page > maxpage, returning maxpage!')
+                    pnum = self.maxpage
+                    break
+
+                items_per_page = self._get_items_per_page()
+
+                prev = pnum * items_per_page
+                curmax = min((pnum + 1) * items_per_page, self.total_count)
+                i_count = curmax - prev
+
+                raw_html_page = self.fetch_html(self._form_page_num_address(pnum), do_cache=True)
+                if raw_html_page is None:
+                    thread_exit(f'ERROR: ProcPage: unable to retreive html for page {pnum + 1:d}!', -14)
+
+                items_raw = self._get_all_post_tags(raw_html_page)
+                if len(items_raw) == 0:
+                    thread_exit(f'ERROR: ProcPage: cannot find picture or video on page {pnum + 1:d}', -15)
+
+                # check first item if moving forward and last item if backwards
+                h = self._local_addr_from_string(str(items_raw[0 if step_dir == 1 else i_count - 1]))
+                item_id = self._extract_id(h)
+                item_id_int = int(item_id)
+
+                def forward() -> Tuple[int, int]:
+                    return pnum, 1
+
+                def backward() -> Tuple[int, int]:
+                    return pnum, -1
+
+                cur_step_dir = step_dir
+
+                if minpage is True:
+                    if item_id_int > boundary:
+                        if half_div and (p_chks[lim_forw + 1].first or p_chks[pnum + 1].last):
+                            dofinal = True
+                        else:
+                            trace(f'Info: [{self._get_module_abbr().upper()}] TagProc: > maxid at {item_id} - stepping forward...')
+                            lim_backw, step_dir = forward()
+                    else:
+                        if half_div and (p_chks[lim_backw + 1].last or p_chks[pnum + 1].first):
+                            dofinal = True
+                        else:
+                            trace(f'Info: [{self._get_module_abbr().upper()}] TagProc: <= maxid at {item_id} - stepping backwards...')
+                            lim_forw, step_dir = backward()
+                else:
+                    if item_id_int < boundary:
+                        if half_div and (p_chks[lim_backw + 1].last or p_chks[pnum + 1].first):
+                            dofinal = True
+                        else:
+                            trace(f'Info: [{self._get_module_abbr().upper()}] TagProc: < minid at {item_id} - stepping backwards...')
+                            lim_forw, step_dir = backward()
+                    else:
+                        if half_div and (p_chks[lim_forw + 1].first or p_chks[pnum + 1].last):
+                            dofinal = True
+                        else:
+                            trace(f'Info: [{self._get_module_abbr().upper()}] TagProc: >= minid at {item_id} - stepping forward...')
+                            lim_backw, step_dir = forward()
+
+                if cur_step_dir == 1:
+                    p_chks[pnum + 1].first = True
+                else:
+                    p_chks[pnum + 1].last = True
+
+        return pnum
 
     def _get_page_boundary_by_date(self, minpage: bool) -> int:
         if 1 <= self._num_pages() <= 2:
@@ -590,7 +697,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             m_dict.clear()
             if any(all(any(match_neg_group(patt, tag, plist) for tag in tags_list) for patt in plist) for plist in self.neg_and_groups):
                 # Note: above algorithm is minimal match, only first matching combination will be reported
-                if self.verbose and self._has_native_id_filter():
+                if self.verbose and self._supports_native_id_filter():
                     removed_messages.append('\n'.join(f'{abbrp}{item_id} contains excluded tags combination \'{mk}\': '
                                             f'{",".join(m_dict[mk])}. Skipped!' for mk in m_dict if len(m_dict[mk]) > 1))
                 if item_id in parents:

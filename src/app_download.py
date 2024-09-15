@@ -25,7 +25,7 @@ from iteration_utilities import unique_everseen
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
     ThreadInterruptException, DownloaderStates, DownloadModes, ItemInfo, Comment, Mem,
-    DATE_MIN_DEFAULT, CONNECT_TIMEOUT_BASE, UTF8, SOURCE_DEFAULT, PLATFORM_WINDOWS, DATE_MAX_DEFAULT,
+    DATE_MIN_DEFAULT, CONNECT_TIMEOUT_BASE, UTF8, SOURCE_DEFAULT, PLATFORM_WINDOWS, DATE_MAX_DEFAULT, INT_BOUNDS_DEFAULT,
 )
 from app_download_base import DownloaderBase
 from app_gui_defines import UNDERSCORE, NEWLINE, NEWLINE_X2
@@ -267,7 +267,7 @@ class Downloader(DownloaderBase):
             trace(f'Total {self.total_count:d} item(s) found across {self._num_pages():d} page(s)')
 
             if 0 < self._get_max_search_depth() <= self.total_count:
-                if self._has_native_id_filter():
+                if self._supports_native_id_filter():
                     trace('\nFATAL: too many results, won\'t be able to fetch html for all the pages!\nTry adding an ID filter.')
                     return
                 elif self._get_max_search_depth() < self.total_count:
@@ -279,6 +279,21 @@ class Downloader(DownloaderBase):
                     thread_sleep(4.0)
 
             self.total_pages = self._num_pages()
+
+            if self._supports_native_id_filter() is False and self._get_id_bounds() != INT_BOUNDS_DEFAULT:
+                pageargs_ex1 = ((DownloaderStates.SCANNING_PAGES1, True), (DownloaderStates.SCANNING_PAGES1, False))
+
+                def page_filter_ex1(st: DownloaderStates, di: bool) -> int:
+                    self.current_state = st
+                    trace(f'[{self._get_module_abbr().upper()}] Looking for {"min" if di else "max"} page by id...')
+                    return self._get_page_boundary_by_id(di, self._get_id_bounds()[1 - int(di)])
+
+                for fstate, direction in pageargs_ex1:
+                    if direction is True:
+                        self.minpage = page_filter_ex1(fstate, direction)
+                    else:
+                        self.maxpage = page_filter_ex1(fstate, direction)
+                    self.total_pages = self._num_pages()
 
             pageargs = ((DownloaderStates.SCANNING_PAGES1, True), (DownloaderStates.SCANNING_PAGES2, False))
 

@@ -61,8 +61,11 @@ class DownloaderRx(Downloader):
     def _is_fav_search_single_step(self) -> bool:
         return False
 
-    def _has_native_id_filter(self) -> bool:
+    def _supports_native_id_filter(self) -> bool:
         return True
+
+    def _get_id_bounds(self) -> Tuple[int, int]:
+        raise NotImplementedError
 
     def _get_sitename(self) -> str:
         return SITENAME.replace('api.', '') if self.favorites_search_user or self.pool_search_str else SITENAME

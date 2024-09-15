@@ -21,7 +21,7 @@ from bs4 import BeautifulSoup
 from app_bigstrings import TAG_NUMS_DECODED_RZ
 from app_defines import (
     DownloadModes, ItemInfo, SITENAME_B_RZ, FILE_NAME_PREFIX_RZ, MODULE_ABBR_RZ, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RZ,
-    TAGS_CONCAT_CHAR_RZ, ID_VALUE_SEPARATOR_CHAR_RZ, FMT_DATE, SOURCE_DEFAULT,
+    TAGS_CONCAT_CHAR_RZ, ID_VALUE_SEPARATOR_CHAR_RZ, FMT_DATE, SOURCE_DEFAULT, INT_BOUNDS_DEFAULT,
 )
 from app_download import Downloader
 from app_logger import trace
@@ -41,14 +41,6 @@ MAX_SEARCH_DEPTH = 12000  # 200 pages
 
 item_info_fields = {'likes': 'score', 'comments': 'comments_'}
 
-id_compares: Dict[str, Callable[[int, int], bool]] = {
-    '=': lambda x, y: x == y,
-    '>': lambda x, y: x > y,
-    '<': lambda x, y: x < y,
-    '>=': lambda x, y: x >= y,
-    '<=': lambda x, y: x <= y,
-}
-
 
 class DownloaderRz(Downloader):
     """
@@ -56,8 +48,8 @@ class DownloaderRz(Downloader):
     """
     def __init__(self) -> None:
         super().__init__()
-        self.id_tags: Dict[str, List[int]] = {k: list() for k in ('=', '>', '<', '>=', '<=')}
-        self.score_tags: Dict[str, List[int]] = {k: list() for k in ('=', '>', '<', '>=', '<=')}
+        self.id_bounds = INT_BOUNDS_DEFAULT
+        self.score_bounds = INT_BOUNDS_DEFAULT
         self.positive_tags: List[str] = list()
         self.negative_tags: List[str] = list()
         self.expand_cache: Dict[str, List[str]] = dict()
@@ -77,8 +69,11 @@ class DownloaderRz(Downloader):
     def _is_fav_search_single_step(self) -> bool:
         return True
 
-    def _has_native_id_filter(self) -> bool:
+    def _supports_native_id_filter(self) -> bool:
         return False
+
+    def _get_id_bounds(self) -> Tuple[int, int]:
+        return self.id_bounds
 
     def _get_sitename(self) -> str:
         return SITENAME
@@ -240,10 +235,13 @@ class DownloaderRz(Downloader):
     def _consume_custom_module_tags(self, tags: str) -> str:
         self.negative_tags.clear()
         self.positive_tags.clear()
-        [[d[k].clear() for k in d] for d in (self.id_tags, self.score_tags)]
+        self.id_bounds = INT_BOUNDS_DEFAULT
+        self.score_bounds = INT_BOUNDS_DEFAULT
         if not tags:
             return tags
         taglist = tags.split(TAGS_CONCAT_CHAR_RZ)
+        id_lb = sc_lb = INT_BOUNDS_DEFAULT[0]
+        id_ub = sc_ub = INT_BOUNDS_DEFAULT[1]
         idx: int
         for idx in reversed(range(len(taglist))):
             ctag = taglist[idx]
@@ -255,17 +253,37 @@ class DownloaderRz(Downloader):
             else:
                 id_match = re_id_tag_rz.fullmatch(ctag)
                 score_match = re_score_tag_rz.fullmatch(ctag)
-                if score_match:
-                    sign = score_match.group(1) or '='  # could be 'id:123', '=' is assumed
-                    score_ = int(score_match.group(2))
-                    self.score_tags[sign].append(score_)
-                elif id_match:
+                if id_match:
                     sign = id_match.group(1) or '='  # could be 'id:123', '=' is assumed
                     id_ = int(id_match.group(2))
-                    self.id_tags[sign].append(id_)
+                    if sign == '=':
+                        id_lb = id_ub = id_
+                    elif sign == '>':
+                        id_lb = id_ + 1
+                    elif sign == '>=':
+                        id_lb = id_
+                    elif sign == '<':
+                        id_ub = id_ - 1
+                    elif sign == '<=':
+                        id_ub = id_
+                elif score_match:
+                    sign = score_match.group(1) or '='  # could be 'score:123', '=' is assumed
+                    score_ = int(score_match.group(2))
+                    if sign == '=':
+                        sc_lb = sc_ub = score_
+                    elif sign == '>':
+                        sc_lb = score_ + 1
+                    elif sign == '>=':
+                        sc_lb = score_
+                    elif sign == '<':
+                        sc_ub = score_ - 1
+                    elif sign == '<=':
+                        sc_ub = score_
                 else:
                     self.positive_tags.append(ctag)
                 del taglist[idx]
+        self.score_bounds = (sc_lb, sc_ub)
+        self.id_bounds = (id_lb, id_ub)
         if not self.positive_tags and not self.favorites_search_user:
             thread_exit('Fatal: [RZ] no positive non-meta tags found!', -703)
         self._validate_tags(self.positive_tags)
@@ -439,9 +457,9 @@ class DownloaderRz(Downloader):
             n = '\n - '
             thread_exit(f'Fatal: Invalid RZ tags found:\n - {n.join(sorted(inavlid_tags))}', -702)
 
-    def _run_compare_filters(self, parents: MutableSet[str], filter_type: str, compare_tags: Dict[str, List[int]],
+    def _run_compare_filters(self, parents: MutableSet[str], filter_type: str, compare_bounds: Tuple[int, int],
                              extact_func: Callable[[str], str]) -> None:
-        if all(not compare_tags[k] for k in compare_tags):
+        if compare_bounds == INT_BOUNDS_DEFAULT:
             return
         abbrp = self._get_module_abbr_p()
         total_count_old = len(self.items_raw_per_task)
@@ -456,17 +474,11 @@ class DownloaderRz(Downloader):
             comp_v_i = int(comp_v_s)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'
             item_info = self.item_info_dict_per_task.get(idstring)
-            unmatch = False
-            for k in compare_tags:
-                if unmatch:
-                    break
-                for csc in compare_tags[k]:
-                    if not id_compares[k](comp_v_i, csc):
-                        if self.verbose and self._has_native_id_filter():
-                            removed_messages.append(f'{abbrp}{item_id} {filter_type} unmatch by {comp_v_i:d} {k} {csc:d}!')
-                        unmatch = True
-                        break
+            lb, ub = compare_bounds
+            unmatch = not (lb <= comp_v_i <= ub)
             if unmatch:
+                if self.verbose and self._supports_native_id_filter():
+                    removed_messages.append(f'{abbrp}{item_id} {filter_type} unmatch by not ({lb:d} <= {comp_v_i:d} <= {ub:d})!')
                 if item_id in parents:
                     parents.remove(item_id)
                 if item_info.parent_id in parents:
@@ -480,10 +492,10 @@ class DownloaderRz(Downloader):
             trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
 
     def _id_filters(self, parents: MutableSet[str]) -> None:
-        self._run_compare_filters(parents, 'id', self.id_tags, self._extract_id)
+        self._run_compare_filters(parents, 'id', self.id_bounds, self._extract_id)
 
     def _score_filters(self, parents: MutableSet[str]) -> None:
-        self._run_compare_filters(parents, 'score', self.score_tags, self._extract_score)
+        self._run_compare_filters(parents, 'score', self.score_bounds, self._extract_score)
 
     def _execute_module_filters(self, parents: MutableSet[str]) -> None:
         self._id_filters(parents)
