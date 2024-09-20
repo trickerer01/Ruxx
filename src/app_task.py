@@ -127,13 +127,13 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str]
         ProcModule.PROC_RP: 0,
         ProcModule.PROC_EN: 1,
     }
-    max_tags_all, max_is_separate = max_neg_tagss[ProcModule.get()]
-    max_wtags_all = max_wildcardss[ProcModule.get()]
+    max_tags_all, max_is_separate = max_neg_tagss[ProcModule.value()]
+    max_wtags_all = max_wildcardss[ProcModule.value()]
     neg_tags_list_all = list(filter(lambda x: x.startswith('-'), tags_list))
     w_tags_list_all = list(filter(lambda x: '*' in x, tags_list))
     max_ntags = max(0, max_tags_all - (0 if max_is_separate else (len(tags_list) - len(neg_tags_list_all))) if max_tags_all else 10**9)
     max_wtags = max_wtags_all or 10**9
-    max_string_len = max_string_lengths[ProcModule.get()]
+    max_string_len = max_string_lengths[ProcModule.value()]
 
     def tags_fixed() -> None:
         return total_len <= max_string_len and len(neg_tags_list_all) <= max_ntags and len(w_tags_list_all) <= max_wtags
@@ -167,7 +167,7 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str]
         assert plist is not None
         parsed.append(plist)
     if 0 < max_tags_all < len(tags_list) - (len(neg_tags_list_all) if max_is_separate else 0):
-        thread_exit(f'Fatal: max tags exceeded for {ProcModule.get_cur_module_name().upper()} '
+        thread_exit(f'Fatal: max tags exceeded for {ProcModule.name().upper()} '
                     f'({len(tags_list):d} > {max_tags_all:d}), final tags: \'{" ".join(tags_list)}\'')
 
     if __RUXX_DEBUG__ and len(neg_tags_list) > 0:

@@ -53,15 +53,15 @@ prefix_optional_patterns = {
 
 
 def get_idval_eq_sep() -> str:
-    return idval_eq_separators.get(ProcModule.get())
+    return idval_eq_separators.get(ProcModule.value())
 
 
 def get_r_idstring() -> Pattern:
-    return idstring_patterns.get(ProcModule.get())
+    return idstring_patterns.get(ProcModule.value())
 
 
 def get_r_prefix_optional() -> Pattern:
-    return prefix_optional_patterns.get(ProcModule.get())
+    return prefix_optional_patterns.get(ProcModule.value())
 
 
 def id_list_from_string(id_str: str) -> List[str]:

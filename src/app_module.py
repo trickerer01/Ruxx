@@ -45,12 +45,12 @@ class ProcModule:
         ProcModule.CUR_PROC_MODULE = dwnmodule
 
     @staticmethod
-    def get() -> int:
+    def value() -> int:
         return ProcModule.CUR_PROC_MODULE
 
     @staticmethod
-    def get_cur_module_name() -> str:
-        return ProcModule.PROC_MODULES_NAMES_BY_ID.get(ProcModule.get(), 'unk')
+    def name() -> str:
+        return ProcModule.PROC_MODULES_NAMES_BY_ID.get(ProcModule.value(), 'unk')
 
     @staticmethod
     def set_cur_module_by_name(name: str) -> None:
@@ -58,27 +58,27 @@ class ProcModule:
 
     @staticmethod
     def is_rx() -> bool:
-        return ProcModule.get() is ProcModule.PROC_RX
+        return ProcModule.value() is ProcModule.PROC_RX
 
     @staticmethod
     def is_rn() -> bool:
-        return ProcModule.get() is ProcModule.PROC_RN
+        return ProcModule.value() is ProcModule.PROC_RN
 
     @staticmethod
     def is_rs() -> bool:
-        return ProcModule.get() is ProcModule.PROC_RS
+        return ProcModule.value() is ProcModule.PROC_RS
 
     @staticmethod
     def is_rz() -> bool:
-        return ProcModule.get() is ProcModule.PROC_RZ
+        return ProcModule.value() is ProcModule.PROC_RZ
 
     @staticmethod
     def is_rp() -> bool:
-        return ProcModule.get() is ProcModule.PROC_RP
+        return ProcModule.value() is ProcModule.PROC_RP
 
     @staticmethod
     def is_en() -> bool:
-        return ProcModule.get() is ProcModule.PROC_EN
+        return ProcModule.value() is ProcModule.PROC_EN
 
 
 PROC_MODULES_BY_ABBR = {

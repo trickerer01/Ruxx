@@ -319,7 +319,7 @@ class BaseText(Text):
                 break
             prev_idx -= 1
         atext = my_str[prev_idx:cur_idx]
-        autocompletions = TagsDB.autocomplete_tag(ProcModule.get_cur_module_name(), atext)
+        autocompletions = TagsDB.autocomplete_tag(ProcModule.name(), atext)
         if not autocompletions:
             return
         if len(autocompletions) == 1:
@@ -605,15 +605,15 @@ class ProxyWindow(BaseWindow):
         proxyhint.grid(row=0, column=0, columnspan=15)
 
         ptype_index = len(OPTION_VALUES_PROXYTYPE) - 1 if __RUXX_DEBUG__ else 0
-        self.ptype_var = StringVar(rootm(), OPTION_VALUES_PROXYTYPE[ptype_index], CVARS.get(Options.PROXYTYPE))
+        self.ptype_var = StringVar(rootm(), OPTION_VALUES_PROXYTYPE[ptype_index], CVARS[Options.PROXYTYPE])
         cbtype = ttk.Combobox(downframe, values=OPTION_VALUES_PROXYTYPE, state=STATE_READONLY, width=6,
-                              textvariable=StringVar(rootm(), '', CVARS.get(Options.PROXYTYPE_TEMP)))
+                              textvariable=StringVar(rootm(), '', CVARS[Options.PROXYTYPE_TEMP]))
         cbtype.current(ptype_index)
         cbtype.grid(row=1, column=0, columnspan=5)
         cbtype.config(state=STATE_READONLY)
-        _ = BaseText(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS.get(Options.PROXYSTRING)))
+        _ = BaseText(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS[Options.PROXYSTRING]))
         self.entry_addr = BaseText(downframe, font=FONT_SANS_MEDIUM, width=21,
-                                   textvariable=StringVar(rootm(), '', CVARS.get(Options.PROXYSTRING_TEMP)),
+                                   textvariable=StringVar(rootm(), '', CVARS[Options.PROXYSTRING_TEMP]),
                                    bindings={BUT_RETURN: lambda _: self.ok()})
         if __RUXX_DEBUG__:
             self.entry_addr.insert(END, PROXY_DEFAULT_STR)
@@ -724,7 +724,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.badd_h = Button(hframe, image=get_icon(Icons.ADD), command=self.add_header_to_list)
         self.badd_h.pack(side=LEFT, padx=0, pady=5)
 
-        self.entry_h = BaseText(hframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.HEADER_ADD_STR)),
+        self.entry_h = BaseText(hframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.HEADER_ADD_STR]),
                                 bindings={BUT_RETURN: lambda _: self.add_header_to_list()})
         self.entry_h.pack(side=LEFT, padx=5, pady=5, fill=X, expand=YES)
         attach_tooltip(self.entry_h, TOOLTIP_HCOOKIE_ADD_ENTRY)
@@ -751,7 +751,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.badd_c = Button(cframe, image=get_icon(Icons.ADD), command=self.add_cookie_to_list)
         self.badd_c.pack(side=LEFT, padx=0, pady=5)
 
-        self.entry_c = BaseText(cframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.COOKIE_ADD_STR)),
+        self.entry_c = BaseText(cframe, font=FONT_SANS_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.COOKIE_ADD_STR]),
                                 bindings={BUT_RETURN: lambda _: self.add_cookie_to_list()})
         self.entry_c.pack(side=LEFT, padx=5, pady=5, fill=X, expand=YES)
         attach_tooltip(self.entry_c, TOOLTIP_HCOOKIE_ADD_ENTRY)
@@ -939,9 +939,9 @@ class ConnectRequestIntWindow(BaseWindow):
         hint.config(state=STATE_DISABLED)
         hint.grid(row=0, column=0, columnspan=15)
 
-        _ = BaseText(textvariable=StringVar(rootm(), str(self.baseval), CVARS.get(self.conf_str)))
+        _ = BaseText(textvariable=StringVar(rootm(), str(self.baseval), CVARS[self.conf_str]))
         self.entry = BaseText(downframe, font=FONT_SANS_MEDIUM, width=19,
-                              textvariable=StringVar(rootm(), '', CVARS.get(self.conf_str_temp)),
+                              textvariable=StringVar(rootm(), '', CVARS[self.conf_str_temp]),
                               bindings={BUT_RETURN: lambda _: self.ok()})
         self.entry.insert(END, str(self.baseval))
         self.err_message = attach_tooltip(self.entry, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
@@ -1046,11 +1046,11 @@ def register_submenu(label: str) -> Menu:
 
 
 def getrootconf(index: Options) -> Union[int, str]:
-    return rootm().getvar(CVARS.get(index))
+    return rootm().getvar(CVARS[index])
 
 
 def setrootconf(index: Options, value: Union[int, str, bool]) -> None:
-    return rootm().setvar(CVARS.get(index), value)
+    return rootm().setvar(CVARS[index], value)
 
 
 def rootm() -> AppRoot:
@@ -1137,8 +1137,8 @@ def create_base_window_widgets() -> None:
     rootm().iconphoto(True, get_icon(Icons.RUXX))
 
     # validators
-    string_vars[CVARS.get(Options.LASTPATH)] = StringVar(rootm(), '', CVARS.get(Options.LASTPATH))
-    string_vars[CVARS.get(Options.TAGLISTS_PATH)] = StringVar(rootm(), '', CVARS.get(Options.TAGLISTS_PATH))
+    string_vars[CVARS[Options.LASTPATH]] = StringVar(rootm(), '', CVARS[Options.LASTPATH])
+    string_vars[CVARS[Options.TAGLISTS_PATH]] = StringVar(rootm(), '', CVARS[Options.TAGLISTS_PATH])
 
     # Options #
     #  Videos
@@ -1146,7 +1146,7 @@ def create_base_window_widgets() -> None:
     opframe_vid.grid(row=cur_row(), column=cur_column(), rowspan=1, columnspan=1,
                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_vid = ttk.Combobox(opframe_vid, values=OPTION_VALUES_VIDEOS, state=STATE_READONLY, width=13,
-                          textvariable=StringVar(rootm(), '', CVARS.get(Options.VIDSETTING)))
+                          textvariable=StringVar(rootm(), '', CVARS[Options.VIDSETTING]))
     register_global(Globals.COMBOBOX_VIDEOS, op_vid)
     attach_tooltip(op_vid, TOOLTIP_VIDEOS)
     op_vid.current(1)
@@ -1156,7 +1156,7 @@ def create_base_window_widgets() -> None:
     opframe_img.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_img = ttk.Combobox(opframe_img, values=OPTION_VALUES_IMAGES, state=STATE_READONLY, width=13,
-                          textvariable=StringVar(rootm(), '', CVARS.get(Options.IMGSETTING)))
+                          textvariable=StringVar(rootm(), '', CVARS[Options.IMGSETTING]))
     register_global(Globals.COMBOBOX_IMAGES, op_img)
     attach_tooltip(op_img, TOOLTIP_IMAGES)
     op_img.current(len(OPTION_VALUES_IMAGES) - 1)
@@ -1166,7 +1166,7 @@ def create_base_window_widgets() -> None:
     opframe_parch.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                        sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_parch = ttk.Combobox(opframe_parch, values=OPTION_VALUES_PARCHI, state=STATE_READONLY, width=18,
-                            textvariable=StringVar(rootm(), '', CVARS.get(Options.PARCHISETTING)))
+                            textvariable=StringVar(rootm(), '', CVARS[Options.PARCHISETTING]))
     register_global(Globals.COMBOBOX_PARCHI, op_parch)
     attach_tooltip(op_parch, TOOLTIP_PARCHI)
     op_parch.current(len(OPTION_VALUES_PARCHI) - 2)
@@ -1176,7 +1176,7 @@ def create_base_window_widgets() -> None:
     opframe_thread.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                         sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     op_thread = ttk.Combobox(opframe_thread, values=OPTION_VALUES_THREADING, state=STATE_READONLY, width=9,
-                             textvariable=StringVar(rootm(), '', CVARS.get(Options.THREADSETTING)))
+                             textvariable=StringVar(rootm(), '', CVARS[Options.THREADSETTING]))
     register_global(Globals.COMBOBOX_THREADING, op_thread)
     attach_tooltip(op_thread, TOOLTIP_THREADING)
     op_thread.current(len(OPTION_VALUES_THREADING) - 1)
@@ -1185,7 +1185,7 @@ def create_base_window_widgets() -> None:
     opframe_datemin = ttk.LabelFrame(root_framem(), text='Date min')
     opframe_datemin.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
                          sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_datemin_t = BaseText(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.DATEMIN)))
+    op_datemin_t = BaseText(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS[Options.DATEMIN]))
     register_global(Globals.FIELD_DATEMIN, op_datemin_t)
     op_datemin_t.insert(END, DATE_MIN_DEFAULT)
     op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (1.5 if IS_WIN else 1))
@@ -1194,7 +1194,7 @@ def create_base_window_widgets() -> None:
     opframe_datemax = ttk.LabelFrame(root_framem(), text='Date max')
     opframe_datemax.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=COLUMNSPAN_MAX - 5,
                          sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_datemax_t = BaseText(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS.get(Options.DATEMAX)))
+    op_datemax_t = BaseText(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS[Options.DATEMAX]))
     register_global(Globals.FIELD_DATEMAX, op_datemax_t)
     op_datemax_t.insert(END, DATE_MAX_DEFAULT)
     op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (1.5 if IS_WIN else 1))
@@ -1206,7 +1206,7 @@ def create_base_window_widgets() -> None:
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Text
     op_tagsstr = BaseText(opframe_tags, width=0, font=FONT_LUCIDA_MEDIUM,
-                          textvariable=StringVar(rootm(), 'sfw', CVARS.get(Options.TAGS)))
+                          textvariable=StringVar(rootm(), 'sfw', CVARS[Options.TAGS]))
     register_global(Globals.FIELD_TAGS, op_tagsstr)
     op_tagsstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button check
@@ -1224,7 +1224,7 @@ def create_base_window_widgets() -> None:
     opframe_path.grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX,
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Text
-    op_pathstr = BaseText(opframe_path, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS.get(Options.PATH)))
+    op_pathstr = BaseText(opframe_path, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.PATH]))
     register_global(Globals.FIELD_PATH, op_pathstr)
     op_pathstr.insert(END, normalize_path(path.abspath(curdir), False))  # 3.8
     op_pathstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
@@ -1247,7 +1247,7 @@ def create_base_window_widgets() -> None:
 
     # This one is after root_frame
     pb1 = ttk.Progressbar(rootm(), value=0, maximum=PROGRESS_BAR_MAX, mode='determinate', orient=HORIZONTAL,
-                          variable=IntVar(rootm(), 0, CVARS.get(Options.PROGRESS)))
+                          variable=IntVar(rootm(), 0, CVARS[Options.PROGRESS]))
     pb1.pack(fill=X, expand=NO, anchor=S)
 
     # This one is after progressbar
@@ -1260,7 +1260,7 @@ def create_base_window_widgets() -> None:
     attach_tooltip(ib1, lambda: [get_cur_module_sitename()], relief=FLAT)
 
     sb1 = Label(sb_frame, borderwidth=1, relief=SUNKEN, anchor=W, text='Ready', bg=COLOR_DARKGRAY,
-                textvariable=StringVar(rootm(), '', CVARS.get(Options.STATUS)))
+                textvariable=StringVar(rootm(), '', CVARS[Options.STATUS]))
     sb1.pack(fill=X, expand=NO)
 
     # Safety precautions
@@ -1324,7 +1324,7 @@ def get_curdir(prioritize_last_path=True) -> str:
 
 def get_cur_module_sitename() -> str:
     if int(getrootconf(Options.REVEALNAMES)) == 0:
-        return ProcModule.get_cur_module_name().upper()
+        return ProcModule.name().upper()
 
     sitenames_b = {
         ProcModule.PROC_RX: SITENAME_B_RX,
@@ -1334,7 +1334,7 @@ def get_cur_module_sitename() -> str:
         ProcModule.PROC_RP: SITENAME_B_RP,
         ProcModule.PROC_EN: SITENAME_B_EN,
     }
-    return (b64decode(sitenames_b.get(ProcModule.get(), '')) or b'UNK ').decode()[:-1].replace('https://', '').replace('api.', '')
+    return (b64decode(sitenames_b.get(ProcModule.value(), '')) or b'UNK ').decode()[:-1].replace('https://', '').replace('api.', '')
 
 
 # def unfocus_buttons() -> None:
@@ -1358,7 +1358,7 @@ def help_tags(title: str = 'Tags') -> None:
         ProcModule.PROC_RP: HELP_TAGS_MSG_RP,
         ProcModule.PROC_EN: HELP_TAGS_MSG_EN,
     }
-    messagebox.showinfo(title=title, message=messages.get(ProcModule.get(), HELP_TAGS_MSG_RX), icon='info')
+    messagebox.showinfo(title=title, message=messages[ProcModule.value()], icon='info')
 
 
 def help_about(title: str = f'About {APP_NAME}', message: str = ABOUT_MSG) -> None:
@@ -1399,8 +1399,8 @@ def register_menu_command(label: str, command: Callable[[], None], hotkey_opt: O
     except Exception:
         accelerator = None
     c_menum().add_command(label=label, image=icon, compound=LEFT, command=command, accelerator=accelerator)
-    if accelerator and (do_bind is True):
-        rootm().bind(hotkeys.get(hotkey_opt), func=lambda _: command())
+    if accelerator and do_bind:
+        rootm().bind(hotkeys[hotkey_opt], func=lambda _: command())
 
 
 def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind: bool = False,
@@ -1410,8 +1410,8 @@ def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt
     except Exception:
         accelerator = None
     c_submenum().add_command(label=label, image=icon, compound=LEFT, command=command, accelerator=accelerator)
-    if accelerator and (do_bind is True):
-        rootm().bind(hotkeys.get(hotkey_opt), func=lambda _: command())
+    if accelerator and do_bind:
+        rootm().bind(hotkeys[hotkey_opt], func=lambda _: command())
 
 
 def register_menu_checkbutton(label: str, variablename: str, command: Callable = None, hotkey_str: str = None) -> None:
@@ -1422,13 +1422,13 @@ def register_menu_checkbutton(label: str, variablename: str, command: Callable =
 def register_menu_radiobutton(label: str, variablename: str, value: int, command: Callable = None, hotkey_str: str = None) -> None:
     if variablename not in int_vars:
         int_vars[variablename] = IntVar(rootm(), value=value, name=variablename)  # needed so it won't be discarded
-    c_menum().add_radiobutton(label=label, command=command, variable=int_vars.get(variablename), value=value, accelerator=hotkey_str)
+    c_menum().add_radiobutton(label=label, command=command, variable=int_vars[variablename], value=value, accelerator=hotkey_str)
 
 
 def register_submenu_radiobutton(label: str, variablename: str, value: int, command: Callable = None, hotkey_str: str = None) -> None:
     if variablename not in int_vars:
         int_vars[variablename] = IntVar(rootm(), value=value, name=variablename)  # needed so it won't be discarded
-    c_submenum().add_radiobutton(label=label, command=command, variable=int_vars.get(variablename), value=value, accelerator=hotkey_str)
+    c_submenum().add_radiobutton(label=label, command=command, variable=int_vars[variablename], value=value, accelerator=hotkey_str)
 
 
 def register_menu_separator() -> None:

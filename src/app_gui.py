@@ -228,14 +228,14 @@ def set_proc_module(dwnmodule: int) -> None:
     dwn = None
 
     # prefix option
-    prefix_opt_text = f'Prefix file names with \'{ProcModule.get_cur_module_name()}_\''
+    prefix_opt_text = f'Prefix file names with \'{ProcModule.name()}_\''
 
     if GetRoot() is not None:
         config_menu(Menus.EDIT, SubMenus.PREFIX, label=prefix_opt_text)
         # icon
         icontypes = {ProcModule.PROC_RX: Icons.RX, ProcModule.PROC_RN: Icons.RN, ProcModule.PROC_RS: Icons.RS,
                      ProcModule.PROC_RZ: Icons.RZ, ProcModule.PROC_RP: Icons.RP, ProcModule.PROC_EN: Icons.EN}
-        config_global(Globals.MODULE_ICON, image=get_icon(icontypes.get(ProcModule.get(), Icons.RX)))
+        config_global(Globals.MODULE_ICON, image=get_icon(icontypes[ProcModule.value()]))
         # enable/disable features specific to the module
         update_widget_enabled_states()
 
@@ -322,7 +322,7 @@ def prepare_cmdline() -> List[str]:
     tags_str = str(getrootconf(Options.TAGS)) if tags_valid else ' '.join(tags_list)
     newstr.append(tags_str)
     # + module
-    module_name = ProcModule.get_cur_module_name()
+    module_name = ProcModule.name()
     newstr.append(OPTION_CMD_MODULE_CMD)
     newstr.append(module_name)
     # + path (tags included)
@@ -683,42 +683,42 @@ def init_menus() -> None:
         config_menu(Menus.FILE, SubMenus.OPENFOLDER, state=STATE_DISABLED)  # disable 'Open download folder'
     # 2) Edit
     register_menu('Edit', Menus.EDIT)
-    register_menu_checkbutton(f'Prefix file names with \'{ProcModule.get_cur_module_name()}_\'', CVARS.get(Options.FNAMEPREFIX))
+    register_menu_checkbutton(f'Prefix file names with \'{ProcModule.name()}_\'', CVARS[Options.FNAMEPREFIX])
     register_menu_separator()
-    register_menu_checkbutton('Save tags', CVARS.get(Options.SAVE_TAGS))
-    register_menu_checkbutton('Save source links', CVARS.get(Options.SAVE_SOURCES))
-    register_menu_checkbutton('Save comments', CVARS.get(Options.SAVE_COMMENTS))
+    register_menu_checkbutton('Save tags', CVARS[Options.SAVE_TAGS])
+    register_menu_checkbutton('Save source links', CVARS[Options.SAVE_SOURCES])
+    register_menu_checkbutton('Save comments', CVARS[Options.SAVE_COMMENTS])
     register_submenu('Save info mode...')
-    register_submenu_radiobutton('per run', CVARS.get(Options.INFO_SAVE_MODE), InfoSaveModes.PER_RUN.value)
-    register_submenu_radiobutton('per file', CVARS.get(Options.INFO_SAVE_MODE), InfoSaveModes.PER_FILE.value)
-    register_submenu_radiobutton('merge info lists', CVARS.get(Options.INFO_SAVE_MODE), InfoSaveModes.MERGE_LISTS.value)
+    register_submenu_radiobutton('per run', CVARS[Options.INFO_SAVE_MODE], InfoSaveModes.PER_RUN.value)
+    register_submenu_radiobutton('per file', CVARS[Options.INFO_SAVE_MODE], InfoSaveModes.PER_FILE.value)
+    register_submenu_radiobutton('merge info lists', CVARS[Options.INFO_SAVE_MODE], InfoSaveModes.MERGE_LISTS.value)
     register_menu_separator()
-    register_menu_checkbutton('Extend file names with extra info', CVARS.get(Options.APPEND_SOURCE_AND_TAGS))
-    register_menu_checkbutton('Warn if download folder is not empty', CVARS.get(Options.WARN_NONEMPTY_DEST))
-    register_menu_checkbutton('Verbose log', CVARS.get(Options.VERBOSE))
+    register_menu_checkbutton('Extend file names with extra info', CVARS[Options.APPEND_SOURCE_AND_TAGS])
+    register_menu_checkbutton('Warn if download folder is not empty', CVARS[Options.WARN_NONEMPTY_DEST])
+    register_menu_checkbutton('Verbose log', CVARS[Options.VERBOSE])
     # 3) View
     register_menu('View')
-    register_menu_checkbutton('Log', CVARS.get(Options.ISLOGOPEN), Logger.wnd.toggle_visibility, hotkey_text(Options.ISLOGOPEN))
+    register_menu_checkbutton('Log', CVARS[Options.ISLOGOPEN], Logger.wnd.toggle_visibility, hotkey_text(Options.ISLOGOPEN))
     if CAN_MANIPULATE_CONSOLE and __RUXX_DEBUG__:
-        register_menu_checkbutton('Console', CVARS.get(Options.ISCONSOLELOGOPEN), toggle_console)
-    register_menu_checkbutton('Reveal module names', CVARS.get(Options.REVEALNAMES))
+        register_menu_checkbutton('Console', CVARS[Options.ISCONSOLELOGOPEN], toggle_console)
+    register_menu_checkbutton('Reveal module names', CVARS[Options.REVEALNAMES])
     # 4) Module
     register_menu('Module', Menus.MODULE)
-    register_menu_radiobutton(MODULE_ABBRU_RX, CVARS.get(Options.MODULE), ProcModule.PROC_RX, lambda: set_proc_module(ProcModule.PROC_RX))
-    register_menu_radiobutton(MODULE_ABBRU_RN, CVARS.get(Options.MODULE), ProcModule.PROC_RN, lambda: set_proc_module(ProcModule.PROC_RN))
-    register_menu_radiobutton(MODULE_ABBRU_RS, CVARS.get(Options.MODULE), ProcModule.PROC_RS, lambda: set_proc_module(ProcModule.PROC_RS))
-    register_menu_radiobutton(MODULE_ABBRU_RZ, CVARS.get(Options.MODULE), ProcModule.PROC_RZ, lambda: set_proc_module(ProcModule.PROC_RZ))
-    register_menu_radiobutton(MODULE_ABBRU_RP, CVARS.get(Options.MODULE), ProcModule.PROC_RP, lambda: set_proc_module(ProcModule.PROC_RP))
-    register_menu_radiobutton(MODULE_ABBRU_EN, CVARS.get(Options.MODULE), ProcModule.PROC_EN, lambda: set_proc_module(ProcModule.PROC_EN))
+    register_menu_radiobutton(MODULE_ABBRU_RX, CVARS[Options.MODULE], ProcModule.PROC_RX, lambda: set_proc_module(ProcModule.PROC_RX))
+    register_menu_radiobutton(MODULE_ABBRU_RN, CVARS[Options.MODULE], ProcModule.PROC_RN, lambda: set_proc_module(ProcModule.PROC_RN))
+    register_menu_radiobutton(MODULE_ABBRU_RS, CVARS[Options.MODULE], ProcModule.PROC_RS, lambda: set_proc_module(ProcModule.PROC_RS))
+    register_menu_radiobutton(MODULE_ABBRU_RZ, CVARS[Options.MODULE], ProcModule.PROC_RZ, lambda: set_proc_module(ProcModule.PROC_RZ))
+    register_menu_radiobutton(MODULE_ABBRU_RP, CVARS[Options.MODULE], ProcModule.PROC_RP, lambda: set_proc_module(ProcModule.PROC_RP))
+    register_menu_radiobutton(MODULE_ABBRU_EN, CVARS[Options.MODULE], ProcModule.PROC_EN, lambda: set_proc_module(ProcModule.PROC_EN))
     # 5) Connection
     register_menu('Connection', Menus.CONNECTION)
     register_menu_command('Headers / Cookies...', window_hcookiesm().toggle_visibility, Options.ISHCOOKIESOPEN)
     register_menu_command('Set proxy...', window_proxym().ask, Options.ISPROXYOPEN)
     register_menu_command('Set timeout...', window_timeoutm().ask, Options.ISTIMEOUTOPEN)
     register_menu_command('Set retries count...', window_retriesm().ask, Options.ISRETRIESOPEN)
-    register_menu_checkbutton('Download without proxy', CVARS.get(Options.PROXY_NO_DOWNLOAD))
-    register_menu_checkbutton('Ignore proxy', CVARS.get(Options.IGNORE_PROXY))
-    register_menu_checkbutton('Cache processed HTML', CVARS.get(Options.CACHE_PROCCED_HTML))
+    register_menu_checkbutton('Download without proxy', CVARS[Options.PROXY_NO_DOWNLOAD])
+    register_menu_checkbutton('Ignore proxy', CVARS[Options.IGNORE_PROXY])
+    register_menu_checkbutton('Cache processed HTML', CVARS[Options.CACHE_PROCCED_HTML])
     # 6) Action
     register_menu('Actions', Menus.ACTIONS)
     register_menu_command('Download', do_download, Options.ACTION_DOWNLOAD, True)
@@ -737,7 +737,7 @@ def init_menus() -> None:
     register_submenu_command('by size', sort_files_by_size_do)
     register_submenu_command('by score', sort_files_by_score_do)
     register_menu_separator()
-    register_menu_checkbutton('Enable autocompletion', CVARS.get(Options.AUTOCOMPLETION_ENABLE), toggle_autocompletion_wrapper)
+    register_menu_checkbutton('Enable autocompletion', CVARS[Options.AUTOCOMPLETION_ENABLE], toggle_autocompletion_wrapper)
     register_menu_command('Autocomplete tag...', trigger_autocomplete_tag, Options.ACTION_AUTOCOMPLETE_TAG)
     # 8) Help
     register_menu('Help')
@@ -747,9 +747,9 @@ def init_menus() -> None:
     # 9) Debug
     if __RUXX_DEBUG__:
         register_menu('Debug', Menus.DEBUG)
-        register_menu_radiobutton('Download: full', CVARS.get(Options.DOWNLOAD_MODE), DMODE_CHOICES.index(DownloadModes.FULL))
-        register_menu_radiobutton('Download: skip', CVARS.get(Options.DOWNLOAD_MODE), DMODE_CHOICES.index(DownloadModes.SKIP))
-        register_menu_radiobutton('Download: touch', CVARS.get(Options.DOWNLOAD_MODE), DMODE_CHOICES.index(DownloadModes.TOUCH))
+        register_menu_radiobutton('Download: full', CVARS[Options.DOWNLOAD_MODE], DMODE_CHOICES.index(DownloadModes.FULL))
+        register_menu_radiobutton('Download: skip', CVARS[Options.DOWNLOAD_MODE], DMODE_CHOICES.index(DownloadModes.SKIP))
+        register_menu_radiobutton('Download: touch', CVARS[Options.DOWNLOAD_MODE], DMODE_CHOICES.index(DownloadModes.TOUCH))
         register_menu_command('Set download limit (0)...', set_download_limit)
         register_menu_command('Reset download limit', reset_download_limit)
 
@@ -760,11 +760,11 @@ def init_gui() -> None:
     create_base_window_widgets()
     init_additional_windows()
     # Window hotkeys in order
-    rootm().bind_all(hotkeys.get(Options.ISLOGOPEN), func=lambda _: Logger.wnd.toggle_visibility())
-    rootm().bind_all(hotkeys.get(Options.ISPROXYOPEN), func=lambda e: window_proxym().ask() if e.state != 0x20000 else None)
-    rootm().bind_all(hotkeys.get(Options.ISHCOOKIESOPEN), func=lambda _: window_hcookiesm().toggle_visibility())
-    rootm().bind_all(hotkeys.get(Options.ISTIMEOUTOPEN), func=lambda e: window_timeoutm().ask() if e.state != 0x20000 else None)
-    rootm().bind_all(hotkeys.get(Options.ISRETRIESOPEN), func=lambda e: window_retriesm().ask() if e.state != 0x20000 else None)
+    rootm().bind_all(hotkeys[Options.ISLOGOPEN], func=lambda _: Logger.wnd.toggle_visibility())
+    rootm().bind_all(hotkeys[Options.ISPROXYOPEN], func=lambda e: window_proxym().ask() if e.state != 0x20000 else None)
+    rootm().bind_all(hotkeys[Options.ISHCOOKIESOPEN], func=lambda _: window_hcookiesm().toggle_visibility())
+    rootm().bind_all(hotkeys[Options.ISTIMEOUTOPEN], func=lambda e: window_timeoutm().ask() if e.state != 0x20000 else None)
+    rootm().bind_all(hotkeys[Options.ISRETRIESOPEN], func=lambda e: window_retriesm().ask() if e.state != 0x20000 else None)
     rootm().bind(BUT_ALT_F4, func=lambda _: rootm().destroy())
     Logger.wnd.window.bind(BUT_ALT_F4, func=lambda _: Logger.wnd.hide() if Logger.wnd.visible else None)
     window_hcookiesm().window.bind(BUT_ALT_F4, func=lambda _: window_hcookiesm().hide() if window_hcookiesm().visible else None)

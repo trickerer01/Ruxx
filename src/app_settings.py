@@ -158,7 +158,7 @@ class Settings(ABC):
             elif conf == Options.COOKIE_ADD_STR:
                 myval = window_hcookiesm().get_json_c()
             elif conf == Options.MODULE:
-                myval = ProcModule.get() - 1
+                myval = ProcModule.value() - 1
             elif conf in Settings.combobox_setting_arrays:
                 myval = Settings.combobox_setting_arrays[conf].index(getrootconf(conf))
             elif conf == Options.WINDOW_POSITION:
@@ -192,8 +192,8 @@ class Settings(ABC):
                     window_hcookiesm().set_to_c(val)
                 elif conf == Options.MODULE:
                     Settings.on_proc_module_change_callback(val + 1)
-                    setrootconf(conf, ProcModule.get_cur_module_name())
-                    int_vars.get(CVARS.get(conf)).set(val + 1)
+                    setrootconf(conf, ProcModule.name())
+                    int_vars[CVARS[conf]].set(val + 1)
                 elif conf == Options.WINDOW_POSITION:
                     if set_window_pos:
                         rootm().set_position(*(float(dim) for dim in str(val).split('x', 1)))
