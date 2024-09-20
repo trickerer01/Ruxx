@@ -94,7 +94,7 @@ item_str01_en = (
 class ArgParseTests(TestCase):
     def test_argparse01(self) -> None:
         # 5 tags and all bools, try to intersect
-        ProcModule.set(ProcModule.PROC_RX)
+        ProcModule.set(ProcModule.RX)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
         self.assertIsNotNone(arglist.tags)
@@ -104,7 +104,7 @@ class ArgParseTests(TestCase):
 
     def test_argparse02(self) -> None:
         # 5 tags, value types check
-        ProcModule.set(ProcModule.PROC_RX)
+        ProcModule.set(ProcModule.RX)
         args = args_argparse_str02
         arglist = prepare_arglist(args.split())
         self.assertIsNotNone(arglist.tags)
@@ -121,7 +121,7 @@ class ArgParseTests(TestCase):
 
 class TagParseTests(TestCase):
     def test_tagparse01(self) -> None:
-        ProcModule.set(ProcModule.PROC_RX)
+        ProcModule.set(ProcModule.RX)
         args = args_tagparse_str1
         res, tags = parse_tags(args)
         self.assertTrue(res)
@@ -141,7 +141,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn._parse_args(arglist)
             self.assertEqual('7869261', dwn._extract_id(dwn._local_addr_from_string(item_str01_rx)))
             self.assertEqual('06-05-2023', dwn._extract_post_date(item_str01_rx))
@@ -151,7 +151,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RN) as dwn:
+        with make_downloader(ProcModule.RN) as dwn:
             dwn._parse_args(arglist)
             self.assertEqual('427251', dwn._extract_id(item_str01_rn))
         print(f'{self._testMethodName} passed')
@@ -160,7 +160,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RS) as dwn:
+        with make_downloader(ProcModule.RS) as dwn:
             dwn._parse_args(arglist)
             self.assertEqual('7939303', dwn._extract_id(dwn._local_addr_from_string(item_str01_rs)))
             self.assertEqual(DATE_MIN_DEFAULT, dwn._extract_post_date(item_str01_rs))
@@ -170,7 +170,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RZ) as dwn:
+        with make_downloader(ProcModule.RZ) as dwn:
             dwn._parse_args(arglist)
             self.assertEqual('3788448', dwn._extract_id(dwn._local_addr_from_string(item_str01_rz)))
             self.assertEqual('04-02-2024', dwn._extract_post_date(item_str01_rz))
@@ -180,7 +180,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RP) as dwn:
+        with make_downloader(ProcModule.RP) as dwn:
             dwn._parse_args(arglist)
             self.assertEqual('6436541', dwn._extract_id(item_str01_rp))
             self.assertEqual('26-07-2024', dwn._extract_post_date(item_str01_rp))
@@ -190,7 +190,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_EN) as dwn:
+        with make_downloader(ProcModule.EN) as dwn:
             dwn._parse_args(arglist)
             self.assertEqual('4322823', dwn._extract_id(item_str01_en))
             self.assertEqual('30-09-2023', dwn._extract_post_date(item_str01_en))
@@ -200,7 +200,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn._parse_args(arglist)
             self.assertEqual(5, dwn.get_tags_count())
             self.assertEqual(13, dwn.timeout)
@@ -222,7 +222,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str02
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn._parse_args(arglist)
             self.assertEqual(5, dwn.get_tags_count())
             self.assertEqual('31-12-1950', dwn.date_min)
@@ -239,7 +239,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str03
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             self.assertRaises(ThreadInterruptException, dwn._parse_args, arglist)
         print(f'{self._testMethodName} passed')
 
@@ -247,7 +247,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str04
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn._parse_args(arglist)
             self.assertFalse(dwn.default_sort)
             self.assertEqual(7, dwn.get_tags_count())
@@ -257,7 +257,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str05
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn._parse_args(arglist)
             self.assertEqual(2, len(dwn.add_headers))
         print(f'{self._testMethodName} passed')
@@ -266,7 +266,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str06
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn._parse_args(arglist)
             self.assertEqual(2, len(dwn.add_headers))
             self.assertEqual('value3', dwn.add_headers['name1'])
@@ -277,7 +277,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str07
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn._parse_args(arglist, False)
             self.assertEqual('25000', dwn.favorites_search_user)
         print(f'{self._testMethodName} passed')
@@ -286,7 +286,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str08
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn._parse_args(arglist, False)
             self.assertTrue(dwn.merge_lists)
         print(f'{self._testMethodName} passed')
@@ -301,7 +301,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str10
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn._parse_args(arglist, False)
             self.assertEqual('33600', dwn.pool_search_str)
         print(f'{self._testMethodName} passed')
@@ -310,7 +310,7 @@ class DownloaderBaseTests(TestCase):
         Logger.init(True, True)
         args = args_argparse_str11
         arglist = prepare_arglist(args.split())
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             self.assertRaises(AssertionError, dwn._parse_args, arglist, False)
         print(f'{self._testMethodName} passed')
 
@@ -326,7 +326,7 @@ class ConnTests(TestCase):
         #                tag           tag        flag       v       flag      v      flag            v           flag      v
         argslist = ('id:=2000000', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn._parse_args(arglist)
             dwn.url = dwn._form_tags_search_address(dwn._consume_custom_module_tags(dwn.tags_str_arr[0]))
             dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
@@ -341,7 +341,7 @@ class ConnTests(TestCase):
         #                tag           tag        flag       v       flag      v      flag            v           flag      v
         argslist = ('id:=7939303', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RS) as dwn:
+        with make_downloader(ProcModule.RS) as dwn:
             dwn._parse_args(arglist)
             dwn.url = dwn._form_tags_search_address(dwn._consume_custom_module_tags(dwn.tags_str_arr[0]))
             dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
@@ -356,7 +356,7 @@ class ConnTests(TestCase):
         #             tag       tag       tag      flag       v       flag      v      flag            v           flag      v
         argslist = ('tiara', 'dark_elf', 'toes', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RZ) as dwn:
+        with make_downloader(ProcModule.RZ) as dwn:
             dwn._parse_args(arglist)
             dwn.url = dwn._form_tags_search_address(dwn._consume_custom_module_tags(dwn.tags_str_arr[0]))
             dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
@@ -371,7 +371,7 @@ class ConnTests(TestCase):
         #               tag           tag        flag       v       flag      v      flag            v           flag      v
         argslist = ('id=5915464', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RP) as dwn:
+        with make_downloader(ProcModule.RP) as dwn:
             dwn._parse_args(arglist)
             dwn.url = dwn._form_tags_search_address(dwn._consume_custom_module_tags(dwn.tags_str_arr[0]))
             dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
@@ -386,7 +386,7 @@ class ConnTests(TestCase):
         #               tag           tag        flag       v       flag      v      flag            v           flag      v
         argslist = ('id:4322823', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_EN) as dwn:
+        with make_downloader(ProcModule.EN) as dwn:
             dwn._parse_args(arglist)
             dwn.url = dwn._form_tags_search_address(dwn._consume_custom_module_tags(dwn.tags_str_arr[0]))
             dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
@@ -403,7 +403,7 @@ class ItemFilterTests(TestCase):
         argslist = ('moonlight', '-dmode', 'skip', '-threads', '8', '-path', CUR_PATH, '-mindate', '01-01-2012', '-maxdate', '01-12-2023')
         # this search yields at least 3200 results (before date filter)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn.launch_download(arglist)
             # self.assertEqual(3015, len(dwn.item_info_dict_all))  # may change too frequently
             self.assertEqual('9081766', list(dwn.item_info_dict_all.values())[0].id)
@@ -420,7 +420,7 @@ class RealDownloadTests(TestCase):
         #                tag           tag        flag       v       flag      v      flag            v           flag      v
         argslist = ('id:=2000000', '-overflow', '-dmode', 'skip', '-threads', '2', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(dwn.fail_count == 0, f'dwn.failCount {dwn.fail_count:d} == 0')
             self.assertTrue(dwn.processed_count == 1, f'dwn.processed_count {dwn.fail_count:d} == 1')
@@ -438,7 +438,7 @@ class RealDownloadTests(TestCase):
         #                  tag               flag      v      flag            v           flag      v
         argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RX) as dwn:
+        with make_downloader(ProcModule.RX) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
@@ -456,7 +456,7 @@ class RealDownloadTests(TestCase):
         #                  tag               flag      v      flag            v           flag      v
         argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RS) as dwn:
+        with make_downloader(ProcModule.RS) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
@@ -475,7 +475,7 @@ class RealDownloadTests(TestCase):
         #                  tag                        flag      v      flag            v           flag      v
         argslist = (f'favorited_by:{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RS) as dwn:
+        with make_downloader(ProcModule.RS) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
@@ -493,7 +493,7 @@ class RealDownloadTests(TestCase):
         #             tag       tag       tag       flag      v      flag            v           flag      v
         argslist = ('tiara', 'dark_elf', 'toes', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RZ) as dwn:
+        with make_downloader(ProcModule.RZ) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             self.assertEqual(195230, stat(tempfile_path).st_size)
@@ -513,7 +513,7 @@ class RealDownloadTests(TestCase):
         #                  tag                        flag      v      flag            v           flag      v
         argslist = (f'favorited_by:{fav_user}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RZ) as dwn:
+        with make_downloader(ProcModule.RZ) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
@@ -531,7 +531,7 @@ class RealDownloadTests(TestCase):
         #                  tag              flag      v      flag            v           flag      v
         argslist = (f'id={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RP) as dwn:
+        with make_downloader(ProcModule.RP) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
@@ -550,7 +550,7 @@ class RealDownloadTests(TestCase):
         #                 tag                      flag      v      flag            v           flag      v
         argslist = (f'favorited_by={fav_user}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_RP) as dwn:
+        with make_downloader(ProcModule.RP) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
@@ -568,7 +568,7 @@ class RealDownloadTests(TestCase):
         #                  tag              flag      v      flag            v           flag      v
         argslist = (f'id:{tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_EN) as dwn:
+        with make_downloader(ProcModule.EN) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
@@ -587,7 +587,7 @@ class RealDownloadTests(TestCase):
         #                 tag                          flag      v      flag            v           flag      v
         argslist = (f'favorited_by:!{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_EN) as dwn:
+        with make_downloader(ProcModule.EN) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)
@@ -606,7 +606,7 @@ class RealDownloadTests(TestCase):
         #                 tag                          flag      v      flag            v           flag      v
         argslist = (f'favoritedby:{fav_user_name}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.PROC_EN) as dwn:
+        with make_downloader(ProcModule.EN) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             remove_file(tempfile_path)

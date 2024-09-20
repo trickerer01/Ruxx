@@ -27,28 +27,28 @@ re_comments = re_compile(r'^(?:--|//|#).*?$')
 re_separators = re_compile(r'(?:, *| +)')
 
 idval_eq_separators = {
-    ProcModule.PROC_RX: ID_VALUE_SEPARATOR_CHAR_RX,
-    ProcModule.PROC_RN: ID_VALUE_SEPARATOR_CHAR_RN,
-    ProcModule.PROC_RS: ID_VALUE_SEPARATOR_CHAR_RS,
-    ProcModule.PROC_RZ: ID_VALUE_SEPARATOR_CHAR_RZ,
-    ProcModule.PROC_RP: ID_VALUE_SEPARATOR_CHAR_RP,
-    ProcModule.PROC_EN: ID_VALUE_SEPARATOR_CHAR_EN,
+    ProcModule.RX: ID_VALUE_SEPARATOR_CHAR_RX,
+    ProcModule.RN: ID_VALUE_SEPARATOR_CHAR_RN,
+    ProcModule.RS: ID_VALUE_SEPARATOR_CHAR_RS,
+    ProcModule.RZ: ID_VALUE_SEPARATOR_CHAR_RZ,
+    ProcModule.RP: ID_VALUE_SEPARATOR_CHAR_RP,
+    ProcModule.EN: ID_VALUE_SEPARATOR_CHAR_EN,
 }
 idstring_patterns = {
-    ProcModule.PROC_RX: re_compile(fr'^(?:{FILE_NAME_PREFIX_RX}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RX}?)?\d+?)*$'),
-    ProcModule.PROC_RN: re_compile(fr'^(?:{FILE_NAME_PREFIX_RN}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RN}?)?\d+?)*$'),
-    ProcModule.PROC_RS: re_compile(fr'^(?:{FILE_NAME_PREFIX_RS}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RS}?)?\d+?)*$'),
-    ProcModule.PROC_RZ: re_compile(fr'^(?:{FILE_NAME_PREFIX_RZ}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RZ}?)?\d+?)*$'),
-    ProcModule.PROC_RP: re_compile(fr'^(?:{FILE_NAME_PREFIX_RP}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RP}?)?\d+?)*$'),
-    ProcModule.PROC_EN: re_compile(fr'^(?:{FILE_NAME_PREFIX_EN}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_EN}?)?\d+?)*$'),
+    ProcModule.RX: re_compile(fr'^(?:{FILE_NAME_PREFIX_RX}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RX}?)?\d+?)*$'),
+    ProcModule.RN: re_compile(fr'^(?:{FILE_NAME_PREFIX_RN}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RN}?)?\d+?)*$'),
+    ProcModule.RS: re_compile(fr'^(?:{FILE_NAME_PREFIX_RS}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RS}?)?\d+?)*$'),
+    ProcModule.RZ: re_compile(fr'^(?:{FILE_NAME_PREFIX_RZ}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RZ}?)?\d+?)*$'),
+    ProcModule.RP: re_compile(fr'^(?:{FILE_NAME_PREFIX_RP}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RP}?)?\d+?)*$'),
+    ProcModule.EN: re_compile(fr'^(?:{FILE_NAME_PREFIX_EN}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_EN}?)?\d+?)*$'),
 }
 prefix_optional_patterns = {
-    ProcModule.PROC_RX: re_compile(fr'{FILE_NAME_PREFIX_RX}?'),
-    ProcModule.PROC_RN: re_compile(fr'{FILE_NAME_PREFIX_RN}?'),
-    ProcModule.PROC_RS: re_compile(fr'{FILE_NAME_PREFIX_RS}?'),
-    ProcModule.PROC_RZ: re_compile(fr'{FILE_NAME_PREFIX_RZ}?'),
-    ProcModule.PROC_RP: re_compile(fr'{FILE_NAME_PREFIX_RP}?'),
-    ProcModule.PROC_EN: re_compile(fr'{FILE_NAME_PREFIX_EN}?'),
+    ProcModule.RX: re_compile(fr'{FILE_NAME_PREFIX_RX}?'),
+    ProcModule.RN: re_compile(fr'{FILE_NAME_PREFIX_RN}?'),
+    ProcModule.RS: re_compile(fr'{FILE_NAME_PREFIX_RS}?'),
+    ProcModule.RZ: re_compile(fr'{FILE_NAME_PREFIX_RZ}?'),
+    ProcModule.RP: re_compile(fr'{FILE_NAME_PREFIX_RP}?'),
+    ProcModule.EN: re_compile(fr'{FILE_NAME_PREFIX_EN}?'),
 }
 
 

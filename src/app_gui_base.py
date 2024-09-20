@@ -1327,12 +1327,12 @@ def get_cur_module_sitename() -> str:
         return ProcModule.name().upper()
 
     sitenames_b = {
-        ProcModule.PROC_RX: SITENAME_B_RX,
-        ProcModule.PROC_RN: SITENAME_B_RN,
-        ProcModule.PROC_RS: SITENAME_B_RS,
-        ProcModule.PROC_RZ: SITENAME_B_RZ,
-        ProcModule.PROC_RP: SITENAME_B_RP,
-        ProcModule.PROC_EN: SITENAME_B_EN,
+        ProcModule.RX: SITENAME_B_RX,
+        ProcModule.RN: SITENAME_B_RN,
+        ProcModule.RS: SITENAME_B_RS,
+        ProcModule.RZ: SITENAME_B_RZ,
+        ProcModule.RP: SITENAME_B_RP,
+        ProcModule.EN: SITENAME_B_EN,
     }
     return (b64decode(sitenames_b.get(ProcModule.value(), '')) or b'UNK ').decode()[:-1].replace('https://', '').replace('api.', '')
 
@@ -1351,12 +1351,12 @@ def unfocus_buttons_once() -> None:
 
 def help_tags(title: str = 'Tags') -> None:
     messages = {
-        ProcModule.PROC_RX: HELP_TAGS_MSG_RX,
-        ProcModule.PROC_RN: HELP_TAGS_MSG_RN,
-        ProcModule.PROC_RS: HELP_TAGS_MSG_RS,
-        ProcModule.PROC_RZ: HELP_TAGS_MSG_RZ,
-        ProcModule.PROC_RP: HELP_TAGS_MSG_RP,
-        ProcModule.PROC_EN: HELP_TAGS_MSG_EN,
+        ProcModule.RX: HELP_TAGS_MSG_RX,
+        ProcModule.RN: HELP_TAGS_MSG_RN,
+        ProcModule.RS: HELP_TAGS_MSG_RS,
+        ProcModule.RZ: HELP_TAGS_MSG_RZ,
+        ProcModule.RP: HELP_TAGS_MSG_RP,
+        ProcModule.EN: HELP_TAGS_MSG_EN,
     }
     messagebox.showinfo(title=title, message=messages[ProcModule.value()], icon='info')
 

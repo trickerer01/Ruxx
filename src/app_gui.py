@@ -20,9 +20,8 @@ from typing import Optional, List, Tuple
 from app_cmdargs import prepare_arglist
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    DownloaderStates, DownloadModes, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP,
-    PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, MODULE_ABBRU_RX, MODULE_ABBRU_RN, MODULE_ABBRU_RS, MODULE_ABBRU_RZ,
-    MODULE_ABBRU_RP, MODULE_ABBRU_EN, FMT_DATE, DMODE_CHOICES, DATE_MAX_DEFAULT,
+    DownloaderStates, MODULE_CHOICES, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP,
+    PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, FMT_DATE, DMODE_CHOICES, DATE_MAX_DEFAULT,
     max_progress_value_for_state,
 )
 from app_download import Downloader
@@ -233,8 +232,8 @@ def set_proc_module(dwnmodule: int) -> None:
     if GetRoot() is not None:
         config_menu(Menus.EDIT, SubMenus.PREFIX, label=prefix_opt_text)
         # icon
-        icontypes = {ProcModule.PROC_RX: Icons.RX, ProcModule.PROC_RN: Icons.RN, ProcModule.PROC_RS: Icons.RS,
-                     ProcModule.PROC_RZ: Icons.RZ, ProcModule.PROC_RP: Icons.RP, ProcModule.PROC_EN: Icons.EN}
+        icontypes = {ProcModule.RX: Icons.RX, ProcModule.RN: Icons.RN, ProcModule.RS: Icons.RS,
+                     ProcModule.RZ: Icons.RZ, ProcModule.RP: Icons.RP, ProcModule.EN: Icons.EN}
         config_global(Globals.MODULE_ICON, image=get_icon(icontypes[ProcModule.value()]))
         # enable/disable features specific to the module
         update_widget_enabled_states()
@@ -704,12 +703,9 @@ def init_menus() -> None:
     register_menu_checkbutton('Reveal module names', CVARS[Options.REVEALNAMES])
     # 4) Module
     register_menu('Module', Menus.MODULE)
-    register_menu_radiobutton(MODULE_ABBRU_RX, CVARS[Options.MODULE], ProcModule.PROC_RX, lambda: set_proc_module(ProcModule.PROC_RX))
-    register_menu_radiobutton(MODULE_ABBRU_RN, CVARS[Options.MODULE], ProcModule.PROC_RN, lambda: set_proc_module(ProcModule.PROC_RN))
-    register_menu_radiobutton(MODULE_ABBRU_RS, CVARS[Options.MODULE], ProcModule.PROC_RS, lambda: set_proc_module(ProcModule.PROC_RS))
-    register_menu_radiobutton(MODULE_ABBRU_RZ, CVARS[Options.MODULE], ProcModule.PROC_RZ, lambda: set_proc_module(ProcModule.PROC_RZ))
-    register_menu_radiobutton(MODULE_ABBRU_RP, CVARS[Options.MODULE], ProcModule.PROC_RP, lambda: set_proc_module(ProcModule.PROC_RP))
-    register_menu_radiobutton(MODULE_ABBRU_EN, CVARS[Options.MODULE], ProcModule.PROC_EN, lambda: set_proc_module(ProcModule.PROC_EN))
+    for abbr in MODULE_CHOICES:
+        module = ProcModule.PROC_MODULES_BY_NAME[abbr]
+        register_menu_radiobutton(abbr.upper(), CVARS[Options.MODULE], module, lambda x=module: set_proc_module(x))
     # 5) Connection
     register_menu('Connection', Menus.CONNECTION)
     register_menu_command('Headers / Cookies...', window_hcookiesm().toggle_visibility, Options.ISHCOOKIESOPEN)
@@ -747,9 +743,8 @@ def init_menus() -> None:
     # 9) Debug
     if __RUXX_DEBUG__:
         register_menu('Debug', Menus.DEBUG)
-        register_menu_radiobutton('Download: full', CVARS[Options.DOWNLOAD_MODE], DMODE_CHOICES.index(DownloadModes.FULL))
-        register_menu_radiobutton('Download: skip', CVARS[Options.DOWNLOAD_MODE], DMODE_CHOICES.index(DownloadModes.SKIP))
-        register_menu_radiobutton('Download: touch', CVARS[Options.DOWNLOAD_MODE], DMODE_CHOICES.index(DownloadModes.TOUCH))
+        for didx, dmode in enumerate(DMODE_CHOICES):
+            register_menu_radiobutton(f'Download: {dmode}', CVARS[Options.DOWNLOAD_MODE], didx)
         register_menu_command('Set download limit (0)...', set_download_limit)
         register_menu_command('Reset download limit', reset_download_limit)
 

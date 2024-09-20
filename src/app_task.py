@@ -104,28 +104,28 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str]
     for t in tags_list:  # + length of each tag
         total_len += max(len(ogt) for ogt in t.split('+~+')) if split_always and t.startswith('(+') else len(t)
     max_string_lengths = {
-        ProcModule.PROC_RX: TAGS_STRING_LENGTH_MAX_RX,
-        ProcModule.PROC_RN: TAGS_STRING_LENGTH_MAX_RN,
-        ProcModule.PROC_RS: TAGS_STRING_LENGTH_MAX_RS,
-        ProcModule.PROC_RZ: TAGS_STRING_LENGTH_MAX_RZ,
-        ProcModule.PROC_RP: TAGS_STRING_LENGTH_MAX_RP,
-        ProcModule.PROC_EN: TAGS_STRING_LENGTH_MAX_EN,
+        ProcModule.RX: TAGS_STRING_LENGTH_MAX_RX,
+        ProcModule.RN: TAGS_STRING_LENGTH_MAX_RN,
+        ProcModule.RS: TAGS_STRING_LENGTH_MAX_RS,
+        ProcModule.RZ: TAGS_STRING_LENGTH_MAX_RZ,
+        ProcModule.RP: TAGS_STRING_LENGTH_MAX_RP,
+        ProcModule.EN: TAGS_STRING_LENGTH_MAX_EN,
     }
     max_neg_tagss = {
-        ProcModule.PROC_RX: (0, False),
-        ProcModule.PROC_RN: (0, False),
-        ProcModule.PROC_RS: (0, False),
-        ProcModule.PROC_RZ: (3, True),
-        ProcModule.PROC_RP: (3, False),
-        ProcModule.PROC_EN: (40, False),
+        ProcModule.RX: (0, False),
+        ProcModule.RN: (0, False),
+        ProcModule.RS: (0, False),
+        ProcModule.RZ: (3, True),
+        ProcModule.RP: (3, False),
+        ProcModule.EN: (40, False),
     }
     max_wildcardss = {
-        ProcModule.PROC_RX: 0,
-        ProcModule.PROC_RN: 0,
-        ProcModule.PROC_RS: 0,
-        ProcModule.PROC_RZ: 0,
-        ProcModule.PROC_RP: 0,
-        ProcModule.PROC_EN: 1,
+        ProcModule.RX: 0,
+        ProcModule.RN: 0,
+        ProcModule.RS: 0,
+        ProcModule.RZ: 0,
+        ProcModule.RP: 0,
+        ProcModule.EN: 1,
     }
     max_tags_all, max_is_separate = max_neg_tagss[ProcModule.value()]
     max_wtags_all = max_wildcardss[ProcModule.value()]

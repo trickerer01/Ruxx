@@ -21,12 +21,12 @@ __all__ = ('get_new_downloader',)
 
 
 DOWNLOADERS_BY_PROC_MODULE = {
-    ProcModule.PROC_RX: DownloaderRx,
-    ProcModule.PROC_RN: DownloaderRn,
-    ProcModule.PROC_RS: DownloaderRs,
-    ProcModule.PROC_RZ: DownloaderRz,
-    ProcModule.PROC_RP: DownloaderRp,
-    ProcModule.PROC_EN: DownloaderEn,
+    ProcModule.RX: DownloaderRx,
+    ProcModule.RN: DownloaderRn,
+    ProcModule.RS: DownloaderRs,
+    ProcModule.RZ: DownloaderRz,
+    ProcModule.RP: DownloaderRp,
+    ProcModule.EN: DownloaderEn,
 }
 
 
