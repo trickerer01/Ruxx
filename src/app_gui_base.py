@@ -57,8 +57,8 @@ __all__ = (
     'get_global', 'config_global', 'is_global_disabled', 'is_menu_disabled', 'is_focusing', 'toggle_console', 'hotkey_text',
     'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list', 'ask_filename', 'browse_path',
     'register_menu_command', 'register_submenu_command', 'register_menu_checkbutton', 'register_menu_radiobutton',
-    'register_submenu_radiobutton', 'register_menu_separator', 'get_all_media_files_in_cur_dir', 'update_lastpath', 'config_menu',
-    'toggle_autocompletion', 'trigger_autocomplete_tag',
+    'register_submenu_radiobutton', 'register_menu_separator', 'get_all_media_files_in_cur_dir', 'get_media_files_dir',
+    'update_lastpath', 'config_menu', 'toggle_autocompletion', 'trigger_autocomplete_tag',
 )
 
 
@@ -461,7 +461,7 @@ class AskFileSizeFilterWindow(AwaitableAskWindow):
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = BaseText(frame, width=18, textvariable=self.variable)
+        self.entry = BaseText(frame, width=18, textvariable=self.variable, bindings={BUT_RETURN: lambda _: self.ok()})
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
     def value(self) -> Optional[List[float]]:
@@ -472,18 +472,20 @@ class AskFileSizeFilterWindow(AwaitableAskWindow):
 
 
 class AskIntWindow(AwaitableAskWindow):
-    def __init__(self, parent, validator: Callable[[int], bool], title='Enter number') -> None:
-        self.validator = validator or (lambda _: True)
+    def __init__(self, parent, validator: Callable[[int], bool], title='Enter number', *, default='') -> None:
+        self.validator = validator
         self.entry: Optional[BaseText] = None
+        self.default = default
         super().__init__(parent, title)
 
     def finalize(self) -> None:
-        self.variable.set('')
+        self.variable.set(self.default)
         AwaitableAskWindow.finalize(self)
+        self.entry.select_all()
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = BaseText(frame, width=18, textvariable=self.variable)
+        self.entry = BaseText(frame, width=18, textvariable=self.variable, bindings={BUT_RETURN: lambda _: self.ok()})
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
     def value(self) -> Optional[int]:
@@ -506,7 +508,7 @@ class AskFileScoreFilterWindow(AwaitableAskWindow):
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = BaseText(frame, width=18, textvariable=self.variable)
+        self.entry = BaseText(frame, width=18, textvariable=self.variable, bindings={BUT_RETURN: lambda _: self.ok()})
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
     def value(self) -> Optional[List[int]]:
@@ -1438,6 +1440,11 @@ def register_menu_separator() -> None:
 def get_all_media_files_in_cur_dir() -> Tuple[str]:
     flist: Tuple[str] = filedialog.askopenfilenames(initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),))
     return flist
+
+
+def get_media_files_dir() -> str:
+    loc = str(filedialog.askdirectory(initialdir=get_curdir(), mustexist=1))
+    return loc
 
 
 def update_lastpath(filefullpath: str) -> None:

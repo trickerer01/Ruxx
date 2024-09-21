@@ -10,11 +10,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import ctypes
 import sys
 from datetime import datetime
-from os import path, system, makedirs, getcwd
+from os import path, system, makedirs, remove, replace, getcwd
 from threading import Thread
 from time import sleep as thread_sleep
 from tkinter import END, messagebox
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 
 # internal
 from app_cmdargs import prepare_arglist
@@ -26,6 +26,7 @@ from app_defines import (
 )
 from app_download import Downloader
 from app_downloaders import get_new_downloader
+from app_file_searcher import find_duplicated_files
 from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_size, sort_files_by_score
 from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
@@ -35,6 +36,7 @@ from app_gui_base import (
     set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list, browse_path, register_menu_command, toggle_console,
     register_submenu_command, register_menu_checkbutton, register_menu_radiobutton, register_submenu_radiobutton, register_menu_separator,
     get_all_media_files_in_cur_dir, update_lastpath, toggle_autocompletion, trigger_autocomplete_tag, hotkey_text, config_menu,
+    get_media_files_dir,
 )
 from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
@@ -75,13 +77,13 @@ dwn: Optional[Downloader] = None
 
 
 # static methods
-def file_worker_report(succ_count: int, total_count: int, word1: str) -> None:
+def file_worker_report(succ_count: int, total_count: int, word1: str, word2='') -> None:
     if succ_count == total_count:
-        trace(f'Successfully {word1}ed {total_count:d} file(s).')
+        trace(f'Successfully {word1}ed {total_count:d} file(s){word2}.')
     elif succ_count > 0:
-        trace(f'Warning: only {succ_count:d} / {total_count:d} files were {word1}ed.')
+        trace(f'Warning: only {succ_count:d} / {total_count:d} files were {word1}ed{word2}.')
     else:
-        trace(f'An error occured while {word1}ing {total_count:d} files.')
+        trace(f'An error occured while {word1}ing {total_count:d} files{word2}.')
 
 
 def untag_files_do() -> None:
@@ -148,6 +150,79 @@ def sort_files_by_score_do() -> None:
     file_worker_report(result, len(filelist), 'sort')
 
 
+def find_duplicated_files_wrapper() -> Dict[str, List[str]]:
+    loc = get_media_files_dir()
+    if not loc:
+        return {}
+    aw = AskIntWindow(rootm(), lambda x: x >= 0, title='Enter scan depth', default='0')
+    aw.finalize()
+    rootm().wait_window(aw.window)
+    depth = aw.value()
+    if depth is None:
+        if aw.variable.get() != '':
+            trace(f'Invalid scan depth value \'{aw.variable.get()}\'')
+        return {}
+    try:
+        trace(f'Looking for duplicate files in \'{loc}\'...')
+        ret_files = find_duplicated_files(loc, depth)
+        dupe_messages = list()
+        if ret_files:
+            dupe_messages.append('Duplicates found:')
+            file_num = 0
+            n = '\n  - '
+            for base_file_fullpath in sorted(ret_files.keys(), reverse=True):
+                file_num += 1
+                dupe_paths = ret_files[base_file_fullpath]
+                dupe_messages.append(f' {file_num:d}) {base_file_fullpath}:{n}{n.join(dupe_paths)}')
+        else:
+            dupe_messages.append('No duplicates found!')
+        trace('\n'.join(dupe_messages))
+        return ret_files
+    except Exception:
+        trace(f'An error occured while looking for duplicates in \'{loc}\'.')
+        return {}
+
+
+def find_duplicates() -> None:
+    find_duplicated_files_wrapper()
+
+
+def find_duplicates_separate() -> None:
+    dfiles = find_duplicated_files_wrapper()
+    if not dfiles:
+        return
+    moved_files = 0
+    filepaths = list()
+    for basefile in dfiles:
+        filepaths.extend(dfiles[basefile])
+    root_folder = normalize_path(path.commonpath(list(dfiles.keys())))
+    move_folder = f'{root_folder}dupes/'
+    try:
+        if not path.isdir(move_folder):
+            makedirs(move_folder)
+        for dupe_file_path in filepaths:
+            dest_file_path = f'{move_folder}{path.split(dupe_file_path)[1]}'
+            if path.abspath(dupe_file_path) != path.abspath(dest_file_path):
+                replace(dupe_file_path, dest_file_path)
+            moved_files += 1
+    finally:
+        file_worker_report(moved_files, sum(len(dfiles[_]) for _ in dfiles), 'mov', f' to \'{move_folder}\'')
+
+
+def find_duplicates_remove() -> None:
+    dfiles = find_duplicated_files_wrapper()
+    if not dfiles:
+        return
+    removed_files = 0
+    try:
+        for dfkey in dfiles:
+            for filepath in dfiles[dfkey]:
+                remove(filepath)
+                removed_files += 1
+    finally:
+        file_worker_report(removed_files, sum(len(dfiles[_]) for _ in dfiles), 'remov')
+
+
 def set_download_limit() -> None:
     aw = AskIntWindow(rootm(), lambda x: x >= 0)
     aw.finalize()
@@ -155,7 +230,7 @@ def set_download_limit() -> None:
     limit = aw.value()
     if limit is None:
         if aw.variable.get() != '':
-            trace(f'Invalid limt value \'{aw.variable.get()}\'')
+            trace(f'Invalid limit value \'{aw.variable.get()}\'')
         return
     setrootconf(Options.DOWNLOAD_LIMIT, limit)
     config_menu(Menus.DEBUG, SubMenus.DLIMSET, label=f'Set download limit ({limit})...')
@@ -732,6 +807,11 @@ def init_menus() -> None:
     register_submenu_command('by type', sort_files_by_type_do)
     register_submenu_command('by size', sort_files_by_size_do)
     register_submenu_command('by score', sort_files_by_score_do)
+    register_menu_separator()
+    register_submenu('Scan for duplicates...')
+    register_submenu_command('and report', find_duplicates)
+    register_submenu_command('and separate', find_duplicates_separate)
+    register_submenu_command('and remove', find_duplicates_remove)
     register_menu_separator()
     register_menu_checkbutton('Enable autocompletion', CVARS[Options.AUTOCOMPLETION_ENABLE], toggle_autocompletion_wrapper)
     register_menu_command('Autocomplete tag...', trigger_autocomplete_tag, Options.ACTION_AUTOCOMPLETE_TAG)

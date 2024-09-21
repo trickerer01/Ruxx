@@ -58,6 +58,10 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
   - **by type** ‒ sort by file type (checking file extension). You can separate files by `videos`/`images`/`flash (RN, EN)` or by extension itself. Note that both `jpeg` and `jpg` files will be placed into **jpg** folder
   - **by size** ‒ sort by file size (you'll have to provide a threshold, in Megabytes). You can use multiple thesholds, separated by space, in any order: `0.5 10 3.0 5.00`
   - **by score** ‒ sort by post score. Make sure that selected files include score in their names or this won't work. You can use multiple thesholds, separated by space, in any order: `100 250 50 500`
+- **Tools -> Scan for duplicates...** ‒ download results deduplication tool. Select a folder and scan depth ‒ receive a list of binary equal files. Note that only media files will be scanned. Extra actions depend on selected option:
+  - **and report** ‒ do nothing
+  - **and separate** ‒ for each set of equal files leave one original file and **move** all its dupes to 'dupes' folder. The longest common path is used as base folder
+  - **and remove** ‒ for each set of equal files leave one original file and **delete** all its dupes
 - **Tools -> Enable autocompletion** ‒ this feature allows [tag autocompletion](#tag-autocompletion) within **Tags** field
 - **Tools -> Autocomplete tag...** \<Ctrl+Space> ‒ trigger autocompletion at current cursor position. Note that the hotkey will only work when focusing the **Tags** field
 - **Help -> Tags** ‒ a quick list of tag types and how to use them (for selected module)

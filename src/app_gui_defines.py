@@ -333,7 +333,7 @@ class SubMenus(IntEnum):
     RX, RN, RS, RZ, RP, EN = 0, 1, 2, 3, 4, 5
     HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6
     DOWNLOAD, CHECKTAGS, CLEARLOG = 0, 1, 3
-    IDLIST, UNTAG, RETAG, SORT, AUTOCOMPLETEE, AUTOCOMPLETER = 0, 2, 3, 5, 7, 8
+    IDLIST, UNTAG, RETAG, SORT, DUPLICATES, AUTOCOMPLETEE, AUTOCOMPLETER = 0, 2, 3, 5, 7, 9, 10
     DFULL, DSKIP, DTOUCH, DLIMSET, DLIMRESET = 0, 1, 2, 3, 4
 
     def __str__(self) -> str:
@@ -357,7 +357,8 @@ menu_items = {
     Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
                                SubMenus.IGNOREPROXY, SubMenus.CACHEMODE),
     Menus.ACTIONS: RuxxMenu(SubMenus.DOWNLOAD, SubMenus.CHECKTAGS),
-    Menus.TOOLS: RuxxMenu(SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT, SubMenus.AUTOCOMPLETEE, SubMenus.AUTOCOMPLETER),
+    Menus.TOOLS: RuxxMenu(SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT, SubMenus.DUPLICATES,
+                          SubMenus.AUTOCOMPLETEE, SubMenus.AUTOCOMPLETER),
     Menus.DEBUG: RuxxMenu(SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH, SubMenus.DLIMSET, SubMenus.DLIMRESET),
 }
 
@@ -367,7 +368,7 @@ menu_item_orig_states = {
     Menus.MODULE: (STATE_NORMAL,) * 6,
     Menus.CONNECTION: (STATE_NORMAL,) * 7,
     Menus.ACTIONS: (STATE_NORMAL,) * 4,
-    Menus.TOOLS: (STATE_NORMAL,) * 9,
+    Menus.TOOLS: (STATE_NORMAL,) * 11,
     Menus.DEBUG: (STATE_NORMAL,) * 5,
 }
 # end global static
