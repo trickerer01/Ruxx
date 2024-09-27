@@ -6,6 +6,7 @@ on:
       - 'main'
     paths:
       - 'src/*.py'
+      - '!src/app_revision.py'
   pull_request:
     types:
       - opened
@@ -13,6 +14,7 @@ on:
       - synchronize
     paths:
       - 'src/*.py'
+      - '!src/app_revision.py'
 
 permissions:
   contents: read
