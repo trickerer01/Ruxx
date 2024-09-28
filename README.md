@@ -267,7 +267,7 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 - **ERROR**: if you see this the download process may fail, Ruxx can only retry the failed action, in most cases that's enough
 
 ### Technical info
-Ruxx is written in Python (3.9). Lines of code: 12700+. Executables built using PyInstaller (6.1 for Windows, 3.6 for Linux)
+Ruxx is written in Python (3.9 for Windows, 3.11 for Linux). Lines of code: 12700+. Executables built using PyInstaller 6.1
 
 ### Support
 For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/Ruxx/issues)
