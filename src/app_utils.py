@@ -11,11 +11,7 @@ import sys
 from abc import abstractmethod
 from datetime import datetime, date
 from tkinter import messagebox
-from typing import Iterable, TypeVar
-try:
-    from typing import Protocol
-except Exception:
-    from typing_extensions import Protocol  # noqa
+from typing import Iterable, TypeVar, Protocol
 
 # internal
 from app_defines import FMT_DATE, SUPPORTED_PLATFORMS
@@ -34,7 +30,7 @@ class Comparable(Protocol):
 
 
 def ensure_compatibility() -> None:
-    assert sys.version_info >= (3, 7), 'Minimum python version required is 3.7!'
+    assert sys.version_info >= (3, 9), 'Minimum python version required is 3.9!'
     assert sys.platform in SUPPORTED_PLATFORMS, f'Unsupported OS \'{sys.platform}\'!'
 
 

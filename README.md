@@ -246,7 +246,7 @@ EN module also allows creating post sets. Essentially they are no different from
 
 #### Using from console
 - It is possible to use Ruxx as a cmdline tool. In main window you will find `Cmd` section ‒ it generates your cmdline arguments every time you make a change ‒ use those arguments as an example. In console window you may need to escape some of them (path, `OR` groups, tags containing dots, etc.). Most arguments are optional though ‒ the only ones required are `tags` (default module is RX)  
-- Python 3.7 or greater required. See `requirements.txt` for additional dependencies. Install with:
+- Python 3.9 or greater required. See `requirements.txt` for additional dependencies. Install with:
   - `python -m pip install -r requirements.txt`
 
 - To run Ruxx directly using python target `ruxx_cmd.py` or `ruxx_gui.py`
@@ -267,7 +267,7 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 - **ERROR**: if you see this the download process may fail, Ruxx can only retry the failed action, in most cases that's enough
 
 ### Technical info
-Ruxx is written in Python (3.7). Lines of code: 12700+. Executables built using PyInstaller (5.8 for Windows, 3.6 for Linux)
+Ruxx is written in Python (3.9). Lines of code: 12700+. Executables built using PyInstaller (6.1 for Windows, 3.6 for Linux)
 
 ### Support
 For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/Ruxx/issues)
