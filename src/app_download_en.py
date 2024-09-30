@@ -11,8 +11,9 @@ from base64 import b64decode
 from datetime import datetime
 from json import loads
 from multiprocessing.dummy import current_process
+from collections.abc import MutableSet
+from re import Pattern
 from time import sleep as thread_sleep
-from typing import Tuple, Pattern, Dict, MutableSet, List
 
 # requirements
 from bs4 import BeautifulSoup
@@ -54,10 +55,10 @@ class DownloaderEn(Downloader):
         self._base_headers = {'User-Agent': f'Ruxx/{APP_VERSION} <{APP_ADDRESS}>'}
         self._base_cookies = {}
 
-    def _get_module_specific_default_headers(self) -> Dict[str, str]:
+    def _get_module_specific_default_headers(self) -> dict[str, str]:
         return self._base_headers
 
-    def _get_module_specific_default_cookies(self) -> Dict[str, str]:
+    def _get_module_specific_default_cookies(self) -> dict[str, str]:
         return self._base_cookies
 
     def _is_pool_search_conversion_required(self) -> bool:
@@ -72,7 +73,7 @@ class DownloaderEn(Downloader):
     def _supports_native_id_filter(self) -> bool:
         return True
 
-    def _get_id_bounds(self) -> Tuple[int, int]:
+    def _get_id_bounds(self) -> tuple[int, int]:
         raise NotImplementedError
 
     def _get_sitename(self) -> str:
@@ -184,12 +185,12 @@ class DownloaderEn(Downloader):
                 direction = -1 if last_count == 0 else 1
         return page * self._get_items_per_page() + last_count
 
-    def _get_image_address(self, h: str) -> Tuple[str, str]:
-        def hi_res_addr() -> Tuple[str, str]:
+    def _get_image_address(self, h: str) -> tuple[str, str]:
+        def hi_res_addr() -> tuple[str, str]:
             addr, ext = self.extract_file_url(h)
             return addr, ext
 
-        def low_res_addr() -> Tuple[str, str]:
+        def low_res_addr() -> tuple[str, str]:
             addr, ext = self.extract_sample_url(h)
             return addr, ext
 
@@ -211,7 +212,7 @@ class DownloaderEn(Downloader):
 
         return address, fmt
 
-    def _get_video_address(self, h: str) -> Tuple[str, str]:
+    def _get_video_address(self, h: str) -> tuple[str, str]:
         addr, ext = self.extract_file_url(h)
         if len(addr) == 0:
             addr, ext = self.extract_sample_url(h)
@@ -339,7 +340,7 @@ class DownloaderEn(Downloader):
         return int(count_str)
 
     @staticmethod
-    def extract_file_url(h: str) -> Tuple[str, str]:
+    def extract_file_url(h: str) -> tuple[str, str]:
         file_re_res = re_orig_file_link.search(h)
         if file_re_res is None:
             return '', ''
@@ -348,7 +349,7 @@ class DownloaderEn(Downloader):
         return file_url, file_ext
 
     @staticmethod
-    def extract_sample_url(h: str) -> Tuple[str, str]:
+    def extract_sample_url(h: str) -> tuple[str, str]:
         sample_re_res = re_sample_file_link.search(h)
         if sample_re_res is None:
             return '', ''
@@ -367,7 +368,7 @@ class DownloaderEn(Downloader):
         abbrp = self._get_module_abbr_p()
         total_count_old = len(self.items_raw_per_task)
         removed_count = 0
-        removed_messages: List[str] = list()
+        removed_messages: list[str] = list()
         idx: int
         for idx in reversed(range(total_count_old)):
             self.catch_cancel_or_ctrl_c()

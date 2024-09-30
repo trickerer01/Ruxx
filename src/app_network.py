@@ -16,7 +16,6 @@ from re import compile as re_compile
 from sys import exc_info
 from threading import Thread, Lock as ThreadLock
 from time import sleep as thread_sleep
-from typing import Optional, Dict, IO, Union, Tuple
 from urllib.parse import urlparse
 from warnings import filterwarnings
 
@@ -65,7 +64,7 @@ class ThreadedWorker(ABC):
     """
     @abstractmethod
     def __init__(self) -> None:
-        self.my_root_thread: Optional[Thread] = None
+        self.my_root_thread: Thread | None = None
         self.item_lock = ThreadLock()
         self.items_all_lock = ThreadLock()
 
@@ -88,28 +87,28 @@ class ThreadedHtmlWorker(ThreadedWorker):
     def __init__(self) -> None:
         super().__init__()
         self.verbose = False
-        self.raw_html_cache: Dict[str, Union[BeautifulSoup, bytes]] = dict()
+        self.raw_html_cache: dict[str, BeautifulSoup | bytes] = dict()
         self.cache_mode = HtmlCacheMode.CACHE_BYTES
         self.add_headers: structures.CaseInsensitiveDict[str, str] = structures.CaseInsensitiveDict()
         self.add_cookies: structures.CaseInsensitiveDict[str, str] = structures.CaseInsensitiveDict()
         self.ignore_proxy = False
         self.ignore_proxy_dwn = False
-        self.proxies: Optional[Dict[str, str]] = None
+        self.proxies: dict[str, str] | None = None
         self.timeout = CONNECT_TIMEOUT_BASE
         self.retries = CONNECT_RETRIES_BASE
-        self.etags: Dict[str, str] = dict()
-        self.session: Optional[Session] = None
+        self.etags: dict[str, str] = dict()
+        self.session: Session | None = None
 
     @abstractmethod
     def _get_sitename(self) -> str:
         ...
 
     @abstractmethod
-    def _get_module_specific_default_headers(self) -> Dict[str, str]:
+    def _get_module_specific_default_headers(self) -> dict[str, str]:
         ...
 
     @abstractmethod
-    def _get_module_specific_default_cookies(self) -> Dict[str, str]:
+    def _get_module_specific_default_cookies(self) -> dict[str, str]:
         ...
 
     def make_session(self) -> Session:
@@ -138,7 +137,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
         if args.cookies:
             self.add_cookies.update(args.cookies)
         for container_base, container_ext in zip((self.add_headers, self.add_cookies), (args.header, args.cookie)):
-            pair: Tuple[str, str]
+            pair: tuple[str, str]
             for pair in container_ext or []:
                 if pair[0] in container_base:
                     trace(f'Warning (W1): Overriding json value at \'{pair[0]}\' from \'{container_base[pair[0]]}\' to \'{pair[1]}\'')
@@ -172,7 +171,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                         trace(f'{result.result_str} interrupted', True)
                         raise DownloadInterruptException
                     try:
-                        def download_chunk(ofile: IO, start: int, end: int, exp_size: int, chunk_num: int) -> None:
+                        def download_chunk(ofile, start: int, end: int, exp_size: int, chunk_num: int) -> None:
                             headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                                        'Accept-Language': 'en-US,en;q=0.5',
                                        'Accept-Encoding': 'gzip, deflate, br',
@@ -322,8 +321,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
         return result
 
     # threaded
-    def wrap_request(self, url: str, tries: int, method: str, **kwargs) -> Optional[Response]:
-        r: Optional[Response] = None
+    def wrap_request(self, url: str, tries: int, method: str, **kwargs) -> Response | None:
+        r: Response | None = None
         retries = 0
         while retries < tries:
             self.catch_cancel_or_ctrl_c()
@@ -370,7 +369,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
         return r
 
     # threaded
-    def fetch_html(self, url: str, tries=0, do_cache=False, method='GET', **kwargs) -> Optional[BeautifulSoup]:
+    def fetch_html(self, url: str, tries=0, do_cache=False, method='GET', **kwargs) -> BeautifulSoup | None:
         cached = self.raw_html_cache.get(url, b'')
         if cached:
             return cached if isinstance(cached, BeautifulSoup) else BeautifulSoup(cached, 'html.parser')

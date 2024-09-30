@@ -8,25 +8,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 import sys
-from abc import abstractmethod
+from collections.abc import Iterable
 from datetime import datetime, date
 from tkinter import messagebox
-from typing import Iterable, TypeVar, Protocol
 
 # internal
 from app_defines import FMT_DATE, SUPPORTED_PLATFORMS
 from app_gui_defines import SLASH
 from app_re import re_uscore_mult
-
-T_N1 = TypeVar('T_N1')
-
-
-class Comparable(Protocol):
-    @abstractmethod
-    def __lt__(self, other) -> bool: ...
-
-    @abstractmethod
-    def __eq__(self, other) -> bool: ...
 
 
 def ensure_compatibility() -> None:
@@ -34,7 +23,7 @@ def ensure_compatibility() -> None:
     assert sys.platform in SUPPORTED_PLATFORMS, f'Unsupported OS \'{sys.platform}\'!'
 
 
-def assert_nonempty(container: Iterable[T_N1], message='') -> Iterable[T_N1]:
+def assert_nonempty(container: Iterable[str], message='') -> Iterable[str]:
     assert (not not container), message
     return container
 

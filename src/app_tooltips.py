@@ -7,9 +7,10 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from __future__ import annotations
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterable
 from tkinter import Listbox, Toplevel, Widget, END, SOLID
-from typing import Optional, Iterable, Union, Callable
 
 __all__ = ('WidgetToolTip',)
 
@@ -18,8 +19,8 @@ class ToolTipBase(ABC):
     def __init__(self, widget: Widget, timed: bool, bgcolor='#ffffdd', appear_delay=1000, border_width=1, relief=SOLID) -> None:
         self.widget = widget
         self.timed = timed
-        self.tipwindow: Optional[Toplevel] = None
-        self.id: Optional[str] = None
+        self.tipwindow: Toplevel | None = None
+        self.id: str | None = None
         self.bgcolor = bgcolor or '#ffffdd'
         self.appear_delay = appear_delay or 1000
         self.border_width = border_width or 1
@@ -45,7 +46,7 @@ class ToolTipBase(ABC):
 
     def unschedule(self) -> None:
         my_id = self.id
-        self.id: Optional[str] = None
+        self.id: str | None = None
         if my_id:
             self.widget.after_cancel(my_id)
 
@@ -55,7 +56,7 @@ class ToolTipBase(ABC):
         x = self.widget.winfo_rootx() + 20
         y = self.widget.winfo_rooty() + self.widget.winfo_height() + 1
         self.tipwindow = Toplevel(self.widget)
-        self.tipwindow.wm_overrideredirect(1)
+        self.tipwindow.wm_overrideredirect(True)
         self.tipwindow.wm_geometry(f'+{x:.0f}+{y:.0f}')
         self._showcontents()
         if self.timed:
@@ -63,7 +64,7 @@ class ToolTipBase(ABC):
 
     def hidetip(self) -> None:
         tw = self.tipwindow
-        self.tipwindow: Optional[Toplevel] = None
+        self.tipwindow: Toplevel | None = None
         if tw:
             tw.destroy()
 
@@ -73,7 +74,7 @@ class ToolTipBase(ABC):
 
 
 class WidgetToolTip(ToolTipBase):
-    def __init__(self, widget: Widget, items: Union[Iterable[str], Callable[[], Iterable[str]]], **kwargs) -> None:
+    def __init__(self, widget: Widget, items: Iterable[str] | Callable[[], Iterable[str]], **kwargs) -> None:
         super().__init__(widget, **kwargs)
         self.items = items if callable(items) else list(items or ('Tooltip is missing!',))
 

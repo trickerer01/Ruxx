@@ -8,10 +8,12 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # app_gui, app_cmdargs
 
 # native
+from __future__ import annotations
 import ctypes
 import sys
 from abc import ABC, abstractmethod
 from base64 import b64decode
+from collections.abc import Callable, Iterable
 from json import dumps as json_dumps, loads as json_loads
 from os import curdir, path
 from re import compile as re_compile
@@ -19,7 +21,6 @@ from tkinter import (
     Tk, Toplevel, ttk, Widget, Menu, Scrollbar, Button, Text, Label, Listbox, PhotoImage, StringVar, IntVar, BooleanVar,
     filedialog, messagebox, HORIZONTAL, W, S, X, Y, NO, YES, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT, TOP, INSERT, NONE, SEL,
 )
-from typing import Optional, Callable, List, Union, Dict, Iterable, Tuple
 
 # internal
 from app_debug import __RUXX_DEBUG__
@@ -67,44 +68,45 @@ def set_console_shown(shown: bool) -> None:
     console_shown = shown
 
 
-def get_icon(index: Icons) -> Optional[PhotoImage]:
+def get_icon(index: Icons) -> PhotoImage | None:
     return icons.get(index)
 
 
-def cur_row() -> Optional[int]:
+def cur_row() -> int | None:
     return c_row
 
 
-def cur_column() -> Optional[int]:
+def cur_column() -> int | None:
     return c_col
 
 
-def next_row() -> Optional[int]:
+def next_row() -> int | None:
     global c_row
     c_row = c_row + 1 if c_row is not None else 0
     return cur_row()
 
 
-def next_column() -> Optional[int]:
+def next_column() -> int | None:
     global c_col
     c_col = c_col + 1 if c_col is not None else 0
     return cur_column()
 
 
-def first_row() -> Optional[int]:
+def first_row() -> int | None:
     global c_row
     c_row = None
     return next_row()
 
 
-def first_column() -> Optional[int]:
+def first_column() -> int | None:
     global c_col
     c_col = None
     return next_column()
 
 
-def attach_tooltip(widget: Widget, contents: Union[Iterable[str], Callable[[], Iterable[str]]], appeardelay=TOOLTIP_DELAY_DEFAULT,
-                   border_width: int = None, relief: str = None, bgcolor: str = None, timed=False) -> WidgetToolTip:
+def attach_tooltip(widget: Widget, contents: Iterable[str] | Callable[[], Iterable[str]],
+                   appeardelay=TOOLTIP_DELAY_DEFAULT, border_width: int = None, relief: str = None, bgcolor: str = None,
+                   timed=False) -> WidgetToolTip:
     return WidgetToolTip(widget, contents, timed=timed, bgcolor=bgcolor, appear_delay=appeardelay, border_width=border_width,
                          relief=relief)
 
@@ -143,7 +145,7 @@ class AppRoot(Tk):
         self.set_position(x, y)
         self.update()
         # self.minsize(self.winfo_reqwidth(), self.winfo_reqheight())  # not smaller than these
-        self.resizable(0, 0)
+        self.resizable(False, False)
 
     def finalize(self) -> None:
         self.bind(BUT_ESCAPE, func=lambda _: self.focus_set())  # release focus from any element on `Esc`
@@ -154,7 +156,7 @@ class AppRoot(Tk):
 class BaseMenu(Menu):
     def __init__(self, parent, *args, **kw) -> None:
         super().__init__(parent, *args, **kw)
-        self.config(tearoff=0)
+        self.config(tearoff=False)
 
 
 class BaseFrame(ttk.Frame):
@@ -166,7 +168,7 @@ class BaseText(Text):
     CTRL_DELETION_DELIMS = ' ,.!~/-=:;'
 
     def __init__(self, parent=None, *args, **kw) -> None:
-        known_bindings: Dict[str, Callable[[...], None]] = kw.pop('bindings', {})
+        known_bindings: dict[str, Callable[[...], None]] = kw.pop('bindings', {})
         self._textvariable = kw.pop('textvariable', StringVar(rootm(), '', ''))
         kw.update(height=1, undo=True, maxundo=500, wrap=NONE)
         super().__init__(parent, *args, **kw)
@@ -195,7 +197,8 @@ class BaseText(Text):
                 known_bindings[sequence](*args_)
             return 'break'
 
-        self._textvariable.trace_add(['unset', 'write'], self._on_var_change)
+        self._textvariable.trace_add('unset', self._on_var_change)
+        self._textvariable.trace_add('write', self._on_var_change)
         self.bind('<<Change>>', self._on_widget_change)
         self.bind('<<Paste>>', self._handle_paste)
         self.bind('<<Selection>>', self._handle_select)
@@ -335,7 +338,7 @@ class BaseText(Text):
 class BaseWindow:
     def __init__(self, parent, init_hidden=True) -> None:
         self.parent = parent
-        self.window: Optional[Toplevel] = None
+        self.window: Toplevel | None = None
         self.visible = False
         self.reinit(init_hidden)
 
@@ -374,8 +377,8 @@ class AwaitableAskWindow(BaseWindow, ABC):
     def __init__(self, parent, title: str) -> None:
         self.title = title or ''
         self.variable = StringVar(parent)
-        self.but_ok: Optional[Button] = None
-        self.but_cancel: Optional[Button] = None
+        self.but_ok: Button | None = None
+        self.but_cancel: Button | None = None
         super().__init__(parent, False)
 
     def config(self) -> None:
@@ -407,7 +410,7 @@ class AwaitableAskWindow(BaseWindow, ABC):
         self.window.update()
         self.window.transient(self.parent)  # remove minimize and maximize buttons
         self.window.minsize(self.window.winfo_reqwidth(), self.window.winfo_reqheight())
-        self.window.resizable(0, 0)
+        self.window.resizable(False, False)
         self.window.focus_set()
 
         self.window.bind(BUT_ESCAPE, lambda _: self.cancel())
@@ -431,7 +434,7 @@ class AskFileTypeFilterWindow(AwaitableAskWindow):
     VALUES = ['Media type', 'Extension']
 
     def __init__(self, parent) -> None:
-        self.cbox: Optional[ttk.Combobox] = None
+        self.cbox: ttk.Combobox | None = None
         super().__init__(parent, 'File types')
 
     def finalize(self) -> None:
@@ -452,7 +455,7 @@ class AskFileTypeFilterWindow(AwaitableAskWindow):
 
 class AskFileSizeFilterWindow(AwaitableAskWindow):
     def __init__(self, parent) -> None:
-        self.entry: Optional[BaseText] = None
+        self.entry: BaseText | None = None
         super().__init__(parent, 'Size thresholds MB')
 
     def finalize(self) -> None:
@@ -464,7 +467,7 @@ class AskFileSizeFilterWindow(AwaitableAskWindow):
         self.entry = BaseText(frame, width=18, textvariable=self.variable, bindings={BUT_RETURN: lambda _: self.ok()})
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
-    def value(self) -> Optional[List[float]]:
+    def value(self) -> list[float] | None:
         try:
             return [float(val) for val in re_ask_values.findall(self.variable.get())]
         except Exception:
@@ -474,7 +477,7 @@ class AskFileSizeFilterWindow(AwaitableAskWindow):
 class AskIntWindow(AwaitableAskWindow):
     def __init__(self, parent, validator: Callable[[int], bool], title='Enter number', *, default='') -> None:
         self.validator = validator
-        self.entry: Optional[BaseText] = None
+        self.entry: BaseText | None = None
         self.default = default
         super().__init__(parent, title)
 
@@ -488,7 +491,7 @@ class AskIntWindow(AwaitableAskWindow):
         self.entry = BaseText(frame, width=18, textvariable=self.variable, bindings={BUT_RETURN: lambda _: self.ok()})
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
-    def value(self) -> Optional[int]:
+    def value(self) -> int | None:
         try:
             val = int(self.variable.get())
             assert self.validator(val)
@@ -499,7 +502,7 @@ class AskIntWindow(AwaitableAskWindow):
 
 class AskFileScoreFilterWindow(AwaitableAskWindow):
     def __init__(self, parent) -> None:
-        self.entry: Optional[BaseText] = None
+        self.entry: BaseText | None = None
         super().__init__(parent, 'Score thresholds')
 
     def finalize(self) -> None:
@@ -511,7 +514,7 @@ class AskFileScoreFilterWindow(AwaitableAskWindow):
         self.entry = BaseText(frame, width=18, textvariable=self.variable, bindings={BUT_RETURN: lambda _: self.ok()})
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
-    def value(self) -> Optional[List[int]]:
+    def value(self) -> list[int] | None:
         try:
             return [int(val) for val in re_ask_values.findall(self.variable.get())]
         except Exception:
@@ -522,8 +525,8 @@ class LogWindow(BaseWindow):
     log_window_base_height = 120
 
     def __init__(self, parent) -> None:
-        self.text: Optional[Text] = None
-        self.scroll: Optional[Scrollbar] = None
+        self.text: Text | None = None
+        self.scroll: Scrollbar | None = None
         self.firstshow = True
         super().__init__(parent)
 
@@ -552,7 +555,7 @@ class LogWindow(BaseWindow):
     def finalize(self) -> None:
         self.window.transient(self.parent)  # remove minimize and maximize buttons
         self.window.minsize(self.parent.winfo_width() - 2, LogWindow.log_window_base_height)
-        self.window.resizable(0, 1)
+        self.window.resizable(False, True)
 
         self.window.bind(BUT_ESCAPE, lambda _: self.toggle_visibility())
 
@@ -586,11 +589,11 @@ class LogWindow(BaseWindow):
 
 class ProxyWindow(BaseWindow):
     def __init__(self, parent) -> None:
-        self.ptype_var: Optional[StringVar] = None
-        self.entry_addr: Optional[BaseText] = None
-        self.but_ok: Optional[Button] = None
-        self.but_cancel: Optional[Button] = None
-        self.err_message: Optional[WidgetToolTip] = None
+        self.ptype_var: StringVar | None = None
+        self.entry_addr: BaseText | None = None
+        self.but_ok: Button | None = None
+        self.but_cancel: Button | None = None
+        self.err_message: WidgetToolTip | None = None
         super().__init__(parent)
 
     def config(self) -> None:
@@ -638,7 +641,7 @@ class ProxyWindow(BaseWindow):
         self.window.update()
         self.window.transient(self.parent)
         self.window.minsize(self.window.winfo_reqwidth(), self.window.winfo_reqheight())
-        self.window.resizable(0, 0)
+        self.window.resizable(False, False)
 
         self.window.bind(BUT_RETURN, lambda _: self.ok())
         self.window.bind(BUT_ESCAPE, lambda _: self.cancel())
@@ -688,18 +691,18 @@ class HeadersAndCookiesWindow(BaseWindow):
     LBOX_WIDTH = 65
 
     def __init__(self, parent) -> None:
-        self.lbox_h: Optional[Listbox] = None
-        self.bdel_h: Optional[Button] = None
-        self.badd_h: Optional[Button] = None
-        self.entry_h: Optional[BaseText] = None
-        self.err_message_syntax_h: Optional[WidgetToolTip] = None
-        self.err_message_count_h: Optional[WidgetToolTip] = None
-        self.lbox_c: Optional[Listbox] = None
-        self.bdel_c: Optional[Button] = None
-        self.badd_c: Optional[Button] = None
-        self.entry_c: Optional[BaseText] = None
-        self.err_message_syntax_c: Optional[WidgetToolTip] = None
-        self.err_message_count_c: Optional[WidgetToolTip] = None
+        self.lbox_h: Listbox | None = None
+        self.bdel_h: Button | None = None
+        self.badd_h: Button | None = None
+        self.entry_h: BaseText | None = None
+        self.err_message_syntax_h: WidgetToolTip | None = None
+        self.err_message_count_h: WidgetToolTip | None = None
+        self.lbox_c: Listbox | None = None
+        self.bdel_c: Button | None = None
+        self.badd_c: Button | None = None
+        self.entry_c: BaseText | None = None
+        self.err_message_syntax_c: WidgetToolTip | None = None
+        self.err_message_count_c: WidgetToolTip | None = None
         super().__init__(parent)
 
     def config(self) -> None:
@@ -784,7 +787,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.lbox_c.configure(width=maxlen)
 
         self.window.minsize(self.window.winfo_reqwidth(), self.window.winfo_reqheight())
-        self.window.resizable(0, 0)
+        self.window.resizable(False, False)
 
         self.window.bind(BUT_ESCAPE, lambda _: self.hide())
         self.lbox_h.bind(BUT_DELETE, lambda _: self.delete_selected_h())
@@ -803,7 +806,7 @@ class HeadersAndCookiesWindow(BaseWindow):
 
     @staticmethod
     def _listbox_to_json(lb: Listbox) -> str:
-        ls: Dict[str, str] = {}
+        ls: dict[str, str] = {}
         for i in range(lb.size()):
             part1, part2 = tuple(str(lb.get(i)).split(':', 1))
             ls.update({part1: part2})
@@ -915,17 +918,17 @@ class HeadersAndCookiesWindow(BaseWindow):
 
 class ConnectRequestIntWindow(BaseWindow):
     def __init__(self, parent, conf_open: Options, conf_str: Options, conf_str_temp: Options,
-                 title: str, hint: str, baseval: int, minmax: Tuple[int, int]) -> None:
+                 title: str, hint: str, baseval: int, minmax: tuple[int, int]) -> None:
         self.title = title
         self.hint = hint
         self.baseval = baseval
         self.minmax = minmax
         self.conf_open, self.conf_str, self.conf_str_temp = conf_open, conf_str, conf_str_temp
-        self.var: Optional[IntVar] = None
-        self.entry: Optional[BaseText] = None
-        self.but_ok: Optional[Button] = None
-        self.but_cancel: Optional[Button] = None
-        self.err_message: Optional[WidgetToolTip] = None
+        self.var: IntVar | None = None
+        self.entry: BaseText | None = None
+        self.but_ok: Button | None = None
+        self.but_cancel: Button | None = None
+        self.err_message: WidgetToolTip | None = None
         super().__init__(parent)
 
     def config(self) -> None:
@@ -965,7 +968,7 @@ class ConnectRequestIntWindow(BaseWindow):
         self.window.update()
         self.window.transient(self.parent)
         self.window.minsize(self.window.winfo_reqwidth(), self.window.winfo_reqheight())
-        self.window.resizable(0, 0)
+        self.window.resizable(False, False)
         self.window.bind(BUT_RETURN, lambda _: self.ok())
         self.window.bind(BUT_ESCAPE, lambda _: self.cancel())
         self.window.bind(BUT_CTRL_A, lambda _: self.select_all())
@@ -1047,11 +1050,11 @@ def register_submenu(label: str) -> Menu:
     return submenu
 
 
-def getrootconf(index: Options) -> Union[int, str]:
+def getrootconf(index: Options) -> int | str:
     return rootm().getvar(CVARS[index])
 
 
-def setrootconf(index: Options, value: Union[int, str, bool]) -> None:
+def setrootconf(index: Options, value: int | str | bool) -> None:
     return rootm().setvar(CVARS[index], value)
 
 
@@ -1113,7 +1116,7 @@ def CreateRoot() -> None:
 
 
 # noinspection PyPep8Naming
-def GetRoot() -> Optional[AppRoot]:
+def GetRoot() -> AppRoot | None:
     return root
 
 
@@ -1270,7 +1273,7 @@ def create_base_window_widgets() -> None:
         messagebox.showinfo('', 'Not all GOBJECTS were registered')
 
 
-def get_global(index: Globals) -> Union[Text, BaseText, Button]:
+def get_global(index: Globals) -> Text | BaseText | Button:
     return gobjects[index]
 
 
@@ -1295,7 +1298,7 @@ def is_menu_disabled(menu: Menus, submenu: SubMenus) -> bool:
     return False
 
 
-def is_focusing(glob: Union[Globals, Widget]) -> bool:
+def is_focusing(glob: Globals | Widget) -> bool:
     try:
         return rootm().focus_get() == (get_global(glob) if isinstance(glob, Globals) else glob)
     except Exception:
@@ -1380,7 +1383,7 @@ def load_id_list() -> None:
             messagebox.showwarning(message=f'Unable to load ids from {filepath[filepath.rfind("/") + 1:]}!')
 
 
-def ask_filename(ftypes: Iterable[Tuple[str, str]]) -> str:
+def ask_filename(ftypes: Iterable[tuple[str, str]]) -> str:
     fullpath = filedialog.askopenfilename(filetypes=ftypes, initialdir=get_curdir())
     if fullpath and len(fullpath) > 0:
         setrootconf(Options.LASTPATH, fullpath[:normalize_path(fullpath, False).rfind(SLASH) + 1])  # not bound
@@ -1416,34 +1419,35 @@ def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt
         rootm().bind(hotkeys[hotkey_opt], func=lambda _: command())
 
 
-def register_menu_checkbutton(label: str, variablename: str, command: Callable = None, hotkey_str: str = None) -> None:
-    BooleanVar(rootm(), False, variablename)
-    c_menum().add_checkbutton(label=label, command=command, variable=variablename, accelerator=hotkey_str)
+def register_menu_checkbutton(label: str, varname: str, command: Callable = None, hotkey: str = None) -> None:
+    if varname not in bool_vars:
+        bool_vars[varname] = BooleanVar(rootm(), False, name=varname)  # needed so it won't be discarded
+    c_menum().add_checkbutton(label=label, command=command, variable=bool_vars[varname], accelerator=hotkey)
 
 
-def register_menu_radiobutton(label: str, variablename: str, value: int, command: Callable = None, hotkey_str: str = None) -> None:
-    if variablename not in int_vars:
-        int_vars[variablename] = IntVar(rootm(), value=value, name=variablename)  # needed so it won't be discarded
-    c_menum().add_radiobutton(label=label, command=command, variable=int_vars[variablename], value=value, accelerator=hotkey_str)
+def register_menu_radiobutton(label: str, varname: str, value: int, command: Callable = None, hotkey: str = None) -> None:
+    if varname not in int_vars:
+        int_vars[varname] = IntVar(rootm(), value=value, name=varname)  # needed so it won't be discarded
+    c_menum().add_radiobutton(label=label, command=command, variable=int_vars[varname], value=value, accelerator=hotkey)
 
 
-def register_submenu_radiobutton(label: str, variablename: str, value: int, command: Callable = None, hotkey_str: str = None) -> None:
-    if variablename not in int_vars:
-        int_vars[variablename] = IntVar(rootm(), value=value, name=variablename)  # needed so it won't be discarded
-    c_submenum().add_radiobutton(label=label, command=command, variable=int_vars[variablename], value=value, accelerator=hotkey_str)
+def register_submenu_radiobutton(label: str, varname: str, value: int, command: Callable = None, hotkey: str = None) -> None:
+    if varname not in int_vars:
+        int_vars[varname] = IntVar(rootm(), value=value, name=varname)  # needed so it won't be discarded
+    c_submenum().add_radiobutton(label=label, command=command, variable=int_vars[varname], value=value, accelerator=hotkey)
 
 
 def register_menu_separator() -> None:
     c_menum().add_separator()
 
 
-def get_all_media_files_in_cur_dir() -> Tuple[str]:
-    flist: Tuple[str] = filedialog.askopenfilenames(initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),))
+def get_all_media_files_in_cur_dir() -> tuple[str]:
+    flist: tuple[str] = filedialog.askopenfilenames(initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),))
     return flist
 
 
 def get_media_files_dir() -> str:
-    loc = str(filedialog.askdirectory(initialdir=get_curdir(), mustexist=1))
+    loc = str(filedialog.askdirectory(initialdir=get_curdir(), mustexist=True))
     return loc
 
 
@@ -1459,7 +1463,7 @@ def toggle_autocompletion() -> None:
         if TagsDB.try_set_basepath(last_path):
             setrootconf(Options.TAGLISTS_PATH, last_path)
         else:
-            loc = str(filedialog.askdirectory(initialdir=last_path, mustexist=1,
+            loc = str(filedialog.askdirectory(initialdir=last_path, mustexist=True,
                                               title='Select a directory where tag lists are located (rx_tags.txt, rn_tags.txt, etc.)'))
             if len(loc) > 0 and (not last_path or loc != last_path) and TagsDB.try_set_basepath(loc):
                 setrootconf(Options.TAGLISTS_PATH, loc)
@@ -1476,50 +1480,39 @@ def trigger_autocomplete_tag() -> None:
 
 # globals
 # ROOOT
-# root: Optional[AppRoot] = None
-# rootFrame: Optional[BaseFrame] = None
-# rootMenu: Optional[Menu] = None
-root = None  # type: Optional[AppRoot]
-rootFrame = None  # type: Optional[BaseFrame]
-rootMenu = None  # type: Optional[Menu]
+root: AppRoot | None = None
+rootFrame: BaseFrame | None = None
+rootMenu: Menu | None = None
 # windows
 IS_WIN = sys.platform == PLATFORM_WINDOWS
-# window_proxy: Optional[ProxyWindow] = None
-# window_hcookies: Optional[HeadersAndCookiesWindow] = None
-# window_timeout: Optional[ConnectionTimeoutWindow] = None
-# window_retries: Optional[ConnectionRetriesWindow] = None
-window_proxy = None  # type: Optional[ProxyWindow]
-window_hcookies = None  # type: Optional[HeadersAndCookiesWindow]
-window_timeout = None  # type: Optional[ConnectionTimeoutWindow]
-window_retries = None  # type: Optional[ConnectionRetriesWindow]
+window_proxy: ProxyWindow | None = None
+window_hcookies: HeadersAndCookiesWindow | None = None
+window_timeout: ConnectionTimeoutWindow | None = None
+window_retries: ConnectionRetriesWindow | None = None
 # counters
-# c_menu: Optional[BaseMenu] = None
-# c_submenu: Optional[BaseMenu] = None
-c_menu = None  # type: Optional[BaseMenu]
-c_submenu = None  # type: Optional[BaseMenu]
+c_menu: BaseMenu | None = None
+c_submenu: BaseMenu | None = None
 # these containers keep technically unbound variables so they arent purged by GC
-int_vars: Dict[str, IntVar] = dict()
-string_vars: Dict[str, StringVar] = dict()
+bool_vars: dict[str, BooleanVar] = dict()
+int_vars: dict[str, IntVar] = dict()
+string_vars: dict[str, StringVar] = dict()
 # end globals
 
 # loaded
 console_shown = True
-# text_cmd: Optional[Text] = None
-text_cmd = None  # type: Optional[Text]
+text_cmd: Text | None = None
 # end loaded
 
 # icons
-icons: Dict[Icons, Optional[PhotoImage]] = {ic: None for ic in Icons.__members__.values()}
+icons: dict[Icons, PhotoImage | None] = {ic: None for ic in Icons.__members__.values()}
 # end icons
 
 re_ask_values = re_compile(r'[^, ]+')
 re_json_entry_value = re_compile(r'^([^: ,]+)[: ,](.+)$')
 
 # GUI grid composition: current column / row universal counters (resettable)
-# c_col: Optional[int] = None
-# c_row: Optional[int] = None
-c_col = None  # type: Optional[int]
-c_row = None  # type: Optional[int]
+c_col: int | None = None
+c_row: int | None = None
 
 #
 #

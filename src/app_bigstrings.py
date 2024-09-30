@@ -8,7 +8,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 from base64 import b64decode
 from json import loads
-from typing import Dict, Set
 
 TAG_NUMS_ENCODED_RZ = (
     'eyIodHVyYm9zaGlnZ3kpIjogIjExIHBvc3RzIChhcnRpc3QpIiwgIjAuMF8ocGl4aXY4NzU2MDQ0NCkiOiAiMTM2IHBvc3RzIChhcnRpc3QpIiwgIjAwcyI6ICIxMjggcG9zdH'
@@ -21155,7 +21154,7 @@ TAG_NUMS_ENCODED_RZ = (
     'ogIjE3IHBvc3RzIChhcnRpc3QpIiwgInp6emhvZGF6enoiOiAiNDMgcG9zdHMgKGFydGlzdCkiLCAienp6eHh4Y2NjIjogIjU2OCBwb3N0cyAoYXJ0aXN0KSJ9'
 )
 
-TAG_NUMS_DECODED_RZ: Set[str] = set(loads(b64decode(TAG_NUMS_ENCODED_RZ)).keys())
+TAG_NUMS_DECODED_RZ: set[str] = set(loads(b64decode(TAG_NUMS_ENCODED_RZ)).keys())
 
 TAG_ALIASES_STR = (
     'eyIxMDFfZGFsbWF0aWFuX3N0cmVldCI6ICIxMDFfZGFsbWF0aWFucyIsICIybWFsZSI6ICIyYm95cyIsICIybWFsZXMiOiAiMmJveXMiLCAiM21hbGUiOiAiM2JveXMiLCAiM3'
@@ -21361,7 +21360,7 @@ TAG_ALIASES_STR = (
     'cnkiLCAieXVraV9kaWZmdXNpb24iOiAiYWlfZ2VuZXJhdGVkIiwgInl1cmkiOiAibGVzYmlhbiIsICJ6ZWJyb2lkIjogInplYnJhIiwgInplcm9fc3VpdCI6ICJib2R5c3VpdC'
     'IsICJ6ZXJvc3VpdCI6ICJib2R5c3VpdCIsICJ6b21iaWVfZnV0YSI6ICJ6b21iaWUiLCAiem9tYmllcyI6ICJ6b21iaWUiLCAiem9vcGhpbGlhIjogImJlc3RpYWxpdHkifQ=='
 )
-TAG_ALIASES: Dict[str, str] = loads(b64decode(TAG_ALIASES_STR))
+TAG_ALIASES: dict[str, str] = loads(b64decode(TAG_ALIASES_STR))
 
 #
 #

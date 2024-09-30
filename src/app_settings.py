@@ -7,10 +7,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from __future__ import annotations
 from abc import ABC, abstractmethod
+from collections.abc import Callable, Iterable
 from os import path, curdir, stat
 from tkinter import Tk, filedialog
-from typing import Union, List, Iterable, Callable, Optional
 
 # internal
 from app_defines import Mem, UTF8, DATE_MIN_DEFAULT, LAUCH_DATE
@@ -34,10 +35,10 @@ class Settings(ABC):
     """
     Settings !Static!
     """
-    INITIAL_SETTINGS: List[str] = []
+    INITIAL_SETTINGS: list[str] = []
     AUTOCONFIG_FILENAMES = ('ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg')
-    on_proc_module_change_callback: Optional[Callable[[int], None]] = None
-    on_init_autocompletion_callback: Optional[Callable[[str], None]] = None
+    on_proc_module_change_callback: Callable[[int], None] | None = None
+    on_init_autocompletion_callback: Callable[[str], None] | None = None
 
     @abstractmethod
     def ___this_class_is_static___(self) -> ...:
@@ -51,7 +52,7 @@ class Settings(ABC):
             self.check_fail_message = check_fail_message or f'Invalid value \'%s\' for config id \'{self.conf.value:d}\''
             assert self.check_fail_message.count('%s') == 1
 
-        def validate(self, val: Union[int, str]) -> bool:
+        def validate(self, val: int | str) -> bool:
             result = self.check(val)
             if result is False:
                 trace(self.check_fail_message % str(val))
@@ -145,13 +146,13 @@ class Settings(ABC):
         Settings._read_settings(Settings.INITIAL_SETTINGS, False)
 
     @staticmethod
-    def _write_settings() -> List[str]:
-        def to_cfg_line(name: str, value: Union[str, int]) -> str:
+    def _write_settings() -> list[str]:
+        def to_cfg_line(name: str, value: str | int) -> str:
             return f'{name}={str(value)}\n'
 
         settings_strlist = ['# Ruxx config settings #\n\n']
         for k in Settings.settings:
-            myval: Union[str, int]
+            myval: str | int
             conf = Settings.settings[k].conf
             if conf == Options.HEADER_ADD_STR:
                 myval = window_hcookiesm().get_json_h()

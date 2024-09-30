@@ -7,8 +7,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from re import compile as re_compile
-from typing import Optional, Pattern, Sequence, Tuple, List
+from __future__ import annotations
+from collections.abc import Sequence
+from re import Pattern, compile as re_compile
 
 # requirements
 from iteration_utilities import unique_everseen
@@ -157,7 +158,7 @@ re_andgr_full = re_compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\
 re_negative_meta = re_compile(r'^-[^:]+:.+?$')
 
 last_tags = ''
-last_fulltags: Optional[Sequence[str]] = None
+last_fulltags: Sequence[str] | None = None
 
 
 def reset_last_tags() -> None:
@@ -205,21 +206,21 @@ def normalize_tag(tag: str) -> str:
     return tag.replace('+', '%2b').replace(' ', '+')
 
 
-def convert_taglist(taglist: Sequence[str]) -> List[str]:
+def convert_taglist(taglist: Sequence[str]) -> list[str]:
     parse_suc, parsed = parse_tags(' '.join(taglist))
     assert parse_suc, f'Invalid tags: {str(taglist)}'
     return [normalize_tag(tag) for tag in parsed]
 
 
-def ret_tags(suc: bool, tag_list: Sequence[str]) -> Tuple[bool, Sequence[str]]:
+def ret_tags(suc: bool, tag_list: Sequence[str]) -> tuple[bool, Sequence[str]]:
     return suc, tag_list
 
 
-def fail() -> Tuple[bool, Sequence[str]]:
+def fail() -> tuple[bool, Sequence[str]]:
     return ret_tags(False, DEFAULT_TAGS)
 
 
-def parse_tags(tags: str) -> Tuple[bool, Sequence[str]]:
+def parse_tags(tags: str) -> tuple[bool, Sequence[str]]:
     global last_tags
     global last_fulltags
 

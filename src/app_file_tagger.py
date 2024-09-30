@@ -7,9 +7,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from collections.abc import Iterable, Sequence
 from os import path, rename as rename_file, listdir
-from re import compile as re_compile
-from typing import Pattern, Iterable, Sequence
+from re import Pattern, compile as re_compile
 
 # internal
 from app_defines import UTF8, FILE_NAME_FULL_MAX_LEN

@@ -8,8 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from os import path
-from re import compile as re_compile
-from typing import Pattern, List, Dict, Tuple
+from re import Pattern, compile as re_compile
 
 # internal
 from app_bigstrings import TAG_ALIASES
@@ -26,12 +25,12 @@ re_wtag = re_compile(r'^(?:[^?*]*[?*]).*?$')
 
 
 class TagsDB:
-    DB: Dict[str, Dict[str, int]] = dict()
-    DBFiles: Dict[str, str] = dict()
+    DB: dict[str, dict[str, int]] = dict()
+    DBFiles: dict[str, str] = dict()
 
     @staticmethod
     def try_set_basepath(basepath: str, *, traverse=True) -> int:
-        def collect_talist_names(fpath: str, paths_dict: Dict[str, str]) -> None:
+        def collect_talist_names(fpath: str, paths_dict: dict[str, str]) -> None:
             for module in MODULE_CHOICES:
                 taglist_name = f'{module}_tags.txt'
                 taglist_path = f'{fpath}{taglist_name}'
@@ -44,7 +43,7 @@ class TagsDB:
             folder_up, tail = tuple(path.split(folder))
             for folder_path in (f'{folder}/', f'{folder}/2tags/'):
                 if path.isdir(folder_path):
-                    tlpaths: Dict[str, str] = dict()
+                    tlpaths: dict[str, str] = dict()
                     collect_talist_names(folder_path, tlpaths)
                     if tlpaths:
                         TagsDB.DBFiles.update(tlpaths)
@@ -81,7 +80,7 @@ class TagsDB:
             return
 
     @staticmethod
-    def _get_tag_matches(module: str, value: str) -> List[Tuple[str, int]]:
+    def _get_tag_matches(module: str, value: str) -> list[tuple[str, int]]:
         arr = list(TagsDB.DB[module].keys())
         lb, ub = 0, len(arr)
         while lb < ub:
@@ -91,7 +90,7 @@ class TagsDB:
             else:
                 ub = mid
         ub = len(arr)
-        gmatches: List[str] = list()
+        gmatches: list[str] = list()
         while lb < ub:
             if len(gmatches) >= TAG_AUTOCOMPLETE_NUMBER_MAX * 5 or not arr[lb].startswith(value):
                 break
@@ -101,7 +100,7 @@ class TagsDB:
         return glist[:TAG_AUTOCOMPLETE_NUMBER_MAX]
 
     @staticmethod
-    def autocomplete_tag(module: str, tag: str) -> List[Tuple[str, int]]:
+    def autocomplete_tag(module: str, tag: str) -> list[tuple[str, int]]:
         matches = list()
         if len(tag) >= TAG_AUTOCOMPLETE_LENGTH_MIN:
             TagsDB._load(module)
@@ -126,7 +125,7 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pa
         return base_string
 
     tags_list = tags_str.split(' ')
-    tags_toadd_list: List[str] = []
+    tags_toadd_list: list[str] = []
 
     for tag in tags_list:
         tag = tag.replace('-', '').replace('\'', '')

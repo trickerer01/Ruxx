@@ -7,6 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from __future__ import annotations
 import ctypes
 import sys
 from datetime import datetime
@@ -14,7 +15,6 @@ from os import path, system, makedirs, remove, replace, getcwd
 from threading import Thread
 from time import sleep as thread_sleep
 from tkinter import END, messagebox
-from typing import Optional, List, Tuple, Dict
 
 # internal
 from app_cmdargs import prepare_arglist
@@ -60,8 +60,8 @@ from app_validators import DateValidator
 __all__ = ('run_ruxx_gui',)
 
 # loaded
-download_thread: Optional[Thread] = None
-tags_check_thread: Optional[Thread] = None
+download_thread: Thread | None = None
+tags_check_thread: Thread | None = None
 prev_download_state = True
 IS_WIN = sys.platform == PLATFORM_WINDOWS
 IS_RAW = '_sitebuiltins' in sys.modules  # ran from console (shell or IDE)
@@ -72,7 +72,7 @@ CAN_MANIPULATE_CONSOLE = HAS_OWN_CONSOLE and not IS_RAW
 # end loaded
 
 # MODULES
-dwn: Optional[Downloader] = None
+dwn: Downloader | None = None
 # END MODULES
 
 
@@ -150,7 +150,7 @@ def sort_files_by_score_do() -> None:
     file_worker_report(result, len(filelist), 'sort')
 
 
-def find_duplicated_files_wrapper() -> Dict[str, List[str]]:
+def find_duplicated_files_wrapper() -> dict[str, list[str]]:
     loc = get_media_files_dir()
     if not loc:
         return {}
@@ -350,7 +350,7 @@ def update_widget_enabled_states() -> None:
 
 def update_progressbar() -> None:
     try:
-        progress_value: Optional[int] = None
+        progress_value: int | None = None
         if is_downloading():
             if dwnm().current_state == DownloaderStates.DOWNLOADING:
                 progress_value = PROGRESS_VALUE_NO_DOWNLOAD
@@ -388,7 +388,7 @@ def update_statusbar() -> None:
     rootm().after(GUI2_UPDATE_DELAY_DEFAULT // 6, update_statusbar)
 
 
-def prepare_cmdline() -> List[str]:
+def prepare_cmdline() -> list[str]:
     # base
     newstr = ['Cmd:']
     # + tags
@@ -537,7 +537,7 @@ def update_frame_cmdline() -> None:
     rootm().after(int(GUI2_UPDATE_DELAY_DEFAULT * 3), update_frame_cmdline)
 
 
-def start_check_tags_thread(cmdline: List[str]) -> None:
+def start_check_tags_thread(cmdline: list[str]) -> None:
     global dwn
     arg_list = prepare_arglist(cmdline[1:])
     with get_new_downloader() as dwn:
@@ -599,7 +599,7 @@ def check_tags_direct() -> None:
     Thread(target=check_tags_direct_do).start()
 
 
-def recheck_args() -> Tuple[bool, str]:
+def recheck_args() -> tuple[bool, str]:
     # tags
     if len(str(getrootconf(Options.TAGS))) <= 0:
         return False, 'No tags specified'
@@ -719,7 +719,7 @@ def do_download() -> None:
     unfocus_buttons_once()
 
 
-def start_download_thread(cmdline: List[str]) -> None:
+def start_download_thread(cmdline: list[str]) -> None:
     global dwn
     arg_list = prepare_arglist(cmdline[1:])
     with get_new_downloader() as dwn:

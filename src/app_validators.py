@@ -7,13 +7,13 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from __future__ import annotations
 from abc import abstractmethod
 from argparse import ArgumentError
 from datetime import datetime
 from ipaddress import IPv4Address
 from json import loads as json_loads
 from os import path
-from typing import Union, Dict, Tuple
 
 # internal
 from app_defines import DMODE_CHOICES, FMT_DATE, THREADS_MAX_ITEMS
@@ -21,7 +21,7 @@ from app_gui_defines import (
     SLASH, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_PARCHI, OPTION_VALUES_PROXYTYPE,
 )
 from app_module import ProcModule
-from app_utils import Protocol, normalize_path
+from app_utils import normalize_path
 
 __all__ = (
     'valid_thread_count', 'valid_date', 'valid_folder_path', 'valid_json', 'valid_kwarg', 'valid_download_mode', 'valid_proxy',
@@ -65,14 +65,14 @@ def valid_date(date: str) -> str:
         raise ArgumentError
 
 
-def valid_json(json: str) -> Dict[str, str]:
+def valid_json(json: str) -> dict[str, str]:
     try:
         return json_loads(json.strip('\'"').replace('\\', ''))
     except Exception:
         raise ArgumentError
 
 
-def valid_kwarg(kwarg: str) -> Tuple[str, str]:
+def valid_kwarg(kwarg: str) -> tuple[str, str]:
     try:
         k, v = tuple(kwarg.split('=', 1))
         return k, v
@@ -124,11 +124,11 @@ def valid_window_position(val: str, tk) -> str:
         raise ArgumentError
 
 
-class Validator(Protocol):
+class Validator:
     tk = None
 
     @abstractmethod
-    def __call__(self, val: Union[int, str]) -> bool:
+    def __call__(self, val: int | str) -> bool:
         ...
 
     @abstractmethod
@@ -155,7 +155,7 @@ class StrValidator(Validator):
 
 
 class DummyValidator(IntValidator, StrValidator):
-    def __call__(self, val: Union[int, str]) -> bool:
+    def __call__(self, val: int | str) -> bool:
         return True
 
     def get_value_type(self) -> type:

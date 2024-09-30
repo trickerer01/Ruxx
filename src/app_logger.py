@@ -7,19 +7,21 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from __future__ import annotations
 from locale import getpreferredencoding
 from threading import Lock as ThreadLock
 from time import localtime, strftime
 from tkinter import END, INSERT
-from typing import Optional, List
 
 # internal
 from app_defines import UTF8
 from app_gui_defines import STATE_NORMAL, STATE_DISABLED
 from app_utils import find_first_not_of
 
+# annotations
 if False is True:
-    from app_gui_base import LogWindow  # for typing only
+    # internal
+    from app_gui_base import LogWindow
 
 __all__ = ('Logger', 'trace')
 
@@ -27,10 +29,10 @@ __all__ = ('Logger', 'trace')
 class Logger:
     print_lock = ThreadLock()
 
-    pending_strings: List[str] = []
+    pending_strings: list[str] = []
     is_cmdline = False
     is_disabled = False
-    wnd: Optional['LogWindow'] = None
+    wnd: LogWindow | None = None
 
     @staticmethod
     def init(is_cmd: bool, is_disabled=False) -> None:

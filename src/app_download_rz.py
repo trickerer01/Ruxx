@@ -5,14 +5,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #########################################
 #
 #
-#
 
 # native
 from base64 import b64decode
+from collections.abc import Iterable, MutableSet, Callable
 from datetime import datetime
 from json import loads
 from multiprocessing.dummy import current_process
-from typing import Tuple, Pattern, List, Dict, Iterable, Callable, MutableSet
+from re import Pattern
 
 # requirements
 from bs4 import BeautifulSoup
@@ -50,14 +50,14 @@ class DownloaderRz(Downloader):
         super().__init__()
         self.id_bounds = INT_BOUNDS_DEFAULT
         self.score_bounds = INT_BOUNDS_DEFAULT
-        self.positive_tags: List[str] = list()
-        self.negative_tags: List[str] = list()
-        self.expand_cache: Dict[str, List[str]] = dict()
+        self.positive_tags: list[str] = list()
+        self.negative_tags: list[str] = list()
+        self.expand_cache: dict[str, list[str]] = dict()
 
-    def _get_module_specific_default_headers(self) -> Dict[str, str]:
+    def _get_module_specific_default_headers(self) -> dict[str, str]:
         return {}
 
-    def _get_module_specific_default_cookies(self) -> Dict[str, str]:
+    def _get_module_specific_default_cookies(self) -> dict[str, str]:
         return {}
 
     def _is_pool_search_conversion_required(self) -> bool:
@@ -72,7 +72,7 @@ class DownloaderRz(Downloader):
     def _supports_native_id_filter(self) -> bool:
         return False
 
-    def _get_id_bounds(self) -> Tuple[int, int]:
+    def _get_id_bounds(self) -> tuple[int, int]:
         return self.id_bounds
 
     def _get_sitename(self) -> str:
@@ -151,18 +151,18 @@ class DownloaderRz(Downloader):
 
         return int(self.parse_json(raw_html.text)['totalCount'])
 
-    def _get_image_address(self, h: str) -> Tuple[str, str]:
+    def _get_image_address(self, h: str) -> tuple[str, str]:
         item_json = self.parse_json(h)
         img_links = sorted(filter(None, [link for link in item_json['imageLinks'] if link['type'] in (3, )]),
                            key=lambda link: link['type'])
         addr, ext = self._extract_file_url(img_links[0])
 
-        def hi_res_addr() -> Tuple[str, str]:
+        def hi_res_addr() -> tuple[str, str]:
             if not addr.endswith(f'pic.{ext}'):
                 return addr[:addr.rfind('pic') + len('pic')] + f'.{ext}', ext
             return addr, ext
 
-        def low_res_addr() -> Tuple[str, str]:
+        def low_res_addr() -> tuple[str, str]:
             if not addr.endswith(f'picsmall.{ext}'):
                 return addr[:addr.rfind('pic') + len('pic')] + f'small.{ext}', ext
             return addr, ext
@@ -176,7 +176,7 @@ class DownloaderRz(Downloader):
         address = address if startsym == 'h' else f'{self._get_sitename()}{address[1 if startsym == "/" else 0:]}'
         return address, fmt
 
-    def _get_video_address(self, h: str) -> Tuple[str, str]:
+    def _get_video_address(self, h: str) -> tuple[str, str]:
         item_json = self.parse_json(h)
         video_links = list(filter(None, [link for link in item_json['imageLinks'] if link['type'] in (11,)]))
         addr, ext = self._extract_file_url(video_links[0])
@@ -390,7 +390,7 @@ class DownloaderRz(Downloader):
         return parsed_json
 
     @staticmethod
-    def _extract_file_url(h: dict) -> Tuple[str, str]:
+    def _extract_file_url(h: dict) -> tuple[str, str]:
         file_url = h['url'][1:] if h['url'].startswith('/') else h['url']
         file_ext = file_url[file_url.rfind('.') + 1:]
         return file_url, file_ext
@@ -437,7 +437,7 @@ class DownloaderRz(Downloader):
                     trace(f'{n[1:]}{n.join(self.expand_cache[pwtag])}')
         return expanded_tags
 
-    def _validate_tags(self, taglist: List[str], explode=False) -> None:
+    def _validate_tags(self, taglist: list[str], explode=False) -> None:
         inavlid_tags = set()
         tidx: int
         for tidx in reversed(range(len(taglist))):
@@ -457,14 +457,14 @@ class DownloaderRz(Downloader):
             n = '\n - '
             thread_exit(f'Fatal: Invalid RZ tags found:\n - {n.join(sorted(inavlid_tags))}', -702)
 
-    def _run_compare_filters(self, parents: MutableSet[str], filter_type: str, compare_bounds: Tuple[int, int],
+    def _run_compare_filters(self, parents: MutableSet[str], filter_type: str, compare_bounds: tuple[int, int],
                              extact_func: Callable[[str], str]) -> None:
         if compare_bounds == INT_BOUNDS_DEFAULT:
             return
         abbrp = self._get_module_abbr_p()
         total_count_old = len(self.items_raw_per_task)
         removed_count = 0
-        removed_messages: List[str] = list()
+        removed_messages: list[str] = list()
         idx: int
         for idx in reversed(range(total_count_old)):
             self.catch_cancel_or_ctrl_c()

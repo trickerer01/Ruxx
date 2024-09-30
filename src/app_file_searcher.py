@@ -8,13 +8,12 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 from contextlib import ExitStack
 from os import path, listdir
-from typing import List, Dict, BinaryIO
 
 from app_defines import KNOWN_EXTENSIONS
 from app_utils import normalize_path
 
 
-def find_duplicated_files(basepath: str, scan_depth: int) -> Dict[str, List[str]]:
+def find_duplicated_files(basepath: str, scan_depth: int) -> dict[str, list[str]]:
     class DFileInfo:
         def __init__(self, folder: str, name: str, size: int) -> None:
             self.folder = folder
@@ -25,7 +24,7 @@ def find_duplicated_files(basepath: str, scan_depth: int) -> Dict[str, List[str]
         def fullpath(self) -> str:
             return f'{self.folder}{self.name}'
 
-    found_filenames_dict: Dict[str, List[str]] = dict()
+    found_filenames_dict: dict[str, list[str]] = dict()
     base_path = normalize_path(basepath)
     read_buffer_size = 16 * 1024
 
@@ -51,7 +50,7 @@ def find_duplicated_files(basepath: str, scan_depth: int) -> Dict[str, List[str]
         for filename in found_filenames_dict[dirpath]:
             filepaths_all.add(f'{dirpath}{filename}')
 
-    files_by_size: Dict[int, List[DFileInfo]] = dict()
+    files_by_size: dict[int, list[DFileInfo]] = dict()
     for filepath in filepaths_all:
         fsize = path.getsize(filepath)
         if fsize and fsize not in files_by_size:
@@ -62,11 +61,11 @@ def find_duplicated_files(basepath: str, scan_depth: int) -> Dict[str, List[str]
         if fsz in files_by_size and len(files_by_size[fsz]) < 2:
             del files_by_size[fsz]
 
-    duplicates: Dict[str, List[str]] = dict()
+    duplicates: dict[str, list[str]] = dict()
     for filesize in files_by_size:
         files_list = sorted(files_by_size[filesize], key=lambda x: x.name, reverse=True)
         with ExitStack() as ctx:
-            open_files: List[BinaryIO] = [ctx.enter_context(open(f.fullpath, 'rb')) for f in files_list]
+            open_files = [ctx.enter_context(open(f.fullpath, 'rb')) for f in files_list]
             open_fnames = [f.name for f in open_files]
             exacts = [open_files]
             fidx = 0
@@ -77,8 +76,7 @@ def find_duplicated_files(basepath: str, scan_depth: int) -> Dict[str, List[str]
                         bf.seek(0)
                 while exacts[fidx][0].tell() + 1 < filesize and len(exacts[fidx]) > 1:
                     rbytes = [bf.read(read_buffer_size) for bf in exacts[fidx]]
-                    nexacts: List[BinaryIO] = list(
-                        filter(None, [exacts[fidx][ri] for ri in range(1, len(rbytes)) if rbytes[ri] != rbytes[0]]))
+                    nexacts = list(filter(None, [exacts[fidx][ri] for ri in range(1, len(rbytes)) if rbytes[ri] != rbytes[0]]))
                     for nex in nexacts:
                         exacts[fidx].remove(nex)
                     if len(nexacts) > 1:

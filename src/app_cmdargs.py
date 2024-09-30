@@ -8,8 +8,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from argparse import ArgumentParser, Namespace, ZERO_OR_MORE
+from collections.abc import Sequence
 from os import path
-from typing import Sequence
 
 # internal
 from app_defines import (

@@ -7,8 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from re import compile as re_compile
-from typing import Pattern
+from re import Pattern, compile as re_compile
 
 # internal
 from app_defines import TAG_LENGTH_MIN, TAG_LENGTH_MAX_RX, TAG_LENGTH_MAX_RN, MODULE_CHOICES

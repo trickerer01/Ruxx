@@ -7,9 +7,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from __future__ import annotations
 from abc import abstractmethod
+from collections.abc import MutableSet
 from os import path, curdir, listdir
-from typing import List, Dict, Set, Pattern, MutableSet, Tuple, Union, Optional, Match
+from re import Match, Pattern
 
 # requirements
 from bs4 import BeautifulSoup
@@ -49,7 +51,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.date_max = DATE_MAX_DEFAULT
         self.dest_base = normalize_path(path.abspath(curdir))
         self.warn_nonempty = False
-        self.tags_str_arr: List[str] = list()
+        self.tags_str_arr: list[str] = list()
         # extra
         self.cmdline = ''
         self.get_max_id = False
@@ -61,7 +63,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.maxpage = 0
         self.success_count = 0
         self.fail_count = 0
-        self.failed_items: List[str] = list()
+        self.failed_items: list[str] = list()
         self.total_count = 0
         self.total_count_old = 0
         self.processed_count = 0
@@ -69,14 +71,14 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.current_task_num = 0
         self.orig_tasks_count = 0
         self.current_state = DownloaderStates.IDLE
-        self.items_raw_per_task: List[str] = list()
-        self.items_raw_per_page: Dict[int, List[str]] = dict()
-        self.items_raw_all: List[str] = list()
-        self.item_info_dict_per_task: Dict[str, ItemInfo] = dict()
-        self.item_info_dict_all: Dict[str, ItemInfo] = dict()
-        self.neg_and_groups: List[List[Pattern[str]]] = list()
-        self.known_parents: Set[str] = set()
-        self.filtered_out_ids_cache: Set[str] = set()
+        self.items_raw_per_task: list[str] = list()
+        self.items_raw_per_page: dict[int, list[str]] = dict()
+        self.items_raw_all: list[str] = list()
+        self.item_info_dict_per_task: dict[str, ItemInfo] = dict()
+        self.item_info_dict_all: dict[str, ItemInfo] = dict()
+        self.neg_and_groups: list[list[Pattern[str]]] = list()
+        self.known_parents: set[str] = set()
+        self.filtered_out_ids_cache: set[str] = set()
         self.default_sort = True
         self.favorites_search_user = ''
         self.pool_search_str = ''
@@ -98,7 +100,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def _get_id_bounds(self) -> Tuple[int, int]:
+    def _get_id_bounds(self) -> tuple[int, int]:
         ...
 
     @abstractmethod
@@ -146,23 +148,23 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def _get_item_html(self, h: str) -> Union[None, BeautifulSoup, str]:
+    def _get_item_html(self, h: str) -> None | BeautifulSoup | str:
         ...
 
     @abstractmethod
-    def _extract_post_date(self, raw_or_html: Union[BeautifulSoup, str]) -> str:
+    def _extract_post_date(self, raw_or_html: BeautifulSoup | str) -> str:
         ...
 
     @abstractmethod
-    def _get_items_query_size_or_html(self, url: str, tries: int = None) -> Union[int, BeautifulSoup]:
+    def _get_items_query_size_or_html(self, url: str, tries: int = None) -> int | BeautifulSoup:
         ...
 
     @abstractmethod
-    def _get_image_address(self, h: str) -> Tuple[str, str]:
+    def _get_image_address(self, h: str) -> tuple[str, str]:
         ...
 
     @abstractmethod
-    def _get_video_address(self, h: str) -> Tuple[str, str]:
+    def _get_video_address(self, h: str) -> tuple[str, str]:
         ...
 
     @abstractmethod
@@ -202,13 +204,13 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _execute_module_filters(self, parents: MutableSet[str]) -> None:
         pass
 
-    def _extract_favorite_user(self, fav_user_tags: List[Optional[Match]]) -> None:
+    def _extract_favorite_user(self, fav_user_tags: list[Match | None]) -> None:
         self.favorites_search_user = str(fav_user_tags[-1].group(1)) if fav_user_tags else 0
 
     def _clean_favorite_user(self) -> None:
         self.favorites_search_user = ''
 
-    def _extract_pool_id(self, pool_tags: List[Optional[Match]]) -> None:
+    def _extract_pool_id(self, pool_tags: list[Match | None]) -> None:
         self.pool_search_str = pool_tags[-1].group(1) if pool_tags else ''
 
     def _clean_pool_id(self) -> None:
@@ -281,10 +283,10 @@ class DownloaderBase(ThreadedHtmlWorker):
                 item_id = self._extract_id(h)
                 item_id_int = int(item_id)
 
-                def forward() -> Tuple[int, int]:
+                def forward() -> tuple[int, int]:
                     return pnum, 1
 
-                def backward() -> Tuple[int, int]:
+                def backward() -> tuple[int, int]:
                     return pnum, -1
 
                 cur_step_dir = step_dir
@@ -392,10 +394,10 @@ class DownloaderBase(ThreadedHtmlWorker):
 
                 # trace(f'checking id {item_id}')
 
-                def forward() -> Tuple[int, int]:
+                def forward() -> tuple[int, int]:
                     return pnum, 1
 
-                def backward() -> Tuple[int, int]:
+                def backward() -> tuple[int, int]:
                     return pnum, -1
 
                 cur_step_dir = step_dir
@@ -498,10 +500,10 @@ class DownloaderBase(ThreadedHtmlWorker):
             h = self._local_addr_from_string(str(items_raw_list[cur_index]))
             item_id = self._extract_id(h)
 
-            def forward() -> Tuple[int, int]:
+            def forward() -> tuple[int, int]:
                 return cur_index, 1
 
-            def backward() -> Tuple[int, int]:
+            def backward() -> tuple[int, int]:
                 return cur_index, -1
 
             raw_html_item = self._get_item_html(h) if as_date(self.date_min) > as_date(DATE_MIN_DEFAULT) else None
@@ -575,10 +577,10 @@ class DownloaderBase(ThreadedHtmlWorker):
             h = self._local_addr_from_string(str(items_raw_list[cur_index]))
             item_id = self._extract_id(h)
 
-            def forward() -> Tuple[int, int]:
+            def forward() -> tuple[int, int]:
                 return cur_index, 1
 
-            def backward() -> Tuple[int, int]:
+            def backward() -> tuple[int, int]:
                 return cur_index, -1
 
             raw_html_item = self._get_item_html(h) if as_date(self.date_max) < LAUCH_DATE else None
@@ -670,9 +672,9 @@ class DownloaderBase(ThreadedHtmlWorker):
         if len(self.neg_and_groups) == 0:
             return
 
-        m_dict: Dict[str, List[str]] = dict()
+        m_dict: dict[str, list[str]] = dict()
 
-        def match_neg_group(p: Pattern[str], t: str, pl: List[Pattern[str]]) -> bool:
+        def match_neg_group(p: Pattern[str], t: str, pl: list[Pattern[str]]) -> bool:
             ngm = p.fullmatch(t)
             if ngm:
                 pp_str = f'-({",".join(pp.pattern[1:-1] for pp in pl)})'
@@ -686,7 +688,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         abbrp = self._get_module_abbr_p()
         total_count_old = len(self.items_raw_per_task)
         removed_count = 0
-        removed_messages: List[str] = list()
+        removed_messages: list[str] = list()
         idx: int
         for idx in reversed(range(total_count_old)):
             h = self._local_addr_from_string(str(self.items_raw_per_task[idx]))

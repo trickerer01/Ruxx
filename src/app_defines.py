@@ -6,9 +6,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+from __future__ import annotations
 from datetime import datetime
 from enum import IntEnum, auto, unique
-from typing import Dict, Tuple, Optional, List
 
 
 class Comment:
@@ -36,16 +36,16 @@ class ItemInfo:
     optional_slots = frozenset(__slots__[__slots__.index('source'):])
 
     def __init__(self) -> None:
-        self.id = ''
-        self.height = ''
-        self.width = ''
-        self.tags = ''
-        self.ext = ''
-        self.source = ''
-        self.comments: List[Comment] = []
-        self.score = ''
-        self.has_children = ''
-        self.parent_id = ''
+        self.id: str = ''
+        self.height: str = ''
+        self.width: str = ''
+        self.tags: str = ''
+        self.ext: str = ''
+        self.source: str = ''
+        self.comments: list[Comment] = []
+        self.score: str = ''
+        self.has_children: str = ''
+        self.parent_id: str = ''
 
     def __lt__(self, other) -> bool:
         return int(self.id or 0) < int(other.id or 0)
@@ -70,6 +70,8 @@ class PageCheck:
         return str(self)
 
 
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# noinspection PyArgumentList
 @unique
 class DownloaderStates(IntEnum):
     IDLE = 0
@@ -123,7 +125,7 @@ DMODE_CHOICES = (DownloadModes.FULL, DownloadModes.SKIP, DownloadModes.TOUCH)
 STATE_WORK_START = DownloaderStates.SEARCHING
 
 
-STATUSBAR_INFO_MAP: Dict[DownloaderStates, Tuple[str, Optional[str], Optional[str], Optional[str]]] = {
+STATUSBAR_INFO_MAP: dict[DownloaderStates, tuple[str, str | None, str | None, str | None]] = {
     DownloaderStates.IDLE: ('Ready', None, None, None),
     DownloaderStates.LAUNCHING: ('Launching...', None, None, None),
     DownloaderStates.SEARCHING: ('Searching...', None, None, None),
@@ -234,6 +236,8 @@ class Mem:
     GB = MB * 1024
 
 
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# noinspection PyArgumentList
 class HtmlCacheMode(IntEnum):
     CACHE_BYTES = auto()
     CACHE_BS = auto()  # cache BeautifulSoup objects

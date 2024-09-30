@@ -7,8 +7,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from re import compile as re_compile
-from typing import Tuple, List, Pattern, Optional, Iterable
+from __future__ import annotations
+from collections.abc import Iterable
+from re import Pattern, compile as re_compile
 
 # internal
 from app_debug import __RUXX_DEBUG__
@@ -25,7 +26,7 @@ __all__ = ('split_tags_into_tasks', 'extract_neg_and_groups')
 re_negative_and_group = re_compile(r'^-\(([^,]+(?:,[^,]+)+)\)$')
 
 
-def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split_always: bool) -> List[str]:
+def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split_always: bool) -> list[str]:
     """
     Converts natively not processible tags into processible tags combinations\n
     Ex. ['(+a+~+b+)', '(+c+~+d+)', 'x', '-y'] => ['a+c+x+-y', 'a+d+x+-y', 'b+c+x+-y', 'b+d+x+-y']\n
@@ -35,12 +36,12 @@ def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split
     :param split_always: unconditionally separate all 'or' groups
     :return: list of fully formed tags directly injectable into request query template, len is up to max_or_group_len**2
     """
-    new_tags_str_arr: List[str] = list()
-    or_tags_to_append: List[List[str]] = list()
+    new_tags_str_arr: list[str] = list()
+    or_tags_to_append: list[list[str]] = list()
     has_negative = False
     for g_tags in tag_groups_arr:
         splitted = False
-        add_list: List[str] = g_tags[2:-2].split('+~+') if len(g_tags) >= len('(+_+~+_+)') else list()
+        add_list: list[str] = g_tags[2:-2].split('+~+') if len(g_tags) >= len('(+_+~+_+)') else list()
         if len(add_list) > 1:
             do_split = split_always
             for add_s in add_list:
@@ -72,7 +73,7 @@ def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split
     return [cc.join(tag_groups_arr)]
 
 
-def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str], List[List[Pattern[str]]]]:
+def extract_neg_and_groups(tags_str: str, split_always: bool) -> tuple[list[str], list[list[Pattern[str]]]]:
     """
     Separates tags string into fully formed tags and negative tag patterns\n
     Ex. 'a b (+c+~+d+) -(ff,gg)' => (['a', 'b' , '(+c+~+d+)'], [[re_compile(r'^ff$'), re_compile(r'^gg$')]])\n
@@ -80,7 +81,7 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> Tuple[List[str]
     :param split_always: unconditionally separate all 'or' groups
     :return: 1) list of fully-formed tags without negative groups, 2) list of zero or more tag pattern lists
     """
-    def form_plist(neg_tags_group: str) -> Optional[List[Pattern]]:
+    def form_plist(neg_tags_group: str) -> list[Pattern] | None:
         def esc(s: str) -> str:
             for c in '.[]()-+':
                 s = s.replace(c, f'\\{c}')

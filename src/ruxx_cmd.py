@@ -9,7 +9,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 import sys
 from multiprocessing.dummy import current_process
-from typing import List
 
 # internal
 from app_cmdargs import prepare_arglist
@@ -21,7 +20,7 @@ from app_utils import ensure_compatibility
 __all__ = ('run_cmd',)
 
 
-def run_cmd(args: List[str]) -> None:
+def run_cmd(args: list[str]) -> None:
     Logger.init(True)
     ensure_compatibility()
     current_process().killed = False

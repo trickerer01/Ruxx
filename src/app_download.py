@@ -11,12 +11,12 @@ from __future__ import annotations
 import sys
 from abc import abstractmethod
 from argparse import Namespace
+from collections.abc import Iterable, MutableSet, Callable
 from multiprocessing.dummy import Pool, current_process
 from multiprocessing.pool import ThreadPool
 from os import makedirs, listdir, path, remove
 from threading import Thread, Lock as ThreadLock
 from time import sleep as thread_sleep
-from typing import Dict, List, Callable, Iterable, Set, MutableSet, Match, Optional, Tuple
 
 # requirements
 from iteration_utilities import unique_everseen
@@ -39,6 +39,11 @@ from app_tags_parser import convert_taglist
 from app_task import extract_neg_and_groups, split_tags_into_tasks
 from app_utils import confirm_yes_no, normalize_path, trim_undersores, format_score
 
+# annotations
+if False is True:
+    # native
+    from re import Match
+
 __all__ = ('Downloader',)
 
 
@@ -54,10 +59,10 @@ class Downloader(DownloaderBase):
     @abstractmethod
     def __init__(self) -> None:
         super().__init__()
-        self._exception_checker: Optional[Thread] = None
+        self._exception_checker: Thread | None = None
         self._thread_exception_lock = ThreadLock()
-        self._thread_exceptions: Dict[str, List[str]] = dict()
-        self._file_name_ext_cache: Dict[str, Tuple[str, str]] = dict()
+        self._thread_exceptions = dict[str, list[str]]()
+        self._file_name_ext_cache: dict[str, tuple[str, str]] = dict()
 
     @property
     def total_count_all(self) -> int:
@@ -452,14 +457,14 @@ class Downloader(DownloaderBase):
 
         # store items info for future processing
         # custom filters may exclude certain items from the infos dict
-        task_parents: Set[str] = set()
+        task_parents: set[str] = set()
         self._extract_cur_task_infos(task_parents)
 
         if self.current_task_num <= self.orig_tasks_count:
             self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
             self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_by_module_filters, task_parents)
 
-        self.items_raw_all: List[str] = list(unique_everseen(self.items_raw_all + self.items_raw_per_task))
+        self.items_raw_all: list[str] = list(unique_everseen(self.items_raw_all + self.items_raw_per_task))
         self.item_info_dict_all.update(self.item_info_dict_per_task)
         if self.current_task_num > 1:
             trace(f'overall totalcount: {self.total_count_all:d}')
@@ -480,7 +485,7 @@ class Downloader(DownloaderBase):
             return
 
         if self.default_sort:
-            self.items_raw_all: List[str] = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)))
+            self.items_raw_all = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)))
             if self.current_task_num > 1:
                 trace(f'\nApplying overall date filter after {self._tasks_count()} tasks...')
                 self.items_raw_all.reverse()
@@ -771,7 +776,7 @@ class Downloader(DownloaderBase):
             except Exception:
                 thread_exit(f'ERROR: Unable to create folder {self.dest_base}!')
 
-        orig_ids: Set[str] = {self.item_info_dict_all[k].id for k in self.item_info_dict_all}
+        orig_ids: set[str] = {self.item_info_dict_all[k].id for k in self.item_info_dict_all}
         merged_files = self._try_merge_info_files()
         saved_files = list()
         item_info_list = sorted(self.item_info_dict_all.values())
@@ -832,7 +837,7 @@ class Downloader(DownloaderBase):
         [remove(merged_file) for merged_file in merged_files if merged_file not in saved_files]
         trace(BR)
 
-    def _try_merge_info_files(self) -> List[str]:
+    def _try_merge_info_files(self) -> list[str]:
         parsed_files = list()
         if not self.merge_lists:
             return parsed_files
@@ -840,13 +845,13 @@ class Downloader(DownloaderBase):
         if not path.isdir(dir_fullpath):
             return parsed_files
         abbrp = self._get_module_abbr_p()
-        info_lists: List[Match[str]] = sorted(filter(
+        info_lists: list[Match[str]] = sorted(filter(
             lambda x: not not x, [re_infolist_filename.fullmatch(f) for f in listdir(dir_fullpath)
                                   if path.isfile(f'{dir_fullpath}{f}') and f.startswith(f'{abbrp}!')]
         ), key=lambda m: m.string)
         if not info_lists:
             return parsed_files
-        parsed_dict: Dict[str, ItemInfo] = dict()
+        parsed_dict: dict[str, ItemInfo] = dict()
         for fmatch in info_lists:
             fmname = fmatch.string
             list_type = fmatch.group(1)

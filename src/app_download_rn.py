@@ -7,10 +7,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from __future__ import annotations
 from base64 import b64decode
 from datetime import datetime
 from multiprocessing.dummy import current_process
-from typing import Tuple, Optional, Pattern, Union, Dict
+from re import Pattern
 
 # requirements
 from bs4 import BeautifulSoup
@@ -45,10 +46,10 @@ class DownloaderRn(Downloader):
     def __init__(self) -> None:
         super().__init__()
 
-    def _get_module_specific_default_headers(self) -> Dict[str, str]:
+    def _get_module_specific_default_headers(self) -> dict[str, str]:
         return {}
 
-    def _get_module_specific_default_cookies(self) -> Dict[str, str]:
+    def _get_module_specific_default_cookies(self) -> dict[str, str]:
         return {}
 
     def _is_pool_search_conversion_required(self) -> bool:
@@ -63,7 +64,7 @@ class DownloaderRn(Downloader):
     def _supports_native_id_filter(self) -> bool:
         return True
 
-    def _get_id_bounds(self) -> Tuple[int, int]:
+    def _get_id_bounds(self) -> tuple[int, int]:
         raise NotImplementedError
 
     def _get_sitename(self) -> str:
@@ -119,7 +120,7 @@ class DownloaderRn(Downloader):
         # tags are not 100% accurate so use a more direct approach
         return 'mp4' in h or 'webm' in h or 'swf' in h
 
-    def _get_item_html(self, h: str) -> Optional[BeautifulSoup]:
+    def _get_item_html(self, h: str) -> BeautifulSoup | None:
         return self.fetch_html(f'{self._get_sitename()}{h}')
 
     def _extract_post_date(self, raw_html: BeautifulSoup) -> str:
@@ -131,7 +132,7 @@ class DownloaderRn(Downloader):
         except Exception:
             thread_exit(f'Unable to extract post date from raw: {str(raw_html)}', -446)
 
-    def _get_items_query_size_or_html(self, url: str, tries=0) -> Union[int, BeautifulSoup]:
+    def _get_items_query_size_or_html(self, url: str, tries=0) -> int | BeautifulSoup:
         raw_html = self.fetch_html(f'{url}{1:d}', tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
@@ -148,13 +149,13 @@ class DownloaderRn(Downloader):
 
         # items count on all full pages plus items count on last page
         last_thumbs = len(self._get_all_post_tags(raw_html))
-        count: Union[int, BeautifulSoup] = (last - 1) * self._get_items_per_page() + last_thumbs
+        count: int | BeautifulSoup = (last - 1) * self._get_items_per_page() + last_thumbs
         if count == 0 and len(raw_html.find_all('a', attrs={'download': '', 'href': re_shimmie_image_href})) > 0:
             count = raw_html
 
         return count
 
-    def _get_image_address(self, h: str) -> Tuple[str, str]:
+    def _get_image_address(self, h: str) -> tuple[str, str]:
         try:
             addr = h[h.find('_images/'):]
             addr = addr[:addr.find('"')]
@@ -165,7 +166,7 @@ class DownloaderRn(Downloader):
             trace(f'FATAL: GetPicAddr could not find anything!\n\nHTML:\n\n{h}', True)
             assert False
 
-    def _get_video_address(self, h: str) -> Tuple[str, str]:
+    def _get_video_address(self, h: str) -> tuple[str, str]:
         try:
             addr = h[h.find('_images/'):]
             addr = addr[:addr.find('"')]

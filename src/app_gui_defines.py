@@ -7,11 +7,13 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from __future__ import annotations
 from enum import IntEnum, unique, auto
-from typing import Optional
 
+# annotations
 if False is True:
-    from tkinter import Menu  # for typing only
+    # native
+    from tkinter import Menu
 
 # Buttons
 STATE_READONLY = 'readonly'
@@ -107,6 +109,8 @@ BEGIN = '1.0'
 
 
 # icons enum
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# noinspection PyArgumentList
 @unique
 class Icons(IntEnum):
     RUXX = 0
@@ -127,6 +131,8 @@ class Icons(IntEnum):
 
 
 # targetable options: either having stored variables or hotkeys attached
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# noinspection PyArgumentList
 @unique
 class Options(IntEnum):
     ISLOGOPEN = 0
@@ -241,6 +247,8 @@ CVARS = {
 
 # global static objects for manipulation
 # root
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# noinspection PyArgumentList
 @unique
 class Globals(IntEnum):
     COMBOBOX_VIDEOS = 0
@@ -303,6 +311,8 @@ BUTTONS_TO_UNFOCUS = (
 # end buttons to unfocus
 
 
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# noinspection PyArgumentList
 @unique
 class InfoSaveModes(IntEnum):
     PER_RUN = 0
@@ -311,6 +321,8 @@ class InfoSaveModes(IntEnum):
 
 
 # menus
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# noinspection PyArgumentList
 @unique
 class Menus(IntEnum):
     FILE = 0
@@ -342,7 +354,7 @@ class SubMenus(IntEnum):
 
 class RuxxMenu:
     def __init__(self, *indecies: SubMenus) -> None:
-        self.menu: Optional[Menu] = None
+        self.menu: Menu | None = None
         self.statefuls = set(ind for ind in indecies)
 
     def __bool__(self) -> bool:

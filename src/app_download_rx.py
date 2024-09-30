@@ -7,10 +7,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from __future__ import annotations
 from base64 import b64decode
 from datetime import datetime
 from multiprocessing.dummy import current_process
-from typing import Tuple, Pattern, Union, Dict
+from re import Pattern
 
 # requirements
 from bs4 import BeautifulSoup
@@ -46,10 +47,10 @@ class DownloaderRx(Downloader):
     def __init__(self) -> None:
         super().__init__()
 
-    def _get_module_specific_default_headers(self) -> Dict[str, str]:
+    def _get_module_specific_default_headers(self) -> dict[str, str]:
         return {}
 
-    def _get_module_specific_default_cookies(self) -> Dict[str, str]:
+    def _get_module_specific_default_cookies(self) -> dict[str, str]:
         return {}
 
     def _is_pool_search_conversion_required(self) -> bool:
@@ -64,7 +65,7 @@ class DownloaderRx(Downloader):
     def _supports_native_id_filter(self) -> bool:
         return True
 
-    def _get_id_bounds(self) -> Tuple[int, int]:
+    def _get_id_bounds(self) -> tuple[int, int]:
         raise NotImplementedError
 
     def _get_sitename(self) -> str:
@@ -151,7 +152,7 @@ class DownloaderRx(Downloader):
 
             # items count on all full pages plus items count on last page
             last_thumbs = len(self._get_all_post_tags(raw_html))
-            count: Union[int, BeautifulSoup] = (last - 1) + last_thumbs
+            count: int | BeautifulSoup = (last - 1) + last_thumbs
             return count
         elif self.pool_search_str:
             raw_html = self.fetch_html(f'{url}&pid=0', tries)
@@ -175,7 +176,7 @@ class DownloaderRx(Downloader):
 
             # items count on all full pages plus items count on last page
             last_thumbs = len(self._get_all_post_tags(raw_html))
-            count: Union[int, BeautifulSoup] = (last - 1) * self._get_items_per_page() + last_thumbs
+            count: int | BeautifulSoup = (last - 1) * self._get_items_per_page() + last_thumbs
             return count
         else:
             raw_html = self.fetch_html(f'{url}&pid=0', tries)
@@ -184,12 +185,12 @@ class DownloaderRx(Downloader):
 
             return int(raw_html.find('posts').get('count'))
 
-    def _get_image_address(self, h: str) -> Tuple[str, str]:
-        def hi_res_addr() -> Tuple[str, str]:
+    def _get_image_address(self, h: str) -> tuple[str, str]:
+        def hi_res_addr() -> tuple[str, str]:
             addr, ext = self.extract_file_url(h)
             return addr, ext
 
-        def low_res_addr() -> Tuple[str, str]:
+        def low_res_addr() -> tuple[str, str]:
             addr, ext = self.extract_sample_url(h)
             return addr, ext
 
@@ -211,7 +212,7 @@ class DownloaderRx(Downloader):
 
         return address, fmt
 
-    def _get_video_address(self, h: str) -> Tuple[str, str]:
+    def _get_video_address(self, h: str) -> tuple[str, str]:
         addr, ext = self.extract_file_url(h)
         if len(addr) == 0:
             addr, ext = self.extract_sample_url(h)
@@ -324,7 +325,7 @@ class DownloaderRx(Downloader):
             self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
 
     @staticmethod
-    def extract_file_url(h: str) -> Tuple[str, str]:
+    def extract_file_url(h: str) -> tuple[str, str]:
         file_re_res = re_orig_file_link.search(h)
         if file_re_res is None:
             return '', ''
@@ -333,7 +334,7 @@ class DownloaderRx(Downloader):
         return file_url, file_ext
 
     @staticmethod
-    def extract_sample_url(h: str) -> Tuple[str, str]:
+    def extract_sample_url(h: str) -> tuple[str, str]:
         sample_re_res = re_sample_file_link.search(h)
         if sample_re_res is None:
             return '', ''

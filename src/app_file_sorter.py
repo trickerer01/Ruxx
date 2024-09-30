@@ -7,21 +7,22 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from __future__ import annotations
+from collections.abc import Iterable, Sequence, Collection
 from enum import IntEnum, unique, auto
 from os import makedirs, path, rename, stat
 from re import compile as re_compile
-from typing import TypeVar, Collection, Iterable, Sequence
 
 # internal
 from app_defines import Mem
 from app_gui_defines import SLASH
-from app_utils import Comparable, normalize_path
+from app_utils import normalize_path
 
 __all__ = ('FileTypeFilter', 'sort_files_by_type', 'sort_files_by_size', 'sort_files_by_score')
 
-CT = TypeVar('CT', bound=Comparable)
 
-
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# noinspection PyArgumentList
 @unique
 class FileTypeFilter(IntEnum):
     BY_VIDEO_AUDIO = 1
@@ -29,7 +30,7 @@ class FileTypeFilter(IntEnum):
     INVALID = auto()
 
 
-def get_threshold_index(thresholds: Collection[CT], val: CT) -> int:
+def get_threshold_index(thresholds: Collection[int | float], val: int | float) -> int:
     for i, threshold in enumerate(thresholds):
         if val < threshold:
             return i

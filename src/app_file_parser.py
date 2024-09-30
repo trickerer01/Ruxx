@@ -7,8 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from re import compile as re_compile
-from typing import List, Tuple, Pattern
+from re import Pattern, compile as re_compile
 
 # requirements
 from iteration_utilities import unique_everseen
@@ -64,13 +63,13 @@ def get_r_prefix_optional() -> Pattern:
     return prefix_optional_patterns.get(ProcModule.value())
 
 
-def id_list_from_string(id_str: str) -> List[str]:
+def id_list_from_string(id_str: str) -> list[str]:
     id_str = re_separators.sub(' ', id_str.strip())  # separators
     id_str = get_r_prefix_optional().sub('', id_str)  # prefix
     return id_str.strip().split(' ')
 
 
-def parse_file(filepath: str) -> Tuple[bool, List[str]]:
+def parse_file(filepath: str) -> tuple[bool, list[str]]:
     id_list = list()
     try:
         for line in open(filepath, 'rt', encoding=UTF8).readlines():
@@ -85,7 +84,7 @@ def parse_file(filepath: str) -> Tuple[bool, List[str]]:
         return False, id_list
 
 
-def prepare_tags_list(filepath: str) -> Tuple[bool, str]:
+def prepare_tags_list(filepath: str) -> tuple[bool, str]:
     suc, id_list = parse_file(filepath)
     return suc, f'({"~".join(id_list)})'
 
