@@ -355,7 +355,7 @@ class SubMenus(IntEnum):
 class RuxxMenu:
     def __init__(self, *indecies: SubMenus) -> None:
         self.menu: Menu | None = None
-        self.statefuls = set(ind for ind in indecies)
+        self.statefuls: set[SubMenus] = set(ind for ind in indecies)
 
     def __bool__(self) -> bool:
         return not not self.menu

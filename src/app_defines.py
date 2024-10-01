@@ -18,8 +18,8 @@ class Comment:
     __slots__ = ('author', 'body')
 
     def __init__(self, author: str, body: str) -> None:
-        self.author = author
-        self.body = body
+        self.author: str = author
+        self.body: str = body
 
     def __str__(self) -> str:
         return f'{self.author}:\n{self.body}'
@@ -42,7 +42,7 @@ class ItemInfo:
         self.tags: str = ''
         self.ext: str = ''
         self.source: str = ''
-        self.comments: list[Comment] = []
+        self.comments: list[Comment] = list()
         self.score: str = ''
         self.has_children: str = ''
         self.parent_id: str = ''
@@ -60,8 +60,8 @@ class PageCheck:
     __slots__ = ('first', 'last')
 
     def __init__(self) -> None:
-        self.first = False
-        self.last = False
+        self.first: bool = False
+        self.last: bool = False
 
     def __str__(self) -> str:
         return f'{self.first} <--> {self.last}'
@@ -231,9 +231,9 @@ class ThreadInterruptException(Exception):
 
 
 class Mem:
-    KB = 1024
-    MB = KB * 1024
-    GB = MB * 1024
+    KB: int = 1024
+    MB: int = KB * 1024
+    GB: int = MB * 1024
 
 
 # PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)

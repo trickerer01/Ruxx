@@ -21,7 +21,8 @@ from warnings import filterwarnings
 
 # requirements
 from bs4 import BeautifulSoup
-from requests import Session, Response, HTTPError, adapters, structures
+from requests import Session, Response, HTTPError, adapters
+from requests.structures import CaseInsensitiveDict
 
 # internal
 from app_debug import __RUXX_DEBUG__
@@ -46,10 +47,10 @@ class DownloadInterruptException(BaseException):
 
 class FileDownloadResult:
     def __init__(self) -> None:
-        self.file_size = 0
-        self.expected_size = 0
-        self.retries = 0
-        self.result_str = ''
+        self.file_size: int = 0
+        self.expected_size: int = 0
+        self.retries: int = 0
+        self.result_str: str = ''
 
 
 def thread_exit(err_str='', code=-1) -> None:
@@ -65,8 +66,8 @@ class ThreadedWorker(ABC):
     @abstractmethod
     def __init__(self) -> None:
         self.my_root_thread: Thread | None = None
-        self.item_lock = ThreadLock()
-        self.items_all_lock = ThreadLock()
+        self.item_lock: ThreadLock = ThreadLock()
+        self.items_all_lock: ThreadLock = ThreadLock()
 
     def reset_root_thread(self, thread: Thread) -> None:
         self.my_root_thread = thread
@@ -86,16 +87,16 @@ class ThreadedHtmlWorker(ThreadedWorker):
     @abstractmethod
     def __init__(self) -> None:
         super().__init__()
-        self.verbose = False
+        self.verbose: bool = False
         self.raw_html_cache: dict[str, BeautifulSoup | bytes] = dict()
-        self.cache_mode = HtmlCacheMode.CACHE_BYTES
-        self.add_headers: structures.CaseInsensitiveDict[str, str] = structures.CaseInsensitiveDict()
-        self.add_cookies: structures.CaseInsensitiveDict[str, str] = structures.CaseInsensitiveDict()
-        self.ignore_proxy = False
-        self.ignore_proxy_dwn = False
+        self.cache_mode: HtmlCacheMode = HtmlCacheMode.CACHE_BYTES
+        self.add_headers: CaseInsensitiveDict[str, str] = CaseInsensitiveDict()
+        self.add_cookies: CaseInsensitiveDict[str, str] = CaseInsensitiveDict()
+        self.ignore_proxy: bool = False
+        self.ignore_proxy_dwn: bool = False
         self.proxies: dict[str, str] | None = None
-        self.timeout = CONNECT_TIMEOUT_BASE
-        self.retries = CONNECT_RETRIES_BASE
+        self.timeout: int = CONNECT_TIMEOUT_BASE
+        self.retries: int = CONNECT_RETRIES_BASE
         self.etags: dict[str, str] = dict()
         self.session: Session | None = None
 

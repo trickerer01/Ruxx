@@ -125,7 +125,7 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pa
         return base_string
 
     tags_list = tags_str.split(' ')
-    tags_toadd_list: list[str] = []
+    tags_toadd_list: list[str] = list()
 
     for tag in tags_list:
         tag = tag.replace('-', '').replace('\'', '')

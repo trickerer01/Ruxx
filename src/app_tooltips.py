@@ -17,13 +17,13 @@ __all__ = ('WidgetToolTip',)
 
 class ToolTipBase(ABC):
     def __init__(self, widget: Widget, timed: bool, bgcolor='#ffffdd', appear_delay=1000, border_width=1, relief=SOLID) -> None:
-        self.widget = widget
-        self.timed = timed
+        self.widget: Widget = widget
+        self.timed: bool = timed
         self.tipwindow: Toplevel | None = None
         self.id: str | None = None
-        self.bgcolor = bgcolor or '#ffffdd'
-        self.appear_delay = appear_delay or 1000
-        self.border_width = border_width or 1
+        self.bgcolor: str = bgcolor or '#ffffdd'
+        self.appear_delay: int = appear_delay or 1000
+        self.border_width: int = border_width or 1
         self.relief = relief or SOLID
         if not self.timed:
             self.widget.bind('<Enter>', self.enter)

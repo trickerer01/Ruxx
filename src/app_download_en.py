@@ -53,7 +53,7 @@ class DownloaderEn(Downloader):
     def __init__(self) -> None:
         super().__init__()
         self._base_headers = {'User-Agent': f'Ruxx/{APP_VERSION} <{APP_ADDRESS}>'}
-        self._base_cookies = {}
+        self._base_cookies = dict()
 
     def _get_module_specific_default_headers(self) -> dict[str, str]:
         return self._base_headers

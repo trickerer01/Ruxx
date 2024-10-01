@@ -35,8 +35,8 @@ class Settings(ABC):
     """
     Settings !Static!
     """
-    INITIAL_SETTINGS: list[str] = []
-    AUTOCONFIG_FILENAMES = ('ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg')
+    INITIAL_SETTINGS: list[str] = list()
+    AUTOCONFIG_FILENAMES: tuple[str, str, str, str] = ('ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg')
     on_proc_module_change_callback: Callable[[int], None] | None = None
     on_init_autocompletion_callback: Callable[[str], None] | None = None
 
@@ -46,10 +46,10 @@ class Settings(ABC):
 
     class Setting:
         def __init__(self, sconf: Options, check: Validator, check_fail_message: str) -> None:
-            self.conf = sconf
-            self.type = check.get_value_type()
-            self.check = check
-            self.check_fail_message = check_fail_message or f'Invalid value \'%s\' for config id \'{self.conf.value:d}\''
+            self.conf: Options = sconf
+            self.type: type = check.get_value_type()
+            self.check: Validator = check
+            self.check_fail_message: str = check_fail_message or f'Invalid value \'%s\' for config id \'{self.conf.value:d}\''
             assert self.check_fail_message.count('%s') == 1
 
         def validate(self, val: int | str) -> bool:

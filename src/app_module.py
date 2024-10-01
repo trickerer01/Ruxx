@@ -11,19 +11,19 @@ from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, MODULE_A
 
 
 class ProcModule:
-    RX = 1
-    RN = 2
-    RS = 3
-    RZ = 4
-    RP = 5
-    EN = 6
+    RX: int = 1
+    RN: int = 2
+    RS: int = 3
+    RZ: int = 4
+    RP: int = 5
+    EN: int = 6
 
-    PROC_MODULE_DEFAULT = RX
-    CUR_PROC_MODULE = PROC_MODULE_DEFAULT
-    PROC_MODULE_MIN = RX
-    PROC_MODULE_MAX = EN
+    PROC_MODULE_DEFAULT: int = RX
+    CUR_PROC_MODULE: int = PROC_MODULE_DEFAULT
+    PROC_MODULE_MIN: int = RX
+    PROC_MODULE_MAX: int = EN
 
-    PROC_MODULES_BY_NAME = {
+    PROC_MODULES_BY_NAME: dict[str, int] = {
         MODULE_ABBR_RX: RX,
         MODULE_ABBR_RN: RN,
         MODULE_ABBR_RS: RS,
@@ -31,7 +31,7 @@ class ProcModule:
         MODULE_ABBR_RP: RP,
         MODULE_ABBR_EN: EN,
     }
-    PROC_MODULES_NAMES_BY_ID = {
+    PROC_MODULES_NAMES_BY_ID: dict[int, str] = {
         RX: MODULE_ABBR_RX,
         RN: MODULE_ABBR_RN,
         RS: MODULE_ABBR_RS,

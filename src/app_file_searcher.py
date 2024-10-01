@@ -16,9 +16,9 @@ from app_utils import normalize_path
 def find_duplicated_files(basepath: str, scan_depth: int) -> dict[str, list[str]]:
     class DFileInfo:
         def __init__(self, folder: str, name: str, size: int) -> None:
-            self.folder = folder
-            self.name = name
-            self.size = size
+            self.folder: str = folder
+            self.name: str = name
+            self.size: int = size
 
         @property
         def fullpath(self) -> str:

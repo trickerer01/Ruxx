@@ -27,11 +27,11 @@ __all__ = ('Logger', 'trace')
 
 
 class Logger:
-    print_lock = ThreadLock()
+    print_lock: ThreadLock = ThreadLock()
 
-    pending_strings: list[str] = []
-    is_cmdline = False
-    is_disabled = False
+    pending_strings: list[str] = list()
+    is_cmdline: bool = False
+    is_disabled: bool = False
     wnd: LogWindow | None = None
 
     @staticmethod

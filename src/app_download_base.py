@@ -32,45 +32,45 @@ class DownloaderBase(ThreadedHtmlWorker):
         super().__init__()
 
         # config
-        self.add_filename_prefix = False
-        self.dump_tags = False
-        self.dump_sources = False
-        self.dump_comments = False
-        self.dump_per_item = False
-        self.merge_lists = False
-        self.append_info = False
-        self.download_mode = DownloadModes.FULL
-        self.download_limit = 0
-        self.maxthreads_items = 1
-        self.include_parchi = False
-        self.skip_images = False
-        self.skip_videos = False
-        self.prefer_webm = False
-        self.low_res = False
-        self.date_min = DATE_MIN_DEFAULT
-        self.date_max = DATE_MAX_DEFAULT
-        self.dest_base = normalize_path(path.abspath(curdir))
-        self.warn_nonempty = False
+        self.add_filename_prefix: bool = False
+        self.dump_tags: bool = False
+        self.dump_sources: bool = False
+        self.dump_comments: bool = False
+        self.dump_per_item: bool = False
+        self.merge_lists: bool = False
+        self.append_info: bool = False
+        self.download_mode: str = DownloadModes.FULL
+        self.download_limit: int = 0
+        self.maxthreads_items: int = 1
+        self.include_parchi: bool = False
+        self.skip_images: bool = False
+        self.skip_videos: bool = False
+        self.prefer_webm: bool = False
+        self.low_res: bool = False
+        self.date_min: str = DATE_MIN_DEFAULT
+        self.date_max: str = DATE_MAX_DEFAULT
+        self.dest_base: str = normalize_path(path.abspath(curdir))
+        self.warn_nonempty: bool = False
         self.tags_str_arr: list[str] = list()
         # extra
-        self.cmdline = ''
-        self.get_max_id = False
-        self.check_tags = False
+        self.cmdline: str = ''
+        self.get_max_id: bool = False
+        self.check_tags: bool = False
 
         # results
-        self.url = ''
-        self.minpage = 0
-        self.maxpage = 0
-        self.success_count = 0
-        self.fail_count = 0
+        self.url: str = ''
+        self.minpage: int = 0
+        self.maxpage: int = 0
+        self.success_count: int = 0
+        self.fail_count: int = 0
         self.failed_items: list[str] = list()
-        self.total_count = 0
-        self.total_count_old = 0
-        self.processed_count = 0
-        self.total_pages = 0
-        self.current_task_num = 0
-        self.orig_tasks_count = 0
-        self.current_state = DownloaderStates.IDLE
+        self.total_count: int = 0
+        self.total_count_old: int = 0
+        self.processed_count: int = 0
+        self.total_pages: int = 0
+        self.current_task_num: int = 0
+        self.orig_tasks_count: int = 0
+        self.current_state: DownloaderStates = DownloaderStates.IDLE
         self.items_raw_per_task: list[str] = list()
         self.items_raw_per_page: dict[int, list[str]] = dict()
         self.items_raw_all: list[str] = list()
@@ -79,9 +79,9 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.neg_and_groups: list[list[Pattern[str]]] = list()
         self.known_parents: set[str] = set()
         self.filtered_out_ids_cache: set[str] = set()
-        self.default_sort = True
-        self.favorites_search_user = ''
-        self.pool_search_str = ''
+        self.default_sort: bool = True
+        self.favorites_search_user: str = ''
+        self.pool_search_str: str = ''
 
     @abstractmethod
     def _is_pool_search_conversion_required(self) -> bool:

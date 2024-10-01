@@ -59,6 +59,7 @@ re_tags_exclude_major2 = re_compile(
     r'[\da-z_\-]{18,})$'
 )
 
+# noinspection RegExpDuplicateAlternationBranch
 re_tags_exclude_rx = re_compile(
     fr'^(?:{re_tags_exclude_rx_a_i}|{re_tags_exclude_rx_j_r}|{re_tags_exclude_rx_s_z_ex})$'
 )
