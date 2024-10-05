@@ -9,6 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from argparse import ArgumentParser, Namespace, ZERO_OR_MORE
 from collections.abc import Sequence
+from inspect import stack
 from os import path
 
 # internal
@@ -40,6 +41,7 @@ def create_parser() -> ArgumentParser:
 
 def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser = create_parser()
+    parser.usage = f'{path.basename(stack()[1].filename)} [-module #module=rx] [options...] tags...'
     parser.add_argument('-module', default=MODULE_ABBR_RX, help=HELP_ARG_MODULE, choices=MODULE_CHOICES)
     ex1 = parser.add_mutually_exclusive_group(required=False)
     ex2 = parser.add_mutually_exclusive_group(required=False)
