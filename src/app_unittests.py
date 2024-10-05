@@ -8,8 +8,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 import sys
-from os import path, curdir, remove as remove_file, stat
-from tempfile import gettempdir
+from os import path, curdir, stat
+from tempfile import TemporaryDirectory
 from unittest import TestCase, main as run_tests
 
 # internal
@@ -19,6 +19,7 @@ from app_defines import DownloadModes, ThreadInterruptException, DEFAULT_HEADERS
 from app_downloaders import make_downloader
 from app_logger import Logger
 from app_module import ProcModule
+from app_revision import APP_NAME
 from app_tags_parser import parse_tags
 from app_utils import normalize_path
 
@@ -432,7 +433,8 @@ class RealDownloadTests(TestCase):
         # this test actually performs a download
         tempfile_id = '6579460'
         tempfile_ext = 'png'
-        tempdir = gettempdir()
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
         #                  tag               flag      v      flag            v           flag      v
@@ -441,7 +443,7 @@ class RealDownloadTests(TestCase):
         with make_downloader(ProcModule.RX) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
-            remove_file(tempfile_path)
+        tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
     def test_down_rs01(self) -> None:
@@ -450,7 +452,8 @@ class RealDownloadTests(TestCase):
         # this test actually performs a download
         tempfile_id = '7939303'
         tempfile_ext = 'png'
-        tempdir = gettempdir()
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
         #                  tag               flag      v      flag            v           flag      v
@@ -459,7 +462,7 @@ class RealDownloadTests(TestCase):
         with make_downloader(ProcModule.RS) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
-            remove_file(tempfile_path)
+        tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
     def test_down_rs02_fav1(self) -> None:
@@ -469,7 +472,8 @@ class RealDownloadTests(TestCase):
         fav_user_id = '59309'
         tempfile_id = '6511644'
         tempfile_ext = 'jpeg'
-        tempdir = gettempdir()
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
         #                  tag                        flag      v      flag            v           flag      v
@@ -478,7 +482,7 @@ class RealDownloadTests(TestCase):
         with make_downloader(ProcModule.RS) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
-            remove_file(tempfile_path)
+        tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
     def test_down_rz01(self) -> None:
@@ -487,7 +491,8 @@ class RealDownloadTests(TestCase):
         # this test actually performs a download
         tempfile_id = '2525500'
         tempfile_ext = 'jpg'
-        tempdir = gettempdir()
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
         #             tag       tag       tag       flag      v      flag            v           flag      v
@@ -497,7 +502,7 @@ class RealDownloadTests(TestCase):
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
             self.assertEqual(195230, stat(tempfile_path).st_size)
-            remove_file(tempfile_path)
+        tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
     def test_down_rz02_fav1(self) -> None:
@@ -507,7 +512,8 @@ class RealDownloadTests(TestCase):
         fav_user = 'mikaiika'  # 'Tansan00'
         tempfile_id = '3794645'  # '3325543'
         tempfile_ext = 'jpg'
-        tempdir = gettempdir()
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
         #                  tag                        flag      v      flag            v           flag      v
@@ -516,7 +522,7 @@ class RealDownloadTests(TestCase):
         with make_downloader(ProcModule.RZ) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
-            remove_file(tempfile_path)
+        tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
     def test_down_rp01(self) -> None:
@@ -525,7 +531,8 @@ class RealDownloadTests(TestCase):
         # this test actually performs a download
         tempfile_id = '5915464'
         tempfile_ext = 'jpg'
-        tempdir = gettempdir()
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
         #                  tag              flag      v      flag            v           flag      v
@@ -534,7 +541,7 @@ class RealDownloadTests(TestCase):
         with make_downloader(ProcModule.RP) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
-            remove_file(tempfile_path)
+        tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
     def test_down_rp02_fav1(self) -> None:
@@ -544,7 +551,8 @@ class RealDownloadTests(TestCase):
         fav_user = 'avoidthenoid'
         tempfile_id = '440995'
         tempfile_ext = 'jpg'
-        tempdir = gettempdir()
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
         #                 tag                      flag      v      flag            v           flag      v
@@ -553,7 +561,7 @@ class RealDownloadTests(TestCase):
         with make_downloader(ProcModule.RP) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
-            remove_file(tempfile_path)
+        tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
     def test_down_en01(self) -> None:
@@ -562,7 +570,8 @@ class RealDownloadTests(TestCase):
         # this test actually performs a download
         tempfile_id = '4322823'
         tempfile_ext = 'jpg'
-        tempdir = gettempdir()
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
         #                  tag              flag      v      flag            v           flag      v
@@ -571,7 +580,7 @@ class RealDownloadTests(TestCase):
         with make_downloader(ProcModule.EN) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
-            remove_file(tempfile_path)
+        tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
     def test_down_en02_fav1(self) -> None:
@@ -581,7 +590,8 @@ class RealDownloadTests(TestCase):
         fav_user_id = '40533'
         tempfile_id = '3539510'
         tempfile_ext = 'webm'
-        tempdir = gettempdir()
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
         #                 tag                          flag      v      flag            v           flag      v
@@ -590,7 +600,7 @@ class RealDownloadTests(TestCase):
         with make_downloader(ProcModule.EN) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
-            remove_file(tempfile_path)
+        tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
     def test_down_en03_fav2(self) -> None:
@@ -600,7 +610,8 @@ class RealDownloadTests(TestCase):
         fav_user_name = 'link901'
         tempfile_id = '3539510'
         tempfile_ext = 'webm'
-        tempdir = gettempdir()
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
         Logger.init(True, True)
         #                 tag                          flag      v      flag            v           flag      v
@@ -609,7 +620,7 @@ class RealDownloadTests(TestCase):
         with make_downloader(ProcModule.EN) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
-            remove_file(tempfile_path)
+        tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
 
