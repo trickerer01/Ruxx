@@ -16,7 +16,7 @@ from app_utils import normalize_path
 def find_duplicated_files(basepath: str, scan_depth: int) -> dict[str, list[str]]:
     class DFileInfo:
         def __init__(self, folder: str, name: str, size: int) -> None:
-            self.folder: str = folder
+            self.folder: str = normalize_path(folder)
             self.name: str = name
             self.size: int = size
 
@@ -56,7 +56,7 @@ def find_duplicated_files(basepath: str, scan_depth: int) -> dict[str, list[str]
         if fsize and fsize not in files_by_size:
             files_by_size[fsize] = list()
         fsbase_folder, fname = path.split(filepath)
-        files_by_size[fsize].append(DFileInfo(normalize_path(fsbase_folder), fname, fsize))
+        files_by_size[fsize].append(DFileInfo(fsbase_folder, fname, fsize))
     for fsz in list(files_by_size.keys()).copy():
         if fsz in files_by_size and len(files_by_size[fsz]) < 2:
             del files_by_size[fsz]
