@@ -10,6 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from __future__ import annotations
 import ctypes
 import sys
+from collections.abc import Callable
 from datetime import datetime
 from os import path, system, makedirs, remove, replace, getcwd
 from threading import Thread
@@ -62,6 +63,7 @@ __all__ = ('run_ruxx_gui',)
 # loaded
 download_thread: Thread | None = None
 tags_check_thread: Thread | None = None
+duplicates_check_thread: Thread | None = None
 prev_download_state = True
 IS_WIN = sys.platform == PLATFORM_WINDOWS
 IS_RAW = '_sitebuiltins' in sys.modules  # ran from console (shell or IDE)
@@ -150,10 +152,15 @@ def sort_files_by_score_do() -> None:
     file_worker_report(result, len(filelist), 'sort')
 
 
-def find_duplicated_files_wrapper() -> dict[str, list[str]]:
+def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], None]) -> None:
+    global duplicates_check_thread
+
+    if is_menu_disabled(Menus.TOOLS, SubMenus.DUPLICATES):
+        return
+
     loc = get_media_files_dir()
     if not loc:
-        return {}
+        return
     aw = AskIntWindow(rootm(), lambda x: x >= 0, title='Enter scan depth', default='0')
     aw.finalize()
     rootm().wait_window(aw.window)
@@ -161,66 +168,97 @@ def find_duplicated_files_wrapper() -> dict[str, list[str]]:
     if depth is None:
         if aw.variable.get() != '':
             trace(f'Invalid scan depth value \'{aw.variable.get()}\'')
-        return {}
-    try:
-        trace(f'Looking for duplicate files in \'{loc}\'...')
-        ret_files = find_duplicated_files(loc, depth)
-        dupe_messages = list()
-        if ret_files:
-            dupe_messages.append('Duplicates found:')
-            file_num = 0
-            n = '\n  - '
-            for base_file_fullpath in sorted(ret_files.keys(), reverse=True):
-                file_num += 1
-                dupe_paths = ret_files[base_file_fullpath]
-                dupe_messages.append(f' {file_num:d}) {base_file_fullpath}:{n}{n.join(dupe_paths)}')
-        else:
-            dupe_messages.append('No duplicates found!')
-        trace('\n'.join(dupe_messages))
-        return ret_files
-    except Exception:
-        trace(f'An error occured while looking for duplicates in \'{loc}\'.')
-        return {}
-
-
-def find_duplicates() -> None:
-    find_duplicated_files_wrapper()
-
-
-def find_duplicates_separate() -> None:
-    dfiles = find_duplicated_files_wrapper()
-    if not dfiles:
         return
-    moved_files = 0
-    filepaths = list()
-    for basefile in dfiles:
-        filepaths.extend(dfiles[basefile])
-    root_folder = normalize_path(path.commonpath(list(dfiles.keys())))
-    move_folder = f'{root_folder}dupes/'
-    try:
-        if not path.isdir(move_folder):
-            makedirs(move_folder)
-        for dupe_file_path in filepaths:
-            dest_file_path = f'{move_folder}{path.split(dupe_file_path)[1]}'
-            if path.abspath(dupe_file_path) != path.abspath(dest_file_path):
-                replace(dupe_file_path, dest_file_path)
-            moved_files += 1
-    finally:
-        file_worker_report(moved_files, sum(len(dfiles[_]) for _ in dfiles), 'mov', f' to \'{move_folder}\'')
+
+    config_global(Globals.BUTTON_DOWNLOAD, state=STATE_DISABLED)
+    config_global(Globals.BUTTON_CHECKTAGS, state=STATE_DISABLED)
+    config_menu(Menus.ACTIONS, SubMenus.DOWNLOAD, state=STATE_DISABLED)
+    config_menu(Menus.ACTIONS, SubMenus.CHECKTAGS, state=STATE_DISABLED)
+    config_menu(Menus.TOOLS, SubMenus.DUPLICATES, state=STATE_DISABLED)
+    unfocus_buttons_once()
+
+    ret_files = dict[str, list[str]]()
+    trace(f'Looking for duplicate files in \'{loc}\'...')
+    duplicates_check_thread = Thread(target=lambda: find_duplicated_files(ret_files, loc, depth))
+    duplicates_check_threadm().killed = False
+    duplicates_check_threadm().start()
+
+    def check_dupes_checker_thread() -> None:
+        global duplicates_check_thread
+        if getattr(duplicates_check_threadm(), 'killed', True) is False:
+            rootm().after(int(THREAD_CHECK_PERIOD_DEFAULT), check_dupes_checker_thread)
+            return
+
+        try:
+            duplicates_check_threadm().join()
+            dupe_messages = list()
+            if ret_files:
+                dupe_messages.append('Duplicates found:')
+                file_num = 0
+                n = '\n  - '
+                for base_file_fullpath in sorted(ret_files.keys(), reverse=True):
+                    file_num += 1
+                    dupe_paths = ret_files[base_file_fullpath]
+                    dupe_messages.append(f' {file_num:d}) {base_file_fullpath}:{n}{n.join(dupe_paths)}')
+            else:
+                dupe_messages.append('No duplicates found!')
+            trace('\n'.join(dupe_messages))
+        except Exception:
+            trace(f'An error occured while looking for duplicates in \'{loc}\'.')
+        finally:
+            duplicates_check_thread = None
+            config_global(Globals.BUTTON_CHECKTAGS, state=gobject_orig_states[Globals.BUTTON_CHECKTAGS])
+            config_global(Globals.BUTTON_DOWNLOAD, state=gobject_orig_states[Globals.BUTTON_DOWNLOAD])
+            config_menu(Menus.ACTIONS, SubMenus.CHECKTAGS, state=menu_item_orig_states[Menus.ACTIONS][2])
+            config_menu(Menus.ACTIONS, SubMenus.DOWNLOAD, state=menu_item_orig_states[Menus.ACTIONS][1])
+            config_menu(Menus.TOOLS, SubMenus.DUPLICATES, state=menu_item_orig_states[Menus.TOOLS][8])
+            callback(ret_files)
+
+    rootm().after(int(THREAD_CHECK_PERIOD_DEFAULT), check_dupes_checker_thread)
 
 
-def find_duplicates_remove() -> None:
-    dfiles = find_duplicated_files_wrapper()
-    if not dfiles:
-        return
-    removed_files = 0
-    try:
-        for dfkey in dfiles:
-            for filepath in dfiles[dfkey]:
-                remove(filepath)
-                removed_files += 1
-    finally:
-        file_worker_report(removed_files, sum(len(dfiles[_]) for _ in dfiles), 'remov')
+def find_duplicates_do() -> None:
+    find_duplicated_files_wrapper(lambda *_: None)
+
+
+def find_duplicates_separate_do() -> None:
+    def callback_(dfiles: dict[str, list[str]]) -> None:
+        if not dfiles:
+            return
+        moved_files = 0
+        filepaths = list()
+        for basefile in dfiles:
+            filepaths.extend(dfiles[basefile])
+        root_folder = normalize_path(path.commonpath(list(dfiles.keys())))
+        move_folder = f'{root_folder}dupes/'
+        try:
+            if not path.isdir(move_folder):
+                makedirs(move_folder)
+            for dupe_file_path in filepaths:
+                dest_file_path = f'{move_folder}{path.split(dupe_file_path)[1]}'
+                if path.abspath(dupe_file_path) != path.abspath(dest_file_path):
+                    replace(dupe_file_path, dest_file_path)
+                moved_files += 1
+        finally:
+            file_worker_report(moved_files, sum(len(dfiles[_]) for _ in dfiles), 'mov', f' to \'{move_folder}\'')
+
+    find_duplicated_files_wrapper(callback_)
+
+
+def find_duplicates_remove_do() -> None:
+    def callback_(dfiles: dict[str, list[str]]) -> None:
+        if not dfiles:
+            return
+        removed_files = 0
+        try:
+            for dfkey in dfiles:
+                for filepath in dfiles[dfkey]:
+                    remove(filepath)
+                    removed_files += 1
+        finally:
+            file_worker_report(removed_files, sum(len(dfiles[_]) for _ in dfiles), 'remov')
+
+    find_duplicated_files_wrapper(callback_)
 
 
 def set_download_limit() -> None:
@@ -319,12 +357,20 @@ def set_proc_module(dwnmodule: int) -> None:
 
 def update_widget_enabled_states() -> None:
     downloading = is_downloading()
+    checkingtags = is_cheking_tags()
+    checkingdupes = is_checking_duplicates()
     i: Menus
     for i in [m for m in Menus.__members__.values() if m < Menus.MAX_MENUS]:
         menu = menu_items.get(i)
         if menu:
             for j in menu.statefuls:
-                if i == Menus.ACTIONS and j == SubMenus.CHECKTAGS and is_cheking_tags():  # Check tags, disabled when active
+                if i == Menus.ACTIONS and j == SubMenus.CHECKTAGS and checkingtags:  # Check tags, disabled when active
+                    newstate = STATE_DISABLED
+                elif i == Menus.TOOLS and j == SubMenus.DUPLICATES and checkingdupes:  # Disabled when active
+                    newstate = STATE_DISABLED
+                elif i == Menus.ACTIONS and j == SubMenus.CHECKTAGS and checkingdupes:  # Disabled when active
+                    newstate = STATE_DISABLED
+                elif i == Menus.ACTIONS and j == SubMenus.DOWNLOAD and checkingdupes:  # Disabled when active
                     newstate = STATE_DISABLED
                 elif i == Menus.EDIT and j == SubMenus.SSOURCE and ProcModule.is_rs():  # Save sources, disabled for RS
                     newstate = STATE_DISABLED
@@ -647,20 +693,29 @@ def is_cheking_tags() -> bool:
     return tags_check_thread is not None
 
 
+def is_checking_duplicates() -> bool:
+    return tags_check_thread is not None
+
+
 def update_download_state() -> None:
     global download_thread
     global prev_download_state
 
     downloading = is_downloading()
+    checkingtags = is_cheking_tags()
+    checkingdupes = is_checking_duplicates()
     if prev_download_state != downloading:
         update_widget_enabled_states()
         gi: Globals
         for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:
-            if gi in (Globals.BUTTON_DOWNLOAD, Globals.MODULE_ICON):
+            if gi in (Globals.MODULE_ICON,):
                 pass  # config_global(i, state=gobject_orig_states[i])
+            elif gi == Globals.BUTTON_DOWNLOAD:
+                if not downloading:
+                    config_global(gi, state=(STATE_DISABLED if checkingdupes else gobject_orig_states[gi]))
             elif gi == Globals.BUTTON_CHECKTAGS:
-                if not is_cheking_tags():
-                    config_global(gi, state=(STATE_DISABLED if downloading else gobject_orig_states[gi]))
+                if not checkingtags:
+                    config_global(gi, state=(STATE_DISABLED if downloading or checkingdupes else gobject_orig_states[gi]))
             else:
                 config_global(gi, state=(STATE_DISABLED if downloading else gobject_orig_states[gi]))
         # special case 1: _download button: turn into cancel button
@@ -809,9 +864,9 @@ def init_menus() -> None:
     register_submenu_command('by score', sort_files_by_score_do)
     register_menu_separator()
     register_submenu('Scan for duplicates...')
-    register_submenu_command('and report', find_duplicates)
-    register_submenu_command('and separate', find_duplicates_separate)
-    register_submenu_command('and remove', find_duplicates_remove)
+    register_submenu_command('and report', find_duplicates_do)
+    register_submenu_command('and separate', find_duplicates_separate_do)
+    register_submenu_command('and remove', find_duplicates_remove_do)
     register_menu_separator()
     register_menu_checkbutton('Enable autocompletion', CVARS[Options.AUTOCOMPLETION_ENABLE], toggle_autocompletion_wrapper)
     register_menu_command('Autocomplete tag...', trigger_autocomplete_tag, Options.ACTION_AUTOCOMPLETE_TAG)
@@ -898,6 +953,11 @@ def download_threadm() -> Thread:
 def tags_check_threadm() -> Thread:
     assert tags_check_thread
     return tags_check_thread
+
+
+def duplicates_check_threadm() -> Thread:
+    assert duplicates_check_thread
+    return duplicates_check_thread
 
 
 def dwnm() -> Downloader:
