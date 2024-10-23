@@ -22,7 +22,7 @@ re_tags_exclude_rx_s_z_ex = (
     r'e(?:a(?:_.+?|gulls?|l(?:l?ed|s)?|rch|s(?:hell|ide)?|t(?:belt|ed|ing|s)?)|c(?:ret(?:ary|s)?|ur(?:ed?|ity))|'  # s
     r'd(?:uc(?:e[dr]?|ing|ti(?:on|ve)))|e(?:d(?:_?b(?:ag|ed)|rian|s)?)|ga|i(?:fuku|za)|kirei|l(?:f(?:_.+?|lick|cest|ie)?|ix)|'  # se
     r'm(?:en|i.+?)|n(?:s(?:ei|itive|ors?|ual)|t(?:ai|ones?))|p(?:i(?:lian|a)|tum)|q(?:ue(?:l|nce))|'  # se
-    r'r(?:a(?:fuku|ph)|gal|i(?:es|ous)|ratus|v(?:ant|ers?|ice(?:d|ing|s)?|o))|s(?:sion)|tting|w(?:ers?|ing)|'  # se
+    r'r(?:a(?:fuku|ph)|gal|i(?:es|ous)|ratus|v(?:ant|ers?|ic(?:e[ds]|ing)?|o))|s(?:sion)|tting|w(?:ers?|ing)|'  # se
     r'x(?:_.+?|bot|doll|ercise|friend|ism|l(?:ab|ess)|t(?:ember|ing|oy)|y(?:_.+?)?|fur)?)|'  # se
     r'h(?:a(?:d(?:amy|e[ds]?|ings?|ow(?:ed|s)?)|gg(?:ing|y)|k(?:a|es?|ing|y)|m(?:an(?:i(?:c|sm)|s)?|e(?:less)?|ing|poo)|'  # s
     r'r(?:ds?|ed?|ing|k_(?!girl).+?|p(?:ed|i(?:e|ng))?|t)|v(?:e[dnrs]?|ing)|wl)|'  # sha
