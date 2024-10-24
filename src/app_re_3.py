@@ -69,7 +69,7 @@ re_tags_exclude_rx_s_z_ex = (
     r'y(?:l(?:e|ized|us)))|'  # st
     r'u(?:b(?:_.+?|m(?:arine|erge[ds]?)|title[ds]?|verse|way)|c(?:ios|k(?:e(?:d|rs?)|ing|ling|s)?|tion)|d(?:a_51|den|s)|ffering|'  # s
     r'i(?:d|getsu|koden|na|t(?:_.+?|case|e|ing|s)?)|kumizu|l(?:cate|ong)|m(?:a[gt]a|m(?:er|on(?:e[dr]|ing|s)?)|o)|'  # su
-    r'n(?:_?hat|b(?:eam|lock|urns?)|dress|flowers?|li(?:gh)?t|ny|ri(?:der|se)|s(?:creen|et|hine|oft)?|tan)|'  # su
+    r'n(?:_?hat|b(?:eam|lock|urns?)|dress|flowers?|li(?:gh)?t|ny|r(?:ays?|i(?:der|se))|s(?:creen|et|hine|oft)?|tan)|'  # su
     r'p(?:er(?:chub|hero|jail|ior)?|port|rised?)|r(?:amar|f(?:board|ers?|ing|s_.+?)?|geons?|prised?|real)|'  # su
     r's(?:hi|pen(?:d(?:ed)?|sion)))|'  # su
     r'w(?:a(?:llow(?:ing)?|mp(?:_.+?|y)?|n|stika|t(?:_.+?)?|y(?:ing)?)|'  # s
