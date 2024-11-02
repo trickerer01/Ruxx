@@ -47,7 +47,7 @@ from app_gui_defines import (
     OPTION_CMD_COOKIES_CMD, OPTION_CMD_HEADERS_CMD, OPTION_CMD_PROXY_CMD, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD,
     OPTION_CMD_TIMEOUT_CMD, OPTION_CMD_RETRIES_CMD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4,
     OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_VERBOSE, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE_CMD, OPTION_CMD_PARCHI,
-    OPTION_VALUES_PARCHI, OPTION_CMD_CACHE_PROCCED_HTML,
+    OPTION_VALUES_PARCHI, OPTION_CMD_DOWNLOAD_ORDER, OPTION_VALUES_DOWNLOAD_ORDER, OPTION_CMD_CACHE_PROCCED_HTML,
     Options, Globals, Menus, SubMenus, Icons, InfoSaveModes, CVARS, hotkeys, menu_items, menu_item_orig_states, gobject_orig_states,
 )
 from app_module import ProcModule
@@ -261,26 +261,6 @@ def find_duplicates_remove_do() -> None:
     find_duplicated_files_wrapper(callback_)
 
 
-def set_download_limit() -> None:
-    aw = AskIntWindow(rootm(), lambda x: x >= 0)
-    aw.finalize()
-    rootm().wait_window(aw.window)
-    limit = aw.value()
-    if limit is None:
-        if aw.variable.get() != '':
-            trace(f'Invalid limit value \'{aw.variable.get()}\'')
-        return
-    setrootconf(Options.DOWNLOAD_LIMIT, limit)
-    config_menu(Menus.DEBUG, SubMenus.DLIMSET, label=f'Set download limit ({limit})...')
-    trace(f'Download limit set to {limit:d} item(s).')
-
-
-def reset_download_limit() -> None:
-    setrootconf(Options.DOWNLOAD_LIMIT, 0)
-    config_menu(Menus.DEBUG, SubMenus.DLIMSET, label='Set download limit (0)...')
-    trace('Download limit was reset.')
-
-
 def open_download_folder() -> None:
     cur_path = normalize_path(getrootconf(Options.PATH))
 
@@ -458,13 +438,29 @@ def prepare_cmdline() -> list[str]:
     addstr = OPTION_CMD_IMAGES[OPTION_VALUES_IMAGES.index(str(getrootconf(Options.IMGSETTING)))]
     if len(addstr) > 0 and not is_global_disabled(Globals.COMBOBOX_IMAGES):
         newstr.append(addstr)
-    addstr = OPTION_CMD_PARCHI[OPTION_VALUES_PARCHI.index(str(getrootconf(Options.PARCHISETTING)))]
-    if len(addstr) > 0 and not is_global_disabled(Globals.COMBOBOX_PARCHI):
-        newstr.append(addstr)
     addstr = OPTION_CMD_THREADING[OPTION_VALUES_THREADING.index(str(getrootconf(Options.THREADSETTING)))]
     if len(addstr) > 0 and not is_global_disabled(Globals.COMBOBOX_THREADING):
         newstr.append(OPTION_CMD_THREADING_CMD)
         newstr.append(addstr)
+    addstr = OPTION_CMD_PARCHI[OPTION_VALUES_PARCHI.index(str(getrootconf(Options.PARCHISETTING)))]
+    if len(addstr) > 0 and not is_global_disabled(Globals.COMBOBOX_PARCHI):
+        newstr.append(addstr)
+    addstr = OPTION_CMD_DOWNLOAD_ORDER[OPTION_VALUES_DOWNLOAD_ORDER.index(str(getrootconf(Options.DOWNLOAD_ORDER)))]
+    if len(addstr) > 0 and not is_global_disabled(Globals.COMBOBOX_DOWNLOAD_ORDER):
+        newstr.append(addstr)
+    # download limit
+    if not is_global_disabled(Globals.FIELD_DOWNLOAD_LIMIT):
+        while True:
+            try:
+                val = int(getrootconf(Options.DOWNLOAD_LIMIT))
+                assert val >= 0
+                if val > 0:
+                    newstr.append(OPTION_CMD_DOWNLIMIT_CMD)
+                    newstr.append(str(val))
+                setrootconf(Options.DOWNLOAD_LIMIT, str(val))
+                break
+            except Exception:
+                setrootconf(Options.DOWNLOAD_LIMIT, 0)
     # date min / max
     if not is_global_disabled(Globals.FIELD_DATEMIN) and not is_global_disabled(Globals.FIELD_DATEMAX):
         for datestr in ((Options.DATEMIN, OPTION_CMD_DATEAFTER_CMD), (Options.DATEMAX, OPTION_CMD_DATEBEFORE_CMD)):
@@ -526,12 +522,6 @@ def prepare_cmdline() -> list[str]:
         addstr = OPTION_CMD_DOWNMODE[int(getrootconf(Options.DOWNLOAD_MODE))]
         if len(addstr) > 0:
             newstr.append(OPTION_CMD_DOWNMODE_CMD)
-            newstr.append(addstr)
-    # download limit
-    if __RUXX_DEBUG__:
-        addstr = str(getrootconf(Options.DOWNLOAD_LIMIT))
-        if int(addstr) > 0:
-            newstr.append(OPTION_CMD_DOWNLIMIT_CMD)
             newstr.append(addstr)
     # save tags (dump_tags)
     addstr = OPTION_CMD_SAVE_TAGS[int(getrootconf(Options.SAVE_TAGS))]
@@ -880,8 +870,6 @@ def init_menus() -> None:
         register_menu('Debug', Menus.DEBUG)
         for didx, dmode in enumerate(DMODE_CHOICES):
             register_menu_radiobutton(f'Download: {dmode}', CVARS[Options.DOWNLOAD_MODE], didx)
-        register_menu_command('Set download limit (0)...', set_download_limit)
-        register_menu_command('Reset download limit', reset_download_limit)
 
 
 def init_gui() -> None:

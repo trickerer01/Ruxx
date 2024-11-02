@@ -23,6 +23,8 @@ from tkinter import (
 )
 
 # internal
+from tkinter.ttk import Entry
+
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
     PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, CONNECT_TIMEOUT_BASE, DATE_MAX_DEFAULT,
@@ -37,8 +39,8 @@ from app_gui_defines import (
     IMG_PROC_RP_DATA, IMG_PROC_EN_DATA, IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL,
     BUT_CTRL_DELETE, OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
     SLASH, BEGIN, OPTION_VALUES_PROXYTYPE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
-    BUT_CTRL_BACKSPACE, STICKY_VERTICAL_W, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, BUTTONS_TO_UNFOCUS,
-    PADDING_DEFAULT, BUT_CTRL_SPACE,
+    BUT_CTRL_BACKSPACE, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI, OPTION_VALUES_DOWNLOAD_ORDER,
+    TOOLTIP_DOWNLOAD_ORDER, TOOLTIP_DOWNLOAD_LIMIT, BUTTONS_TO_UNFOCUS, PADDING_DEFAULT, BUT_CTRL_SPACE,
     Icons, Options, Globals, Menus, SubMenus, menu_items, hotkeys, gobjects,
 )
 from app_module import ProcModule
@@ -1146,64 +1148,85 @@ def create_base_window_widgets() -> None:
     string_vars[CVARS[Options.TAGLISTS_PATH]] = StringVar(rootm(), '', CVARS[Options.TAGLISTS_PATH])
 
     # Options #
+    opframe_main = ttk.LabelFrame(root_framem(), text='Download options')
+    opframe_main.grid(row=cur_row(), column=cur_column(), rowspan=1, columnspan=COLUMNSPAN_MAX,
+                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
     #  Videos
-    opframe_vid = ttk.LabelFrame(root_framem(), text='Videos')
+    opframe_vid = ttk.LabelFrame(opframe_main, text='Videos')
     opframe_vid.grid(row=cur_row(), column=cur_column(), rowspan=1, columnspan=1,
-                     sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_vid = ttk.Combobox(opframe_vid, values=OPTION_VALUES_VIDEOS, state=STATE_READONLY, width=13,
+                     sticky=STICKY_HORIZONTAL, padx=1, pady=0, ipadx=0)
+    op_vid = ttk.Combobox(opframe_vid, values=OPTION_VALUES_VIDEOS, state=STATE_READONLY, width=14 if IS_WIN else 12,
                           textvariable=StringVar(rootm(), '', CVARS[Options.VIDSETTING]))
     register_global(Globals.COMBOBOX_VIDEOS, op_vid)
     attach_tooltip(op_vid, TOOLTIP_VIDEOS)
     op_vid.current(1)
-    op_vid.pack(padx=PADDING_DEFAULT * 2, pady=3)
+    op_vid.pack(padx=1, pady=3)
     #  Images
-    opframe_img = ttk.LabelFrame(root_framem(), text='Images')
+    opframe_img = ttk.LabelFrame(opframe_main, text='Images')
     opframe_img.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
-                     sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_img = ttk.Combobox(opframe_img, values=OPTION_VALUES_IMAGES, state=STATE_READONLY, width=13,
+                     sticky=STICKY_HORIZONTAL, padx=1, pady=0, ipadx=0)
+    op_img = ttk.Combobox(opframe_img, values=OPTION_VALUES_IMAGES, state=STATE_READONLY, width=14 if IS_WIN else 12,
                           textvariable=StringVar(rootm(), '', CVARS[Options.IMGSETTING]))
     register_global(Globals.COMBOBOX_IMAGES, op_img)
     attach_tooltip(op_img, TOOLTIP_IMAGES)
     op_img.current(len(OPTION_VALUES_IMAGES) - 1)
-    op_img.pack(padx=PADDING_DEFAULT * 2, pady=3)
-    # Parant posts / child posts
-    opframe_parch = ttk.LabelFrame(root_framem(), text='Parent posts / child posts')
-    opframe_parch.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
-                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_parch = ttk.Combobox(opframe_parch, values=OPTION_VALUES_PARCHI, state=STATE_READONLY, width=18,
-                            textvariable=StringVar(rootm(), '', CVARS[Options.PARCHISETTING]))
-    register_global(Globals.COMBOBOX_PARCHI, op_parch)
-    attach_tooltip(op_parch, TOOLTIP_PARCHI)
-    op_parch.current(len(OPTION_VALUES_PARCHI) - 2)
-    op_parch.pack(padx=PADDING_DEFAULT * 2, pady=3)
+    op_img.pack(padx=1, pady=3)
+    #  Date min
+    opframe_datemin = ttk.LabelFrame(opframe_main, text='Date min')
+    opframe_datemin.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
+                         sticky=STICKY_HORIZONTAL, padx=1, pady=PADDING_DEFAULT, ipadx=0)
+    op_datemin_t = BaseText(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS[Options.DATEMIN]))
+    register_global(Globals.FIELD_DATEMIN, op_datemin_t)
+    op_datemin_t.insert(END, DATE_MIN_DEFAULT)
+    op_datemin_t.pack(padx=1, pady=PADDING_DEFAULT * (1.5 if IS_WIN else 1))
+    attach_tooltip(op_datemin_t, TOOLTIP_DATE)
+    #  Date max
+    opframe_datemax = ttk.LabelFrame(opframe_main, text='Date max')
+    opframe_datemax.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
+                         sticky=STICKY_HORIZONTAL, padx=1, pady=PADDING_DEFAULT, ipadx=0)
+    op_datemax_t = BaseText(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS[Options.DATEMAX]))
+    register_global(Globals.FIELD_DATEMAX, op_datemax_t)
+    op_datemax_t.insert(END, DATE_MAX_DEFAULT)
+    op_datemax_t.pack(padx=1, pady=PADDING_DEFAULT * (1.5 if IS_WIN else 1))
+    attach_tooltip(op_datemax_t, TOOLTIP_DATE)
     #  Threading
-    opframe_thread = ttk.LabelFrame(root_framem(), text='Threading')
+    opframe_thread = ttk.LabelFrame(opframe_main, text='Threading')
     opframe_thread.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
-                        sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
+                        sticky=STICKY_HORIZONTAL, padx=1, pady=0, ipadx=0)
     op_thread = ttk.Combobox(opframe_thread, values=OPTION_VALUES_THREADING, state=STATE_READONLY, width=9,
                              textvariable=StringVar(rootm(), '', CVARS[Options.THREADSETTING]))
     register_global(Globals.COMBOBOX_THREADING, op_thread)
     attach_tooltip(op_thread, TOOLTIP_THREADING)
     op_thread.current(len(OPTION_VALUES_THREADING) - 1)
-    op_thread.pack(padx=PADDING_DEFAULT * 2, pady=3)
-    #  Date min
-    opframe_datemin = ttk.LabelFrame(root_framem(), text='Date min')
-    opframe_datemin.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
-                         sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_datemin_t = BaseText(opframe_datemin, width=10, textvariable=StringVar(rootm(), '', CVARS[Options.DATEMIN]))
-    register_global(Globals.FIELD_DATEMIN, op_datemin_t)
-    op_datemin_t.insert(END, DATE_MIN_DEFAULT)
-    op_datemin_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (1.5 if IS_WIN else 1))
-    attach_tooltip(op_datemin_t, TOOLTIP_DATE)
-    #  Date max
-    opframe_datemax = ttk.LabelFrame(root_framem(), text='Date max')
-    opframe_datemax.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=COLUMNSPAN_MAX - 5,
-                         sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
-    op_datemax_t = BaseText(opframe_datemax, width=10, textvariable=StringVar(rootm(), '', CVARS[Options.DATEMAX]))
-    register_global(Globals.FIELD_DATEMAX, op_datemax_t)
-    op_datemax_t.insert(END, DATE_MAX_DEFAULT)
-    op_datemax_t.pack(padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT * (1.5 if IS_WIN else 1))
-    attach_tooltip(op_datemax_t, TOOLTIP_DATE)
+    op_thread.pack(padx=1, pady=3)
+    #  Parent posts / child posts
+    opframe_parch = ttk.LabelFrame(opframe_main, text='Parent posts / child posts')
+    opframe_parch.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
+                       sticky=STICKY_HORIZONTAL, padx=1, pady=0, ipadx=0)
+    op_parch = ttk.Combobox(opframe_parch, values=OPTION_VALUES_PARCHI, state=STATE_READONLY, width=21 if IS_WIN else 18,
+                            textvariable=StringVar(rootm(), '', CVARS[Options.PARCHISETTING]))
+    register_global(Globals.COMBOBOX_PARCHI, op_parch)
+    attach_tooltip(op_parch, TOOLTIP_PARCHI)
+    op_parch.current(len(OPTION_VALUES_PARCHI) - 2)
+    op_parch.pack(padx=1, pady=3)
+    #  Download order
+    opframe_dorder = ttk.LabelFrame(opframe_main, text='Download order')
+    opframe_dorder.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
+                        sticky=STICKY_HORIZONTAL, padx=1, pady=0, ipadx=0)
+    op_dorder = ttk.Combobox(opframe_dorder, values=OPTION_VALUES_DOWNLOAD_ORDER, state=STATE_READONLY, width=13 if IS_WIN else 12,
+                             textvariable=StringVar(rootm(), '', CVARS[Options.DOWNLOAD_ORDER]))
+    register_global(Globals.COMBOBOX_DOWNLOAD_ORDER, op_dorder)
+    attach_tooltip(op_dorder, TOOLTIP_DOWNLOAD_ORDER)
+    op_dorder.current(0)
+    op_dorder.pack(padx=1, pady=3)
+    #  Download limit
+    opframe_dlimit = ttk.LabelFrame(opframe_main, text='Posts limit')
+    opframe_dlimit.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=COLUMNSPAN_MAX - 7,
+                        sticky=STICKY_HORIZONTAL, padx=1, pady=0, ipadx=0)
+    op_dlimit = Entry(opframe_dlimit, width=0, textvariable=StringVar(rootm(), '', CVARS[Options.DOWNLOAD_LIMIT]), justify='center')
+    register_global(Globals.FIELD_DOWNLOAD_LIMIT, op_dlimit)
+    op_dlimit.pack(expand=NO, fill=X, padx=1, pady=3)
+    attach_tooltip(op_dlimit, TOOLTIP_DOWNLOAD_LIMIT)
 
     # Tags #
     opframe_tags = ttk.LabelFrame(root_framem(), text='Tags')
@@ -1227,9 +1250,9 @@ def create_base_window_widgets() -> None:
     # Path #
     opframe_path = ttk.LabelFrame(root_framem(), text='Path')
     opframe_path.grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX,
-                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
+                      sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=0)
     #  Text
-    op_pathstr = BaseText(opframe_path, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.PATH]))
+    op_pathstr = BaseText(opframe_path, width=0, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.PATH]))
     register_global(Globals.FIELD_PATH, op_pathstr)
     op_pathstr.insert(END, normalize_path(path.abspath(curdir), False))  # 3.8
     op_pathstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
@@ -1241,19 +1264,19 @@ def create_base_window_widgets() -> None:
     # Cmdline and _download button #
     #  Cmdline  #
     #   Note: global (not registered)
-    text_cmd = Text(root_framem(), font=FONT_SANS_SMALL, relief=SUNKEN, bd=0, bg=rootm().default_bg_color, height=3)
+    text_cmd = Text(root_framem(), font=FONT_SANS_SMALL, relief=SUNKEN, bd=0, bg=rootm().default_bg_color, height=3, width=0)
     text_cmdm().grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX - 1, rowspan=ROWSPAN_MAX,
-                     sticky=STICKY_ALLDIRECTIONS, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
+                     sticky=STICKY_ALLDIRECTIONS, padx=PADDING_DEFAULT * 2, pady=PADDING_DEFAULT)
     #  Button _download  #
-    dw_but = Button(root_framem(), text='Download', width=8, font=FONT_SANS_MEDIUM)
+    dw_but = Button(root_framem(), text='Download', width=10, font=FONT_SANS_MEDIUM)
     dw_but.grid(row=cur_row(), column=GLOBAL_COLUMNCOUNT - 1, columnspan=1, rowspan=ROWSPAN_MAX,
-                sticky=STICKY_VERTICAL_W, padx=PADDING_DEFAULT, pady=PADDING_DEFAULT)
+                sticky=STICKY_ALLDIRECTIONS, padx=PADDING_DEFAULT * 3 - 1, pady=PADDING_DEFAULT * 2)
     register_global(Globals.BUTTON_DOWNLOAD, dw_but)
 
     # This one is after root_frame
     pb1 = ttk.Progressbar(rootm(), value=0, maximum=PROGRESS_BAR_MAX, mode='determinate', orient=HORIZONTAL,
                           variable=IntVar(rootm(), 0, CVARS[Options.PROGRESS]))
-    pb1.pack(fill=X, expand=NO, anchor=S)
+    pb1.pack(fill=X, expand=NO, anchor=S, pady=0, padx=0)
 
     # This one is after progressbar
     sb_frame = BaseFrame(rootm())

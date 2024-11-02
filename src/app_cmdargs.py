@@ -22,7 +22,7 @@ from app_help import (
     HELP_ARG_NOPROXY, HELP_ARG_PROXYNODOWN, HELP_ARG_HEADERS, HELP_ARG_COOKIES, HELP_ARG_PREFIX, HELP_ARG_DUMP_TAGS, HELP_ARG_DUMP_SOURCES,
     HELP_ARG_DUMP_COMMENTS, HELP_ARG_DUMP_PER_ITEM, HELP_ARG_APPEND_SOURCE_AND_TAGS, HELP_ARG_TAGS, HELP_ARG_WARN_NON_EMPTY_FOLDER,
     HELP_ARG_INCLUDE_PARCHI, HELP_ARG_CON_TIMEOUT, HELP_ARG_CON_RETRIES, HELP_ARG_GET_MAXID, HELP_ARG_CACHE_HTML_BLOAT, HELP_ARG_VERBOSE,
-    HELP_ARG_PREFER_WEBM, HELP_ARG_HEADER, HELP_ARG_COOKIE, HELP_ARG_MERGE_LISTS,
+    HELP_ARG_PREFER_WEBM, HELP_ARG_HEADER, HELP_ARG_COOKIE, HELP_ARG_MERGE_LISTS, HELP_ARG_REVERSE_DOWNLOAD_ORDER,
 )
 from app_revision import APP_NAME, APP_VERSION
 from app_validators import valid_thread_count, valid_date, valid_folder_path, valid_json, valid_kwarg, valid_proxy, valid_positive_int
@@ -76,6 +76,7 @@ def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser.add_argument('-cache_html_bloat', action=ACTION_STORE_TRUE, help=HELP_ARG_CACHE_HTML_BLOAT)
     parser.add_argument('-dmode', default=DMODE_DEFAULT, help=HELP_ARG_DOWNLOAD_MODE, choices=DMODE_CHOICES)
     parser.add_argument('-dlimit', metavar='#NUMBER', default=0, help=HELP_ARG_DOWNLOAD_LIMIT, type=valid_positive_int)
+    parser.add_argument('-reverse', action=ACTION_STORE_TRUE, help=HELP_ARG_REVERSE_DOWNLOAD_ORDER)
     parser.add_argument(dest='tags', nargs=ZERO_OR_MORE, help=HELP_ARG_TAGS)
     parsed, unks = parser.parse_known_args(args)
     parsed.tags.extend(unks)  # -tags will be placed here; shove them into parsed tags

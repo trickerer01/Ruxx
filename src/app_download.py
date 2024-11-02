@@ -502,6 +502,9 @@ class Downloader(DownloaderBase):
                         ids_to_pop.append(ifi)
                 [self.item_info_dict_all.pop(ifi) for ifi in ids_to_pop]
 
+        if self.reverse_download_order:
+            self.items_raw_all.reverse()
+
         if self.download_limit > 0:
             if self.total_count_all > self.download_limit:
                 trace(f'\nShrinking queue down to {self.download_limit:d} item(s)...')
@@ -677,6 +680,7 @@ class Downloader(DownloaderBase):
         self.append_info = args.append_info or self.append_info
         self.download_mode = args.dmode or self.download_mode
         self.download_limit = args.dlimit or self.download_limit
+        self.reverse_download_order = args.reverse or self.reverse_download_order
         self.maxthreads_items = args.threads or self.maxthreads_items
         self.include_parchi = args.include_parchi or self.include_parchi
         self.skip_images = args.skip_img or self.skip_images

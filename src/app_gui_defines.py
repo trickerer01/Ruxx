@@ -53,12 +53,14 @@ STICKY_VERTICAL_W = 'wns'
 # Combobox
 OPTION_VALUES_VIDEOS = ('Don\'t download', 'Prefer MP4', 'Prefer Webm')
 OPTION_VALUES_IMAGES = ('Don\'t download', 'Prefer low res', 'Prefer high res')
-OPTION_VALUES_PARCHI = ('Don\'t download', 'Download everything')
 OPTION_VALUES_THREADING = ('1 Thread', '2 Threads', '3 Threads', '4 Threads', '5 Threads', '6 Threads', '7 Threads', '8 Threads')
+OPTION_VALUES_PARCHI = ('Don\'t download', 'Download everything')
+OPTION_VALUES_DOWNLOAD_ORDER = ('Default', 'Reverse')
 OPTION_VALUES_PROXYTYPE = ('http', 'socks5')
 OPTION_CMD_VIDEOS = ('-skip_vid', '', '-webm')
 OPTION_CMD_IMAGES = ('-skip_img', '-lowres', '')
 OPTION_CMD_PARCHI = ('', '-include_parchi')
+OPTION_CMD_DOWNLOAD_ORDER = ('', '-reverse')
 OPTION_CMD_THREADING_CMD = '-threads'
 OPTION_CMD_THREADING = ('1', '2', '3', '4', '5', '6', '7', '8')
 OPTION_CMD_COOKIES_CMD = '-cookies'
@@ -90,6 +92,7 @@ PADDING_ROOTFRAME_I = PADDING_DEFAULT
 GLOBAL_COLUMNCOUNT = 100
 GLOBAL_ROWCOUNT = 100
 COLUMNSPAN_MAX = GLOBAL_COLUMNCOUNT
+"""100"""
 ROWSPAN_MAX = GLOBAL_ROWCOUNT
 WINDOW_MINSIZE = [670, 231]
 # Timers
@@ -143,6 +146,7 @@ class Options(IntEnum):
     THREADSETTING = auto()
     DOWNLOAD_MODE = auto()
     DOWNLOAD_LIMIT = auto()
+    DOWNLOAD_ORDER = auto()
     DATEMIN = auto()
     DATEMAX = auto()
     TAGS = auto()
@@ -203,6 +207,7 @@ CVARS = {
     Options.THREADSETTING: 'threadsetting',
     Options.DOWNLOAD_MODE: 'downloadmode',
     Options.DOWNLOAD_LIMIT: 'downloadlimit',
+    Options.DOWNLOAD_ORDER: 'downloadorder',
     Options.DATEMIN: 'dateafter',
     Options.DATEMAX: 'datebefore',
     Options.TAGS: 'tags',
@@ -253,8 +258,10 @@ CVARS = {
 class Globals(IntEnum):
     COMBOBOX_VIDEOS = 0
     COMBOBOX_IMAGES = auto()
-    COMBOBOX_PARCHI = auto()
     COMBOBOX_THREADING = auto()
+    COMBOBOX_PARCHI = auto()
+    COMBOBOX_DOWNLOAD_ORDER = auto()
+    FIELD_DOWNLOAD_LIMIT = auto()
     FIELD_DATEMIN = auto()
     FIELD_DATEMAX = auto()
     FIELD_TAGS = auto()
@@ -274,8 +281,10 @@ class Globals(IntEnum):
 gobjects = {
     Globals.COMBOBOX_VIDEOS: None,
     Globals.COMBOBOX_IMAGES: None,
-    Globals.COMBOBOX_PARCHI: None,
     Globals.COMBOBOX_THREADING: None,
+    Globals.COMBOBOX_PARCHI: None,
+    Globals.COMBOBOX_DOWNLOAD_ORDER: None,
+    Globals.FIELD_DOWNLOAD_LIMIT: None,
     Globals.FIELD_DATEMIN: None,
     Globals.FIELD_DATEMAX: None,
     Globals.FIELD_TAGS: None,
@@ -290,8 +299,10 @@ gobjects = {
 gobject_orig_states = {
     Globals.COMBOBOX_VIDEOS: STATE_READONLY,
     Globals.COMBOBOX_IMAGES: STATE_READONLY,
-    Globals.COMBOBOX_PARCHI: STATE_READONLY,
     Globals.COMBOBOX_THREADING: STATE_READONLY,
+    Globals.COMBOBOX_PARCHI: STATE_READONLY,
+    Globals.COMBOBOX_DOWNLOAD_ORDER: STATE_READONLY,
+    Globals.FIELD_DOWNLOAD_LIMIT: STATE_NORMAL,
     Globals.FIELD_DATEMIN: STATE_NORMAL,
     Globals.FIELD_DATEMAX: STATE_NORMAL,
     Globals.FIELD_TAGS: STATE_NORMAL,
@@ -346,7 +357,7 @@ class SubMenus(IntEnum):
     HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6
     DOWNLOAD, CHECKTAGS, CLEARLOG = 0, 1, 3
     IDLIST, UNTAG, RETAG, SORT, DUPLICATES, AUTOCOMPLETEE, AUTOCOMPLETER = 0, 2, 3, 5, 7, 9, 10
-    DFULL, DSKIP, DTOUCH, DLIMSET, DLIMRESET = 0, 1, 2, 3, 4
+    DFULL, DSKIP, DTOUCH = 0, 1, 2
 
     def __str__(self) -> str:
         return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
@@ -371,7 +382,7 @@ menu_items = {
     Menus.ACTIONS: RuxxMenu(SubMenus.DOWNLOAD, SubMenus.CHECKTAGS),
     Menus.TOOLS: RuxxMenu(SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT, SubMenus.DUPLICATES,
                           SubMenus.AUTOCOMPLETEE, SubMenus.AUTOCOMPLETER),
-    Menus.DEBUG: RuxxMenu(SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH, SubMenus.DLIMSET, SubMenus.DLIMRESET),
+    Menus.DEBUG: RuxxMenu(SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH),
 }
 
 menu_item_orig_states = {
@@ -381,7 +392,7 @@ menu_item_orig_states = {
     Menus.CONNECTION: (STATE_NORMAL,) * 7,
     Menus.ACTIONS: (STATE_NORMAL,) * 4,
     Menus.TOOLS: (STATE_NORMAL,) * 11,
-    Menus.DEBUG: (STATE_NORMAL,) * 5,
+    Menus.DEBUG: (STATE_NORMAL,) * 3,
 }
 # end global static
 # hotkeys
@@ -402,23 +413,25 @@ hotkeys = {
 }
 # end hotkeys
 # tooltips
-TOOLTIP_VIDEOS = (' Selected file type will be preferred during search.',
-                  ' If file is unavailable, alternative type will be',
-                  ' attempted automatically.')
-TOOLTIP_IMAGES = (' Selected file type will be preferred during search.',
-                  ' If file is unavailable, alternative type will be',
-                  ' attempted automatically.',
-                  ' Warning: low res variant of a gif may be unanimated!')
-TOOLTIP_PARCHI = (' Download parent posts / child posts even if they don\'t match provided tags.',)
-TOOLTIP_THREADING = (' Number of threads affects scan and download speed.',)
-TOOLTIP_DATE = (' Date must be in \'dd-mm-yyyy\' format.',)
-TOOLTIP_TAGS_CHECK = (' Validate tags (live).',)
-TOOLTIP_HCOOKIE_DELETE = (' Delete selected (Del works too)',)
-TOOLTIP_HCOOKIE_ADD_ENTRY = (' Must be in on of the valid formats:',
-                             '  1) [name] [value]',
-                             '  2) [name]:[value]',
-                             '  3) [name],[value]')
-TOOLTIP_INVALID_SYNTAX = ('Invalid syntax.',)
+TOOLTIP_VIDEOS = (' Selected file type will be preferred during search. ',
+                  ' If file is unavailable, alternative type will be ',
+                  ' attempted automatically ')
+TOOLTIP_IMAGES = (' Selected file type will be preferred during search. ',
+                  ' If file is unavailable, alternative type will be ',
+                  ' attempted automatically. ',
+                  ' Warning: low res variant of a gif may be unanimated! ')
+TOOLTIP_THREADING = (' Number of threads affects scan and download speed ',)
+TOOLTIP_PARCHI = (' Download parent posts / child posts even if they don\'t match provided tags ',)
+TOOLTIP_DOWNLOAD_ORDER = (' Reverse download order makes dowloader process posts with higher ID first ',)
+TOOLTIP_DOWNLOAD_LIMIT = (' Download at most this number of posts ',)
+TOOLTIP_DATE = (' Date must be in \'dd-mm-yyyy\' format ',)
+TOOLTIP_TAGS_CHECK = (' Validate tags (live) ',)
+TOOLTIP_HCOOKIE_DELETE = (' Delete selected (Del works too) ',)
+TOOLTIP_HCOOKIE_ADD_ENTRY = (' Must be in on of the valid formats: ',
+                             '  1) [name] [value] ',
+                             '  2) [name]:[value] ',
+                             '  3) [name],[value] ')
+TOOLTIP_INVALID_SYNTAX = ('Invalid syntax ',)
 # end tooltips
 # images cache
 #  gif

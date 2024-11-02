@@ -41,6 +41,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.append_info: bool = False
         self.download_mode: str = DownloadModes.FULL
         self.download_limit: int = 0
+        self.reverse_download_order: bool = False
         self.maxthreads_items: int = 1
         self.include_parchi: bool = False
         self.skip_images: bool = False
