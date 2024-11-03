@@ -294,19 +294,18 @@ class DownloaderRs(Downloader):
         h = raw[idx1:raw.find('"', idx1 + 1)]
         return h.replace('&amp;', '&')
 
-    @staticmethod
-    def _extract_orig_link(raw_html: BeautifulSoup) -> str:
+    def _extract_orig_link(self, raw_html: BeautifulSoup) -> str:
         content_div = raw_html.find('div', class_='content_push')
         link_img = content_div.find('img') if content_div else None
         link_mp4 = content_div.find('source', type='video/mp4') if content_div else None
         link_wbm = content_div.find('source', type='video/webm') if content_div else None
-        link = link_mp4 or link_wbm or link_img
-        orig_href = str(link.get('src')) if link else ''
+        link_ori = raw_html.find('a', text='Original')
+        link = ((link_wbm or link_mp4) if self.prefer_webm else (link_mp4 or link_wbm) if self.prefer_mp4 else link_ori) or link_img
+        orig_href = str(link.get('src') or link.get('href')) if link else ''
         return orig_href
 
-    @staticmethod
-    def _extract_sample_link(raw_html: BeautifulSoup) -> str:
-        orig_link = DownloaderRs._extract_orig_link(raw_html)
+    def _extract_sample_link(self, raw_html: BeautifulSoup) -> str:
+        orig_link = self._extract_orig_link(raw_html)
         link = orig_link.replace('/images/', '/thumbnails/')
         lsd_index = link.rfind('.')
         link = link[:lsd_index] + '.jpg'

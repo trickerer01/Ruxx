@@ -47,6 +47,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.skip_images: bool = False
         self.skip_videos: bool = False
         self.prefer_webm: bool = False
+        self.prefer_mp4: bool = False
         self.low_res: bool = False
         self.date_min: str = DATE_MIN_DEFAULT
         self.date_max: str = DATE_MAX_DEFAULT

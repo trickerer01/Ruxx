@@ -1159,7 +1159,7 @@ def create_base_window_widgets() -> None:
                           textvariable=StringVar(rootm(), '', CVARS[Options.VIDSETTING]))
     register_global(Globals.COMBOBOX_VIDEOS, op_vid)
     attach_tooltip(op_vid, TOOLTIP_VIDEOS)
-    op_vid.current(1)
+    op_vid.current(3)
     op_vid.pack(padx=1, pady=3)
     #  Images
     opframe_img = ttk.LabelFrame(opframe_main, text='Images')

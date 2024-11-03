@@ -686,6 +686,7 @@ class Downloader(DownloaderBase):
         self.skip_images = args.skip_img or self.skip_images
         self.skip_videos = args.skip_vid or self.skip_videos
         self.prefer_webm = args.webm or self.prefer_webm
+        self.prefer_mp4 = args.mp4 or self.prefer_mp4
         self.low_res = args.lowres or self.low_res
         self.date_min = args.mindate or self.date_min
         self.date_max = args.maxdate or self.date_max
@@ -703,9 +704,13 @@ class Downloader(DownloaderBase):
 
     def _solve_argument_conflicts(self) -> bool:
         ret = False
-        if self.prefer_webm:
-            trace('Warning (W1): \'-webm\' option is deprecated and will be removed in near future. Ignored!')
-            ret = True
+        if not ProcModule.is_rs():
+            if self.prefer_webm:
+                trace(f'Warning (W1): \'-webm\' option is not available for \'{ProcModule.name().upper()}\' module. Ignored!')
+                ret = True
+            if self.prefer_mp4:
+                trace(f'Warning (W1): \'-mp4\' option is not available for \'{ProcModule.name().upper()}\' module. Ignored!')
+                ret = True
         if not ProcModule.is_rx() and not ProcModule.is_en():
             if self.include_parchi:
                 trace('Warning (W1): only RX and EN modules are able to collect parent posts. Disabled!')

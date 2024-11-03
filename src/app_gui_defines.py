@@ -51,13 +51,13 @@ STICKY_ALLDIRECTIONS = 'wens'
 STICKY_HORIZONTAL = 'we'
 STICKY_VERTICAL_W = 'wns'
 # Combobox
-OPTION_VALUES_VIDEOS = ('Don\'t download', 'Prefer MP4', 'Prefer Webm')
+OPTION_VALUES_VIDEOS = ('Don\'t download', 'Prefer MP4', 'Prefer Webm', 'Prefer Original')
 OPTION_VALUES_IMAGES = ('Don\'t download', 'Prefer low res', 'Prefer high res')
 OPTION_VALUES_THREADING = ('1 Thread', '2 Threads', '3 Threads', '4 Threads', '5 Threads', '6 Threads', '7 Threads', '8 Threads')
 OPTION_VALUES_PARCHI = ('Don\'t download', 'Download everything')
 OPTION_VALUES_DOWNLOAD_ORDER = ('Default', 'Reverse')
 OPTION_VALUES_PROXYTYPE = ('http', 'socks5')
-OPTION_CMD_VIDEOS = ('-skip_vid', '', '-webm')
+OPTION_CMD_VIDEOS = ('-skip_vid', '-mp4', '-webm', '')
 OPTION_CMD_IMAGES = ('-skip_img', '-lowres', '')
 OPTION_CMD_PARCHI = ('', '-include_parchi')
 OPTION_CMD_DOWNLOAD_ORDER = ('', '-reverse')

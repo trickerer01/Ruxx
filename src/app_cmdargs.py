@@ -22,7 +22,7 @@ from app_help import (
     HELP_ARG_NOPROXY, HELP_ARG_PROXYNODOWN, HELP_ARG_HEADERS, HELP_ARG_COOKIES, HELP_ARG_PREFIX, HELP_ARG_DUMP_TAGS, HELP_ARG_DUMP_SOURCES,
     HELP_ARG_DUMP_COMMENTS, HELP_ARG_DUMP_PER_ITEM, HELP_ARG_APPEND_SOURCE_AND_TAGS, HELP_ARG_TAGS, HELP_ARG_WARN_NON_EMPTY_FOLDER,
     HELP_ARG_INCLUDE_PARCHI, HELP_ARG_CON_TIMEOUT, HELP_ARG_CON_RETRIES, HELP_ARG_GET_MAXID, HELP_ARG_CACHE_HTML_BLOAT, HELP_ARG_VERBOSE,
-    HELP_ARG_PREFER_WEBM, HELP_ARG_HEADER, HELP_ARG_COOKIE, HELP_ARG_MERGE_LISTS, HELP_ARG_REVERSE_DOWNLOAD_ORDER,
+    HELP_ARG_PREFER_WEBM, HELP_ARG_PREFER_MP4, HELP_ARG_HEADER, HELP_ARG_COOKIE, HELP_ARG_MERGE_LISTS, HELP_ARG_REVERSE_DOWNLOAD_ORDER,
 )
 from app_revision import APP_NAME, APP_VERSION
 from app_validators import valid_thread_count, valid_date, valid_folder_path, valid_json, valid_kwarg, valid_proxy, valid_positive_int
@@ -45,11 +45,13 @@ def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser.add_argument('-module', default=MODULE_ABBR_RX, help=HELP_ARG_MODULE, choices=MODULE_CHOICES)
     ex1 = parser.add_mutually_exclusive_group(required=False)
     ex2 = parser.add_mutually_exclusive_group(required=False)
+    ex3 = parser.add_mutually_exclusive_group(required=False)
     ex1.add_argument('-get_maxid', action=ACTION_STORE_TRUE, help=HELP_ARG_GET_MAXID)
     parser.add_argument('-include_parchi', action=ACTION_STORE_TRUE, help=HELP_ARG_INCLUDE_PARCHI)
     parser.add_argument('-skip_img', action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_IMAGES)
     parser.add_argument('-skip_vid', action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_VIDEOS)
-    parser.add_argument('-webm', action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_WEBM)
+    ex2.add_argument('-webm', action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_WEBM)
+    ex2.add_argument('-mp4', action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_MP4)
     parser.add_argument('-lowres', action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_LOWRES)
     parser.add_argument('-mindate', metavar='#DD-MM-YYYY', help=HELP_ARG_MINDATE, type=valid_date)
     parser.add_argument('-maxdate', metavar='#DD-MM-YYYY', help=HELP_ARG_MAXDATE, type=valid_date)
@@ -68,8 +70,8 @@ def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser.add_argument('-dump_tags', action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_TAGS)
     parser.add_argument('-dump_sources', action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_SOURCES)
     parser.add_argument('-dump_comments', action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_COMMENTS)
-    ex2.add_argument('-dump_per_item', action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_PER_ITEM)
-    ex2.add_argument('-merge_lists', action=ACTION_STORE_TRUE, help=HELP_ARG_MERGE_LISTS)
+    ex3.add_argument('-dump_per_item', action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_PER_ITEM)
+    ex3.add_argument('-merge_lists', action=ACTION_STORE_TRUE, help=HELP_ARG_MERGE_LISTS)
     parser.add_argument('-append_info', action=ACTION_STORE_TRUE, help=HELP_ARG_APPEND_SOURCE_AND_TAGS)
     parser.add_argument('-warn_nonempty', action=ACTION_STORE_TRUE, help=HELP_ARG_WARN_NON_EMPTY_FOLDER)
     parser.add_argument('-verbose', action=ACTION_STORE_TRUE, help=HELP_ARG_VERBOSE)
