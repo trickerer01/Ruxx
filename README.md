@@ -12,8 +12,7 @@ Ruxx is a content downloader with a lot of filters for maximum search precision 
 - \[Optional] Choose the destination **Path**. Default path is current folder
 - Press **Download**
 
-![ruxx081124](https://github.com/user-attachments/assets/995ea56b-8ab3-4e1d-9b15-b2eb6c8aef5c)
-
+![ruxx](https://github.com/user-attachments/assets/d5deb7c4-b942-4764-a78f-613d6a3df0af)
 
 Note that Ruxx does not restrict your searches to a couple pages or something. You may even search for something like *id:>=0* (everything), this won't work though as websites actually put a limit on maximum search results returned. For something stupid like this you'll have to split your searches using id filter. Plus you may still get banned for abusing the resource. **Ruxx is not a scraping tool**
 
