@@ -12,16 +12,19 @@ Ruxx is a content downloader with a lot of filters for maximum search precision 
 - \[Optional] Choose the destination **Path**. Default path is current folder
 - Press **Download**
 
-![Ruxx](https://github.com/user-attachments/assets/4687fbd7-33e5-41d8-9c15-6c448f9dca15)
+![ruxx081124](https://github.com/user-attachments/assets/995ea56b-8ab3-4e1d-9b15-b2eb6c8aef5c)
+
 
 Note that Ruxx does not restrict your searches to a couple pages or something. You may even search for something like *id:>=0* (everything), this won't work though as websites actually put a limit on maximum search results returned. For something stupid like this you'll have to split your searches using id filter. Plus you may still get banned for abusing the resource. **Ruxx is not a scraping tool**
 
-#### Filters
-- *Videos* ‒ some websites serve videos in multiple formats, here you can select a prefered one. **Redundant since 01.05.2021 (RX internal changes)**. You may also exclude videos altogether
+#### Download Options
+- *Videos* ‒ some websites serve videos in multiple formats, here you can select a prefered one
 - *Images* ‒ some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you can also filter all the images out
-- *Parent posts / child posts* ‒ this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX and EN only
-- *Threading* ‒ the number of download threads to use. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
 - *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset to default. RX, RN, RZ, RP and EN only
+- *Threading* ‒ the number of download threads to use. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
+- *Parent posts / child posts* ‒ this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX and EN only
+- *Download order* - the order in which found posts will be downloaded. Default is ascending order (lowest id to highest id). Note that sort tags may alter the resulting download order
+- *Posts limit* - the maximum number of posts to download. Default is `0` (no limit)
 
 #### Misc & Tools
 - **File -> Save settings...** \<Ctrl+S> ‒ allows you to save current run parameters to a config file for later or as a template. `Note that only recognized parameters will be loaded - missing parameters will just stay unchanged without any errors given, so if you want to not save some parameters (ex. window position) just remove associated rows from the file`
