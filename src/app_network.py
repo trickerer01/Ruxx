@@ -159,7 +159,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
             link = link.replace('api-cdn-mp4.', 'ws-cdn-video.')
 
         result = FileDownloadResult()
-        result.result_str = f'[{current_process().getName()}]{" <touch>" if touch_mode else ""} {item_id}({ext_char})... '
+        result.result_str = f'[{current_process().name}]{" <touch>" if touch_mode else ""} {item_id}({ext_char})... '
 
         if touch_mode:
             with open(dest, 'wb'):
@@ -284,8 +284,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
                     except (HTTPError, Exception) as err:
                         if isinstance(err, HTTPError) and err.response.status_code == 404:  # RS cdn error
                             if ProcModule.is_rs():
-                                hostname = urlparse(link).hostname or 'unk'
-                                if hostname.startswith('video'):
+                                hostname: str = urlparse(link).hostname or 'unk'
+                                if hostname.startswith('video') and '-cdn' in hostname:
                                     if __RUXX_DEBUG__:
                                         trace(f'Warning (W3): {item_id} catched HTTPError 404 (host: {hostname})! '
                                               f'Trying no-cdn source...', True)
