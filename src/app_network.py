@@ -234,7 +234,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                             err_msg = f'Warning (W2): fetched {item_id}({ext_char}) file is empty.'
                             raise ValueError(err_msg)
 
-                        use_chunked = is_video_ext
+                        use_chunked = is_video_ext if ProcModule.is_rx() else True
                         chunks = list(range(0, result.expected_size, DOWNLOAD_CHUNK_SIZE if use_chunked else result.expected_size))
                         single_chunk = (len(chunks) == 1)
                         with open(dest, 'wb') as outf:
