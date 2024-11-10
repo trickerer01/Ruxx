@@ -1189,16 +1189,6 @@ def create_base_window_widgets() -> None:
     op_datemax_t.insert(END, DATE_MAX_DEFAULT)
     op_datemax_t.pack(padx=1, pady=PADDING_DEFAULT * (1.5 if IS_WIN else 1))
     attach_tooltip(op_datemax_t, TOOLTIP_DATE)
-    #  Threading
-    opframe_thread = ttk.LabelFrame(opframe_main, text='Threading')
-    opframe_thread.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
-                        sticky=STICKY_HORIZONTAL, padx=1, pady=0, ipadx=0)
-    op_thread = ttk.Combobox(opframe_thread, values=OPTION_VALUES_THREADING, state=STATE_READONLY, width=9,
-                             textvariable=StringVar(rootm(), '', CVARS[Options.THREADSETTING]))
-    register_global(Globals.COMBOBOX_THREADING, op_thread)
-    attach_tooltip(op_thread, TOOLTIP_THREADING)
-    op_thread.current(len(OPTION_VALUES_THREADING) - 1)
-    op_thread.pack(padx=1, pady=3)
     #  Parent posts / child posts
     opframe_parch = ttk.LabelFrame(opframe_main, text='Parent posts / child posts')
     opframe_parch.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
@@ -1209,6 +1199,16 @@ def create_base_window_widgets() -> None:
     attach_tooltip(op_parch, TOOLTIP_PARCHI)
     op_parch.current(len(OPTION_VALUES_PARCHI) - 2)
     op_parch.pack(padx=1, pady=3)
+    #  Threading
+    opframe_thread = ttk.LabelFrame(opframe_main, text='Threading')
+    opframe_thread.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,
+                        sticky=STICKY_HORIZONTAL, padx=1, pady=0, ipadx=0)
+    op_thread = ttk.Combobox(opframe_thread, values=OPTION_VALUES_THREADING, state=STATE_READONLY, width=9,
+                             textvariable=StringVar(rootm(), '', CVARS[Options.THREADSETTING]))
+    register_global(Globals.COMBOBOX_THREADING, op_thread)
+    attach_tooltip(op_thread, TOOLTIP_THREADING)
+    op_thread.current(len(OPTION_VALUES_THREADING) - 1)
+    op_thread.pack(padx=1, pady=3)
     #  Download order
     opframe_dorder = ttk.LabelFrame(opframe_main, text='Download order')
     opframe_dorder.grid(row=cur_row(), column=next_column(), rowspan=1, columnspan=1,

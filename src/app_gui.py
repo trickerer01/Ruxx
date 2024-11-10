@@ -368,9 +368,6 @@ def update_widget_enabled_states() -> None:
         if gi == Globals.COMBOBOX_PARCHI:
             newstate = STATE_DISABLED if not ProcModule.is_rx() and not ProcModule.is_en() else gobject_orig_states[gi]
             config_global(gi, state=newstate)
-        elif gi == Globals.COMBOBOX_VIDEOS:
-            newstate = STATE_DISABLED if not ProcModule.is_rs() else gobject_orig_states[gi]
-            config_global(gi, state=newstate)
         elif gi in {Globals.FIELD_DATEMIN, Globals.FIELD_DATEMAX}:
             newstate = STATE_DISABLED if ProcModule.is_rs() else gobject_orig_states[gi]
             get_global(gi).set_state(newstate)

@@ -18,11 +18,11 @@ Ruxx is a content downloader with a lot of filters for maximum search precision 
 Note that Ruxx does not restrict your searches to a couple pages or something. You may even search for something like *id:>=0* (everything), this won't work though as websites actually put a limit on maximum search results returned. For something stupid like this you'll have to split your searches using id filter. Plus you may still get banned for abusing the resource. **Ruxx is not a scraping tool**
 
 #### Download Options
-- *Videos* ‒ some websites serve videos in multiple formats, here you can select a prefered one
-- *Images* ‒ some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you can also filter all the images out
+- *Videos* ‒ some websites serve videos in multiple formats, here you can select a prefered one. You may also exclude videos altogether
+- *Images* ‒ some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you may also filter all the images out
 - *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset to default. RX, RN, RZ, RP and EN only
-- *Threading* ‒ the number of download threads to use. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
 - *Parent posts / child posts* ‒ this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX and EN only
+- *Threading* ‒ the number of download threads to use. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
 - *Download order* - the order in which found posts will be downloaded. Default is ascending order (lowest id to highest id). Note that sort tags may alter the resulting download order
 - *Posts limit* - the maximum number of posts to download. Default is `0` (no limit)
 
