@@ -295,9 +295,9 @@ class DownloaderRn(Downloader):
         full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
         comment_divs = raw_html.select('div[class="comment"]')
         for comment_div in comment_divs:
-            author_a = comment_div.find('a', class_='username')
-            author: str = author_a.text
-            body: str = comment_div.text.strip()
+            author_a = comment_div.find(('a', 'span'), class_='username')
+            author = author_a.text
+            body = comment_div.text.strip()
             body = body[body.find(f'{author}: ') + len(f'{author}: '):]
             self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
 
