@@ -299,7 +299,7 @@ class DownloaderRs(Downloader):
         link_img = content_div.find('img') if content_div else None
         link_mp4 = content_div.find('source', type='video/mp4') if content_div else None
         link_wbm = content_div.find('source', type='video/webm') if content_div else None
-        link_ori = raw_html.find('a', text='Original')
+        link_ori = raw_html.find('a', string='Original')
         link = ((link_wbm or link_mp4) if self.prefer_webm else (link_mp4 or link_wbm) if self.prefer_mp4 else link_ori) or link_img
         orig_href = str(link.get('src') or link.get('href')) if link else ''
         return orig_href
