@@ -117,6 +117,11 @@ class DownloaderEn(Downloader):
             except (StopIteration, AssertionError):
                 post_tags_list.append(tag_blacklisted_always)
                 post_furl = f'{SITENAME}help/blacklist#default'
+                if __RUXX_DEBUG__:
+                    post_tags_list.remove(tag_blacklisted_always)
+                    post_md5 = p['file']['md5']
+                    post_ext_orig = p['file']['ext']
+                    post_furl = f'{SITENAME.replace("//", "//static1.")}data/{post_md5[:2]}/{post_md5[2:4]}/{post_md5}.{post_ext_orig}'
             post_surl = str(p['sample']['url'] or post_furl)
             post_fheight = str(pfile['height'])
             post_fwidth = str(pfile['width'])
