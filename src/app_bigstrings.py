@@ -22311,6 +22311,24 @@ TAG_ALIASES_STR = (
     'b21iaWUiLCAiem9vcGhpbGlhIjogImJlc3RpYWxpdHkifQ==')
 TAG_ALIASES: dict[str, str] = loads(b64decode(TAG_ALIASES_STR))
 
+__ALIAS_DELETES__ = [
+]
+__ALIAS_UPDATES__: dict[str, str] = {
+}
+if not not (__ALIAS_UPDATES__ or __ALIAS_DELETES__):
+    from re import compile as re_compile
+    [TAG_ALIASES.pop(k) for k in __ALIAS_DELETES__ if k in TAG_ALIASES]
+    TAG_ALIASES.update(__ALIAS_UPDATES__.copy())
+    re_dict_keys_replace = re_compile(r'([^"]*)"([^\']+)\'([^"]+)"')
+    re_inside_quote = re_compile(r'(?<=.)(?<!: )(?<!{)\'(?!, \'|: \'|}|$)')
+    acnn = str({k: TAG_ALIASES[k] for k in sorted(sorted(TAG_ALIASES, key=lambda x: TAG_ALIASES[x]), key=lambda x: x)})
+    a = ', '.join(re_inside_quote.sub(';', re_dict_keys_replace.sub("\\1'\\2;\\3'", s)) for s in acnn.split(', ')
+                  ).replace("'", '"').replace(';', "'")
+    from base64 import b64encode
+    TAG_ALIASES_STR = b64encode(a.encode()).decode()
+    tag_aliases_str_normalized = '\n'.join([f'    \'{TAG_ALIASES_STR[i:i + 134]}\'' for i in range(0, len(TAG_ALIASES_STR), 134)])
+    assert tag_aliases_str_normalized
+
 #
 #
 #########################################
