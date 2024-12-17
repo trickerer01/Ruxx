@@ -53,9 +53,9 @@ re_tags_exclude_major1 = re_compile(
     r'[a-z]pose|[\da-z_\-]{16,})_$'
 )
 re_tags_exclude_major2 = re_compile(
-    r'^(?:(?:digital|original|traditional)_(?:content|media|painting)|a(?:natomy|rtwork)|c(?:lassic|o(?:loring|mpany))|d(?:isambiguation)|'
-    r'e(?:nlargement)|f(?:emale|ilmmaker)|genus|m(?:a(?:p|rkings?)|e(?:dium|tal))|p(?:rojectile|ublisher)|r(?:elationship)|'
-    r's(?:oftware|ymbol)|t(?:emperature|raditional)|we(?:apon|bsite)|'
+    r'^(?:(?:digital|original|traditional)_(?:content|media|painting)|a(?:natomy|rtwork)|c(?:lassic|o(?:dec|loring|mpany))|'
+    r'd(?:isambiguation)|e(?:nlargement)|f(?:emale|ilmmaker)|genus|m(?:a(?:p|rkings?)|e(?:dium|tal))|p(?:rojectile|ublisher)|'
+    r'r(?:elationship)|s(?:oftware|ymbol)|t(?:emperature|raditional)|we(?:apon|bsite)|'
     r'[\da-z_\-]{18,})$'
 )
 
