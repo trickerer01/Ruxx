@@ -12,6 +12,7 @@ import ctypes
 import sys
 from collections.abc import Callable
 from datetime import datetime
+from multiprocessing.dummy import current_process
 from os import path, system, makedirs, remove, replace, getcwd
 from threading import Thread
 from time import sleep as thread_sleep
@@ -37,7 +38,7 @@ from app_gui_base import (
     set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list, browse_path, register_menu_command, toggle_console,
     register_submenu_command, register_menu_checkbutton, register_menu_radiobutton, register_submenu_radiobutton, register_menu_separator,
     get_all_media_files_in_cur_dir, update_lastpath, toggle_autocompletion, trigger_autocomplete_tag, hotkey_text, config_menu,
-    get_media_files_dir,
+    get_media_files_dir, load_batch_download_tag_list,
 )
 from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
@@ -61,6 +62,7 @@ from app_validators import DateValidator
 __all__ = ('run_ruxx_gui',)
 
 # loaded
+batch_download_thread: Thread | None = None
 download_thread: Thread | None = None
 tags_check_thread: Thread | None = None
 duplicates_check_thread: Thread | None = None
@@ -336,7 +338,9 @@ def set_proc_module(dwnmodule: int) -> None:
 
 
 def update_widget_enabled_states() -> None:
+    batching = is_processing_batch()
     downloading = is_downloading()
+    batching_or_downloading = batching or downloading
     checkingtags = is_cheking_tags()
     checkingdupes = is_checking_duplicates()
     i: Menus
@@ -361,7 +365,7 @@ def update_widget_enabled_states() -> None:
                 elif i == Menus.TOOLS and j == SubMenus.IDLIST and ProcModule.is_rz():
                     newstate = STATE_DISABLED
                 else:
-                    newstate = STATE_DISABLED if downloading else menu_item_orig_states[i][j]
+                    newstate = STATE_DISABLED if batching_or_downloading else menu_item_orig_states[i][j]
                 config_menu(i, j, state=newstate)
     gi: Globals
     for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:
@@ -675,6 +679,10 @@ def recheck_args() -> tuple[bool, str]:
     return True, ''
 
 
+def is_processing_batch() -> bool:
+    return (batch_download_thread is not None) and batch_download_threadm().is_alive()
+
+
 def is_downloading() -> bool:
     return (download_thread is not None) and download_threadm().is_alive()
 
@@ -688,52 +696,110 @@ def is_checking_duplicates() -> bool:
 
 
 def update_download_state() -> None:
+    global batch_download_thread
     global download_thread
     global prev_download_state
 
+    batching = is_processing_batch()
     downloading = is_downloading()
+    batching_or_downloading = batching or downloading
     checkingtags = is_cheking_tags()
     checkingdupes = is_checking_duplicates()
-    if prev_download_state != downloading:
+    if prev_download_state != batching_or_downloading:
         update_widget_enabled_states()
         gi: Globals
         for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:
             if gi in (Globals.MODULE_ICON,):
                 pass  # config_global(i, state=gobject_orig_states[i])
             elif gi == Globals.BUTTON_DOWNLOAD:
-                if not downloading:
+                if not batching_or_downloading:
                     config_global(gi, state=(STATE_DISABLED if checkingdupes else gobject_orig_states[gi]))
             elif gi == Globals.BUTTON_CHECKTAGS:
                 if not checkingtags:
-                    config_global(gi, state=(STATE_DISABLED if downloading or checkingdupes else gobject_orig_states[gi]))
+                    config_global(gi, state=(STATE_DISABLED if batching_or_downloading or checkingdupes else gobject_orig_states[gi]))
             else:
-                config_global(gi, state=(STATE_DISABLED if downloading else gobject_orig_states[gi]))
+                config_global(gi, state=(STATE_DISABLED if batching_or_downloading else gobject_orig_states[gi]))
         # special case 1: _download button: turn into cancel button
         dw_button = get_global(Globals.BUTTON_DOWNLOAD)
-        if downloading:
+        if batching_or_downloading:
             dw_button.config(text='Cancel', command=cancel_download)
         else:
             dw_button.config(text='Download', command=do_download)
 
-    if not downloading and (download_thread is not None):
-        download_threadm().join()  # make thread terminate
-        del download_thread
-        download_thread = None
+    if not batching_or_downloading:
+        if batch_download_thread is not None:
+            batch_download_threadm().join()  # make thread terminate
+            del batch_download_thread
+            batch_download_thread = None
+        if download_thread is not None:
+            download_threadm().join()  # make thread terminate
+            del download_thread
+            download_thread = None
 
-    prev_download_state = downloading
+    prev_download_state = batching_or_downloading
 
     rootm().after(int(THREAD_CHECK_PERIOD_DEFAULT), update_download_state)
 
 
 def cancel_download() -> None:
+    if is_processing_batch():
+        batch_download_threadm().killed = True
     if is_downloading():
         download_threadm().killed = True
+
+
+def do_process_batch() -> None:
+    global batch_download_thread
+
+    if is_processing_batch():
+        return
+
+    cmdlines = load_batch_download_tag_list()
+    if not cmdlines:
+        return
+
+    batch_download_thread = Thread(target=start_batch_download_thread, args=(cmdlines,))
+    batch_download_threadm().killed = False
+    batch_download_threadm().start()
+
+
+def start_batch_download_thread(cmdlines: list[str]) -> None:
+    cmdline_errors = list[str]()
+    for cmdline1 in cmdlines:
+        parse_result, _ = parse_tags(cmdline1)
+        if not parse_result:
+            cmdline_errors.append(f'Invalid tags: \'{cmdline1}\'')
+            if len(cmdline_errors) >= 5:
+                cmdline_errors.append('...')
+                break
+    if cmdline_errors:
+        messagebox.showerror('Nope', '\n'.join(cmdline_errors))
+        return
+
+    n = '\n  '
+    trace(f'\n[batcher] Processing {len(cmdlines):d} tag lists:{n}{n.join(cmdlines)}')
+    unfocus_buttons_once()
+    processed_count = 0
+    for idx, cmdline2 in enumerate(cmdlines):
+        config_global(Globals.FIELD_TAGS, state=STATE_NORMAL)
+        setrootconf(Options.TAGS, cmdline2)
+        config_global(Globals.FIELD_TAGS, state=STATE_DISABLED)
+        do_download()
+        if download_thread is None or not download_threadm().is_alive():
+            messagebox.showerror('Nope', f'Error processing tag list {idx + 1:d}: \'{cmdline2}\'!')
+            break
+        download_threadm().join()
+        if getattr(current_process(), 'killed', False) is True:
+            break
+        processed_count += 1
+
+    trace(f'\n[batcher] Successfully processed {processed_count:d} / {len(cmdlines):d} {ProcModule.name().upper()} tag lists')
 
 
 def do_download() -> None:
     global download_thread
 
-    if is_menu_disabled(Menus.ACTIONS, SubMenus.DOWNLOAD):
+    if is_downloading():
         return
 
     suc, msg = recheck_args()
@@ -741,7 +807,8 @@ def do_download() -> None:
         messagebox.showwarning('Nope', msg)
         return
 
-    get_global(Globals.BUTTON_DOWNLOAD).focus_force()
+    if not is_processing_batch():
+        get_global(Globals.BUTTON_DOWNLOAD).focus_force()
 
     # force cmd line update
     update_frame_cmdline()
@@ -761,7 +828,8 @@ def do_download() -> None:
     download_threadm().gui = True
     download_threadm().start()
 
-    unfocus_buttons_once()
+    if not is_processing_batch():
+        unfocus_buttons_once()
 
 
 def start_download_thread(cmdline: list[str]) -> None:
@@ -835,10 +903,12 @@ def init_menus() -> None:
     register_menu_checkbutton('Download without proxy', CVARS[Options.PROXY_NO_DOWNLOAD])
     register_menu_checkbutton('Ignore proxy', CVARS[Options.IGNORE_PROXY])
     register_menu_checkbutton('Cache processed HTML', CVARS[Options.CACHE_PROCCED_HTML])
-    # 6) Action
+    # 6) Actions
     register_menu('Actions', Menus.ACTIONS)
     register_menu_command('Download', do_download, Options.ACTION_DOWNLOAD, True)
     register_menu_command('Check tags', check_tags_direct, Options.ACTION_CHECKTAGS, True)
+    register_menu_separator()
+    register_menu_command('Batch download using tag list...', do_process_batch, Options.ACTION_DOWNLOAD_BATCH)
     register_menu_separator()
     register_menu_command('Clear log', Logger.wnd.clear, Options.ACTION_CLEARLOG, True)
     # 7) Tools
@@ -933,6 +1003,11 @@ def init_gui() -> None:
 
 
 # Helper wrappers: solve unnecessary NoneType warnings
+def batch_download_threadm() -> Thread:
+    assert batch_download_thread
+    return batch_download_thread
+
+
 def download_threadm() -> Thread:
     assert download_thread
     return download_thread

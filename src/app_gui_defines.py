@@ -188,6 +188,7 @@ class Options(IntEnum):
     AUTOCOMPLETION_ENABLE = auto()
     TAGLISTS_PATH = auto()
     ACTION_DOWNLOAD = auto()  # unbound, internal
+    ACTION_DOWNLOAD_BATCH = auto()  # unbound, internal
     ACTION_CHECKTAGS = auto()  # unbound, internal
     ACTION_CLEARLOG = auto()  # unbound, internal
     ACTION_OPEN_DWN_FOLDER = auto()  # unbound, internal
@@ -350,12 +351,13 @@ class Menus(IntEnum):
 
 
 # submenus with changing states
+# TODO: automate this through 'register(sub)menuX' funcs
 class SubMenus(IntEnum):
     SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
     PREFIX, STAGS, SSOURCE, SCOMMENTS, SMODE, EXTEND, WNONEMPTY, VERBOSE = 0, 2, 3, 4, 5, 7, 8, 9
     RX, RN, RS, RZ, RP, EN = 0, 1, 2, 3, 4, 5
     HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6
-    DOWNLOAD, CHECKTAGS, CLEARLOG = 0, 1, 3
+    DOWNLOAD, CHECKTAGS, DBATCH, CLEARLOG = 0, 1, 3, 5
     IDLIST, UNTAG, RETAG, SORT, DUPLICATES, AUTOCOMPLETEE, AUTOCOMPLETER = 0, 2, 3, 5, 7, 9, 10
     DFULL, DSKIP, DTOUCH = 0, 1, 2
 
@@ -379,7 +381,7 @@ menu_items = {
     Menus.MODULE: RuxxMenu(SubMenus.RX, SubMenus.RN, SubMenus.RS, SubMenus.RZ, SubMenus.RP, SubMenus.EN),
     Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
                                SubMenus.IGNOREPROXY, SubMenus.CACHEMODE),
-    Menus.ACTIONS: RuxxMenu(SubMenus.DOWNLOAD, SubMenus.CHECKTAGS),
+    Menus.ACTIONS: RuxxMenu(SubMenus.DOWNLOAD, SubMenus.CHECKTAGS, SubMenus.DBATCH),
     Menus.TOOLS: RuxxMenu(SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT, SubMenus.DUPLICATES,
                           SubMenus.AUTOCOMPLETEE, SubMenus.AUTOCOMPLETER),
     Menus.DEBUG: RuxxMenu(SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH),

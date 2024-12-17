@@ -30,7 +30,7 @@ from app_defines import (
     PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, CONNECT_TIMEOUT_BASE, DATE_MAX_DEFAULT,
     KNOWN_EXTENSIONS_STR, CONNECT_RETRIES_BASE, SITENAME_B_RX, SITENAME_B_RN, SITENAME_B_RS, SITENAME_B_RZ, SITENAME_B_RP, SITENAME_B_EN,
 )
-from app_file_parser import prepare_tags_list
+from app_file_parser import prepare_id_list, prepare_tag_lists
 from app_file_sorter import FileTypeFilter
 from app_gui_defines import (
     BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, STATE_NORMAL,
@@ -58,10 +58,10 @@ __all__ = (
     'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm', 'window_retriesm',
     'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows',
     'get_global', 'config_global', 'is_global_disabled', 'is_menu_disabled', 'is_focusing', 'toggle_console', 'hotkey_text',
-    'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list', 'ask_filename', 'browse_path',
-    'register_menu_command', 'register_submenu_command', 'register_menu_checkbutton', 'register_menu_radiobutton',
-    'register_submenu_radiobutton', 'register_menu_separator', 'get_all_media_files_in_cur_dir', 'get_media_files_dir',
-    'update_lastpath', 'config_menu', 'toggle_autocompletion', 'trigger_autocomplete_tag',
+    'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list', 'load_batch_download_tag_list',
+    'ask_filename', 'browse_path', 'register_menu_command', 'register_submenu_command', 'register_menu_checkbutton',
+    'register_menu_radiobutton', 'register_submenu_radiobutton', 'register_menu_separator', 'get_all_media_files_in_cur_dir',
+    'get_media_files_dir', 'update_lastpath', 'config_menu', 'toggle_autocompletion', 'trigger_autocomplete_tag',
 )
 
 
@@ -1396,7 +1396,7 @@ def help_about(title: str = f'About {APP_NAME}', message: str = ABOUT_MSG) -> No
 def load_id_list() -> None:
     filepath = ask_filename((('Text files', '*.txt'), ('All files', '*.*')))
     if filepath:
-        success, file_tags = prepare_tags_list(filepath)
+        success, file_tags = prepare_id_list(filepath)
         if success:
             setrootconf(Options.TAGS, file_tags)
             # reset settings for immediate downloading
@@ -1404,6 +1404,17 @@ def load_id_list() -> None:
             setrootconf(Options.DATEMAX, DATE_MAX_DEFAULT)
         else:
             messagebox.showwarning(message=f'Unable to load ids from {filepath[filepath.rfind("/") + 1:]}!')
+
+
+def load_batch_download_tag_list() -> list[str]:
+    filepath = ask_filename((('Text files', '*.txt'), ('All files', '*.*')))
+    if filepath:
+        success, file_tag_lists = prepare_tag_lists(filepath)
+        if success:
+            return file_tag_lists
+        else:
+            messagebox.showwarning(message=f'Unable to load tags from {filepath[filepath.rfind("/") + 1:]}!')
+    return []
 
 
 def ask_filename(ftypes: Iterable[tuple[str, str]]) -> str:

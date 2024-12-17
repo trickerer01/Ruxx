@@ -20,7 +20,7 @@ from app_defines import (
 )
 from app_module import ProcModule
 
-__all__ = ('prepare_tags_list',)
+__all__ = ('prepare_id_list', 'prepare_tag_lists')
 
 re_comments = re_compile(r'^(?:--|//|#).*?$')
 re_separators = re_compile(r'(?:, *| +)')
@@ -69,7 +69,7 @@ def id_list_from_string(id_str: str) -> list[str]:
     return id_str.strip().split(' ')
 
 
-def parse_file(filepath: str) -> tuple[bool, list[str]]:
+def parse_ids_file(filepath: str) -> tuple[bool, list[str]]:
     id_list = list()
     try:
         for line in open(filepath, 'rt', encoding=UTF8).readlines():
@@ -84,9 +84,27 @@ def parse_file(filepath: str) -> tuple[bool, list[str]]:
         return False, id_list
 
 
-def prepare_tags_list(filepath: str) -> tuple[bool, str]:
-    suc, id_list = parse_file(filepath)
+def prepare_id_list(filepath: str) -> tuple[bool, str]:
+    suc, id_list = parse_ids_file(filepath)
     return suc, f'({"~".join(id_list)})'
+
+
+def parse_tags_file(filepath: str) -> tuple[bool, list[str]]:
+    tag_list: list[str] = list()
+    try:
+        for line in open(filepath, 'rt', encoding=UTF8).readlines():
+            line = line.strip(' \n\ufeff')
+            if len(line) == 0 or re_comments.fullmatch(line):
+                continue
+            tag_list.append(line)
+        return True, list(unique_everseen(tag_list))
+    except Exception:
+        return False, tag_list
+
+
+def prepare_tag_lists(filepath: str) -> tuple[bool, list[str]]:
+    suc, tag_lists = parse_tags_file(filepath)
+    return suc, tag_lists
 
 #
 #
