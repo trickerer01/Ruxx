@@ -10,7 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from base64 import b64decode
 from collections.abc import Iterable, MutableSet, Callable
 from datetime import datetime
-from json import loads
+from json import load, loads
 from multiprocessing.dummy import current_process
 from re import Pattern
 
@@ -18,10 +18,9 @@ from re import Pattern
 from bs4 import BeautifulSoup
 
 # internal
-from app_bigstrings import TAG_NUMS_DECODED_RZ
 from app_defines import (
-    DownloadModes, ItemInfo, SITENAME_B_RZ, FILE_NAME_PREFIX_RZ, MODULE_ABBR_RZ, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RZ,
-    TAGS_CONCAT_CHAR_RZ, ID_VALUE_SEPARATOR_CHAR_RZ, FMT_DATE, SOURCE_DEFAULT, INT_BOUNDS_DEFAULT,
+    DownloadModes, ItemInfo, UTF8, SITENAME_B_RZ, FILE_NAME_PREFIX_RZ, MODULE_ABBR_RZ, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RZ,
+    TAGS_CONCAT_CHAR_RZ, ID_VALUE_SEPARATOR_CHAR_RZ, FILE_LOC_TAGS_RZ, FMT_DATE, SOURCE_DEFAULT, INT_BOUNDS_DEFAULT,
 )
 from app_download import Downloader
 from app_logger import trace
@@ -34,6 +33,9 @@ from app_tagger import is_wtag, normalize_wtag, no_validation_tag
 from app_utils import assert_nonempty
 
 __all__ = ('DownloaderRz',)
+
+TAG_NAMES: set[str] = set()
+FILE_LOC_TAGS = FILE_LOC_TAGS_RZ
 
 SITENAME = b64decode(SITENAME_B_RZ).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RZ
@@ -411,6 +413,8 @@ class DownloaderRz(Downloader):
         return f'&ExcludeTag={"|".join(self.negative_tags)}' if self.negative_tags else ''
 
     def _expand_tags(self, pwtag: str, explode: bool) -> Iterable[str]:
+        if not TAG_NAMES:
+            self._load_tag_names()
         expanded_tags = set()
         is_w = is_wtag(pwtag)
         if not is_w or not explode:
@@ -419,7 +423,7 @@ class DownloaderRz(Downloader):
                 expanded_tags.add(nvtag)
             else:
                 pwntag = pwtag.replace('%2b', '+')
-                if pwntag in TAG_NUMS_DECODED_RZ:
+                if pwntag in TAG_NAMES:
                     expanded_tags.add(pwtag)
         else:
             trace(f'Expanding tags from wtag \'{pwtag}\'...')
@@ -428,7 +432,7 @@ class DownloaderRz(Downloader):
             else:
                 self.expand_cache[pwtag] = list()
                 pat = prepare_regex_fullmatch(normalize_wtag(pwtag))
-                for tag in TAG_NUMS_DECODED_RZ:
+                for tag in TAG_NAMES:
                     if pat.fullmatch(tag):
                         expanded_tags.add(tag)
                         self.expand_cache[pwtag].append(tag)
@@ -500,6 +504,16 @@ class DownloaderRz(Downloader):
     def _execute_module_filters(self, parents: MutableSet[str]) -> None:
         self._id_filters(parents)
         self._score_filters(parents)
+
+    def _load_tag_names(self) -> None:
+        try:
+            trace(f'Loading {self._get_module_abbr().upper()} tag names...')
+            with open(FILE_LOC_TAGS, 'r', encoding=UTF8) as tags_json_file:
+                TAG_NAMES.update(load(tags_json_file).keys())
+        except Exception:
+            trace(f'Error: Failed to load {self._get_module_abbr().upper()} tag names from {FILE_LOC_TAGS}')
+            TAG_NAMES.add('')
+
 #
 #
 #########################################

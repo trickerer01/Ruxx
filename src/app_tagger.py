@@ -7,17 +7,20 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from json import load
 from os import path
 from re import Pattern, compile as re_compile
 
 # internal
-from app_bigstrings import TAG_ALIASES
-from app_defines import MODULE_CHOICES, TAG_AUTOCOMPLETE_LENGTH_MIN, TAG_AUTOCOMPLETE_NUMBER_MAX, UTF8
+from app_defines import MODULE_CHOICES, TAG_AUTOCOMPLETE_LENGTH_MIN, TAG_AUTOCOMPLETE_NUMBER_MAX, UTF8, FILE_LOC_ALIASES
 from app_gui_defines import UNDERSCORE
+from app_logger import trace
 from app_re import re_replace_symbols, re_tags_exclude_major1, re_tags_exclude_major2, re_numbered_or_counted_tag
 from app_utils import trim_undersores, normalize_path
 
 __all__ = ('TagsDB', 'append_filtered_tags', 'is_wtag', 'normalize_wtag', 'no_validation_tag')
+
+TAG_ALIASES: dict[str, str] = dict()
 
 re_meta_group = re_compile(r'^([^(]+)\(([^)]+)\).*?$')
 re_not_a_letter = re_compile(r'[^a-z]+')
@@ -124,6 +127,9 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pa
     if len(tags_str) == 0:
         return base_string
 
+    if not TAG_ALIASES:
+        load_tag_aliases()
+
     tags_list = tags_str.split(' ')
     tags_toadd_list: list[str] = list()
 
@@ -184,6 +190,16 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pa
             tags_toadd_list.append(tag)
 
     return f'{base_string}{UNDERSCORE}{re_replace_symbols.sub(UNDERSCORE, UNDERSCORE.join(sorted(tags_toadd_list)))}'
+
+
+def load_tag_aliases() -> None:
+    try:
+        trace('Loading tag aliases...')
+        with open(FILE_LOC_ALIASES, 'r', encoding=UTF8) as aliases_json_file:
+            TAG_ALIASES.update(load(aliases_json_file))
+    except Exception:
+        trace(f'Error: Failed to load tag aliases from {FILE_LOC_ALIASES}')
+        TAG_ALIASES.update({'': ''})
 
 #
 #
