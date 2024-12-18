@@ -226,7 +226,7 @@ KNOWN_EXTENSIONS_STR = ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)
 INT_BOUNDS_DEFAULT = (0, 0)
 
 FILE_LOC_ALIASES = '2tags/all_tag_aliases.json'
-FILE_LOC_TAGS_RZ = '2tags/rz_tags.txt'
+FILE_LOC_TAGS_RZ = '2tags/rz_tags.json'
 
 
 class ThreadInterruptException(Exception):
