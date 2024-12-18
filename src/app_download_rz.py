@@ -12,6 +12,7 @@ from collections.abc import Iterable, MutableSet, Callable
 from datetime import datetime
 from json import load, loads
 from multiprocessing.dummy import current_process
+from os import path
 from re import Pattern
 
 # requirements
@@ -30,7 +31,7 @@ from app_re import (
 
 )
 from app_tagger import is_wtag, normalize_wtag, no_validation_tag
-from app_utils import assert_nonempty
+from app_utils import assert_nonempty, normalize_path
 
 __all__ = ('DownloaderRz',)
 
@@ -506,12 +507,13 @@ class DownloaderRz(Downloader):
         self._score_filters(parents)
 
     def _load_tag_names(self) -> None:
+        abbru = self._get_module_abbr().upper()
         try:
-            trace(f'Loading {self._get_module_abbr().upper()} tag names...')
+            trace(f'Loading {abbru} tag names...')
             with open(FILE_LOC_TAGS, 'r', encoding=UTF8) as tags_json_file:
                 TAG_NAMES.update(load(tags_json_file).keys())
         except Exception:
-            trace(f'Error: Failed to load {self._get_module_abbr().upper()} tag names from {FILE_LOC_TAGS}')
+            trace(f'Error: Failed to load {abbru} tag names from {normalize_path(path.abspath(FILE_LOC_TAGS), False)}')
             TAG_NAMES.add('')
 
 #

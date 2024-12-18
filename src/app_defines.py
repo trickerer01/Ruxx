@@ -9,6 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from __future__ import annotations
 from datetime import datetime
 from enum import IntEnum, auto, unique
+from os import path
 
 
 class Comment:
@@ -225,8 +226,9 @@ KNOWN_EXTENSIONS_STR = ' '.join(f'*.{e}' for e in KNOWN_EXTENSIONS)
 
 INT_BOUNDS_DEFAULT = (0, 0)
 
-FILE_LOC_ALIASES = '2tags/all_tag_aliases.json'
-FILE_LOC_TAGS_RZ = '2tags/rz_tags.json'
+SRC_PATH = path.abspath(path.dirname(__file__)).replace('\\', '/')
+FILE_LOC_ALIASES = f'{SRC_PATH}/../2tags/all_tag_aliases.json'
+FILE_LOC_TAGS_RZ = f'{SRC_PATH}/../2tags/rz_tags.json'
 
 
 class ThreadInterruptException(Exception):

@@ -4,9 +4,7 @@
 1venv/
 release/
 images/
-un/
 hooks/
-1t/
 version_info.txt
 *.pyc
 *.cfg

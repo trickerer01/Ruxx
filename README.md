@@ -202,7 +202,7 @@ Ruxx provide lists of known tags for all modules (except RS), which can also be 
    - <full path to folder>/en_tags.txt
   ```
   Notes:
-  - This can also be a parent folder if tag lists folder is default-named (`2tags/`)
+  - This can also be a parent folder if tag lists folder is default-named (`2tags/` or just `tags/`)
   - If tag lists exist inside current directory, or default-named tag lists folder inside current directory, tag lists will be found automatically
 - Once autocompletion is enabled a new hotkey will become available `<Ctrl+Space>`, the first time you use it Ruxx will attempt to load current module tags into storage - this will require a little extra memory, that memory is also freed if autocompletion feature get disabled again
 - If you prefer autocompletion to be enabled by default it is strongly recommended to save setting to *autoconfig* file

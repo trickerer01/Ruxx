@@ -7,7 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from json import load
+from json import load as load_json
 from os import path
 from re import Pattern, compile as re_compile
 
@@ -45,7 +45,7 @@ class TagsDB:
         TagsDB.clear()
         while not TagsDB.DBFiles:
             folder_up, tail = tuple(path.split(folder))
-            for folder_path in (f'{folder}/', f'{folder}/2tags/'):
+            for folder_path in (f'{folder}/', f'{folder}/tags/', f'{folder}/2tags/'):
                 if path.isdir(folder_path):
                     tlpaths: dict[str, str] = dict()
                     collect_talist_names(folder_path, tlpaths)
@@ -200,9 +200,9 @@ def load_tag_aliases() -> None:
     try:
         trace('Loading tag aliases...')
         with open(FILE_LOC_ALIASES, 'r', encoding=UTF8) as aliases_json_file:
-            TAG_ALIASES.update(load(aliases_json_file))
+            TAG_ALIASES.update(load_json(aliases_json_file))
     except Exception:
-        trace(f'Error: Failed to load tag aliases from {FILE_LOC_ALIASES}')
+        trace(f'Error: Failed to load tag aliases from {normalize_path(path.abspath(FILE_LOC_ALIASES), False)}')
         TAG_ALIASES.update({'': ''})
 
 #
