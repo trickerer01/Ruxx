@@ -1498,7 +1498,7 @@ def toggle_autocompletion() -> None:
             setrootconf(Options.TAGLISTS_PATH, last_path)
         else:
             loc = str(filedialog.askdirectory(initialdir=last_path, mustexist=True,
-                                              title='Select a directory where tag lists are located (rx_tags.txt, rn_tags.txt, etc.)'))
+                                              title='Select a directory where tag lists are located (rx_tags.json, rn_tags.json, etc.)'))
             if len(loc) > 0 and (not last_path or loc != last_path) and TagsDB.try_set_basepath(loc):
                 setrootconf(Options.TAGLISTS_PATH, loc)
             else:
