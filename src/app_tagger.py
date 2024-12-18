@@ -35,10 +35,11 @@ class TagsDB:
     def try_set_basepath(basepath: str, *, traverse=True) -> int:
         def collect_talist_names(fpath: str, paths_dict: dict[str, str]) -> None:
             for module in MODULE_CHOICES:
-                taglist_name = f'{module}_tags.txt'
-                taglist_path = f'{fpath}{taglist_name}'
-                if path.isfile(taglist_path):
-                    paths_dict[module] = taglist_path
+                taglist_path1 = f'{fpath}{module}_tags.txt'
+                taglist_path2 = f'{fpath}{module}_tags.json'
+                for taglist_path in (taglist_path1, taglist_path2):
+                    if path.isfile(taglist_path):
+                        paths_dict[module] = taglist_path
 
         folder = normalize_path(basepath, False)
         TagsDB.clear()
@@ -74,7 +75,10 @@ class TagsDB:
                 lines = dbfile.readlines()
                 for idx, line in enumerate(lines):
                     try:
-                        kv_k, kv_v = tuple(line.strip(' ,\'\n\ufeff').split('\': \'', 1))
+                        if '.txt' in dbfile.name:
+                            kv_k, kv_v = tuple(line.strip(' ,\'\n\ufeff').split('\': \'', 1))
+                        else:
+                            kv_k, kv_v = tuple(line.strip(' ,"\n\ufeff').split('": "', 1))
                         ivalue = int(kv_v[:kv_v.find(' ')])
                         TagsDB.DB[module][kv_k] = ivalue
                     except Exception:
