@@ -50,7 +50,7 @@ class TagsDB:
                 if path.isfile(taglist_path):
                     paths_dict[module] = taglist_path
 
-        folder = normalize_path(basepath, False) or path.curdir
+        folder = normalize_path(basepath or path.abspath(f'{path.dirname(__file__)}/..'), False)
         TagsDB.clear()
         while not TagsDB.DBFiles:
             folder_up, tail = tuple(path.split(folder))
