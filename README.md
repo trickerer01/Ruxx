@@ -195,11 +195,11 @@ Ruxx provide lists of known tags for all modules (except RS), which can also be 
 - Enable this feature by selecting **Tools -> Enable autocompletion**. You will be asked for a folder location - the folder containing tag list files. Once selected the following message will be logged (or similar):
   ```
   Found 5 tag lists:
-   - <full path to folder>/rx_tags.txt
-   - <full path to folder>/rn_tags.txt
-   - <full path to folder>/rz_tags.txt
-   - <full path to folder>/rp_tags.txt
-   - <full path to folder>/en_tags.txt
+   - <full path to folder>/rx_tags.json
+   - <full path to folder>/rn_tags.json
+   - <full path to folder>/rz_tags.json
+   - <full path to folder>/rp_tags.json
+   - <full path to folder>/en_tags.json
   ```
   Notes:
   - This can also be a parent folder if tag lists folder is default-named (`2tags/` or just `tags/`)

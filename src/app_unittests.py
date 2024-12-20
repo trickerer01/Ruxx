@@ -14,12 +14,14 @@ from unittest import TestCase, main as run_tests
 
 # internal
 from app_cmdargs import prepare_arglist
-from app_defines import DownloadModes, ThreadInterruptException, DEFAULT_HEADERS, DATE_MIN_DEFAULT
+from app_defines import DownloadModes, ThreadInterruptException, DEFAULT_HEADERS, DATE_MIN_DEFAULT, MODULE_CHOICES
 # noinspection PyProtectedMember
 from app_downloaders import make_downloader
 from app_logger import Logger
 from app_module import ProcModule
 from app_revision import APP_NAME
+# noinspection PyProtectedMember
+from app_tagger import TagsDB, load_tag_aliases, TAG_ALIASES
 from app_tags_parser import parse_tags
 from app_utils import normalize_path
 
@@ -90,6 +92,25 @@ item_str01_en = (
     'sample_url="/data/12/64/1264043fc5d61a7268b1caa3fd12e972.jpg" created_at="2023-09-30T09:28:22.753-04:00" '
     'score="237" has_children="true" parent_id="" comment_count="0" tags="2_horns 5_fingers">'
 )
+
+
+class FileCheckTests(TestCase):
+    def test_filecheck01_aliases(self) -> None:
+        load_tag_aliases()
+        self.assertIsNone(TAG_ALIASES.get(''))
+        print(f'{self._testMethodName} passed')
+
+    def test_filecheck02_tags(self) -> None:
+        TagsDB.try_set_basepath('', traverse=False)
+        self.assertEqual(len(MODULE_CHOICES), len(TagsDB.DBFiles))
+        print(f'{self._testMethodName} passed')
+
+    def test_filecheck03_tags_load(self) -> None:
+        TagsDB.try_set_basepath('', traverse=False)
+        for module in MODULE_CHOICES:
+            TagsDB._load(module)
+            self.assertGreater(len(TagsDB.DB[module]), 0, msg=f'{self._testMethodName} for module \'{module}\' failed')
+        print(f'{self._testMethodName} passed')
 
 
 class ArgParseTests(TestCase):

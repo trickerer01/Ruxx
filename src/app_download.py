@@ -334,9 +334,7 @@ class Downloader(DownloaderBase):
 
                 active_pool: ThreadPool
                 with Pool(max(2, self.maxthreads_items // (4 if ProcModule.is_rp() else 2))) as active_pool:
-                    ress = list()
-                    for larr in arr_temp:
-                        ress.append(active_pool.apply_async(self._get_page_items, args=larr))
+                    ress = [active_pool.apply_async(self._get_page_items, args=larr) for larr in arr_temp]
                     active_pool.close()
                     while len(ress) > 0:
                         self.catch_cancel_or_ctrl_c()
@@ -522,9 +520,7 @@ class Downloader(DownloaderBase):
         if self.maxthreads_items > 1 and self.total_count_all > 1:
             active_pool: ThreadPool
             with Pool(self.maxthreads_items) as active_pool:
-                ress = list()
-                for iarr in self.items_raw_all:
-                    ress.append(active_pool.apply_async(self._process_item, args=(iarr,)))
+                ress = [active_pool.apply_async(self._process_item, args=(iarr,)) for iarr in self.items_raw_all]
                 active_pool.close()
                 while len(ress) > 0:
                     self.catch_cancel_or_ctrl_c()
@@ -764,9 +760,7 @@ class Downloader(DownloaderBase):
         else:  # RS
             active_pool: ThreadPool
             with Pool(self.maxthreads_items) as active_pool:
-                ress = list()
-                for larr in [(elem,) for elem in self.items_raw_per_task]:
-                    ress.append(active_pool.apply_async(self._extract_item_info, args=larr))
+                ress = [active_pool.apply_async(self._extract_item_info, args=(elem,)) for elem in self.items_raw_per_task]
                 active_pool.close()
                 while len(ress) > 0:
                     self.catch_cancel_or_ctrl_c()

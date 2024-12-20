@@ -7,12 +7,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+from __future__ import annotations
+from collections.abc import Callable
 from json import load as load_json
 from os import path
 from re import Pattern, compile as re_compile
 
 # internal
-from app_defines import MODULE_CHOICES, TAG_AUTOCOMPLETE_LENGTH_MIN, TAG_AUTOCOMPLETE_NUMBER_MAX, UTF8, FILE_LOC_ALIASES
+from app_defines import MODULE_CHOICES, TAG_AUTOCOMPLETE_LENGTH_MIN, TAG_AUTOCOMPLETE_NUMBER_MAX, UTF8, FILE_NAME_ALIASES
 from app_gui_defines import UNDERSCORE
 from app_logger import trace
 from app_re import re_replace_symbols, re_tags_exclude_major1, re_tags_exclude_major2, re_numbered_or_counted_tag
@@ -32,23 +34,30 @@ class TagsDB:
     DBFiles: dict[str, str] = dict()
 
     @staticmethod
-    def try_set_basepath(basepath: str, *, traverse=True) -> int:
-        def collect_talist_names(fpath: str, paths_dict: dict[str, str]) -> None:
-            for module in MODULE_CHOICES:
-                taglist_path1 = f'{fpath}{module}_tags.txt'
-                taglist_path2 = f'{fpath}{module}_tags.json'
-                for taglist_path in (taglist_path1, taglist_path2):
-                    if path.isfile(taglist_path):
-                        paths_dict[module] = taglist_path
+    def try_locate_file_single(filename: str) -> str:
+        basepath = normalize_path(path.abspath(f'{path.dirname(__file__)}/..'), False)
+        for folder_path in (f'{basepath}/', f'{basepath}/tags/', f'{basepath}/2tags/'):
+            pfilename = f'{folder_path}{filename}'
+            if path.isfile(pfilename):
+                return pfilename
+        return filename
 
-        folder = normalize_path(basepath, False)
+    @staticmethod
+    def try_set_basepath(basepath: str, *, traverse=True) -> int:
+        def collect_taglist_names(fpath: str, paths_dict: dict[str, str]) -> None:
+            for module in MODULE_CHOICES:
+                taglist_path = f'{fpath}{module}_tags.json'
+                if path.isfile(taglist_path):
+                    paths_dict[module] = taglist_path
+
+        folder = normalize_path(basepath, False) or path.curdir
         TagsDB.clear()
         while not TagsDB.DBFiles:
             folder_up, tail = tuple(path.split(folder))
             for folder_path in (f'{folder}/', f'{folder}/tags/', f'{folder}/2tags/'):
                 if path.isdir(folder_path):
                     tlpaths: dict[str, str] = dict()
-                    collect_talist_names(folder_path, tlpaths)
+                    collect_taglist_names(folder_path, tlpaths)
                     if tlpaths:
                         TagsDB.DBFiles.update(tlpaths)
             if not tail or not traverse:
@@ -75,10 +84,7 @@ class TagsDB:
                 lines = dbfile.readlines()
                 for idx, line in enumerate(lines):
                     try:
-                        if '.txt' in dbfile.name:
-                            kv_k, kv_v = tuple(line.strip(' ,\'\n\ufeff').split('\': \'', 1))
-                        else:
-                            kv_k, kv_v = tuple(line.strip(' ,"\n\ufeff').split('": "', 1))
+                        kv_k, kv_v = tuple(line.strip(' ,"\n\ufeff').split('": "', 1))
                         ivalue = int(kv_v[:kv_v.find(' ')])
                         TagsDB.DB[module][kv_k] = ivalue
                     except Exception:
@@ -87,31 +93,44 @@ class TagsDB:
             return
 
     @staticmethod
-    def _get_tag_matches(module: str, value: str) -> list[tuple[str, int]]:
+    def _get_tag_matches(module: str, value: str, pred: Callable[[str, str], bool], limit: int) -> list[tuple[str, int]]:
         arr = list(TagsDB.DB[module].keys())
         lb, ub = 0, len(arr)
-        while lb < ub:
-            mid = (lb + ub) // 2
-            if arr[mid] < value:
-                lb = mid + 1
-            else:
-                ub = mid
+        if not is_wtag(value):
+            while lb < ub:
+                mid = (lb + ub) // 2
+                if arr[mid] < value:
+                    lb = mid + 1
+                else:
+                    ub = mid
         ub = len(arr)
         gmatches: list[str] = list()
         while lb < ub:
-            if len(gmatches) >= TAG_AUTOCOMPLETE_NUMBER_MAX * 5 or not arr[lb].startswith(value):
-                break
+            limit_reached = limit > 0 and len(gmatches) >= limit * 5
+            if limit_reached or not pred(arr[lb], value):
+                if limit_reached:
+                    break
+                else:
+                    lb += 1
+                    continue
             gmatches.append(arr[lb])
             lb += 1
         glist = [(g, TagsDB.DB[module][g]) for g in sorted(gmatches, reverse=True, key=lambda gmatch: TagsDB.DB[module][gmatch])]
-        return glist[:TAG_AUTOCOMPLETE_NUMBER_MAX]
+        return glist[:limit] if limit > 0 else glist
 
     @staticmethod
-    def autocomplete_tag(module: str, tag: str) -> list[tuple[str, int]]:
+    def autocomplete_tag(module: str, tag: str, *,
+                         pred: Callable[[str, str], bool] = lambda x, y: x.startswith(y),
+                         limit: int = None) -> list[tuple[str, int]]:
         matches = list()
-        if len(tag) >= TAG_AUTOCOMPLETE_LENGTH_MIN:
+        if len(tag) >= TAG_AUTOCOMPLETE_LENGTH_MIN or limit is None:
+            limit = limit or TAG_AUTOCOMPLETE_NUMBER_MAX
             TagsDB._load(module)
-            matches.extend((mtag[len(tag):], count) for mtag, count in TagsDB._get_tag_matches(module, tag))
+            base_matches = TagsDB._get_tag_matches(module, tag, pred, limit)
+            if limit > 0:
+                matches.extend((mtag[len(tag):], count) for mtag, count in base_matches)
+            else:
+                matches.extend(base_matches)
         return matches
 
 
@@ -197,12 +216,13 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pa
 
 
 def load_tag_aliases() -> None:
+    file_location = TagsDB.try_locate_file_single(FILE_NAME_ALIASES)
     try:
         trace('Loading tag aliases...')
-        with open(FILE_LOC_ALIASES, 'r', encoding=UTF8) as aliases_json_file:
+        with open(file_location, 'r', encoding=UTF8) as aliases_json_file:
             TAG_ALIASES.update(load_json(aliases_json_file))
     except Exception:
-        trace(f'Error: Failed to load tag aliases from {normalize_path(path.abspath(FILE_LOC_ALIASES), False)}')
+        trace(f'Error: Failed to load tag aliases from {file_location}')
         TAG_ALIASES.update({'': ''})
 
 #

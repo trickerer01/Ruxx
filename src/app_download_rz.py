@@ -10,9 +10,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from base64 import b64decode
 from collections.abc import Iterable, MutableSet, Callable
 from datetime import datetime
-from json import load, loads
+from json import loads
 from multiprocessing.dummy import current_process
-from os import path
 from re import Pattern
 
 # requirements
@@ -20,8 +19,8 @@ from bs4 import BeautifulSoup
 
 # internal
 from app_defines import (
-    DownloadModes, ItemInfo, UTF8, SITENAME_B_RZ, FILE_NAME_PREFIX_RZ, MODULE_ABBR_RZ, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RZ,
-    TAGS_CONCAT_CHAR_RZ, ID_VALUE_SEPARATOR_CHAR_RZ, FILE_LOC_TAGS_RZ, FMT_DATE, SOURCE_DEFAULT, INT_BOUNDS_DEFAULT,
+    DownloadModes, ItemInfo, SITENAME_B_RZ, FILE_NAME_PREFIX_RZ, MODULE_ABBR_RZ, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RZ,
+    TAGS_CONCAT_CHAR_RZ, ID_VALUE_SEPARATOR_CHAR_RZ, FMT_DATE, SOURCE_DEFAULT, INT_BOUNDS_DEFAULT,
 )
 from app_download import Downloader
 from app_logger import trace
@@ -30,13 +29,10 @@ from app_re import (
     re_tags_to_process_rz, re_tags_exclude_rz, prepare_regex_fullmatch, re_id_tag_rz, re_score_tag_rz,
 
 )
-from app_tagger import is_wtag, normalize_wtag, no_validation_tag
-from app_utils import assert_nonempty, normalize_path
+from app_tagger import TagsDB, is_wtag, normalize_wtag, no_validation_tag
+from app_utils import assert_nonempty
 
 __all__ = ('DownloaderRz',)
-
-TAG_NAMES: set[str] = set()
-FILE_LOC_TAGS = FILE_LOC_TAGS_RZ
 
 SITENAME = b64decode(SITENAME_B_RZ).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RZ
@@ -414,17 +410,18 @@ class DownloaderRz(Downloader):
         return f'&ExcludeTag={"|".join(self.negative_tags)}' if self.negative_tags else ''
 
     def _expand_tags(self, pwtag: str, explode: bool) -> Iterable[str]:
-        if not TAG_NAMES:
-            self._load_tag_names()
         expanded_tags = set()
         is_w = is_wtag(pwtag)
+        if TagsDB.empty():
+            TagsDB.try_set_basepath('', traverse=False)
         if not is_w or not explode:
             nvtag = no_validation_tag(pwtag) if not is_w else ''
             if nvtag:
                 expanded_tags.add(nvtag)
             else:
                 pwntag = pwtag.replace('%2b', '+')
-                if pwntag in TAG_NAMES:
+                matches = TagsDB.autocomplete_tag(self._get_module_abbr(), pwntag, pred=lambda x, y: x == y, limit=-1)
+                if pwntag in [m[0] for m in matches]:
                     expanded_tags.add(pwtag)
         else:
             trace(f'Expanding tags from wtag \'{pwtag}\'...')
@@ -433,10 +430,10 @@ class DownloaderRz(Downloader):
             else:
                 self.expand_cache[pwtag] = list()
                 pat = prepare_regex_fullmatch(normalize_wtag(pwtag))
-                for tag in TAG_NAMES:
-                    if pat.fullmatch(tag):
-                        expanded_tags.add(tag)
-                        self.expand_cache[pwtag].append(tag)
+                matches = TagsDB.autocomplete_tag(self._get_module_abbr(), pwtag, pred=lambda x, _: not not pat.fullmatch(x), limit=-1)
+                for pmtag in [m[0] for m in matches]:
+                    expanded_tags.add(pmtag)
+                    self.expand_cache[pwtag].append(pmtag)
                 if self.expand_cache[pwtag]:
                     n = '\n - '
                     trace(f'{n[1:]}{n.join(self.expand_cache[pwtag])}')
@@ -505,16 +502,6 @@ class DownloaderRz(Downloader):
     def _execute_module_filters(self, parents: MutableSet[str]) -> None:
         self._id_filters(parents)
         self._score_filters(parents)
-
-    def _load_tag_names(self) -> None:
-        abbru = self._get_module_abbr().upper()
-        try:
-            trace(f'Loading {abbru} tag names...')
-            with open(FILE_LOC_TAGS, 'r', encoding=UTF8) as tags_json_file:
-                TAG_NAMES.update(load(tags_json_file).keys())
-        except Exception:
-            trace(f'Error: Failed to load {abbru} tag names from {normalize_path(path.abspath(FILE_LOC_TAGS), False)}')
-            TAG_NAMES.add('')
 
 #
 #
