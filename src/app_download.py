@@ -34,7 +34,7 @@ from app_module import ProcModule
 from app_network import ThreadedHtmlWorker, DownloadInterruptException, thread_exit
 from app_re import re_favorited_by_tag, re_infolist_filename, re_pool_tag
 from app_revision import APP_NAME, APP_VERSION
-from app_tagger import append_filtered_tags
+from app_tagger import append_filtered_tags, load_tag_aliases
 from app_tags_parser import convert_taglist
 from app_task import extract_neg_and_groups, split_tags_into_tasks
 from app_utils import confirm_yes_no, normalize_path, trim_undersores, format_score
@@ -513,6 +513,8 @@ class Downloader(DownloaderBase):
         min_id = self._extract_id(min(self.items_raw_all, key=lambda x: int(self._extract_id(x))))
         max_id = self._extract_id(max(self.items_raw_all, key=lambda x: int(self._extract_id(x))))
         trace(f'\nProcessing {self.total_count_all:d} item(s), bound {min_id} to {max_id}')
+
+        load_tag_aliases()
 
         self.current_state = DownloaderStates.DOWNLOADING
         trace(f'{self.total_count_all:d} item(s) scheduled, {self.maxthreads_items:d} thread(s) max\nWorking...\n')

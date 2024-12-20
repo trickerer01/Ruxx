@@ -20,7 +20,7 @@ from app_logger import trace
 from app_re import re_replace_symbols, re_tags_exclude_major1, re_tags_exclude_major2, re_numbered_or_counted_tag
 from app_utils import trim_undersores, normalize_path
 
-__all__ = ('TagsDB', 'append_filtered_tags', 'is_wtag', 'normalize_wtag', 'no_validation_tag')
+__all__ = ('TagsDB', 'load_tag_aliases', 'append_filtered_tags', 'is_wtag', 'normalize_wtag', 'no_validation_tag')
 
 TAG_ALIASES: dict[str, str] = dict()
 
@@ -150,9 +150,6 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pa
     if len(tags_str) == 0:
         return base_string
 
-    if not TAG_ALIASES:
-        load_tag_aliases()
-
     tags_list = tags_str.split(' ')
     tags_toadd_list: list[str] = list()
 
@@ -216,6 +213,9 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pa
 
 
 def load_tag_aliases() -> None:
+    if TAG_ALIASES:
+        return
+
     file_location = TagsDB.try_locate_file_single(FILE_NAME_ALIASES)
     try:
         trace('Loading tag aliases...')
