@@ -351,7 +351,6 @@ class Menus(IntEnum):
 
 
 # submenus with changing states
-# TODO: automate this through 'register(sub)menuX' funcs
 class SubMenus(IntEnum):
     SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
     PREFIX, STAGS, SSOURCE, SCOMMENTS, SMODE, EXTEND, WNONEMPTY, VERBOSE = 0, 2, 3, 4, 5, 7, 8, 9
@@ -376,8 +375,8 @@ class RuxxMenu:
 
 menu_items = {
     Menus.FILE: RuxxMenu(SubMenus.SAVE, SubMenus.LOAD, SubMenus.RESET),
-    Menus.EDIT: RuxxMenu(SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.SMODE,
-                         SubMenus.EXTEND, SubMenus.WNONEMPTY, SubMenus.VERBOSE),
+    Menus.EDIT: RuxxMenu(SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.SMODE, SubMenus.EXTEND,
+                         SubMenus.WNONEMPTY, SubMenus.VERBOSE),
     Menus.MODULE: RuxxMenu(SubMenus.RX, SubMenus.RN, SubMenus.RS, SubMenus.RZ, SubMenus.RP, SubMenus.EN),
     Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
                                SubMenus.IGNOREPROXY, SubMenus.CACHEMODE),
@@ -388,13 +387,7 @@ menu_items = {
 }
 
 menu_item_orig_states = {
-    Menus.FILE: (STATE_NORMAL,) * 4,
-    Menus.EDIT: (STATE_NORMAL,) * 10,
-    Menus.MODULE: (STATE_NORMAL,) * 6,
-    Menus.CONNECTION: (STATE_NORMAL,) * 7,
-    Menus.ACTIONS: (STATE_NORMAL,) * 4,
-    Menus.TOOLS: (STATE_NORMAL,) * 11,
-    Menus.DEBUG: (STATE_NORMAL,) * 3,
+    k: (STATE_NORMAL,) * (1 + max(menu_items[k].statefuls)) for k in [m for m in Menus if m < Menus.MAX_MENUS]
 }
 # end global static
 # hotkeys
