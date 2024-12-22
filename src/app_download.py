@@ -723,11 +723,6 @@ class Downloader(DownloaderBase):
                 trace('Warning (W1): RS module is unable to filter by date. Disabled!')
                 self.date_min, self.date_max = DATE_MIN_DEFAULT, DATE_MAX_DEFAULT
                 ret = True
-        if ProcModule.is_rz():
-            if self.dump_comments:
-                trace('Warning (W1): RZ module is unable to collect comments. Disabled!')
-                self.dump_comments = False
-                ret = True
         if ProcModule.is_en():
             if self.dump_comments and self.maxthreads_items > 2 and not self.check_tags and not self.get_max_id:
                 trace('Warning (W1): EN module can\'t fetch comments faster than 2/sec due to API limitation. Forcing 2 download threads!')

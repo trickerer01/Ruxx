@@ -12,7 +12,7 @@ from app_revision import APP_NAME, APP_VERSION, APP_REV_DATE
 APP_AUTHOR_NICKNAME = 'trickerer'
 APP_AUTHOR = f'Dmitriy \'{APP_AUTHOR_NICKNAME}\' Komardin'
 APP_ADDRESS = f'github.com/{APP_AUTHOR_NICKNAME}01/{APP_NAME}'
-APP_YEARS = '2020-2024'
+APP_YEARS = '2020-2025'
 APP_BUILD_TYPE_STR = 'Debug' if __RUXX_DEBUG__ else 'Release'
 
 # cmdline args help messages
@@ -77,15 +77,6 @@ HELP_TAGS_MSG_RN = (
     '\'tag=value\'      \tmeta tags (id<999999, score>=1337, etc.)\n'
 )
 HELP_TAGS_MSG_RS = HELP_TAGS_MSG_RX
-HELP_TAGS_MSG_RZ = (
-    'Here is a quick list of supported tag patterns:\n\n'
-    '\'tag_1\'          \tplain text tag\n'
-    '\'-tag1\'          \texclude tag \'tag1\'\n'
-    '\'tag1 tag_2\'     \ttag1 AND tag_2\n'
-    '\'(tag1~tag2)\'    \ttag1 OR tag2 (can be chained)\n'
-    '\'-(tag1,tag2)\'   \tNOT BOTH tag1 AND tag2 (can be chained)\n'
-    '\'tag:value\'      \tmeta tags (favorited_by:x, id>y, etc.)\n'
-)
 HELP_TAGS_MSG_RP = HELP_TAGS_MSG_RN
 HELP_TAGS_MSG_EN = (
     'Here is a quick list of supported tag patterns:\n\n'

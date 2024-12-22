@@ -328,7 +328,7 @@ def set_proc_module(dwnmodule: int) -> None:
         config_menu(Menus.EDIT, SubMenus.PREFIX, label=prefix_opt_text)
         # icon
         icontypes = {ProcModule.RX: Icons.RX, ProcModule.RN: Icons.RN, ProcModule.RS: Icons.RS,
-                     ProcModule.RZ: Icons.RZ, ProcModule.RP: Icons.RP, ProcModule.EN: Icons.EN}
+                     ProcModule.RP: Icons.RP, ProcModule.EN: Icons.EN}
         config_global(Globals.MODULE_ICON, image=get_icon(icontypes[ProcModule.value()]))
         # enable/disable features specific to the module
         update_widget_enabled_states()
@@ -358,11 +358,7 @@ def update_widget_enabled_states() -> None:
                     newstate = STATE_DISABLED
                 elif i == Menus.EDIT and j == SubMenus.SSOURCE and ProcModule.is_rs():  # Save sources, disabled for RS
                     newstate = STATE_DISABLED
-                elif i == Menus.EDIT and j == SubMenus.SCOMMENTS and ProcModule.is_rz():
-                    newstate = STATE_DISABLED
                 elif i == Menus.TOOLS and j == SubMenus.AUTOCOMPLETER and TagsDB.empty():
-                    newstate = STATE_DISABLED
-                elif i == Menus.TOOLS and j == SubMenus.IDLIST and ProcModule.is_rz():
                     newstate = STATE_DISABLED
                 else:
                     newstate = STATE_DISABLED if batching_or_downloading else menu_item_orig_states[i][j]

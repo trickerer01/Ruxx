@@ -19,7 +19,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 #### Download Options
 - *Videos* ‒ some websites serve videos in multiple formats, here you can select a prefered one. You may also exclude videos altogether
 - *Images* ‒ some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you may also filter all the images out
-- *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset to default. RX, RN, RZ, RP and EN only
+- *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset to default. RX, RN, RP and EN only
 - *Parent posts / child posts* ‒ this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX and EN only
 - *Threading* ‒ the number of download threads to use. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
 - *Download order* - the order in which found posts will be downloaded. Default is ascending order (lowest id to highest id). Note that sort tags may alter the resulting download order
@@ -73,14 +73,13 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 ### Tags syntax
 Ruxx normally allows most symbols for tags search, there are some specifics though:  
 1. Wildcards
-- Most modules support asterisk symbol `*` as wildcard in tags (any number of any symbols). You can use any number of wildcards in tags in any place: `b*m*e_cit*` instead of `baltimore_city`. For some search engines `*` is just a symbol normal tag may contain, namely: RZ; but you can still use wildcarded `-t*ags`.
+- Most modules support asterisk symbol `*` as wildcard in tags (any number of any symbols). You can use any number of wildcards in tags in any place: `b*m*e_cit*` instead of `baltimore_city`.
   - Note that there is a bug in RX search engine which breaks frontal wildcards: `*_city` will work for RN, RS, RP and EN, but RX will return default result (all)
 2. Meta tags
-- Meta tags describe not the posted artwork but the post itself. RX, RN, RS, RZ, RP and EN all support meta tags:
+- Meta tags describe not the posted artwork but the post itself. RX, RN, RS, RP and EN all support meta tags:
   - RX syntax: _name_**:**_value_ OR _name_**:=**_value_
   - RN syntax: _name_**=**_value_
   - RS syntax: _name_**:**_value_
-  - RZ syntax: _name_**:**_value_
   - RP syntax: _name_**=**_value_
   - EN syntax: _name_**:**_value_
 - Some meta `-tags` can be used for exclusion: `-rating:explicit`
@@ -121,9 +120,6 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
     - user: `user:X`. `X` = `<uploader name>`
     - rating: `rating:X`. `X` = `<rating name>`, ex. `safe`, `questionable`, `explicit`.
     - sort: `sort:X[:Y]`. `X` = `<sort type>`, ex. `score`, `id` (default). `Y` = `<sort direction>` (optional), `asc` or `desc` (default)
-- RZ meta tags:
-  - **id**: `id:X` (OR `id:=X`), `id:>X`, `id:<Y`, `id:>=X`, `id:<=Y`. `X`,`Y` = `<post ID>`
-  - **score**: `score:X` (OR `score:=X`), `score:>X`, `score:<Y`, `score:>=X`, `score:<=Y`. `X`,`Y` = `<number>`
 - RP meta tags:
   - **id**: `id=X`, `id>X`, `id<Y`, `id>=X`, `id<=Y`. `X`,`Y` = `<post ID>`
   - **score**: `score=X`, `score>X`, `score<Y`, `score>=X`, `score<=Y`. `X`,`Y` = `<number>`
@@ -158,7 +154,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 - The syntax is also the same for all modules, don't use curvy brackets for RS
 - `OR` group can't be negative and needs to be unwrapped:
   - `-(tag1~tag2~tag3)` => `-tag1 -tag2 -tag3`
-- Since using meta tags in `OR` groups `(id:=X~score:=Y)` is broken (RX), not always reliable (EN) or straight impossible (RS, RN, RZ, RP), Ruxx will always unwrap such groups to process them properly
+- Since using meta tags in `OR` groups `(id:=X~score:=Y)` is broken (RX), not always reliable (EN) or straight impossible (RS, RN, RP), Ruxx will always unwrap such groups to process them properly
 4. Negative groups
 - Syntax: `-(tag1,tag2,...,tagN)`. Ruxx allows to filter out tag combinations (posts where all tags in group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for `any symbol` and `any number of any symbols` repectively. You can also use pipe symbol `|` for direct regex `OR` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regular expressions `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
     - Important note: unlike normal `-tags`, negative group will not check tag aliases
@@ -166,14 +162,11 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 - Any valid search query requires at least one positive non-sorting tag to search for. Search query cannot be formed using just `sort:...` tag or `-tags` only
 - Very long search queries will cause website to return empty result. Generally this happens when trying to add too many `-tags` to narrow down the search. If resulting query is too long Ruxx will automatically create a specific negative group from excessive `-tags` and use them as additional filter. The message will be given as follows: `<X> 'excluded tags combination' custom filter(s) parsed`
 - Some websites also put a limit on the number of tags used. While most of the time this is a soft limit (web interface), sometimes they also apply a hard limit (api internals), namely:
-  - `RZ`: max `3` `tags`, max `3` `-tags`, `6` `total`
   - `RP`: max `3` `tags & -tags`, `3` `total`
   - `EN`: max `40` `tags & -tags`, `40` `total`, max `1` `wildcard`
 - In that case all extra `-tags` will be converted into a negative group and used locally as an internal filter (and mess up 'check tags' results). Note that this only applies to `-tags`, exceeding positive tag limit will result in an error
 - It is recommended to manually convert all wildcarded `-t*ags` into a single negative group to prevent unwanted tag expansion (see below) resulting in too many `-tags`, it's simple really: `'-a -b -c -d* -f*g*h*j' -> '-a -b -c -(*,d*|f*g*h*j)'`
 6. Tag validation
-- Some websites do not operate on a concept of partial tag matching at all, namely:
-  - `RZ`
 - All `tags`, `-tags` and `tags` in `OR` group have to be valid in order to get any search results. Tags are considered valid only if they:
   - have at least 10 posts tagged with them
   - do not contain any special symbols like `\r`,`\t`, etc., also `&` and unicode escaped sequences like `\u00a0`
@@ -197,7 +190,7 @@ Ruxx provide lists of known tags for all modules (except RS), which can also be 
   Found 5 tag lists:
    - <full path to folder>/rx_tags.json
    - <full path to folder>/rn_tags.json
-   - <full path to folder>/rz_tags.json
+   - <full path to folder>/rs_tags.json
    - <full path to folder>/rp_tags.json
    - <full path to folder>/en_tags.json
   ```
@@ -228,7 +221,6 @@ Downloading user's favorites using native tags search functionality is only avai
 - Downloading from RX favorites pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
 - While searching favorites you can use normal filtering as well. Date filter, additional required / excluded tags, etc.
 - Downloading favorites isn't particulary fast, Ruxx will need to fetch info for every item in the list in order to enable filtering
-- RZ module stands out here: although RZ doesn't support meta tags except `id:x` types it can still use `favorited_by:name / id` tag, `tags` / `-tags` can't be used (negative groups can), at the same time it doesn't suffer any slowdown
 
 #### Pools
 Downloading post pool using native tags search functionality is not possible and only RX and EN implement pool functionality  

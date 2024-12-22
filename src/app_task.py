@@ -14,8 +14,7 @@ from re import Pattern, compile as re_compile
 # internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN, TAGS_STRING_LENGTH_MAX_RS, TAGS_STRING_LENGTH_MAX_RZ, TAGS_STRING_LENGTH_MAX_RP,
-    TAGS_STRING_LENGTH_MAX_EN,
+    TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN, TAGS_STRING_LENGTH_MAX_RS, TAGS_STRING_LENGTH_MAX_RP, TAGS_STRING_LENGTH_MAX_EN,
 )
 from app_module import ProcModule
 from app_network import thread_exit
@@ -108,7 +107,6 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> tuple[list[str]
         ProcModule.RX: TAGS_STRING_LENGTH_MAX_RX,
         ProcModule.RN: TAGS_STRING_LENGTH_MAX_RN,
         ProcModule.RS: TAGS_STRING_LENGTH_MAX_RS,
-        ProcModule.RZ: TAGS_STRING_LENGTH_MAX_RZ,
         ProcModule.RP: TAGS_STRING_LENGTH_MAX_RP,
         ProcModule.EN: TAGS_STRING_LENGTH_MAX_EN,
     }
@@ -116,7 +114,6 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> tuple[list[str]
         ProcModule.RX: (0, False),
         ProcModule.RN: (0, False),
         ProcModule.RS: (0, False),
-        ProcModule.RZ: (3, True),
         ProcModule.RP: (3, False),
         ProcModule.EN: (40, False),
     }
@@ -124,7 +121,6 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> tuple[list[str]
         ProcModule.RX: 0,
         ProcModule.RN: 0,
         ProcModule.RS: 0,
-        ProcModule.RZ: 0,
         ProcModule.RP: 0,
         ProcModule.EN: 1,
     }

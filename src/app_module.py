@@ -7,16 +7,15 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # internal
-from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, MODULE_ABBR_RZ, MODULE_ABBR_RP, MODULE_ABBR_EN
+from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, MODULE_ABBR_RP, MODULE_ABBR_EN
 
 
 class ProcModule:
     RX: int = 1
     RN: int = 2
     RS: int = 3
-    RZ: int = 4
-    RP: int = 5
-    EN: int = 6
+    RP: int = 4
+    EN: int = 5
 
     PROC_MODULE_DEFAULT: int = RX
     CUR_PROC_MODULE: int = PROC_MODULE_DEFAULT
@@ -27,7 +26,6 @@ class ProcModule:
         MODULE_ABBR_RX: RX,
         MODULE_ABBR_RN: RN,
         MODULE_ABBR_RS: RS,
-        MODULE_ABBR_RZ: RZ,
         MODULE_ABBR_RP: RP,
         MODULE_ABBR_EN: EN,
     }
@@ -35,7 +33,6 @@ class ProcModule:
         RX: MODULE_ABBR_RX,
         RN: MODULE_ABBR_RN,
         RS: MODULE_ABBR_RS,
-        RZ: MODULE_ABBR_RZ,
         RP: MODULE_ABBR_RP,
         EN: MODULE_ABBR_EN,
     }
@@ -67,10 +64,6 @@ class ProcModule:
     @staticmethod
     def is_rs() -> bool:
         return ProcModule.value() is ProcModule.RS
-
-    @staticmethod
-    def is_rz() -> bool:
-        return ProcModule.value() is ProcModule.RZ
 
     @staticmethod
     def is_rp() -> bool:

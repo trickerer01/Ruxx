@@ -291,18 +291,6 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                               f'Trying no-cdn source...', True)
                                     re_vhost_cdn = re_compile(r'-cdn\d')  # video-cdn1.rs
                                     link = re_vhost_cdn.sub('', link)
-                            elif ProcModule.is_rz():
-                                assert is_video_ext
-                                valid_link_ends = ('', '720')
-                                for lidx, link_end in enumerate(valid_link_ends):
-                                    lend = f'{link_end}.{ext_full}'
-                                    if link.endswith(lend):
-                                        new_idx = (lidx + 1) % len(valid_link_ends)
-                                        if __RUXX_DEBUG__:
-                                            trace(f'Warning (W3): {item_id} catched HTTPError 404 (ends with \'{link_end}\')! '
-                                                  f'Trying \'{valid_link_ends[new_idx]}\'...', True)
-                                        link = f'{link[:-len(lend)]}{valid_link_ends[new_idx]}.{ext_full}'
-                                        break
                             elif ProcModule.is_rx():
                                 if link != oldlink:
                                     trace(f'Warning (W3): {item_id} catched HTTPError 404 for normalized link. '

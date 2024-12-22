@@ -41,7 +41,6 @@ re_tags_to_process_rn = re_compile(
     fr'[a-z][a-z_]{{{TAG_LENGTH_MIN - 1:d},{TAG_LENGTH_MAX_RN - 1:d}}}|[a-g]ea?st[a-z]{{6}}|[lapymg]{{3}})$'
 )
 re_tags_to_process_rs = re_tags_to_process_rx
-re_tags_to_process_rz = re_tags_to_process_rx
 re_tags_to_process_rp = re_tags_to_process_rn
 re_tags_to_process_en = re_tags_to_process_rx
 
@@ -86,7 +85,6 @@ re_tags_exclude_rn = re_compile(
     r')$'
 )
 re_tags_exclude_rs = re_tags_exclude_rx
-re_tags_exclude_rz = re_tags_exclude_rx
 re_tags_exclude_rp = re_tags_exclude_rn
 re_tags_exclude_en = re_tags_exclude_rx
 
@@ -108,9 +106,6 @@ re_post_page_rs = re_compile(r'^\?r=(?:posts/index|favorites/view&id=\d+)&.+?$')
 re_tag_video_rs = re_compile(r'^\d+fps(?: upscale)?$|video|webm')
 re_comment_page_rs = re_compile(r'^\?r=posts/view&(?:amp;)?id=\d+&(?:amp;)?page=\d+$')
 re_comment_a_rs = re_compile(r'^index\.php\?r=account/profile&(?:amp;)?id=\d+$')
-
-re_id_tag_rz = re_compile(r'^id:([<>]=?|=)?(\d+)$')
-re_score_tag_rz = re_compile(r'^score:([<>]=?|=)?(\d+)$')
 
 re_favorited_by_tag = re_compile(r'^favorited_by[:=]!?([^:=]+)$')
 re_pool_tag = re_compile(r'^pool[:=]([^:=]+)$')
