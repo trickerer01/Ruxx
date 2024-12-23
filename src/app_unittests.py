@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 import sys
-from os import path, curdir, stat
+from os import path, curdir
 from tempfile import TemporaryDirectory
 from unittest import TestCase, main as run_tests
 
