@@ -500,6 +500,10 @@ class Downloader(DownloaderBase):
                         ids_to_pop.append(ifi)
                 [self.item_info_dict_all.pop(ifi) for ifi in ids_to_pop]
 
+        if self.total_count_all <= 0:
+            trace('\nNothing to download: queue is empty')
+            return
+
         if self.reverse_download_order:
             self.items_raw_all.reverse()
 
