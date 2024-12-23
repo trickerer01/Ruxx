@@ -478,27 +478,24 @@ class Downloader(DownloaderBase):
             self.known_parents.update(task_parents)
 
     def _download_all(self) -> None:
-        if self.total_count_all <= 0:
-            trace('\nNothing to download: queue is empty')
-            return
-
-        if self.default_sort:
-            self.items_raw_all = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)))
-            if self.current_task_num > 1:
-                trace(f'\nApplying overall date filter after {self._tasks_count()} tasks...')
-                self.items_raw_all.reverse()
-                self._apply_filter(DownloaderStates.DOWNLOADING, self._filter_last_items)
-                self._apply_filter(DownloaderStates.DOWNLOADING, self._filter_first_items)
-                self.items_raw_all.reverse()
-                ids_to_preserve = list()
-                ids_to_pop = list()
-                for index in range(len(self.items_raw_all)):
-                    h = self._local_addr_from_string(str(self.items_raw_all[index]))
-                    ids_to_preserve.append(f'{self._get_module_abbr_p()}{self._extract_id(h)}')
-                for ifi in self.item_info_dict_all:
-                    if ifi not in ids_to_preserve:
-                        ids_to_pop.append(ifi)
-                [self.item_info_dict_all.pop(ifi) for ifi in ids_to_pop]
+        if self.total_count_all > 0:
+            if self.default_sort:
+                self.items_raw_all = sorted(self.items_raw_all, key=lambda x: int(self._extract_id(x)))
+                if self.current_task_num > 1:
+                    trace(f'\nApplying overall date filter after {self._tasks_count()} tasks...')
+                    self.items_raw_all.reverse()
+                    self._apply_filter(DownloaderStates.DOWNLOADING, self._filter_last_items)
+                    self._apply_filter(DownloaderStates.DOWNLOADING, self._filter_first_items)
+                    self.items_raw_all.reverse()
+                    ids_to_preserve = list()
+                    ids_to_pop = list()
+                    for index in range(len(self.items_raw_all)):
+                        h = self._local_addr_from_string(str(self.items_raw_all[index]))
+                        ids_to_preserve.append(f'{self._get_module_abbr_p()}{self._extract_id(h)}')
+                    for ifi in self.item_info_dict_all:
+                        if ifi not in ids_to_preserve:
+                            ids_to_pop.append(ifi)
+                    [self.item_info_dict_all.pop(ifi) for ifi in ids_to_pop]
 
         if self.total_count_all <= 0:
             trace('\nNothing to download: queue is empty')
