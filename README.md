@@ -7,7 +7,7 @@ Ruxx is a content downloader with a lot of filters for maximum search precision 
 
 ### How to use
 - \[Optional] Choose **Module** (website) to use. The icon in the bottom left corner will change accordingly
-- Fill the **Tags** field with tags you want to search for. For base and quick advanced info on tags check **Help -> Tags** section. [More info](#tags-syntax)
+- Fill the **Tags** field with tags you want to search for. For base and quick advanced info on tags check **Help -> Tags** section. [More info](#tag-syntax)
 - \[Optional] Configure **filters** to fine-tune your search. You can choose whether you want do download **videos**, **images** or **both**, add **post date** limits, number of **download threads**
 - \[Optional] Choose the destination **Path**. Default path is current folder
 - Press **Download**
@@ -19,8 +19,8 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 #### Download Options
 - *Videos* ‒ some websites serve videos in multiple formats, here you can select a prefered one. You may also exclude videos altogether
 - *Images* ‒ some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you may also filter all the images out
-- *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset to default. RX, RN, RP and EN only
-- *Parent posts / child posts* ‒ this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX and EN only
+- *Date min / max* ‒ applied to initial search results, format: `dd-mm-yyyy`, ignored if set to default (min: `01-01-1970`, max: `<today>`). Enter some gibberish to reset to default. RX, RN, RP, EN and XB only
+- *Parent posts / child posts* ‒ this switch allows to, in addition to initial search result, also download parent posts, all children and all found parents' children even if they don't match the tags you're searching for. RX, EN and XB only
 - *Threading* ‒ the number of download threads to use. This also somewhat increases the number of scan threads. More threads means speed, less threads means less network hiccups. Max threads is not a problem in most cases, but you must always remember that nobody likes reckless hammering of their services/APIs
 - *Download order* - the order in which found posts will be downloaded. Default is ascending order (lowest id to highest id). Note that sort tags may alter the resulting download order
 - *Posts limit* - the maximum number of posts to download. Default is `0` (no limit)
@@ -54,7 +54,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Actions -> Check tags** \<Ctrl+Shift+C> ‒ same as check tags button
 - **Actions -> Batch download using tag list...** - Read and process tags using a text file. Each line forms a string which then gets put into **Tags** field and downloaded. Warning: download starts immediately! Adjust settings and download options beforehand
 - **Actions -> Clear log** \<Ctrl+Shift+E> ‒ same as clear log button
-- **Tools -> Load from ID list** ‒ Load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group [expression](#tags-syntax), effectively allowing you to search for those ids. ~~Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details.~~ Re-enabled since version `1.1.284` for all modules using a workaround, but doesn't run in parallel so be aware of that
+- **Tools -> Load from ID list** ‒ Load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group [expression](#tag-syntax), effectively allowing you to search for those ids. ~~Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details.~~ Re-enabled since version `1.1.284` for all modules using a workaround, but doesn't run in parallel so be aware of that
 - **Tools -> Un-tag files...** ‒ renames selected Ruxx-downloaded media files, stripping file names of all extra info
 - **Tools -> Re-tag files...** ‒ renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)
 - **Tools -> Sort files into subfolders...** ‒ a set of tools to separate downloaded files if need be:
@@ -70,24 +70,25 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Help -> Tags** ‒ a quick list of tag types and how to use them (for selected module)
 - **Tags checking** ‒ there is a small button near the **Tags** field. When pressed, Ruxx will try to quickly check if this search yields any results, so this won't work with tags which cannot be passed to website's search engine directly (`AND` group, `OR` groups with meta tags, etc.). As a result the **Tags** field will briefly flash green / red. Additionally, if successful, a window will appear showing the number of results found. Note that this number my be not equal to the files count you'll get downloaded, as date filters, file type filters and related posts filter do not apply during this quick check; when using `favorited_by:X` or `pool:X` special meta tags negative tags also do not apply (except for RN module's `favorited_by` tag where it's supported natively)
 
-### Tags syntax
+### Tag syntax
 Ruxx normally allows most symbols for tags search, there are some specifics though:  
 1. Wildcards
 - Most modules support asterisk symbol `*` as wildcard in tags (any number of any symbols). You can use any number of wildcards in tags in any place: `b*m*e_cit*` instead of `baltimore_city`.
-  - Note that there is a bug in RX search engine which breaks frontal wildcards: `*_city` will work for RN, RS, RP and EN, but RX will return default result (all)
+  - Note that there is a bug in RX / XB search engine which breaks frontal wildcards: `*_city` will work for RN, RS, RP and EN, but RX will return default result (all)
 2. Meta tags
-- Meta tags describe not the posted artwork but the post itself. RX, RN, RS, RP and EN all support meta tags:
+- Meta tags describe not the posted artwork but the post itself. RX, RN, RS, RP, EN and XB all support meta tags:
   - RX syntax: _name_**:**_value_ OR _name_**:=**_value_
   - RN syntax: _name_**=**_value_
   - RS syntax: _name_**:**_value_
   - RP syntax: _name_**=**_value_
   - EN syntax: _name_**:**_value_
+  - XB syntax: _name_**:**_value_ OR _name_**:=**_value_
 - Some meta `-tags` can be used for exclusion: `-rating:explicit`
 - Some meta tags support wildcards. Rules are very strict so this feature is yet to be enabled
 - Some meta tags support inequality. These metatags can be used to set a range, ex. `id:>X id:<Y`. See below for more syntax
   - Meta `-tags` cannot be used with inequality, like `-score:<0`. Flip the comparison instead: `score:>=0`
   - Meta `-tags` cannot be used with sort: `-sort:score`, this syntax won't cause an error but its behavior is undefined. Please use common sense
-- Although 'sorting' meta tags are fully supported (`sort` and `order` for RX / RS and RN / RP respectively), you can only use them if they don't conflict with other parameters (ex. date filters)
+- Although 'sorting' meta tags are fully supported (`sort` and `order` for RX / RS / XB and RN / RP respectively), you can only use them if they don't conflict with other parameters (ex. date filters)
 - RX meta tags:
   - **id**: `id:X` (OR `id:=X`), `id:>X`, `id:<Y`, `id:>=X`, `id:<=Y`. `X`,`Y` = `<post ID>`
   - **score**: `score:X` (OR `score:=X`), `score:>X`, `score:<Y`, `score:>=X`, `score:<=Y`. `X`,`Y` = `<number>`
@@ -148,6 +149,19 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
     - `<type>:..X` (ex. `score:..-500` <=> `score:<=-500`)
     - `<type>:X..` (ex. `id:5000000..` <=> `id:>=5000000`)
     - `<type>:X..Y` (ex. `score:90..99` <=> `score:>=90 score:<=99`)
+- XB meta tags:
+  - **id**: `id:X` (OR `id:=X`), `id:>X`, `id:<Y`, `id:>=X`, `id:<=Y`. `X`,`Y` = `<post ID>`
+  - **score**: `score:X` (OR `score:=X`), `score:>X`, `score:<Y`, `score:>=X`, `score:<=Y`. `X`,`Y` = `<number>`
+  - Rarely used ones:
+    - parent: `parent:X` (OR `parent:=X`). `X` = `<post ID>`
+    - width: `width:X` (OR `width:=X`), `width:>X`, `width:<Y`, `width:>=X`, `width:<=Y`. `X`,`Y` = `<number>`
+    - height: `height:X` (OR `height:=X`), `height:>X`, `height:<Y`, `height:>=X`, `height:<=Y`. `X`,`Y` = `<number>`
+    - user: `user:X`. `X` = `<uploader name>`
+    - rating: `rating:X`. `X` = `<rating name>`, ex. `safe`, `questionable`, `explicit`.
+    - md5: `md5:X`, `X` = `<MD5 hash>`
+    - source:
+    - updated:
+    - sort: `sort:X[:Y]`. `X` = `<sort type>`, ex. `score`, `id` (default). `Y` = `<sort direction>` (optional), `asc` or `desc` (default)
 3. `OR` groups
 - Ruxx syntax for `OR` group is simplified compared to what you would normally use for RX: `(tag1~tag2~...~tagN)` instead of `( tag1 ~ tag2 ~ ... ~ tagN )`
 - Ruxx allows using `OR` groups with any module, regardless of whether website supports it natively or not
@@ -193,6 +207,7 @@ Ruxx provide lists of known tags for all modules (except RS), which can also be 
    - <full path to folder>/rs_tags.json
    - <full path to folder>/rp_tags.json
    - <full path to folder>/en_tags.json
+   - <full path to folder>/xb_tags.json
   ```
   Notes:
   - This can also be a parent folder if tag lists folder is default-named (`2tags/` or just `tags/`)
@@ -212,24 +227,25 @@ Ruxx doesn't provide a method of authentication natively on either of supported 
     - RS: `user_id`, `pass_hash`
     - RP: ?? (registration disabled)
     - EN: `_danbooru_session`, `remember`
+    - XB: `cf_clearance`, `user_id`, `pass_hash`
   - Notes:
     - RN `cf_clearance` cookie duration is **15 minutes**
 
 #### Favorites
 Downloading user's favorites using native tags search functionality is only available with RN, RP and EN (see meta tags above), other websites don't implement that neither through tags nor through API. In order to enable users to download one's favorites Ruxx implements `favorited_by` tag for other modules as well. It's an extra layer of functionality but here is what you need to use it:
 - Syntax: `favorited_by:X`. `X` = `<user ID>`. User ID you can get from user's favorites page, it's a part of its web address. Note: this syntax is not invalid as RN / RP / EN tag either but it won't do anything there
-- Downloading from RX favorites pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
+- Downloading from RX / XB favorites pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
 - While searching favorites you can use normal filtering as well. Date filter, additional required / excluded tags, etc.
 - Downloading favorites isn't particulary fast, Ruxx will need to fetch info for every item in the list in order to enable filtering
 
 #### Pools
-Downloading post pool using native tags search functionality is not possible and only RX and EN implement pool functionality  
-To download RX pool use special `pool` tag:
+Downloading post pool using native tags search functionality is not possible and only RX, EN and XB implement pool functionality  
+To download a pool use special `pool` tag:
 - Syntax: `pool:X`. `X` = `<pool ID>`. Pool ID you can get from pool page, it's a part of its web address
 - EN module also supports pool name syntax: `pool:Y`. `Y` = `<pool name>`. Pool name must be in lower case and with all spaces replaced with underscores, ex. `'Long Night' -> 'pool:long_night'`
-- Downloading RX pool pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
+- Downloading RX / XB pool pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
 - Pool posts can be filtered as well. Date filter, additional required / excluded tags, etc.
-- Same as favorites, downloading using custom tags isn't particulary fast (RX), Ruxx will need to fetch info for every item in the list in order to enable filtering
+- Same as favorites, downloading using custom tags isn't particulary fast (RX / XB), Ruxx will need to fetch info for every item in the list in order to enable filtering
 
 ##### Sets
 EN module also allows creating post sets. Essentially they are no different from pools:

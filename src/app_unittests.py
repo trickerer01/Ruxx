@@ -87,6 +87,14 @@ item_str01_en = (
     'sample_url="/data/12/64/1264043fc5d61a7268b1caa3fd12e972.jpg" created_at="2023-09-30T09:28:22.753-04:00" '
     'score="237" has_children="true" parent_id="" comment_count="0" tags="2_horns 5_fingers">'
 )
+item_str01_xb = (
+    '<post height="877" score="1" file_url="/images/666/f0ed148c17e0beb2a4c321098522cdde.jpeg" parent_id="" '
+    'sample_url="/samples/666/sample_f0ed148c17e0beb2a4c321098522cdde.jpg" sample_width="850" sample_height="478" '
+    'preview_url="/thumbnails/666/thumbnail_f0ed148c17e0beb2a4c321098522cdde.jpg" rating="q" '
+    'tags=" 2_girls dragon_girl fainxel green_hair horns yuri " id="1096716" width="1560" change="1723755726" '
+    'md5="f0ed148c17e0beb2a4c321098522cdde" creator_id="22119" has_children="false" created_at="Thu Aug 15 23:02:04 +0200 2024" '
+    'status="active" source="Pixiv" has_notes="false" has_comments="false" preview_width="150" preview_height="84"/>'
+)
 
 
 class FileCheckTests(TestCase):
@@ -201,6 +209,16 @@ class DownloaderBaseTests(TestCase):
             dwn._parse_args(arglist)
             self.assertEqual('4322823', dwn._extract_id(item_str01_en))
             self.assertEqual('30-09-2023', dwn._extract_post_date(item_str01_en))
+        print(f'{self._testMethodName} passed')
+
+    def test_item01_xb(self) -> None:
+        Logger.init(True, True)
+        args = args_argparse_str01
+        arglist = prepare_arglist(args.split())
+        with make_downloader(ProcModule.XB) as dwn:
+            dwn._parse_args(arglist)
+            self.assertEqual('1096716', dwn._extract_id(dwn._local_addr_from_string(item_str01_xb)))
+            self.assertEqual('15-08-2024', dwn._extract_post_date(item_str01_xb))
         print(f'{self._testMethodName} passed')
 
     def test_cmdline01(self) -> None:
@@ -379,6 +397,21 @@ class ConnTests(TestCase):
         argslist = ('id:4322823', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.EN) as dwn:
+            dwn._parse_args(arglist)
+            dwn.url = dwn._form_tags_search_address(dwn._consume_custom_module_tags(dwn.tags_str_arr[0]))
+            dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
+            self.assertEqual(1, dwn.total_count)
+        print(f'{self._testMethodName} passed')
+
+    def test_connect_xb01(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        # connection and downloading for xb is performed using same web address, we are free to use dry run here (-dmode 1)
+        Logger.init(True, True)
+        #                tag           tag        flag       v       flag      v      flag            v           flag      v
+        argslist = ('id:=1010000', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
+        arglist = prepare_arglist(argslist)
+        with make_downloader(ProcModule.XB) as dwn:
             dwn._parse_args(arglist)
             dwn.url = dwn._form_tags_search_address(dwn._consume_custom_module_tags(dwn.tags_str_arr[0]))
             dwn.total_count = dwn._get_items_query_size_or_html(dwn.url)
@@ -569,6 +602,79 @@ class RealDownloadTests(TestCase):
         argslist = (f'favoritedby:{fav_user_name}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.EN) as dwn:
+            dwn.launch_download(arglist)
+            self.assertTrue(path.isfile(tempfile_path))
+        tdir.cleanup()
+        print(f'{self._testMethodName} passed')
+
+    def test_down_xb01(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        # connection and downloading for xb is performed using same web address, we are free to use dry run here
+        Logger.init(True, True)
+        #                tag           tag        flag       v       flag      v      flag            v           flag       v
+        argslist = ('id:=1010000', '-overflow', '-dmode', 'skip', '-threads', '2', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
+        arglist = prepare_arglist(argslist)
+        with make_downloader(ProcModule.XB) as dwn:
+            dwn.launch_download(arglist)
+            self.assertTrue(dwn.fail_count == 0, f'dwn.failCount {dwn.fail_count:d} == 0')
+            self.assertTrue(dwn.processed_count == 1, f'dwn.processed_count {dwn.fail_count:d} == 1')
+        print(f'{self._testMethodName} passed')
+
+    def test_down_xb02(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        # this test actually performs a download
+        tempfile_id = '789585'
+        tempfile_ext = 'jpeg'
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
+        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
+        Logger.init(True, True)
+        #                  tag               flag      v      flag            v           flag      v
+        argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
+        arglist = prepare_arglist(argslist)
+        with make_downloader(ProcModule.XB) as dwn:
+            dwn.launch_download(arglist)
+            self.assertTrue(path.isfile(tempfile_path))
+        tdir.cleanup()
+        print(f'{self._testMethodName} passed')
+
+    def test_down_xb03_fav1(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        # this test actually performs a download
+        fav_user_id = '87266'
+        tempfile_id = '845348'
+        tempfile_ext = 'jpeg'
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
+        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
+        Logger.init(True, True)
+        #                 tag                          flag      v      flag            v           flag      v
+        argslist = (f'favorited_by:{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
+        arglist = prepare_arglist(argslist)
+        with make_downloader(ProcModule.XB) as dwn:
+            dwn.launch_download(arglist)
+            self.assertTrue(path.isfile(tempfile_path))
+        tdir.cleanup()
+        print(f'{self._testMethodName} passed')
+
+    def test_down_xb04_pool1(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        # this test actually performs a download
+        pool_id = '689'
+        tempfile_id = '733305'
+        tempfile_ext = 'jpeg'
+        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
+        tempdir = normalize_path(tdir.name)
+        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
+        Logger.init(True, True)
+        #                 tag                          flag      v      flag            v           flag      v
+        argslist = (f'pool:{pool_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
+        arglist = prepare_arglist(argslist)
+        with make_downloader(ProcModule.XB) as dwn:
             dwn.launch_download(arglist)
             self.assertTrue(path.isfile(tempfile_path))
         tdir.cleanup()

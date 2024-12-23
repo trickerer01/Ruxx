@@ -90,6 +90,7 @@ HELP_TAGS_MSG_EN = (
     '\'-(tag1,tag2)\'   \tNOT BOTH tag1 AND tag2 (can be chained)\n'
     '\'tag:value\'      \tmeta tags (id:999999, score:>=1337, etc.)\n'
 )
+HELP_TAGS_MSG_XB = HELP_TAGS_MSG_RX
 ABOUT_MSG = f'{APP_NAME} version {APP_VERSION} ({APP_REV_DATE}) {APP_BUILD_TYPE_STR}\n© {APP_YEARS} {APP_AUTHOR}\n<{APP_ADDRESS}>'
 # end help messages
 

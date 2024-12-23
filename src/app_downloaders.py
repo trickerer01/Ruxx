@@ -14,6 +14,7 @@ from app_download_rn import DownloaderRn
 from app_download_rp import DownloaderRp
 from app_download_rs import DownloaderRs
 from app_download_rx import DownloaderRx
+from app_download_xb import DownloaderXb
 from app_module import ProcModule
 
 __all__ = ('get_new_downloader',)
@@ -25,6 +26,7 @@ DOWNLOADERS_BY_PROC_MODULE = {
     ProcModule.RS: DownloaderRs,
     ProcModule.RP: DownloaderRp,
     ProcModule.EN: DownloaderEn,
+    ProcModule.XB: DownloaderXb,
 }
 
 

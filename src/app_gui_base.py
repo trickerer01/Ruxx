@@ -28,14 +28,14 @@ from tkinter.ttk import Entry
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
     PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, CONNECT_TIMEOUT_BASE, DATE_MAX_DEFAULT,
-    KNOWN_EXTENSIONS_STR, CONNECT_RETRIES_BASE, SITENAME_B_RX, SITENAME_B_RN, SITENAME_B_RS, SITENAME_B_RP, SITENAME_B_EN,
+    KNOWN_EXTENSIONS_STR, CONNECT_RETRIES_BASE, SITENAME_B_RX, SITENAME_B_RN, SITENAME_B_RS, SITENAME_B_RP, SITENAME_B_EN, SITENAME_B_XB,
 )
 from app_file_parser import prepare_id_list, prepare_tag_lists
 from app_file_sorter import FileTypeFilter
 from app_gui_defines import (
     BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, STATE_NORMAL,
     TOOLTIP_INVALID_SYNTAX, CVARS, FONT_SANS_MEDIUM, COLUMNSPAN_MAX, BUT_CTRL_A, TOOLTIP_HCOOKIE_ADD_ENTRY, TOOLTIP_HCOOKIE_DELETE,
-    BUT_DELETE, WINDOW_MINSIZE, PADDING_ROOTFRAME_I, IMG_SAVE_DATA, IMG_PROC_RX_DATA, IMG_PROC_RN_DATA, IMG_PROC_RS_DATA,
+    BUT_DELETE, WINDOW_MINSIZE, PADDING_ROOTFRAME_I, IMG_SAVE_DATA, IMG_PROC_RX_DATA, IMG_PROC_RN_DATA, IMG_PROC_RS_DATA, IMG_PROC_XB_DATA,
     IMG_PROC_RP_DATA, IMG_PROC_EN_DATA, IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA, STICKY_HORIZONTAL,
     BUT_CTRL_DELETE, OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING, TOOLTIP_THREADING,
     SLASH, BEGIN, OPTION_VALUES_PROXYTYPE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX, GLOBAL_COLUMNCOUNT,
@@ -44,7 +44,7 @@ from app_gui_defines import (
     Icons, Options, Globals, Menus, SubMenus, menu_items, hotkeys, gobjects,
 )
 from app_module import ProcModule
-from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, HELP_TAGS_MSG_RP, HELP_TAGS_MSG_EN, ABOUT_MSG
+from app_help import HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, HELP_TAGS_MSG_RP, HELP_TAGS_MSG_EN, HELP_TAGS_MSG_XB, ABOUT_MSG
 from app_logger import Logger
 from app_re import re_space_mult
 from app_revision import APP_VERSION, APP_NAME
@@ -1134,6 +1134,7 @@ def create_base_window_widgets() -> None:
     icons[Icons.RS] = PhotoImage(data=b64decode(IMG_PROC_RS_DATA))
     icons[Icons.RP] = PhotoImage(data=b64decode(IMG_PROC_RP_DATA))
     icons[Icons.EN] = PhotoImage(data=b64decode(IMG_PROC_EN_DATA))
+    icons[Icons.XB] = PhotoImage(data=b64decode(IMG_PROC_XB_DATA))
     icons[Icons.OPEN] = PhotoImage(data=b64decode(IMG_OPEN_DATA))
     icons[Icons.SAVE] = PhotoImage(data=b64decode(IMG_SAVE_DATA))
     icons[Icons.DELETE] = PhotoImage(data=b64decode(IMG_DELETE_DATA))
@@ -1359,6 +1360,7 @@ def get_cur_module_sitename() -> str:
         ProcModule.RS: SITENAME_B_RS,
         ProcModule.RP: SITENAME_B_RP,
         ProcModule.EN: SITENAME_B_EN,
+        ProcModule.XB: SITENAME_B_XB,
     }
     return (b64decode(sitenames_b.get(ProcModule.value(), '')) or b'UNK ').decode()[:-1].replace('https://', '').replace('api.', '')
 
@@ -1382,6 +1384,7 @@ def help_tags(title: str = 'Tags') -> None:
         ProcModule.RS: HELP_TAGS_MSG_RS,
         ProcModule.RP: HELP_TAGS_MSG_RP,
         ProcModule.EN: HELP_TAGS_MSG_EN,
+        ProcModule.XB: HELP_TAGS_MSG_XB,
     }
     messagebox.showinfo(title=title, message=messages[ProcModule.value()], icon='info')
 

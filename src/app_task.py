@@ -15,6 +15,7 @@ from re import Pattern, compile as re_compile
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
     TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN, TAGS_STRING_LENGTH_MAX_RS, TAGS_STRING_LENGTH_MAX_RP, TAGS_STRING_LENGTH_MAX_EN,
+    TAGS_STRING_LENGTH_MAX_XB,
 )
 from app_module import ProcModule
 from app_network import thread_exit
@@ -109,6 +110,7 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> tuple[list[str]
         ProcModule.RS: TAGS_STRING_LENGTH_MAX_RS,
         ProcModule.RP: TAGS_STRING_LENGTH_MAX_RP,
         ProcModule.EN: TAGS_STRING_LENGTH_MAX_EN,
+        ProcModule.XB: TAGS_STRING_LENGTH_MAX_XB,
     }
     max_neg_tagss = {
         ProcModule.RX: (0, False),
@@ -116,6 +118,7 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> tuple[list[str]
         ProcModule.RS: (0, False),
         ProcModule.RP: (3, False),
         ProcModule.EN: (40, False),
+        ProcModule.XB: (0, False),
     }
     max_wildcardss = {
         ProcModule.RX: 0,
@@ -123,6 +126,7 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> tuple[list[str]
         ProcModule.RS: 0,
         ProcModule.RP: 0,
         ProcModule.EN: 1,
+        ProcModule.XB: 0,
     }
     max_tags_all, max_is_separate = max_neg_tagss[ProcModule.value()]
     max_wtags_all = max_wildcardss[ProcModule.value()]

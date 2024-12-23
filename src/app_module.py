@@ -7,7 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # internal
-from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, MODULE_ABBR_RP, MODULE_ABBR_EN
+from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, MODULE_ABBR_RP, MODULE_ABBR_EN, MODULE_ABBR_XB
 
 
 class ProcModule:
@@ -16,6 +16,7 @@ class ProcModule:
     RS: int = 3
     RP: int = 4
     EN: int = 5
+    XB: int = 6
 
     PROC_MODULE_DEFAULT: int = RX
     CUR_PROC_MODULE: int = PROC_MODULE_DEFAULT
@@ -28,6 +29,7 @@ class ProcModule:
         MODULE_ABBR_RS: RS,
         MODULE_ABBR_RP: RP,
         MODULE_ABBR_EN: EN,
+        MODULE_ABBR_XB: XB,
     }
     PROC_MODULES_NAMES_BY_ID: dict[int, str] = {
         RX: MODULE_ABBR_RX,
@@ -35,6 +37,7 @@ class ProcModule:
         RS: MODULE_ABBR_RS,
         RP: MODULE_ABBR_RP,
         EN: MODULE_ABBR_EN,
+        XB: MODULE_ABBR_XB,
     }
 
     @staticmethod
@@ -72,6 +75,10 @@ class ProcModule:
     @staticmethod
     def is_en() -> bool:
         return ProcModule.value() is ProcModule.EN
+
+    @staticmethod
+    def is_xb() -> bool:
+        return ProcModule.value() is ProcModule.XB
 
 #
 #

@@ -247,7 +247,7 @@ class Downloader(DownloaderBase):
                     total_count_temp += len(self.items_raw_per_page[k])
                 self.total_count = total_count_temp
 
-            if ProcModule.is_rp() or ProcModule.is_en():
+            if ProcModule.is_rp() or ProcModule.is_en() or ProcModule.is_xb():
                 thread_sleep(1.0)
         except Exception:
             self._on_thread_exception(current_process().getName())
@@ -710,9 +710,9 @@ class Downloader(DownloaderBase):
             if self.prefer_mp4:
                 trace(f'Warning (W1): \'-mp4\' option is not available for \'{ProcModule.name().upper()}\' module. Ignored!')
                 ret = True
-        if not ProcModule.is_rx() and not ProcModule.is_en():
+        if not ProcModule.is_rx() and not ProcModule.is_en() and not ProcModule.is_xb():
             if self.include_parchi:
-                trace('Warning (W1): only RX and EN modules are able to collect parent posts. Disabled!')
+                trace('Warning (W1): only RX, EN and XB modules are able to collect parent posts. Disabled!')
                 self.include_parchi = False
                 ret = True
         if ProcModule.is_rs():
@@ -728,6 +728,11 @@ class Downloader(DownloaderBase):
             if self.dump_comments and self.maxthreads_items > 2 and not self.check_tags and not self.get_max_id:
                 trace('Warning (W1): EN module can\'t fetch comments faster than 2/sec due to API limitation. Forcing 2 download threads!')
                 self.maxthreads_items = 2
+                ret = True
+        if ProcModule.is_xb():
+            if self.dump_comments:
+                trace('Warning (W1): XB module comments collection is disabled.')
+                self.dump_comments = False
                 ret = True
         return ret
 
