@@ -176,7 +176,7 @@ class Downloader(DownloaderBase):
         else:
             result.result_str = f'{result.result_str}failed'
             if result.retries >= self.retries:
-                result.result_str = f'{result.result_str} (could not download file after {result.retries:d} tries)'
+                result.result_str = f'{result.result_str} (could not download file after {result.retries + 1:d} tries)'
             with self.item_lock:
                 self.fail_count += 1
                 self.failed_items.append(item_id)
