@@ -785,17 +785,17 @@ class Downloader(DownloaderBase):
         abbrp = self._get_module_abbr_p()
 
         def proc_tags(item_info: ItemInfo) -> str:
-            if iteminfo.id not in orig_ids and not iteminfo.tags:
+            if item_info.id not in orig_ids and not item_info.tags:
                 return ''
             return f'{abbrp}{item_info.id}: {format_score(item_info.score)} {item_info.tags.strip()}\n'
 
         def proc_sources(item_info: ItemInfo) -> str:
-            if iteminfo.id not in orig_ids and not iteminfo.source:
+            if item_info.id not in orig_ids and not item_info.source:
                 return ''
             return f'{abbrp}{item_info.id}: {item_info.source.strip()}\n'
 
         def proc_comments(item_info: ItemInfo) -> str:
-            if iteminfo.id not in orig_ids and not iteminfo.comments:
+            if item_info.id not in orig_ids and not item_info.comments:
                 return ''
             comments = f'\n{NEWLINE_X2.join(str(c) for c in item_info.comments)}\n' if item_info.comments else ''
             return f'{abbrp}{item_info.id}:{comments}\n'
