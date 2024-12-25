@@ -10,7 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from __future__ import annotations
 from collections.abc import Callable
 from json import load as load_json
-from os import path
+from os import path, getcwd
 from re import Pattern, compile as re_compile
 
 # internal
@@ -32,15 +32,21 @@ re_wtag = re_compile(r'^(?:[^?*]*[?*]).*?$')
 class TagsDB:
     DB: dict[str, dict[str, int]] = dict()
     DBFiles: dict[str, str] = dict()
+    AuxDB: dict[str, dict[str, str]] = dict()
+    AuxDBFiles: dict[str, str] = dict()
 
     @staticmethod
-    def try_locate_file_single(filename: str) -> str:
-        basepath = normalize_path(path.abspath(f'{path.dirname(__file__)}/..'), False)
+    def try_locate_file_single(filename: str) -> None:
+        if filename in TagsDB.AuxDBFiles:
+            return
+        basepath = normalize_path(path.abspath(f'{getcwd()}'), False)
         for folder_path in (f'{basepath}/', f'{basepath}/tags/', f'{basepath}/2tags/'):
             pfilename = f'{folder_path}{filename}'
+            trace(f'looking for {pfilename}...')
             if path.isfile(pfilename):
-                return pfilename
-        return filename
+                TagsDB.AuxDBFiles[filename] = pfilename
+                trace('...found')
+                break
 
     @staticmethod
     def try_set_basepath(basepath: str, *, traverse=True) -> int:
@@ -49,6 +55,11 @@ class TagsDB:
                 taglist_path = f'{fpath}{module}_tags.json'
                 if path.isfile(taglist_path):
                     paths_dict[module] = taglist_path
+
+        def collect_aux_file_names(fpath: str) -> None:
+            tag_aliases_path = f'{fpath}all_tag_aliases.json'
+            if path.isfile(tag_aliases_path):
+                TagsDB.AuxDBFiles[FILE_NAME_ALIASES] = tag_aliases_path
 
         folder = normalize_path(basepath or path.abspath(f'{path.dirname(__file__)}/..'), False)
         TagsDB.clear()
@@ -60,6 +71,7 @@ class TagsDB:
                     collect_taglist_names(folder_path, tlpaths)
                     if tlpaths:
                         TagsDB.DBFiles.update(tlpaths)
+                    collect_aux_file_names(folder_path)
             if not tail or not traverse:
                 break
             folder = folder_up
@@ -132,6 +144,13 @@ class TagsDB:
             else:
                 matches.extend(base_matches)
         return matches
+
+    @staticmethod
+    def load_aux_file(filename: str) -> None:
+        if filename in TagsDB.AuxDB:
+            return
+        with open(TagsDB.AuxDBFiles.get(filename, ''), 'rt', encoding=UTF8) as auxfile:
+            TagsDB.AuxDB[filename] = load_json(auxfile)
 
 
 def no_validation_tag(tag: str) -> str:
@@ -216,13 +235,12 @@ def load_tag_aliases() -> None:
     if TAG_ALIASES:
         return
 
-    file_location = TagsDB.try_locate_file_single(FILE_NAME_ALIASES)
     try:
         trace('Loading tag aliases...')
-        with open(file_location, 'r', encoding=UTF8) as aliases_json_file:
-            TAG_ALIASES.update(load_json(aliases_json_file))
+        TagsDB.try_locate_file_single(FILE_NAME_ALIASES)
+        TagsDB.load_aux_file(FILE_NAME_ALIASES)
     except Exception:
-        trace(f'Error: Failed to load tag aliases from {file_location}')
+        trace(f'Error: Failed to load tag aliases from {TagsDB.AuxDBFiles.get(FILE_NAME_ALIASES, FILE_NAME_ALIASES)}')
         TAG_ALIASES.update({'': ''})
 
 #

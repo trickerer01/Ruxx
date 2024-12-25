@@ -292,6 +292,11 @@ def report_autocompletion_db_size() -> None:
     trace(f'Found {len(TagsDB.DBFiles):d} tag lists:{n}{n.join(TagsDB.DBFiles.values())}')
 
 
+def report_aux_db_size() -> None:
+    n = '\n - '
+    trace(f'Found {len(TagsDB.AuxDBFiles):d} aux lists:{n}{n.join(TagsDB.AuxDBFiles.values())}')
+
+
 def init_autocompletion(loc='', force=True) -> None:
     if int(getrootconf(Options.AUTOCOMPLETION_ENABLE)) == 1:
         if force is False:
@@ -302,6 +307,7 @@ def init_autocompletion(loc='', force=True) -> None:
         setrootconf(Options.TAGLISTS_PATH, loc)
         setrootconf(Options.AUTOCOMPLETION_ENABLE, 1)
         report_autocompletion_db_size()
+        report_aux_db_size()
 
 
 def toggle_autocompletion_wrapper() -> None:
