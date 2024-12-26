@@ -39,7 +39,11 @@ class TagsDB:
     def try_locate_file_single(filename: str) -> None:
         if filename in TagsDB.AuxDBFiles:
             return
-        basepath = normalize_path(path.abspath(f'{getcwd()}'), False)
+        acwd = path.abspath(getcwd())
+        trace(f'cwd: \'{acwd}\'')
+        if path.basename(acwd) == 'src':
+            acwd = path.abspath(f'{acwd}/..')
+        basepath = normalize_path(acwd, False)
         for folder_path in (f'{basepath}/', f'{basepath}/tags/', f'{basepath}/2tags/'):
             pfilename = f'{folder_path}{filename}'
             trace(f'looking for {pfilename}...')

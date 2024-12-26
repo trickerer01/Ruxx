@@ -99,16 +99,19 @@ item_str01_xb = (
 
 class FileCheckTests(TestCase):
     def test_filecheck01_aliases(self) -> None:
+        Logger.init(True, True)
         load_tag_aliases()
         self.assertIsNone(TAG_ALIASES.get(''))
         print(f'{self._testMethodName} passed')
 
     def test_filecheck02_tags(self) -> None:
+        Logger.init(True, True)
         TagsDB.try_set_basepath('', traverse=False)
         self.assertEqual(len(MODULE_CHOICES), len(TagsDB.DBFiles))
         print(f'{self._testMethodName} passed')
 
     def test_filecheck03_tags_load(self) -> None:
+        Logger.init(True, True)
         TagsDB.try_set_basepath('', traverse=False)
         for module in MODULE_CHOICES:
             TagsDB._load(module)
