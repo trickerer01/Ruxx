@@ -40,17 +40,22 @@ class TagsDB:
         if filename in TagsDB.AuxDBFiles:
             return
         acwd = path.abspath(getcwd())
+        afld = path.abspath(path.dirname(__file__))
         trace(f'cwd: \'{acwd}\'')
+        trace(f'fld: \'{afld}\'')
         if path.basename(acwd) == 'src':
             acwd = path.abspath(f'{acwd}/..')
-        basepath = normalize_path(acwd, False)
-        for folder_path in (f'{basepath}/', f'{basepath}/tags/', f'{basepath}/2tags/'):
-            pfilename = f'{folder_path}{filename}'
-            trace(f'looking for {pfilename}...')
-            if path.isfile(pfilename):
-                TagsDB.AuxDBFiles[filename] = pfilename
-                trace('...found')
-                break
+        if path.basename(afld) == 'src':
+            afld = path.abspath(f'{afld}/..')
+        basepath1 = normalize_path(acwd, False)
+        basepath2 = normalize_path(afld, False)
+        for basepath in (basepath1, basepath2):
+            for folder_path in (f'{basepath}/', f'{basepath}/tags/', f'{basepath}/2tags/'):
+                pfilename = f'{folder_path}{filename}'
+                trace(f'looking for {pfilename}...')
+                if path.isfile(pfilename):
+                    TagsDB.AuxDBFiles[filename] = pfilename
+                    trace('...found')
 
     @staticmethod
     def try_set_basepath(basepath: str, *, traverse=True) -> int:
