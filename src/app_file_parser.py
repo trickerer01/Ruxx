@@ -14,9 +14,10 @@ from iteration_utilities import unique_everseen
 
 # internal
 from app_defines import (
-    UTF8, FILE_NAME_PREFIX_RX, FILE_NAME_PREFIX_RN, FILE_NAME_PREFIX_RS, FILE_NAME_PREFIX_RP, FILE_NAME_PREFIX_EN, FILE_NAME_PREFIX_XB,
-    ID_VALUE_SEPARATOR_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RS,
-    ID_VALUE_SEPARATOR_CHAR_RP, ID_VALUE_SEPARATOR_CHAR_EN, ID_VALUE_SEPARATOR_CHAR_XB,
+    UTF8, FILE_NAME_PREFIX_RX, FILE_NAME_PREFIX_RN, FILE_NAME_PREFIX_RS, FILE_NAME_PREFIX_RP,
+    FILE_NAME_PREFIX_EN, FILE_NAME_PREFIX_XB, FILE_NAME_PREFIX_BB,
+    ID_VALUE_SEPARATOR_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RS, ID_VALUE_SEPARATOR_CHAR_RP,
+    ID_VALUE_SEPARATOR_CHAR_EN, ID_VALUE_SEPARATOR_CHAR_XB, ID_VALUE_SEPARATOR_CHAR_BB,
 )
 from app_module import ProcModule
 
@@ -32,6 +33,7 @@ idval_eq_separators = {
     ProcModule.RP: ID_VALUE_SEPARATOR_CHAR_RP,
     ProcModule.EN: ID_VALUE_SEPARATOR_CHAR_EN,
     ProcModule.XB: ID_VALUE_SEPARATOR_CHAR_XB,
+    ProcModule.BB: ID_VALUE_SEPARATOR_CHAR_BB,
 }
 idstring_patterns = {
     ProcModule.RX: re_compile(fr'^(?:{FILE_NAME_PREFIX_RX}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RX}?)?\d+?)*$'),
@@ -40,6 +42,7 @@ idstring_patterns = {
     ProcModule.RP: re_compile(fr'^(?:{FILE_NAME_PREFIX_RP}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RP}?)?\d+?)*$'),
     ProcModule.EN: re_compile(fr'^(?:{FILE_NAME_PREFIX_EN}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_EN}?)?\d+?)*$'),
     ProcModule.XB: re_compile(fr'^(?:{FILE_NAME_PREFIX_XB}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_XB}?)?\d+?)*$'),
+    ProcModule.BB: re_compile(fr'^(?:{FILE_NAME_PREFIX_BB}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_BB}?)?\d+?)*$'),
 }
 prefix_optional_patterns = {
     ProcModule.RX: re_compile(fr'{FILE_NAME_PREFIX_RX}?'),
@@ -48,6 +51,7 @@ prefix_optional_patterns = {
     ProcModule.RP: re_compile(fr'{FILE_NAME_PREFIX_RP}?'),
     ProcModule.EN: re_compile(fr'{FILE_NAME_PREFIX_EN}?'),
     ProcModule.XB: re_compile(fr'{FILE_NAME_PREFIX_XB}?'),
+    ProcModule.BB: re_compile(fr'{FILE_NAME_PREFIX_BB}?'),
 }
 
 

@@ -333,8 +333,8 @@ def set_proc_module(dwnmodule: int) -> None:
     if GetRoot() is not None:
         config_menu(Menus.EDIT, SubMenus.PREFIX, label=prefix_opt_text)
         # icon
-        icontypes = {ProcModule.RX: Icons.RX, ProcModule.RN: Icons.RN, ProcModule.RS: Icons.RS,
-                     ProcModule.RP: Icons.RP, ProcModule.EN: Icons.EN, ProcModule.XB: Icons.XB}
+        icontypes = {ProcModule.RX: Icons.RX, ProcModule.RN: Icons.RN, ProcModule.RS: Icons.RS, ProcModule.RP: Icons.RP,
+                     ProcModule.EN: Icons.EN, ProcModule.XB: Icons.XB, ProcModule.BB: Icons.BB}
         config_global(Globals.MODULE_ICON, image=get_icon(icontypes[ProcModule.value()]))
         # enable/disable features specific to the module
         update_widget_enabled_states()
@@ -366,6 +366,8 @@ def update_widget_enabled_states() -> None:
                     newstate = STATE_DISABLED
                 elif i == Menus.EDIT and j == SubMenus.SCOMMENTS and ProcModule.is_xb():  # Save comments, disabled for XB
                     newstate = STATE_DISABLED
+                elif i == Menus.EDIT and j == SubMenus.SCOMMENTS and ProcModule.is_bb():  # Save comments, disabled for BB
+                    newstate = STATE_DISABLED
                 elif i == Menus.TOOLS and j == SubMenus.AUTOCOMPLETER and TagsDB.empty():
                     newstate = STATE_DISABLED
                 else:
@@ -374,8 +376,8 @@ def update_widget_enabled_states() -> None:
     gi: Globals
     for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:
         if gi == Globals.COMBOBOX_PARCHI:
-            newstate = (STATE_DISABLED if not ProcModule.is_rx() and not ProcModule.is_en() and not ProcModule.is_xb()
-                        else gobject_orig_states[gi])
+            no_parchi = not ProcModule.is_rx() and not ProcModule.is_en() and not ProcModule.is_xb() and not ProcModule.is_bb()
+            newstate = STATE_DISABLED if no_parchi else gobject_orig_states[gi]
             config_global(gi, state=newstate)
         elif gi in {Globals.FIELD_DATEMIN, Globals.FIELD_DATEMAX}:
             newstate = STATE_DISABLED if ProcModule.is_rs() else gobject_orig_states[gi]

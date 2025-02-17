@@ -44,6 +44,7 @@ re_tags_to_process_rs = re_tags_to_process_rx
 re_tags_to_process_rp = re_tags_to_process_rn
 re_tags_to_process_en = re_tags_to_process_rx
 re_tags_to_process_xb = re_tags_to_process_rx
+re_tags_to_process_bb = re_tags_to_process_rx
 
 re_tags_exclude_major1 = re_compile(
     r'^(?:(?:digital|original|traditional)_(?:content|media|painting)|[234]d|h(?:d|ero_outfit)|level_up|p(?:ainting|rotagonist)|tagme|'
@@ -89,6 +90,7 @@ re_tags_exclude_rs = re_tags_exclude_rx
 re_tags_exclude_rp = re_tags_exclude_rn
 re_tags_exclude_en = re_tags_exclude_rx
 re_tags_exclude_xb = re_tags_exclude_rx
+re_tags_exclude_bb = re_tags_exclude_rx
 
 re_item_info_part_xml = re_compile(r'([\w5_]+=\"[^"]+\")[> ]')
 re_orig_file_link = re_compile(r'file_url=\"([^"]+)\"')
@@ -110,6 +112,7 @@ re_comment_page_rs = re_compile(r'^\?r=posts/view&(?:amp;)?id=\d+&(?:amp;)?page=
 re_comment_a_rs = re_compile(r'^index\.php\?r=account/profile&(?:amp;)?id=\d+$')
 
 re_post_page_xb = re_compile(r'^(?:\?page=post&(?:amp;)?s=list|document\.location=\'\?page=favorites|\?page=pool&(?:amp;)?s=show)&.+?$')
+re_post_page_bb = re_post_page_xb
 
 re_favorited_by_tag = re_compile(r'^favorited_by[:=]!?([^:=]+)$')
 re_pool_tag = re_compile(r'^pool[:=]([^:=]+)$')

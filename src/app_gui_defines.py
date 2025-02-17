@@ -123,6 +123,7 @@ class Icons(IntEnum):
     RP = auto()
     EN = auto()
     XB = auto()
+    BB = auto()
     OPEN = auto()
     SAVE = auto()
     DELETE = auto()
@@ -354,7 +355,7 @@ class Menus(IntEnum):
 class SubMenus(IntEnum):
     SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
     PREFIX, STAGS, SSOURCE, SCOMMENTS, SMODE, EXTEND, WNONEMPTY, VERBOSE = 0, 2, 3, 4, 5, 7, 8, 9
-    RX, RN, RS, RP, EN, XB = 0, 1, 2, 3, 4, 5
+    RX, RN, RS, RP, EN, XB, BB = 0, 1, 2, 3, 4, 5, 6
     HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6
     DOWNLOAD, CHECKTAGS, DBATCH, CLEARLOG = 0, 1, 3, 5
     IDLIST, UNTAG, RETAG, SORT, DUPLICATES, AUTOCOMPLETEE, AUTOCOMPLETER = 0, 2, 3, 5, 7, 9, 10
@@ -377,7 +378,7 @@ menu_items = {
     Menus.FILE: RuxxMenu(SubMenus.SAVE, SubMenus.LOAD, SubMenus.RESET),
     Menus.EDIT: RuxxMenu(SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.SMODE, SubMenus.EXTEND,
                          SubMenus.WNONEMPTY, SubMenus.VERBOSE),
-    Menus.MODULE: RuxxMenu(SubMenus.RX, SubMenus.RN, SubMenus.RS, SubMenus.RP, SubMenus.EN, SubMenus.XB),
+    Menus.MODULE: RuxxMenu(SubMenus.RX, SubMenus.RN, SubMenus.RS, SubMenus.RP, SubMenus.EN, SubMenus.XB, SubMenus.BB),
     Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
                                SubMenus.IGNOREPROXY, SubMenus.CACHEMODE),
     Menus.ACTIONS: RuxxMenu(SubMenus.DOWNLOAD, SubMenus.CHECKTAGS, SubMenus.DBATCH),
@@ -526,6 +527,8 @@ IMG_PROC_XB_DATA = (
     'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwAAAAAEAAQAAcISgABAAhAsKBBggIH'
     'HlyIkKAAAQwDPDT4EOLBihQxFqxocaNGjgw5gowosiNJjRElikxZcuLCkSM9unSIMqZMiANnXsQpMGVBgQEBADs='
 )
+#  gif
+IMG_PROC_BB_DATA = IMG_PROC_RX_DATA  # literally the same
 #  gif
 IMG_PROC_RUXX_DATA = (
     'R0lGODlhAAEAAYcAMQ8JCQuJGZQJRgdIDpmHUtTDqJFHG8qFRcVdFkdHIE8LH5ZlQcqLkFVIdggoCsqlcPzlklEoFxBoFYhIcKGlpo1oeivIMEYrcs5rGenFfWJmfuaIMR4niE'
