@@ -231,7 +231,7 @@ def find_duplicates_separate_do() -> None:
         filepaths = list()
         for basefile in dfiles:
             filepaths.extend(dfiles[basefile])
-        root_folder = normalize_path(path.commonpath(list(dfiles.keys())))
+        root_folder = normalize_path(path.commonpath([path.split(dfilepath)[0] for dfilepath in dfiles]))
         move_folder = f'{root_folder}dupes/'
         try:
             if not path.isdir(move_folder):

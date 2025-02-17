@@ -84,6 +84,7 @@ def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_d
                         if len(nexacts) > 1:
                             exacts.append(nexacts)
                     if len(exacts[fidx]) > 1:
+                        exacts = [sorted(li, key=lambda x: x.name) for li in exacts]
                         dfinfos = [files_list[open_fnames.index(exacts[fidx][fli].name)] for fli in range(len(exacts[fidx]))]
                         dest_dict[dfinfos[0].fullpath] = [dfinfo.fullpath for dfinfo in dfinfos[1:]]
                     fidx += 1
