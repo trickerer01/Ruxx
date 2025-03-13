@@ -56,6 +56,9 @@ class TagsDB:
                 if path.isfile(pfilename):
                     TagsDB.AuxDBFiles[filename] = pfilename
                     trace('...found')
+                    break
+            if filename in TagsDB.AuxDBFiles:
+                break
 
     @staticmethod
     def try_set_basepath(basepath: str, *, traverse=True) -> int:
@@ -155,11 +158,12 @@ class TagsDB:
         return matches
 
     @staticmethod
-    def load_aux_file(filename: str) -> None:
-        if filename in TagsDB.AuxDB:
-            return
-        with open(TagsDB.AuxDBFiles.get(filename, ''), 'rt', encoding=UTF8) as auxfile:
-            TagsDB.AuxDB[filename] = load_json(auxfile)
+    def load_aux_file(filename: str, dest: dict[str, str]) -> None:
+        assert filename not in TagsDB.AuxDB
+        filepath = TagsDB.AuxDBFiles.get(filename, '')
+        with open(filepath, 'rt', encoding=UTF8) as auxfile:
+            dest.update(load_json(auxfile))
+            TagsDB.AuxDB[filename] = filepath
 
 
 def no_validation_tag(tag: str) -> str:
@@ -247,7 +251,7 @@ def load_tag_aliases() -> None:
     try:
         trace('Loading tag aliases...')
         TagsDB.try_locate_file_single(FILE_NAME_ALIASES)
-        TagsDB.load_aux_file(FILE_NAME_ALIASES)
+        TagsDB.load_aux_file(FILE_NAME_ALIASES, TAG_ALIASES)
     except Exception:
         trace(f'Error: Failed to load tag aliases from {TagsDB.AuxDBFiles.get(FILE_NAME_ALIASES, FILE_NAME_ALIASES)}')
         TAG_ALIASES.update({'': ''})
