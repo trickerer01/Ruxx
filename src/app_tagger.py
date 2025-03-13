@@ -228,7 +228,7 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pa
                 for i in reversed(range(len(tags_toadd_list))):
                     t = re_numbered_or_counted_tag.sub(r'\1', tags_toadd_list[i].lower())
                     nut = re_not_a_letter.sub('', t)
-                    if len(nutag) >= len(nut) and (nut in nutag):
+                    if 1 < len(nut) <= len(nutag) and (nut in nutag):
                         if aser_valid is False and tags_toadd_list[i][0].isupper():
                             aser_valid = True
                         del tags_toadd_list[i]
