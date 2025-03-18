@@ -9,12 +9,13 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from contextlib import ExitStack, suppress
 from os import path, listdir
 from threading import current_thread
+from typing import Literal
 
 from app_defines import KNOWN_EXTENSIONS
 from app_utils import normalize_path
 
 
-def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_depth: int) -> None:
+def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_depth: int, keep: Literal['first', 'last']) -> None:
     class DFileInfo:
         def __init__(self, folder: str, name: str, size: int) -> None:
             self.folder: str = normalize_path(folder)
@@ -84,7 +85,8 @@ def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_d
                         if len(nexacts) > 1:
                             exacts.append(nexacts)
                     if len(exacts[fidx]) > 1:
-                        exacts = [sorted(li, key=lambda x: x.name) for li in exacts]
+                        if keep == 'first':
+                            exacts = [sorted(li, key=lambda x: x.name) for li in exacts]
                         dfinfos = [files_list[open_fnames.index(exacts[fidx][fli].name)] for fli in range(len(exacts[fidx]))]
                         dest_dict[dfinfos[0].fullpath] = [dfinfo.fullpath for dfinfo in dfinfos[1:]]
                     fidx += 1

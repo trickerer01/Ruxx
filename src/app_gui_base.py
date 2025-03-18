@@ -24,6 +24,7 @@ from tkinter import (
 
 # internal
 from tkinter.ttk import Entry
+from typing import Literal
 
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
@@ -57,7 +58,7 @@ from app_utils import normalize_path
 from app_validators import valid_proxy, valid_positive_int, valid_window_position
 
 __all__ = (
-    'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'LogWindow',
+    'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'AskFirstLastWindow', 'LogWindow',
     'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm', 'window_retriesm',
     'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows',
     'get_global', 'config_global', 'is_global_disabled', 'is_menu_disabled', 'is_focusing', 'toggle_console', 'hotkey_text',
@@ -379,12 +380,20 @@ class BaseWindow:
 
 
 class AwaitableAskWindow(BaseWindow, ABC):
-    def __init__(self, parent, title: str) -> None:
+    def __init__(self, parent, title: str, variables_count=1) -> None:
         self.title = title or ''
-        self.variable = StringVar(parent)
         self.but_ok: Button | None = None
         self.but_cancel: Button | None = None
+        self._variables = [StringVar(parent) for _ in range(variables_count)]
         super().__init__(parent, False)
+
+    def _set_variable(self, num: int, value: str) -> None:
+        assert len(self._variables) <= num
+        self._variables[num - 1].set(value)
+
+    def get_variable(self, num: int) -> str:
+        assert len(self._variables) <= num
+        return self._variables[num - 1].get()
 
     def config(self) -> None:
         self.window.title(self.title)
@@ -426,7 +435,7 @@ class AwaitableAskWindow(BaseWindow, ABC):
         self.window.destroy()
 
     def cancel(self) -> None:
-        self.variable.set('')
+        self._set_variable(1, '')
         self.window.grab_release()
         self.window.destroy()
 
@@ -443,17 +452,18 @@ class AskFileTypeFilterWindow(AwaitableAskWindow):
         super().__init__(parent, 'File types')
 
     def finalize(self) -> None:
-        self.variable.set(AskFileTypeFilterWindow.VALUES[0])
+        self._set_variable(1, AskFileTypeFilterWindow.VALUES[0])
         AwaitableAskWindow.finalize(self)
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.cbox = ttk.Combobox(frame, values=AskFileTypeFilterWindow.VALUES, state=STATE_READONLY, width=18, textvariable=self.variable)
+        self.cbox = ttk.Combobox(frame, values=AskFileTypeFilterWindow.VALUES, state=STATE_READONLY, width=18,
+                                 textvariable=self._variables[0])
         self.cbox.grid(row=first_row(), column=first_column(), columnspan=2)
 
     def value(self) -> FileTypeFilter:
         try:
             # noinspection PyArgumentList
-            return FileTypeFilter(AskFileTypeFilterWindow.VALUES.index(self.variable.get()) + 1)
+            return FileTypeFilter(AskFileTypeFilterWindow.VALUES.index(self.get_variable(1)) + 1)
         except Exception:
             return FileTypeFilter.INVALID
 
@@ -464,17 +474,17 @@ class AskFileSizeFilterWindow(AwaitableAskWindow):
         super().__init__(parent, 'Size thresholds MB')
 
     def finalize(self) -> None:
-        self.variable.set('')
+        self._set_variable(1, '')
         AwaitableAskWindow.finalize(self)
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = BaseText(frame, width=18, textvariable=self.variable, bindings={BUT_RETURN: lambda _: self.ok()})
+        self.entry = BaseText(frame, width=18, textvariable=self._variables[0], bindings={BUT_RETURN: lambda _: self.ok()})
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
     def value(self) -> list[float] | None:
         try:
-            return [float(val) for val in re_ask_values.findall(self.variable.get())]
+            return [float(val) for val in re_ask_values.findall(self.get_variable(1))]
         except Exception:
             return None
 
@@ -487,18 +497,18 @@ class AskIntWindow(AwaitableAskWindow):
         super().__init__(parent, title)
 
     def finalize(self) -> None:
-        self.variable.set(self.default)
+        self._set_variable(1, self.default)
         AwaitableAskWindow.finalize(self)
         self.entry.select_all()
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = BaseText(frame, width=18, textvariable=self.variable, bindings={BUT_RETURN: lambda _: self.ok()})
+        self.entry = BaseText(frame, width=18, textvariable=self._variables[0], bindings={BUT_RETURN: lambda _: self.ok()})
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
     def value(self) -> int | None:
         try:
-            val = int(self.variable.get())
+            val = int(self.get_variable(1))
             assert self.validator(val)
             return val
         except Exception:
@@ -511,19 +521,45 @@ class AskFileScoreFilterWindow(AwaitableAskWindow):
         super().__init__(parent, 'Score thresholds')
 
     def finalize(self) -> None:
-        self.variable.set('')
+        self._set_variable(1, '')
         AwaitableAskWindow.finalize(self)
         self.entry.focus_set()
 
     def _put_widgets(self, frame: BaseFrame) -> None:
-        self.entry = BaseText(frame, width=18, textvariable=self.variable, bindings={BUT_RETURN: lambda _: self.ok()})
+        self.entry = BaseText(frame, width=18, textvariable=self._variables[0], bindings={BUT_RETURN: lambda _: self.ok()})
         self.entry.grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
 
     def value(self) -> list[int] | None:
         try:
-            return [int(val) for val in re_ask_values.findall(self.variable.get())]
+            return [int(val) for val in re_ask_values.findall(self.get_variable(1))]
         except Exception:
             return None
+
+
+class AskFirstLastWindow(AwaitableAskWindow):
+    VALUES = ['Keep first', 'Keep last']
+    LITERAL_TYPE = Literal['first', 'last']
+
+    def __init__(self, parent, title='Enter number', *, default: AskFirstLastWindow.LITERAL_TYPE) -> None:
+        self.cbox: ttk.Combobox | None = None
+        self.default = default
+        super().__init__(parent, title)
+
+    def finalize(self) -> None:
+        self._set_variable(1, AskFirstLastWindow.VALUES[0])
+        AwaitableAskWindow.finalize(self)
+
+    def _put_widgets(self, frame: BaseFrame) -> None:
+        self.cbox = ttk.Combobox(frame, values=AskFirstLastWindow.VALUES, state=STATE_READONLY, width=25, textvariable=self._variables[0])
+        self.cbox.grid(row=first_row(), column=first_column(), columnspan=2)
+
+    def value(self) -> AskFirstLastWindow.LITERAL_TYPE:
+        try:
+            if AskFirstLastWindow.VALUES.index(self.get_variable(1)) == 0:
+                return 'first'
+            return 'last'
+        except Exception:
+            return self.default
 
 
 class LogWindow(BaseWindow):

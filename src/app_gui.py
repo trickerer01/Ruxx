@@ -32,13 +32,13 @@ from app_file_searcher import find_duplicated_files
 from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_size, sort_files_by_score
 from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
-    AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, GetRoot, setrootconf, rootm, getrootconf,
-    window_hcookiesm, window_proxym, window_timeoutm, window_retriesm, register_menu, register_submenu, create_base_window_widgets,
-    text_cmdm, get_icon, init_additional_windows, get_global, config_global, is_global_disabled, is_menu_disabled, is_focusing,
-    set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list, browse_path, register_menu_command, toggle_console,
-    register_submenu_command, register_menu_checkbutton, register_menu_radiobutton, register_submenu_radiobutton, register_menu_separator,
-    get_all_media_files_in_cur_dir, update_lastpath, toggle_autocompletion, trigger_autocomplete_tag, hotkey_text, config_menu,
-    get_media_files_dir, load_batch_download_tag_list,
+    AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, AskFirstLastWindow, GetRoot,
+    setrootconf, rootm, getrootconf, window_hcookiesm, window_proxym, window_timeoutm, window_retriesm, register_menu, register_submenu,
+    create_base_window_widgets, text_cmdm, get_icon, init_additional_windows, get_global, config_global, is_global_disabled,
+    is_menu_disabled, is_focusing, set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list, browse_path,
+    register_menu_command, toggle_console, register_submenu_command, register_menu_checkbutton, register_menu_radiobutton,
+    register_submenu_radiobutton, register_menu_separator, get_all_media_files_in_cur_dir, update_lastpath, toggle_autocompletion,
+    trigger_autocomplete_tag, hotkey_text, config_menu, get_media_files_dir, load_batch_download_tag_list,
 )
 from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
@@ -168,8 +168,15 @@ def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], Non
     rootm().wait_window(aw.window)
     depth = aw.value()
     if depth is None:
-        if aw.variable.get() != '':
-            trace(f'Invalid scan depth value \'{aw.variable.get()}\'')
+        if aw.get_variable(1) != '':
+            trace(f'Invalid scan depth value \'{aw.get_variable(1)}\'')
+        return
+
+    aw = AskFirstLastWindow(rootm(), title='Enter preservation mode', default='first')
+    aw.finalize()
+    rootm().wait_window(aw.window)
+    keep = aw.value()
+    if keep is None:
         return
 
     config_global(Globals.BUTTON_DOWNLOAD, state=STATE_DISABLED)
@@ -180,8 +187,8 @@ def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], Non
     unfocus_buttons_once()
 
     ret_files = dict[str, list[str]]()
-    trace(f'Looking for duplicate files in \'{loc}\'...')
-    duplicates_check_thread = Thread(target=lambda: find_duplicated_files(ret_files, loc, depth))
+    trace(f'Looking for duplicated files in \'{loc}\'...')
+    duplicates_check_thread = Thread(target=lambda: find_duplicated_files(ret_files, loc, depth, keep))
     duplicates_check_threadm().killed = False
     duplicates_check_threadm().start()
 
