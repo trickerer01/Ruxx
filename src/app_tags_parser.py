@@ -23,7 +23,7 @@ __all__ = ('reset_last_tags', 'parse_tags', 'convert_taglist')
 DEFAULT_TAGS = ('sfw',)
 
 # language=PythonRegExp
-TAG_CHAR = r'[a-zÀ-ʯА-я\d_%+\-/!()*\'.]'
+TAG_CHAR = r'[a-zÀ-ʯА-яぁ-㋾･-ﾟ一-鿿\d_%+\-/!()*\'.]'
 # language=PythonRegExp
 META_CHAR = r'[a-z\d_\-.]'
 # language=PythonRegExp
