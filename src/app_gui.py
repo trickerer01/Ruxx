@@ -957,7 +957,6 @@ def init_menus() -> None:
 
 
 def init_gui() -> None:
-    global tags_check_thread
     # Create all app windows
     create_base_window_widgets()
     init_additional_windows()
