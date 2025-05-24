@@ -323,7 +323,7 @@ class BaseText(Text):
         end_idx = int(self.index(f'{END}-1c').split('.')[1]) - 1
         prev_idx = min(cur_idx, end_idx)
         while prev_idx > 0:
-            if my_str[prev_idx] == ' ':
+            if my_str[prev_idx] in ' ~':
                 last_idx = min(end_idx, cur_idx)
                 prev_idx = min(prev_idx + 1, last_idx)
                 if prev_idx < last_idx and my_str[prev_idx] == '-':
