@@ -21,7 +21,7 @@ from warnings import filterwarnings
 
 # requirements
 from bs4 import BeautifulSoup
-from requests import Session, Response, HTTPError, adapters
+from requests import Session, Response, HTTPError, ConnectionError, adapters
 from requests.structures import CaseInsensitiveDict
 
 # internal
@@ -296,6 +296,15 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                     trace(f'Warning (W3): {item_id} catched HTTPError 404 for normalized link. '
                                           f'Switching to slow link \'{oldlink}\'...', True)
                                     link = oldlink
+                        if isinstance(err, ConnectionError) and err.response is None:  # RS cdn error
+                            if ProcModule.is_rs():
+                                hostname: str = urlparse(link).hostname or 'unk'
+                                if hostname.startswith('video') and '-cdn' in hostname:
+                                    if __RUXX_DEBUG__:
+                                        trace(f'Warning (W3): {item_id} catched ConnectionError (host: {hostname})! '
+                                              f'Trying no-cdn source...', True)
+                                    re_vhost_cdn = re_compile(r'-cdn\d')  # video-cdn1.rs
+                                    link = re_vhost_cdn.sub('', link)
                         if isinstance(err, HTTPError) and err.response.status_code == 416:  # Requested range is not satisfiable
                             if __RUXX_DEBUG__:
                                 trace(f'Warning (W3): {item_id} catched HTTPError 416!', True)
