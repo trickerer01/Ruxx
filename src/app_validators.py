@@ -28,8 +28,7 @@ __all__ = (
     'valid_positive_int', 'valid_window_position', 'valid_api_key',
     'Validator', 'DummyValidator', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator',
     'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator', 'ParchiCBValidator', 'TimeoutValidator',
-    'RetriesValidator', 'WindowPosValidator', 'InfoSaveModeValidator', 'FolderPathValidator', 'APIKeyValidator', 'APIKeyKeyValidator',
-    'APIKeyUserIdValidator',
+    'RetriesValidator', 'WindowPosValidator', 'InfoSaveModeValidator', 'FolderPathValidator', 'APIKeyKeyValidator', 'APIKeyUserIdValidator',
 )
 
 
@@ -302,18 +301,11 @@ class InfoSaveModeValidator(IntValidator):
             return False
 
 
-class APIKeyValidator(StrValidator):
-    def __call__(self, val: str) -> bool:
-        try:
-            _ = valid_api_key(val)
-            return True
-        except Exception:
-            return False
-
-
 class APIKeyKeyValidator(StrValidator):
     def __call__(self, val: str) -> bool:
         try:
+            if val == '':
+                return True
             _ = valid_api_key_key(val)
             return True
         except Exception:
@@ -323,6 +315,8 @@ class APIKeyKeyValidator(StrValidator):
 class APIKeyUserIdValidator(StrValidator):
     def __call__(self, val: str) -> bool:
         try:
+            if val == '':
+                return True
             _ = valid_api_key_userid(val)
             return True
         except Exception:
