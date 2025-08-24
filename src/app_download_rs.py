@@ -43,6 +43,9 @@ class DownloaderRs(Downloader):
     def __init__(self) -> None:
         super().__init__()
 
+    def _get_api_key(self) -> str:
+        return ''
+
     def _get_module_specific_default_headers(self) -> dict[str, str]:
         return {}
 

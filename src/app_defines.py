@@ -234,6 +234,12 @@ INT_BOUNDS_DEFAULT = (0, 0)
 
 FILE_NAME_ALIASES = 'all_tag_aliases.json'
 
+API_KEY_DEFAULT_RX = (
+    'ZTdmYjBhZTIxZDlhZjk5ZmRhNzJkYWU1MTY3NmZhNTkyMmJhMDBjNTk0NmU5NzJiNGUzNDY1MjNhZjNhOGQ1ZGZhZjFlYjM5NTFlY2FiNTFhYjk2MGZmNDVhN2IxMDQ5N2VkOG'
+    'E4N2VkNzU5NDUyMDBmMjhmOGJkZDNkNDdkODE='
+)
+API_USER_ID_DEFAULT_RX = 'NTI3Mzg3OQ=='
+
 
 class ThreadInterruptException(Exception):
     pass
@@ -250,6 +256,22 @@ class Mem:
 class HtmlCacheMode(IntEnum):
     CACHE_BYTES = auto()
     CACHE_BS = auto()  # cache BeautifulSoup objects
+
+
+class APIKey:
+    __slots__ = ('key', 'user_id')
+
+    def __init__(self, api_key: str | None = '') -> None:
+        self.key: str = api_key.split(',', 1)[0] if api_key else ''
+        self.user_id: str = api_key.split(',', 1)[1] if api_key else ''
+
+    def __str__(self) -> str:
+        return f'key=\'{self.key}\', user=\'{self.user_id}\''
+
+    def __bool__(self) -> bool:
+        return bool(self.key) and bool(self.user_id)
+
+    __repr__ = __str__
 
 #
 #

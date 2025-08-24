@@ -38,6 +38,9 @@ class DownloaderBb(DownloaderGelbooru):
     def __init__(self) -> None:
         super().__init__()
 
+    def _get_api_key(self) -> str:
+        return ''
+
     def _get_id_bounds(self) -> tuple[int, int]:
         raise NotImplementedError
 

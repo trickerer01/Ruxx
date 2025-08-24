@@ -55,17 +55,18 @@ from app_revision import APP_VERSION, APP_NAME
 from app_tagger import TagsDB
 from app_tooltips import WidgetToolTip
 from app_utils import normalize_path
-from app_validators import valid_proxy, valid_positive_int, valid_window_position
+from app_validators import valid_proxy, valid_positive_int, valid_window_position, valid_api_key
 
 __all__ = (
     'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'AskFirstLastWindow', 'LogWindow',
     'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm', 'window_retriesm',
-    'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon', 'init_additional_windows',
-    'get_global', 'config_global', 'is_global_disabled', 'is_menu_disabled', 'is_focusing', 'toggle_console', 'hotkey_text',
-    'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list', 'load_batch_download_tag_list',
-    'ask_filename', 'browse_path', 'register_menu_command', 'register_submenu_command', 'register_menu_checkbutton',
-    'register_menu_radiobutton', 'register_submenu_radiobutton', 'register_menu_separator', 'get_all_media_files_in_cur_dir',
-    'get_media_files_dir', 'update_lastpath', 'config_menu', 'toggle_autocompletion', 'trigger_autocomplete_tag',
+    'window_apikeym', 'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon',
+    'init_additional_windows', 'get_global', 'config_global', 'is_global_disabled', 'is_menu_disabled', 'is_focusing', 'toggle_console',
+    'hotkey_text', 'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list',
+    'load_batch_download_tag_list', 'ask_filename', 'browse_path', 'register_menu_command', 'register_submenu_command',
+    'register_menu_checkbutton', 'register_menu_radiobutton', 'register_submenu_radiobutton', 'register_menu_separator',
+    'get_all_media_files_in_cur_dir', 'get_media_files_dir', 'update_lastpath', 'config_menu', 'toggle_autocompletion',
+    'trigger_autocomplete_tag',
 )
 
 
@@ -1057,11 +1058,118 @@ class ConnectionRetriesWindow(ConnectRequestIntWindow):
                          'Retries', '5 .. inf.', CONNECT_RETRIES_BASE, (5, 2**63))
 
 
+class APIRequestStrIntWindow(BaseWindow):
+    def __init__(self, parent, title: str, hint1: str, hint2: str, baseval: tuple[str, str],
+                 conf_str1: Options, conf_str2: Options, conf_str_temp1: Options, conf_str_temp2: Options) -> None:
+        self.title = title
+        self.hint1 = hint1
+        self.hint2 = hint2
+        self.baseval = baseval
+        self.conf_str1, self.conf_str2 = conf_str1, conf_str2
+        self.conf_str_temp1, self.conf_str_temp2 = conf_str_temp1, conf_str_temp2
+        self.var: IntVar | None = None
+        self.entry1: BaseText | None = None
+        self.entry2: BaseText | None = None
+        self.but_ok: Button | None = None
+        self.but_cancel: Button | None = None
+        self.err_message: WidgetToolTip | None = None
+        super().__init__(parent)
+
+    def config(self) -> None:
+        self.window.title(self.title)
+
+        upframe = BaseFrame(self.window)
+        upframe.pack()
+
+        downframe = BaseFrame(upframe)
+        downframe.grid(padx=12, pady=12, row=1)
+
+        hint1 = Label(downframe, font=FONT_SANS_SMALL, text=self.hint1)
+        hint1.config(state=STATE_DISABLED)
+        hint1.grid(row=0, column=0, columnspan=15)
+        _ = BaseText(textvariable=StringVar(rootm(), str(self.baseval[0]), CVARS[self.conf_str1]))
+        self.entry1 = BaseText(downframe, font=FONT_SANS_MEDIUM, width=38,
+                               textvariable=StringVar(rootm(), '', CVARS[self.conf_str_temp1]),
+                               bindings={BUT_RETURN: lambda _: self.ok()})
+        self.entry1.insert(END, str(self.baseval[0]))
+        self.err_message = attach_tooltip(self.entry1, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
+        self.entry1.grid(row=1, column=3, columnspan=10)
+
+        hint2 = Label(downframe, font=FONT_SANS_SMALL, text=self.hint2)
+        hint2.config(state=STATE_DISABLED)
+        hint2.grid(row=3, column=0, columnspan=15)
+        _ = BaseText(textvariable=StringVar(rootm(), str(self.baseval[1]), CVARS[self.conf_str2]))
+        self.entry2 = BaseText(downframe, font=FONT_SANS_MEDIUM, width=19,
+                               textvariable=StringVar(rootm(), '', CVARS[self.conf_str_temp2]),
+                               bindings={BUT_RETURN: lambda _: self.ok()})
+        self.entry2.insert(END, str(self.baseval[1]))
+        self.err_message = attach_tooltip(self.entry2, TOOLTIP_INVALID_SYNTAX, 3000, timed=True)
+        self.entry2.grid(row=4, column=3, columnspan=10)
+
+        BaseFrame(downframe, height=16).grid(row=5, columnspan=15)
+
+        self.but_ok = Button(downframe, width=8, text='Ok', command=lambda: self.ok())
+        self.but_cancel = Button(downframe, width=8, text='Cancel', command=lambda: self.cancel())
+        self.but_ok.grid(row=6, column=3, columnspan=5)
+        self.but_cancel.grid(row=6, column=8, columnspan=5)
+
+        self.window.config(bg=self.parent.default_bg_color)
+
+    def finalize(self) -> None:
+        x = self.parent.winfo_x() + (self.parent.winfo_width() - self.window.winfo_reqwidth()) / 2
+        y = self.parent.winfo_y() + 50
+        self.window.geometry(f'+{x:.0f}+{y:.0f}')
+        self.window.update()
+        self.window.transient(self.parent)
+        self.window.minsize(self.window.winfo_reqwidth(), self.window.winfo_reqheight())
+        self.window.resizable(False, False)
+        self.window.bind(BUT_RETURN, lambda _: self.ok())
+        self.window.bind(BUT_ESCAPE, lambda _: self.cancel())
+        self.window.bind(BUT_CTRL_A, lambda _: self.select_all())
+
+    def select_all(self) -> None:
+        if self.visible is True:
+            self.entry1.focus_set()
+            self.entry1.select_all()
+
+    def ok(self) -> None:
+        try:
+            # Value validation
+            key = str(getrootconf(self.conf_str_temp1))
+            user_id = str(getrootconf(self.conf_str_temp2))
+            _ = str(valid_api_key(f'{key},{user_id}'))
+            setrootconf(self.conf_str1, key)
+            setrootconf(self.conf_str2, user_id)
+            self.hide()
+        except Exception:
+            self.err_message.showtip()
+
+    def cancel(self) -> None:
+        setrootconf(self.conf_str_temp1, str(getrootconf(self.conf_str1)))
+        setrootconf(self.conf_str_temp2, str(getrootconf(self.conf_str2)))
+        self.hide()
+
+    def ask(self) -> None:
+        if self.visible is False:
+            self.show()
+            self.select_all()
+
+    def on_destroy(self) -> None:
+        self.cancel()
+
+
+class ApiKeyWindow(APIRequestStrIntWindow):
+    def __init__(self, parent) -> None:
+        super().__init__(parent, 'API Key', 'Key (128 symbols)', 'User ID (number)', ('', ''),
+                         Options.APIKEY_KEY, Options.APIKEY_USERID, Options.APIKEY_KEY_TEMP, Options.APIKEY_USERID_TEMP)
+
+
 def init_additional_windows() -> None:
     global window_proxy
     global window_hcookies
     global window_timeout
     global window_retries
+    global window_apikey
     window_proxy = ProxyWindow(root)
     window_proxy.window.wm_protocol('WM_DELETE_WINDOW', window_proxy.on_destroy)
     window_hcookies = HeadersAndCookiesWindow(root)
@@ -1070,6 +1178,8 @@ def init_additional_windows() -> None:
     window_timeout.window.wm_protocol('WM_DELETE_WINDOW', window_timeout.on_destroy)
     window_retries = ConnectionRetriesWindow(root)
     window_retries.window.wm_protocol('WM_DELETE_WINDOW', window_retries.on_destroy)
+    window_apikey = ApiKeyWindow(root)
+    window_apikey.window.wm_protocol('WM_DELETE_WINDOW', window_apikey.on_destroy)
     Logger.wnd = LogWindow(root)
     Logger.wnd.window.wm_protocol('WM_DELETE_WINDOW', Logger.wnd.on_destroy)
 
@@ -1145,6 +1255,11 @@ def window_timeoutm() -> ConnectionTimeoutWindow:
 def window_retriesm() -> ConnectionRetriesWindow:
     assert window_retries is not None
     return window_retries
+
+
+def window_apikeym() -> ApiKeyWindow:
+    assert window_apikey is not None
+    return window_apikey
 
 
 def text_cmdm() -> Text:
@@ -1568,6 +1683,7 @@ window_proxy: ProxyWindow | None = None
 window_hcookies: HeadersAndCookiesWindow | None = None
 window_timeout: ConnectionTimeoutWindow | None = None
 window_retries: ConnectionRetriesWindow | None = None
+window_apikey: ApiKeyWindow | None = None
 # counters
 c_menu: BaseMenu | None = None
 c_submenu: BaseMenu | None = None

@@ -25,9 +25,11 @@ from app_utils import normalize_path
 
 __all__ = (
     'valid_thread_count', 'valid_date', 'valid_folder_path', 'valid_json', 'valid_kwarg', 'valid_download_mode', 'valid_proxy',
-    'valid_positive_int', 'valid_window_position', 'Validator', 'DummyValidator', 'ModuleValidator', 'VideosCBValidator',
-    'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator', 'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator',
-    'ParchiCBValidator', 'TimeoutValidator', 'RetriesValidator', 'WindowPosValidator', 'InfoSaveModeValidator', 'FolderPathValidator',
+    'valid_positive_int', 'valid_window_position', 'valid_api_key',
+    'Validator', 'DummyValidator', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator',
+    'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator', 'ParchiCBValidator', 'TimeoutValidator',
+    'RetriesValidator', 'WindowPosValidator', 'InfoSaveModeValidator', 'FolderPathValidator', 'APIKeyValidator', 'APIKeyKeyValidator',
+    'APIKeyUserIdValidator',
 )
 
 
@@ -120,6 +122,33 @@ def valid_window_position(val: str, tk) -> str:
         x, y = tuple(val.split('x', 1))
         assert 0 < int(x) + 25 < tk.winfo_screenwidth() and 0 < int(y) + 25 < tk.winfo_screenheight()
         return f'+{x}+{y}'
+    except Exception:
+        raise ArgumentError
+
+
+def valid_api_key_key(key: str) -> str:
+    try:
+        assert len(key) == 128
+        assert key.isalnum()
+        return key
+    except Exception:
+        raise ArgumentError
+
+
+def valid_api_key_userid(user_id: str) -> str:
+    try:
+        assert user_id.isnumeric()
+        return user_id
+    except Exception:
+        raise ArgumentError
+
+
+def valid_api_key(val: str) -> str:
+    try:
+        key, user_id = tuple(val.split(',', 1))
+        assert valid_api_key_key(key)
+        assert valid_api_key_userid(user_id)
+        return f'{key},{user_id}'
     except Exception:
         raise ArgumentError
 
@@ -268,6 +297,33 @@ class InfoSaveModeValidator(IntValidator):
     def __call__(self, val: int) -> bool:
         try:
             _ = valid_positive_int(str(val), ub=2)
+            return True
+        except Exception:
+            return False
+
+
+class APIKeyValidator(StrValidator):
+    def __call__(self, val: str) -> bool:
+        try:
+            _ = valid_api_key(val)
+            return True
+        except Exception:
+            return False
+
+
+class APIKeyKeyValidator(StrValidator):
+    def __call__(self, val: str) -> bool:
+        try:
+            _ = valid_api_key_key(val)
+            return True
+        except Exception:
+            return False
+
+
+class APIKeyUserIdValidator(StrValidator):
+    def __call__(self, val: str) -> bool:
+        try:
+            _ = valid_api_key_userid(val)
             return True
         except Exception:
             return False

@@ -23,9 +23,12 @@ from app_help import (
     HELP_ARG_DUMP_COMMENTS, HELP_ARG_DUMP_PER_ITEM, HELP_ARG_APPEND_SOURCE_AND_TAGS, HELP_ARG_TAGS, HELP_ARG_WARN_NON_EMPTY_FOLDER,
     HELP_ARG_INCLUDE_PARCHI, HELP_ARG_CON_TIMEOUT, HELP_ARG_CON_RETRIES, HELP_ARG_GET_MAXID, HELP_ARG_CACHE_HTML_BLOAT, HELP_ARG_VERBOSE,
     HELP_ARG_PREFER_WEBM, HELP_ARG_PREFER_MP4, HELP_ARG_HEADER, HELP_ARG_COOKIE, HELP_ARG_MERGE_LISTS, HELP_ARG_REVERSE_DOWNLOAD_ORDER,
+    HELP_ARG_API_KEY,
 )
 from app_revision import APP_NAME, APP_VERSION
-from app_validators import valid_thread_count, valid_date, valid_folder_path, valid_json, valid_kwarg, valid_proxy, valid_positive_int
+from app_validators import (
+    valid_thread_count, valid_date, valid_folder_path, valid_json, valid_kwarg, valid_proxy, valid_positive_int, valid_api_key
+)
 
 __all__ = ('prepare_arglist',)
 
@@ -62,6 +65,7 @@ def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser.add_argument('-proxynodown', action=ACTION_STORE_TRUE, help=HELP_ARG_PROXYNODOWN)
     parser.add_argument('-timeout', metavar='#NUMBER', help=HELP_ARG_CON_TIMEOUT, type=valid_positive_int)
     parser.add_argument('-retries', metavar='#NUMBER', help=HELP_ARG_CON_RETRIES, type=valid_positive_int)
+    parser.add_argument('-api_key', metavar='KEY,USER_ID', help=HELP_ARG_API_KEY, type=valid_api_key)
     parser.add_argument('-headers', metavar='#JSON', help=HELP_ARG_HEADERS, type=valid_json, default=DEFAULT_HEADERS)
     parser.add_argument('-cookies', metavar='#JSON', help=HELP_ARG_COOKIES, type=valid_json)
     parser.add_argument('-header', metavar='name=value', action=ACTION_APPEND, help=HELP_ARG_HEADER, type=valid_kwarg)

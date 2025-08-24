@@ -17,7 +17,7 @@ from re import Match, Pattern
 from bs4 import BeautifulSoup
 
 # internal
-from app_defines import DownloadModes, DownloaderStates, ItemInfo, PageCheck, DATE_MIN_DEFAULT, DATE_MAX_DEFAULT, LAUCH_DATE
+from app_defines import DownloadModes, DownloaderStates, ItemInfo, PageCheck, APIKey, DATE_MIN_DEFAULT, DATE_MAX_DEFAULT, LAUCH_DATE
 from app_logger import trace
 from app_network import ThreadedHtmlWorker, thread_exit
 from app_utils import normalize_path, as_date
@@ -53,6 +53,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.date_max: str = DATE_MAX_DEFAULT
         self.dest_base: str = normalize_path(path.abspath(curdir))
         self.warn_nonempty: bool = False
+        self.api_key: APIKey = APIKey()
         self.tags_str_arr: list[str] = list()
         # extra
         self.cmdline: str = ''
@@ -84,6 +85,10 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.default_sort: bool = True
         self.favorites_search_user: str = ''
         self.pool_search_str: str = ''
+
+    @abstractmethod
+    def _get_api_key(self) -> str:
+        ...
 
     @abstractmethod
     def _is_pool_search_conversion_required(self) -> bool:

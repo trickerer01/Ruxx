@@ -33,10 +33,10 @@ from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_si
 from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
     AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, AskFirstLastWindow, GetRoot,
-    setrootconf, rootm, getrootconf, window_hcookiesm, window_proxym, window_timeoutm, window_retriesm, register_menu, register_submenu,
-    create_base_window_widgets, text_cmdm, get_icon, init_additional_windows, get_global, config_global, is_global_disabled,
-    is_menu_disabled, is_focusing, set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list, browse_path,
-    register_menu_command, toggle_console, register_submenu_command, register_menu_checkbutton, register_menu_radiobutton,
+    setrootconf, rootm, getrootconf, window_hcookiesm, window_proxym, window_timeoutm, window_retriesm, window_apikeym, register_menu,
+    register_submenu, create_base_window_widgets, text_cmdm, get_icon, init_additional_windows, get_global, config_global,
+    is_global_disabled, is_menu_disabled, is_focusing, set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list,
+    browse_path, register_menu_command, toggle_console, register_submenu_command, register_menu_checkbutton, register_menu_radiobutton,
     register_submenu_radiobutton, register_menu_separator, get_all_media_files_in_cur_dir, update_lastpath, toggle_autocompletion,
     trigger_autocomplete_tag, hotkey_text, config_menu, get_media_files_dir, load_batch_download_tag_list,
 )
@@ -46,9 +46,9 @@ from app_gui_defines import (
     OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS, OPTION_CMD_SAVE_SOURCES,
     OPTION_CMD_SAVE_COMMENTS, OPTION_CMD_INFO_SAVE_MODE, OPTION_CMD_DATEAFTER_CMD, OPTION_CMD_DATEBEFORE_CMD, OPTION_CMD_PATH_CMD,
     OPTION_CMD_COOKIES_CMD, OPTION_CMD_HEADERS_CMD, OPTION_CMD_PROXY_CMD, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD,
-    OPTION_CMD_TIMEOUT_CMD, OPTION_CMD_RETRIES_CMD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH, BUT_ALT_F4,
-    OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_VERBOSE, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE_CMD, OPTION_CMD_PARCHI,
-    OPTION_VALUES_PARCHI, OPTION_CMD_DOWNLOAD_ORDER, OPTION_VALUES_DOWNLOAD_ORDER, OPTION_CMD_CACHE_PROCCED_HTML,
+    OPTION_CMD_TIMEOUT_CMD, OPTION_CMD_RETRIES_CMD, OPTION_CMD_APIKEY_CMD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH,
+    BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_VERBOSE, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE_CMD,
+    OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI, OPTION_CMD_DOWNLOAD_ORDER, OPTION_VALUES_DOWNLOAD_ORDER, OPTION_CMD_CACHE_PROCCED_HTML,
     Options, Globals, Menus, SubMenus, Icons, InfoSaveModes, CVARS, hotkeys, menu_items, menu_item_orig_states, gobject_orig_states,
 )
 from app_module import ProcModule
@@ -377,6 +377,8 @@ def update_widget_enabled_states() -> None:
                     newstate = STATE_DISABLED
                 elif i == Menus.TOOLS and j == SubMenus.AUTOCOMPLETER and TagsDB.empty():
                     newstate = STATE_DISABLED
+                elif i == Menus.CONNECTION and j == SubMenus.APIKEY and not ProcModule.is_rx():
+                    newstate = STATE_DISABLED
                 else:
                     newstate = STATE_DISABLED if batching_or_downloading else menu_item_orig_states[i][j]
                 config_menu(i, j, state=newstate)
@@ -495,6 +497,13 @@ def prepare_cmdline() -> list[str]:
                     break
                 except Exception:
                     setrootconf(datestr[0], DATE_MIN_DEFAULT if datestr[0] == Options.DATEMIN else DATE_MAX_DEFAULT)
+    # API key
+    if ProcModule.is_rx():
+        addstr = str(getrootconf(Options.APIKEY_KEY))
+        if len(addstr) > 0:
+            addstr2 = str(getrootconf(Options.APIKEY_USERID))
+            newstr.append(OPTION_CMD_APIKEY_CMD)
+            newstr.append(f'{addstr},{addstr2}')
     # headers
     addstr = window_hcookiesm().get_json_h()
     if len(addstr) > 2 and addstr != DEFAULT_HEADERS:  # != "'{}'"
@@ -866,6 +875,7 @@ def finalize_additional_windows() -> None:
     window_hcookiesm().finalize()
     window_timeoutm().finalize()
     window_retriesm().finalize()
+    window_apikeym().finalize()
     Logger.print_pending_strings()
 
 
@@ -914,6 +924,7 @@ def init_menus() -> None:
     register_menu_command('Set proxy...', window_proxym().ask, Options.ISPROXYOPEN)
     register_menu_command('Set timeout...', window_timeoutm().ask, Options.ISTIMEOUTOPEN)
     register_menu_command('Set retries count...', window_retriesm().ask, Options.ISRETRIESOPEN)
+    register_menu_command('API key...', window_apikeym().ask, Options.ISAPIKEYOPEN)
     register_menu_checkbutton('Download without proxy', CVARS[Options.PROXY_NO_DOWNLOAD])
     register_menu_checkbutton('Ignore proxy', CVARS[Options.IGNORE_PROXY])
     register_menu_checkbutton('Cache processed HTML', CVARS[Options.CACHE_PROCCED_HTML])
@@ -966,6 +977,7 @@ def init_gui() -> None:
     rootm().bind_all(hotkeys[Options.ISHCOOKIESOPEN], func=lambda _: window_hcookiesm().toggle_visibility())
     rootm().bind_all(hotkeys[Options.ISTIMEOUTOPEN], func=lambda e: window_timeoutm().ask() if e.state != 0x20000 else None)
     rootm().bind_all(hotkeys[Options.ISRETRIESOPEN], func=lambda e: window_retriesm().ask() if e.state != 0x20000 else None)
+    rootm().bind_all(hotkeys[Options.ISAPIKEYOPEN], func=lambda e: window_apikeym().ask() if e.state != 0x20000 else None)
     rootm().bind(BUT_ALT_F4, func=lambda _: rootm().destroy())
     Logger.wnd.window.bind(BUT_ALT_F4, func=lambda _: Logger.wnd.hide() if Logger.wnd.visible else None)
     window_hcookiesm().window.bind(BUT_ALT_F4, func=lambda _: window_hcookiesm().hide() if window_hcookiesm().visible else None)

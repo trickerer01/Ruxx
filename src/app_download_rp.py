@@ -62,6 +62,9 @@ class DownloaderRp(Downloader):
         super().__init__()
         self._base_cookies = {'ui-tnc-agreed': 'true', 'ui-image-zoom': 'both'}
 
+    def _get_api_key(self) -> str:
+        return ''
+
     def _get_module_specific_default_headers(self) -> dict[str, str]:
         return {}
 

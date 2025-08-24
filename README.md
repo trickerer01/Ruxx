@@ -46,7 +46,8 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Connection -> Headers / Cookies** \<F3> ‒ For some websites (RN) and in some other cases you'll have to provide your `cf_clearance` cookie, and the `User-Agent` header has to match the one used in your web browser for target website ‒ to find it while browsing said website open `Web Developer tools -> Network` (or similar), reload the page and check `request headers`
 - **Connection -> Set proxy** \<F4> ‒ you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
 - **Connection -> Set timeout** \<F5> ‒ override connection timeout if need be
-- **Connection -> Set retries count** \<F6> ‒ override connection retries count, may be useful when using proxy
+- **Connection -> Set retries count** \<F6> ‒ override connection retries count, may be useful when using a proxy
+- **Connection -> API Key** \<F7> ‒ set API authentication info (RX only)
 - **Connection -> Download without proxy** ‒ you can use this option if only the main domain of the selected module's website is blocked in your country
 - **Connection -> Ignore proxy** ‒ this is just a switch to disable proxy temporarily without wiping it
 - **Connection -> Cache processed HTML** ‒ by default HTML is cached as raw bytes, enabling this makes Ruxx cache HTML after it was processed into manageable form - a little bit faster but consumes much more memory. Mainly affects RS module
@@ -240,7 +241,7 @@ Ruxx doesn't provide a method of authentication natively on either of supported 
     - RX: `cf_clearance`, `user_id`, `pass_hash`
     - RN: `cf_clearance`, `shm_user`, `shm_session`
     - RS: `user_id`, `pass_hash`
-    - RP: ?? (registration disabled)
+    - RP: ?? (sign ups disabled)
     - EN: `_danbooru_session`, `remember`
     - XB: `cf_clearance`, `user_id`, `pass_hash`
   - Notes:
@@ -293,7 +294,7 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 - **ERROR**: if you see this the download process may fail, Ruxx can only retry the failed action, in most cases that's enough
 
 ### Technical info
-Ruxx is written in Python (3.9 for Windows, 3.11 for Linux). Lines of code: 12700+. Executables built using PyInstaller 6.1
+Ruxx is written in Python (3.9 for Windows, 3.11 for Linux). Lines of code: 13300+. Executables built using PyInstaller 6.1
 
 ### Support
 For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/Ruxx/issues)

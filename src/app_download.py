@@ -24,7 +24,7 @@ from iteration_utilities import unique_everseen
 # internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    ThreadInterruptException, DownloaderStates, DownloadModes, ItemInfo, Comment, Mem,
+    ThreadInterruptException, DownloaderStates, DownloadModes, ItemInfo, Comment, Mem, APIKey,
     DATE_MIN_DEFAULT, CONNECT_TIMEOUT_BASE, UTF8, SOURCE_DEFAULT, PLATFORM_WINDOWS, DATE_MAX_DEFAULT, INT_BOUNDS_DEFAULT,
 )
 from app_download_base import DownloaderBase
@@ -691,6 +691,7 @@ class Downloader(DownloaderBase):
         self.date_max = args.maxdate or self.date_max
         self.dest_base = normalize_path(args.path) if args.path else self.dest_base
         self.warn_nonempty = args.warn_nonempty or self.warn_nonempty
+        self.api_key = APIKey(args.api_key) or self.api_key
         self.tags_str_arr[0:] = [] if self.get_max_id else convert_taglist(args.tags)
         self._extract_negative_and_groups()
         self._extract_custom_argument_tags()
@@ -703,6 +704,14 @@ class Downloader(DownloaderBase):
 
     def _solve_argument_conflicts(self) -> bool:
         ret = False
+        if ProcModule.is_rx():
+            if not self.api_key:
+                trace(f'Warning (W3): NO \'{ProcModule.name().upper()}\' API KEY PROVIDED! DEFAULT API KEY MAY STOP WORKING AT ANY MOMENT!')
+                ret = True
+        if not ProcModule.is_rx():
+            if self.api_key:
+                trace(f'Warning (W1): \'-api_key\' option is not available for \'{ProcModule.name().upper()}\' module. Ignored!')
+                ret = True
         if not ProcModule.is_rs():
             if self.prefer_webm:
                 trace(f'Warning (W1): \'-webm\' option is not available for \'{ProcModule.name().upper()}\' module. Ignored!')

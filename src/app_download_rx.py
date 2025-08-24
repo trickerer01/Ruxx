@@ -14,7 +14,7 @@ from re import Pattern
 # internal
 from app_defines import (
     Comment, SITENAME_B_RX, FILE_NAME_PREFIX_RX, MODULE_ABBR_RX, ITEMS_PER_PAGE_RX,
-    TAGS_CONCAT_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RX,
+    TAGS_CONCAT_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RX, API_KEY_DEFAULT_RX, API_USER_ID_DEFAULT_RX,
 )
 from app_download_gelbooru import DownloaderGelbooru
 from app_logger import trace
@@ -30,6 +30,9 @@ ITEMS_PER_PAGE_F = 50
 ITEMS_PER_PAGE_P = 45
 MAX_SEARCH_DEPTH = 200000 + ITEMS_PER_PAGE - 1  # set by site devs
 
+API_KEY = b64decode(API_KEY_DEFAULT_RX).decode()
+USER_ID = b64decode(API_USER_ID_DEFAULT_RX).decode()
+
 
 class DownloaderRx(DownloaderGelbooru):
     """
@@ -37,6 +40,9 @@ class DownloaderRx(DownloaderGelbooru):
     """
     def __init__(self) -> None:
         super().__init__()
+
+    def _get_api_key(self) -> str:
+        return f'&api_key={self.api_key.key}&user_id={self.api_key.user_id}' if self.api_key else f'&api_key={API_KEY}&user_id={USER_ID}'
 
     def _get_id_bounds(self) -> tuple[int, int]:
         raise NotImplementedError

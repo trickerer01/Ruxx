@@ -25,7 +25,7 @@ from app_utils import normalize_path, as_date
 from app_validators import (
     Validator, DummyValidator, ModuleValidator, VideosCBValidator, ImagesCBValidator, ParchiCBValidator, ThreadsCBValidator, DateValidator,
     JsonValidator, ProxyTypeValidator, ProxyValidator, BoolStrValidator, TimeoutValidator, RetriesValidator, WindowPosValidator,
-    InfoSaveModeValidator, FolderPathValidator,
+    InfoSaveModeValidator, FolderPathValidator, APIKeyKeyValidator, APIKeyUserIdValidator,
 )
 
 __all__ = ('Settings',)
@@ -68,6 +68,8 @@ class Settings(ABC):
         'threads': Setting(Options.THREADSETTING, ThreadsCBValidator(), 'Invalid threads option \'%s\'!'),
         'datemin': Setting(Options.DATEMIN, DateValidator(), 'Invalid date value \'%s\'!'),
         'datemax': Setting(Options.DATEMAX, DateValidator(), 'Invalid date value \'%s\'!'),
+        'apikey': Setting(Options.APIKEY_KEY, APIKeyKeyValidator(), 'Invalid API key value \'%s\'!'),
+        'apiuserid': Setting(Options.APIKEY_USERID, APIKeyUserIdValidator(), 'Invalid API user id value \'%s\'!'),
         'headers': Setting(Options.HEADER_ADD_STR, JsonValidator(), 'Invalid headers json \'%s\'!'),
         'cookies': Setting(Options.COOKIE_ADD_STR, JsonValidator(), 'Invalid cookies json \'%s\'!'),
         'proxytype': Setting(Options.PROXYTYPE, ProxyTypeValidator(), 'Invalid proxytype value \'%s\'!'),
@@ -103,6 +105,8 @@ class Settings(ABC):
         Options.PROXYTYPE: Options.PROXYTYPE_TEMP,
         Options.TIMEOUTSTRING: Options.TIMEOUTSTRING_TEMP,
         Options.RETRIESSTRING: Options.RETRIESSTRING_TEMP,
+        Options.APIKEY_KEY: Options.APIKEY_KEY_TEMP,
+        Options.APIKEY_USERID: Options.APIKEY_USERID_TEMP,
     }
 
     @staticmethod

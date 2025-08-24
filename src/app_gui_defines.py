@@ -38,6 +38,7 @@ BUT_F3 = '<F3>'
 BUT_F4 = '<F4>'
 BUT_F5 = '<F5>'
 BUT_F6 = '<F6>'
+BUT_F7 = '<F7>'
 BUT_ALT_F4 = '<Alt-F4>'
 # Colors
 #  Color enum
@@ -63,6 +64,7 @@ OPTION_CMD_PARCHI = ('', '-include_parchi')
 OPTION_CMD_DOWNLOAD_ORDER = ('', '-reverse')
 OPTION_CMD_THREADING_CMD = '-threads'
 OPTION_CMD_THREADING = ('1', '2', '3', '4', '5', '6', '7', '8')
+OPTION_CMD_APIKEY_CMD = '-api_key'
 OPTION_CMD_COOKIES_CMD = '-cookies'
 OPTION_CMD_HEADERS_CMD = '-headers'
 OPTION_CMD_PROXY_CMD = '-proxy'
@@ -167,6 +169,11 @@ class Options(IntEnum):
     ISRETRIESOPEN = auto()
     RETRIESSTRING = auto()
     RETRIESSTRING_TEMP = auto()
+    ISAPIKEYOPEN = auto()
+    APIKEY_KEY = auto()
+    APIKEY_USERID = auto()
+    APIKEY_KEY_TEMP = auto()
+    APIKEY_USERID_TEMP = auto()
     MODULE = auto()
     IGNORE_PROXY = auto()
     PROXY_NO_DOWNLOAD = auto()
@@ -229,6 +236,11 @@ CVARS = {
     Options.ISRETRIESOPEN: 'isRetriesOpen',
     Options.RETRIESSTRING: 'retriesString',
     Options.RETRIESSTRING_TEMP: 'retriesStringTemp',
+    Options.ISAPIKEYOPEN: 'isApiKeyOpen',
+    Options.APIKEY_KEY: 'apiKeyKey',
+    Options.APIKEY_USERID: 'apiKeyUserid',
+    Options.APIKEY_KEY_TEMP: 'apiKeyKeyTemp',
+    Options.APIKEY_USERID_TEMP: 'apiKeyUseridTemp',
     Options.MODULE: 'module',
     Options.IGNORE_PROXY: 'ingoreProxy',
     Options.PROXY_NO_DOWNLOAD: 'proxyDownload',
@@ -356,7 +368,7 @@ class SubMenus(IntEnum):
     SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
     PREFIX, STAGS, SSOURCE, SCOMMENTS, SMODE, EXTEND, WNONEMPTY, VERBOSE = 0, 2, 3, 4, 5, 7, 8, 9
     RX, RN, RS, RP, EN, XB, BB = 0, 1, 2, 3, 4, 5, 6
-    HEADERS, PROXY, TIMEOUT, RETRIES, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6
+    HEADERS, PROXY, TIMEOUT, RETRIES, APIKEY, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6, 7
     DOWNLOAD, CHECKTAGS, DBATCH, CLEARLOG = 0, 1, 3, 5
     IDLIST, UNTAG, RETAG, SORT, DUPLICATES, AUTOCOMPLETEE, AUTOCOMPLETER = 0, 2, 3, 5, 7, 9, 10
     DFULL, DSKIP, DTOUCH = 0, 1, 2
@@ -379,7 +391,7 @@ menu_items = {
     Menus.EDIT: RuxxMenu(SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.SMODE, SubMenus.EXTEND,
                          SubMenus.WNONEMPTY, SubMenus.VERBOSE),
     Menus.MODULE: RuxxMenu(SubMenus.RX, SubMenus.RN, SubMenus.RS, SubMenus.RP, SubMenus.EN, SubMenus.XB, SubMenus.BB),
-    Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.DWPROXY,
+    Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.APIKEY, SubMenus.DWPROXY,
                                SubMenus.IGNOREPROXY, SubMenus.CACHEMODE),
     Menus.ACTIONS: RuxxMenu(SubMenus.DOWNLOAD, SubMenus.CHECKTAGS, SubMenus.DBATCH),
     Menus.TOOLS: RuxxMenu(SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT, SubMenus.DUPLICATES,
@@ -399,6 +411,7 @@ hotkeys = {
     Options.ISPROXYOPEN: BUT_F4,
     Options.ISTIMEOUTOPEN: BUT_F5,
     Options.ISRETRIESOPEN: BUT_F6,
+    Options.ISAPIKEYOPEN: BUT_F7,
     Options.ISSAVESETTINGSOPEN: BUT_CTRL_S,
     Options.ISLOADSETTINGSOPEN: BUT_CTRL_O,
     Options.ACTION_DOWNLOAD: BUT_CTRL_SHIFT_D,

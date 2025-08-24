@@ -21,6 +21,7 @@ from bs4 import BeautifulSoup
 from app_defines import DownloadModes, ItemInfo, FILE_NAME_FULL_MAX_LEN, FMT_DATE
 from app_download import Downloader
 from app_logger import trace
+from app_module import ProcModule
 from app_network import thread_exit
 from app_re import re_sample_file_link, re_orig_file_link, re_item_info_part_xml
 
@@ -155,7 +156,12 @@ class DownloaderGelbooru(Downloader):
             if raw_html is None:
                 thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
 
-            return int(raw_html.find('posts').get('count'))
+            try:
+                count_ = int(raw_html.find('posts').get('count'))
+                return count_
+            except Exception:
+                if ProcModule.is_rx() and 'Missing authentication' in str(raw_html):
+                    thread_exit('FATAL: Invalid RX API key!', code=-478)
 
     def _get_image_address(self, h: str) -> tuple[str, str]:
         def hi_res_addr() -> tuple[str, str]:
@@ -232,7 +238,7 @@ class DownloaderGelbooru(Downloader):
     def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:
         return (f'{self._get_sitename()}index.php?page=favorites&s=view&id={self.favorites_search_user}' if self.favorites_search_user else
                 f'{self._get_sitename()}index.php?page=pool&s=show&id={self.pool_search_str}' if self.pool_search_str else
-                f'{self._get_sitename()}index.php?page=dapi&s=post&q=index&tags={tags}{self._maxlim_str(maxlim)}')
+                f'{self._get_sitename()}index.php?page=dapi&s=post&q=index{self._get_api_key()}&tags={tags}{self._maxlim_str(maxlim)}')
 
     # threaded
     def _process_item(self, raw: str) -> None:

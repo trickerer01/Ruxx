@@ -55,6 +55,9 @@ class DownloaderEn(Downloader):
         self._base_headers = {'User-Agent': f'Ruxx/{APP_VERSION} <{APP_ADDRESS}>'}
         self._base_cookies = dict()
 
+    def _get_api_key(self) -> str:
+        return ''
+
     def _get_module_specific_default_headers(self) -> dict[str, str]:
         return self._base_headers
 

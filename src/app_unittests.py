@@ -39,6 +39,8 @@ args_argparse_str02_base = (
     'sfw asd ned -nds -proxt '
     '-threads 8 -proxy http://8.8.8.8:65333 '
     '-headers {"name1":"value1"} -cookies {"name2":"value2"} '
+    '-api_key '
+    'unut3uuuu832c423chc239c42c4go923cg43o9hASdhjkhkdhr2y938y51397592365183489yry2hy9y489cy239c2c8962c936c59823c68y65bvgsik65783y8123,5555 '
     '-path ' + CUR_PATH
 )
 args_argparse_str02 = args_argparse_str02_base + ' -mindate 31-12-1950 -maxdate 01-01-2038'
@@ -144,6 +146,7 @@ class ArgParseTests(TestCase):
         self.assertIsNotNone(arglist.proxy)
         self.assertIsNotNone(arglist.headers)
         self.assertIsNotNone(arglist.cookies)
+        self.assertIsNotNone(arglist.api_key)
         print(f'{self._testMethodName} passed')
 
 
@@ -261,6 +264,7 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('http://8.8.8.8:65333', dwn.proxies.get('https'))
             self.assertEqual('value1', dwn.add_headers.get('name1'))
             self.assertEqual('value2', dwn.add_cookies.get('name2'))
+            self.assertEqual('5555', dwn.api_key.user_id)
         print(f'{self._testMethodName} passed')
 
     def test_cmdline03(self) -> None:
