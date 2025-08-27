@@ -16,7 +16,7 @@ from json import loads as json_loads
 from os import path
 
 # internal
-from app_defines import DMODE_CHOICES, FMT_DATE, THREADS_MAX_ITEMS
+from app_defines import DMODE_CHOICES, FMT_DATE, THREADS_MAX_ITEMS, API_KEY_LEN_RX
 from app_gui_defines import (
     SLASH, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_PARCHI, OPTION_VALUES_PROXYTYPE,
 )
@@ -127,7 +127,7 @@ def valid_window_position(val: str, tk) -> str:
 
 def valid_api_key_key(key: str) -> str:
     try:
-        assert len(key) == 128
+        assert len(key) == API_KEY_LEN_RX
         assert key.isalnum()
         return key
     except Exception:

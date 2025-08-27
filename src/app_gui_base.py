@@ -29,7 +29,7 @@ from typing import Literal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
     PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, CONNECT_TIMEOUT_BASE, DATE_MAX_DEFAULT,
-    KNOWN_EXTENSIONS_STR, CONNECT_RETRIES_BASE,
+    KNOWN_EXTENSIONS_STR, CONNECT_RETRIES_BASE, API_KEY_LEN_RX,
     SITENAME_B_RX, SITENAME_B_RN, SITENAME_B_RS, SITENAME_B_RP, SITENAME_B_EN, SITENAME_B_XB, SITENAME_B_BB,
 )
 from app_file_parser import prepare_id_list, prepare_tag_lists
@@ -1160,7 +1160,7 @@ class APIRequestStrIntWindow(BaseWindow):
 
 class ApiKeyWindow(APIRequestStrIntWindow):
     def __init__(self, parent) -> None:
-        super().__init__(parent, 'API Key', 'Key (128 symbols)', 'User ID (number)', ('', ''),
+        super().__init__(parent, 'API Key', f'Key ({API_KEY_LEN_RX:d} symbols)', 'User ID (number)', ('', ''),
                          Options.APIKEY_KEY, Options.APIKEY_USERID, Options.APIKEY_KEY_TEMP, Options.APIKEY_USERID_TEMP)
 
 
