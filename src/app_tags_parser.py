@@ -102,7 +102,7 @@ RE_ORGR_PART_XB = fr'{TAG_CHAR}+?(?:{META_COUNT_XB})?'
 RE_ORGR_PART_BB = fr'{TAG_CHAR}+?(?:{META_COUNT_XB})?'
 
 # language=PythonRegExp
-ANDGR_CHAR = r'[a-zÀ-ʯА-я\d_+\-/!()*\'.|?]'
+ANDGR_CHAR = r'[a-zÀ-ʯА-яぁ-㋾･-ﾟ一-鿿\d_+\-/!()*\'.|?]'
 # language=PythonRegExp
 RE_ANDGR_PART_U = fr'{ANDGR_CHAR}+?'
 
