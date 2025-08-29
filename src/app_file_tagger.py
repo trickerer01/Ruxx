@@ -15,7 +15,7 @@ from re import Pattern, compile as re_compile
 from app_defines import UTF8, FILE_NAME_FULL_MAX_LEN
 from app_gui_defines import SLASH, UNDERSCORE
 from app_tagger import append_filtered_tags, load_tag_aliases
-from app_utils import trim_undersores, normalize_path
+from app_utils import trim_underscores, normalize_path
 
 __all__ = ('untag_files', 'retag_files')
 
@@ -74,7 +74,7 @@ def retag_files(files: Sequence[str], re_tags_to_process: Pattern, re_tags_to_ex
             untagged_name_noext = f'{fname_match.group(1) or ""}{fname_match.group(2)}'
             score_str, tags_rest = tuple(tags.split(' ', 1))
             add_str = append_filtered_tags(score_str, tags_rest, re_tags_to_process, re_tags_to_exclude)
-            new_name = trim_undersores(f'{untagged_name_noext}{UNDERSCORE}{add_str if len(add_str) <= maxlen else add_str[:maxlen]}')
+            new_name = trim_underscores(f'{untagged_name_noext}{UNDERSCORE}{add_str if len(add_str) <= maxlen else add_str[:maxlen]}')
             rename_file(full_path, f'{base_path}{SLASH}{new_name}{ext}')
             retagged_count += 1
     except Exception:

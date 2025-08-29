@@ -24,7 +24,7 @@ from iteration_utilities import unique_everseen
 # internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    ThreadInterruptException, DownloaderStates, DownloadModes, ItemInfo, Comment, Mem, APIKey,
+    ThreadInterruptException, DownloaderStates, DownloaderOptions, DownloadModes, ItemInfo, Comment, Mem, APIKey,
     DATE_MIN_DEFAULT, CONNECT_TIMEOUT_BASE, UTF8, SOURCE_DEFAULT, PLATFORM_WINDOWS, DATE_MAX_DEFAULT, INT_BOUNDS_DEFAULT,
 )
 from app_download_base import DownloaderBase
@@ -37,7 +37,7 @@ from app_revision import APP_NAME, APP_VERSION
 from app_tagger import append_filtered_tags, load_tag_aliases
 from app_tags_parser import convert_taglist
 from app_task import extract_neg_and_groups, split_tags_into_tasks
-from app_utils import confirm_yes_no, normalize_path, trim_undersores, format_score
+from app_utils import confirm_yes_no, normalize_path, trim_underscores, format_score, make_subfolder_name
 
 # annotations
 if False is True:
@@ -118,8 +118,11 @@ class Downloader(DownloaderBase):
         else:
             self.processed_count += 1
 
-    def save_cmdline(self, cmdline: Iterable[str]):
+    def save_cmdline(self, cmdline: Iterable[str]) -> None:
         self.cmdline = ' '.join(cmdline)
+
+    def set_options(self, **options: bool | int | str) -> None:
+        self.options = options
 
     def _at_launch(self) -> None:
         if self.verbose:
@@ -146,7 +149,7 @@ class Downloader(DownloaderBase):
 
         add_string = format_score(info.score)
         add_string = append_filtered_tags(add_string, info.tags, self.get_re_tags_to_process(), self.get_re_tags_to_exclude())
-        add_string = trim_undersores(add_string)
+        add_string = trim_underscores(add_string)
         if len(add_string) > 0:
             add_string = f'{UNDERSCORE}{add_string}'
         while len(add_string) > maxlen:
@@ -158,9 +161,9 @@ class Downloader(DownloaderBase):
     def _download(self, link: str, item_id: str, dest: str) -> None:
         if self.download_mode != DownloadModes.SKIP:
             with self.item_lock:
-                if not path.isdir(self.dest_base):
+                if not path.isdir(self.dest_base_s):
                     try:
-                        makedirs(self.dest_base)
+                        makedirs(self.dest_base_s)
                     except Exception:
                         thread_exit('ERROR: Unable to create subfolder!')
 
@@ -581,6 +584,12 @@ class Downloader(DownloaderBase):
         while self.current_task_num < self._tasks_count():  # tasks count may increase during this loop
             self.current_task_num += 1
             cur_task_tags = self.tags_str_arr[self.current_task_num - 1]
+            if self.options.get(DownloaderOptions.OPTION_CREATE_SUBFOLDERS, False) is True:
+                self.current_task_subfolder = make_subfolder_name(
+                    cur_task_tags,
+                    self.options.get(DownloaderOptions.OPTION_SUBFOLDER_TASK_NUM, self.current_task_num),
+                    self.options.get(DownloaderOptions.OPTION_SUBFOLDER_TASKS_COUNT, self._tasks_count())
+                )
             extra_task_num = self.current_task_num - self.orig_tasks_count
             extra_task_str = f'[extra {extra_task_num:d}] ' if extra_task_num > 0 else ''
             trace(f'\n{extra_task_str}task {self.current_task_num:d} / {self._tasks_count():d} in progress...\n{cur_task_tags}\n')
@@ -785,11 +794,11 @@ class Downloader(DownloaderBase):
         if len(self.item_info_dict_all) == 0 or True not in (self.dump_tags, self.dump_sources, self.dump_comments):
             return
 
-        if not path.isdir(self.dest_base):
+        if not path.isdir(self.dest_base_s):
             try:
-                makedirs(self.dest_base)
+                makedirs(self.dest_base_s)
             except Exception:
-                thread_exit(f'ERROR: Unable to create folder {self.dest_base}!')
+                thread_exit(f'ERROR: Unable to create folder {self.dest_base_s}!')
 
         orig_ids: set[str] = {self.item_info_dict_all[k].id for k in self.item_info_dict_all}
         merged_files = self._try_merge_info_files()
@@ -828,7 +837,7 @@ class Downloader(DownloaderBase):
             trace(f'\nSaving {name}...')
             if self.dump_per_item:
                 for iinfo in item_info_list:
-                    ifilename = f'{self.dest_base}{abbrp}!{name}{UNDERSCORE}{iinfo.id}.txt'
+                    ifilename = f'{self.dest_base_s}{abbrp}!{name}{UNDERSCORE}{iinfo.id}.txt'
                     saved_files.append(ifilename)
                     if self._has_gui() and path.isfile(ifilename):
                         if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{ifilename}\' already exists. Overwrite?'):
@@ -837,7 +846,7 @@ class Downloader(DownloaderBase):
                     with open(ifilename, 'wt', encoding=UTF8) as idump:
                         idump.write(proc(iinfo))
             else:
-                filename = f'{self.dest_base}{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
+                filename = f'{self.dest_base_s}{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
                 saved_files.append(filename)
                 if self._has_gui() and path.isfile(filename):
                     if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{filename}\' already exists. Overwrite?'):
@@ -856,7 +865,7 @@ class Downloader(DownloaderBase):
         parsed_files = list()
         if not self.merge_lists:
             return parsed_files
-        dir_fullpath = normalize_path(f'{self.dest_base}')
+        dir_fullpath = normalize_path(f'{self.dest_base_s}')
         if not path.isdir(dir_fullpath):
             return parsed_files
         abbrp = self._get_module_abbr_p()

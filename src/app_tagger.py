@@ -18,7 +18,7 @@ from app_defines import MODULE_CHOICES, TAG_AUTOCOMPLETE_LENGTH_MIN, TAG_AUTOCOM
 from app_gui_defines import UNDERSCORE
 from app_logger import trace
 from app_re import re_replace_symbols, re_tags_exclude_major1, re_tags_exclude_major2, re_numbered_or_counted_tag
-from app_utils import trim_undersores, normalize_path
+from app_utils import trim_underscores, normalize_path
 
 __all__ = ('TagsDB', 'load_tag_aliases', 'append_filtered_tags', 'is_wtag', 'normalize_wtag', 'no_validation_tag')
 
@@ -198,13 +198,13 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pa
             major_skip_match2 = re_tags_exclude_major2.fullmatch(aser_match.group(2))
             if major_skip_match1 or major_skip_match2:
                 continue
-            stag = trim_undersores(aser_match.group(1))
+            stag = trim_underscores(aser_match.group(1))
             if len(stag) >= 14:
                 continue
             tag = stag
             aser_valid = True
 
-        tag = trim_undersores(tag)
+        tag = trim_underscores(tag)
         alias = TAG_ALIASES.get(tag)
         if alias:
             tag = alias

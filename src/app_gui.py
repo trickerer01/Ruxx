@@ -22,8 +22,9 @@ from tkinter import END, messagebox
 from app_cmdargs import prepare_arglist
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    DownloaderStates, MODULE_CHOICES, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP,
-    PROGRESS_VALUE_NO_DOWNLOAD, PROGRESS_VALUE_DOWNLOAD, FMT_DATE, DMODE_CHOICES, DATE_MAX_DEFAULT,
+    DownloaderStates, DownloaderOptions,
+    MODULE_CHOICES, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD,
+    PROGRESS_VALUE_DOWNLOAD, FMT_DATE, DMODE_CHOICES, DATE_MAX_DEFAULT,
     max_progress_value_for_state,
 )
 from app_download import Downloader
@@ -32,7 +33,7 @@ from app_file_searcher import find_duplicated_files
 from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_size, sort_files_by_score
 from app_file_tagger import untag_files, retag_files
 from app_gui_base import (
-    AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, AskFirstLastWindow, GetRoot,
+    AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, AskFirstLastWindow, AskChecksWindow, GetRoot,
     setrootconf, rootm, getrootconf, window_hcookiesm, window_proxym, window_timeoutm, window_retriesm, window_apikeym, register_menu,
     register_submenu, create_base_window_widgets, text_cmdm, get_icon, init_additional_windows, get_global, config_global,
     is_global_disabled, is_menu_disabled, is_focusing, set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list,
@@ -781,12 +782,24 @@ def do_process_batch() -> None:
     if not cmdlines:
         return
 
-    batch_download_thread = Thread(target=start_batch_download_thread, args=(cmdlines,))
+    aw = AskChecksWindow(rootm(), ('Create subfolders',))
+    aw.finalize()
+    rootm().wait_window(aw.window)
+    values = aw.value()
+    if values is None:
+        if aw.get_variable(1) != '':
+            trace(f'Invalid checkbutton 1 value \'{aw.get_variable(1)}\'')
+        return
+
+    options: dict[str, bool | int | str] = dict()
+    options[DownloaderOptions.OPTION_CREATE_SUBFOLDERS] = values[0]
+    options[DownloaderOptions.OPTION_SUBFOLDER_TASKS_COUNT] = len(cmdlines)
+    batch_download_thread = Thread(target=start_batch_download_thread, args=(cmdlines,), kwargs=options)
     batch_download_threadm().killed = False
     batch_download_threadm().start()
 
 
-def start_batch_download_thread(cmdlines: list[str]) -> None:
+def start_batch_download_thread(cmdlines: list[str], **options: bool | int | str) -> None:
     cmdline_errors = list[str]()
     for cmdline1 in cmdlines:
         parse_result, _ = parse_tags(cmdline1)
@@ -800,26 +813,27 @@ def start_batch_download_thread(cmdlines: list[str]) -> None:
         return
 
     n = '\n  '
-    trace(f'\n[batcher] Processing {len(cmdlines):d} tag lists:{n}{n.join(cmdlines)}')
+    trace(f'\n[batcher] Processing {len(cmdlines):d} tag strings:{n}{n.join(cmdlines)}')
     unfocus_buttons_once()
     processed_count = 0
     for idx, cmdline2 in enumerate(cmdlines):
         config_global(Globals.FIELD_TAGS, state=STATE_NORMAL)
         setrootconf(Options.TAGS, cmdline2)
         config_global(Globals.FIELD_TAGS, state=STATE_DISABLED)
-        do_download()
+        options[DownloaderOptions.OPTION_SUBFOLDER_TASK_NUM] = idx + 1
+        do_download(**options)
         if download_thread is None or not download_threadm().is_alive():
-            messagebox.showerror('Nope', f'Error processing tag list {idx + 1:d}: \'{cmdline2}\'!')
+            messagebox.showerror('Nope', f'Error processing tag string {idx + 1:d}: \'{cmdline2}\'!')
             break
         download_threadm().join()
         if getattr(current_process(), 'killed', False) is True:
             break
         processed_count += 1
 
-    trace(f'\n[batcher] Successfully processed {processed_count:d} / {len(cmdlines):d} {ProcModule.name().upper()} tag lists')
+    trace(f'\n[batcher] Successfully processed {processed_count:d} / {len(cmdlines):d} {ProcModule.name().upper()} tag strings')
 
 
-def do_download() -> None:
+def do_download(**options: bool | int | str) -> None:
     global download_thread
 
     if is_downloading():
@@ -846,7 +860,7 @@ def do_download() -> None:
     config_global(Globals.FIELD_TAGS, bg=COLOR_WHITE)
 
     # launch
-    download_thread = Thread(target=start_download_thread, args=(cmdline,))
+    download_thread = Thread(target=start_download_thread, args=(cmdline,), kwargs=options)
     download_threadm().killed = False
     download_threadm().gui = True
     download_threadm().start()
@@ -855,11 +869,12 @@ def do_download() -> None:
         unfocus_buttons_once()
 
 
-def start_download_thread(cmdline: list[str]) -> None:
+def start_download_thread(cmdline: list[str], **options: bool | int | str) -> None:
     global dwn
     arg_list = prepare_arglist(cmdline[1:])
     with get_new_downloader() as dwn:
         dwn.save_cmdline(cmdline)
+        dwn.set_options(**options)
         dwn.launch_download(arg_list)
 
 # end static methods

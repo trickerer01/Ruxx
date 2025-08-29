@@ -282,8 +282,8 @@ class DownloaderEn(Downloader):
 
     def _send_to_download(self, raw: str, item_id: str, is_video: bool) -> None:
         address, fmt = self._get_video_address(raw) if is_video else self._get_image_address(raw)
-        hint_maxlen = FILE_NAME_FULL_MAX_LEN - (len(self.dest_base) + len(item_id) + 1 + len(fmt))
-        self._download(address, item_id, f'{self.dest_base}{self._try_append_extra_info(item_id, hint_maxlen)}.{fmt}')
+        hint_maxlen = FILE_NAME_FULL_MAX_LEN - (len(self.dest_base_s) + len(item_id) + 1 + len(fmt))
+        self._download(address, item_id, f'{self.dest_base_s}{self._try_append_extra_info(item_id, hint_maxlen)}.{fmt}')
 
     # threaded
     def _process_item(self, raw: str) -> None:

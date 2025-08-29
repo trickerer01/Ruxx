@@ -22,6 +22,10 @@ re_replace_symbols = re_compile(
     r'[^0-9a-zA-Z_+\-\[\]]+'
 )
 
+re_replace_symbols_sub = re_compile(
+    r'[^0-9a-zA-Z_.\-]+'
+)
+
 re_numbered_or_counted_tag = re_compile(
     r'^(?!rule_?\d+)1?([^\d]+?)(?:_?\d+|s)?$'
 )

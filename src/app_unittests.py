@@ -259,7 +259,7 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('31-12-1950', dwn.date_min)
             self.assertEqual('01-01-2038', dwn.date_max)
             self.assertEqual(8, dwn.maxthreads_items)
-            self.assertEqual(CUR_PATH, dwn.dest_base)
+            self.assertEqual(CUR_PATH, dwn.dest_base_s)
             self.assertEqual('http://8.8.8.8:65333', dwn.proxies.get('http'))
             self.assertEqual('http://8.8.8.8:65333', dwn.proxies.get('https'))
             self.assertEqual('value1', dwn.add_headers.get('name1'))

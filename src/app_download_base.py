@@ -57,6 +57,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.tags_str_arr: list[str] = list()
         # extra
         self.cmdline: str = ''
+        self.options: dict[str, bool | int | str] = dict()
         self.get_max_id: bool = False
         self.check_tags: bool = False
 
@@ -85,6 +86,11 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.default_sort: bool = True
         self.favorites_search_user: str = ''
         self.pool_search_str: str = ''
+        self.current_task_subfolder: str = ''
+
+    @property
+    def dest_base_s(self) -> str:
+        return normalize_path(f'{self.dest_base}{self.current_task_subfolder}')
 
     @abstractmethod
     def _get_api_key(self) -> str:
@@ -644,12 +650,12 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _filter_existing_items(self) -> None:
         trace('Filtering out existing items...')
 
-        if not path.isdir(self.dest_base):
+        if not path.isdir(self.dest_base_s):
             return
 
         total_count_temp = self.total_count
 
-        curdirfiles = [curfile for curfile in listdir(self.dest_base) if path.isfile(f'{self.dest_base}{curfile}')]
+        curdirfiles = [curfile for curfile in listdir(self.dest_base_s) if path.isfile(f'{self.dest_base_s}{curfile}')]
         if len(curdirfiles) == 0:
             return
 

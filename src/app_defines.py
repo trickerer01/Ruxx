@@ -242,6 +242,8 @@ API_KEY_DEFAULT_RX = (
 )
 API_USER_ID_DEFAULT_RX = 'NTI3Mzg3OQ=='
 
+SUBFOLDER_NAME_LEN_MAX = 20
+
 
 class ThreadInterruptException(Exception):
     pass
@@ -274,6 +276,12 @@ class APIKey:
         return bool(self.key) and bool(self.user_id)
 
     __repr__ = __str__
+
+
+class DownloaderOptions:
+    OPTION_CREATE_SUBFOLDERS = 'create_subfolders'
+    OPTION_SUBFOLDER_TASK_NUM = 'override_task_num'
+    OPTION_SUBFOLDER_TASKS_COUNT = 'override_tasks_count'
 
 #
 #

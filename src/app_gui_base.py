@@ -18,7 +18,7 @@ from json import dumps as json_dumps, loads as json_loads
 from os import curdir, path
 from re import compile as re_compile
 from tkinter import (
-    Tk, Toplevel, ttk, Widget, Menu, Scrollbar, Button, Text, Label, Listbox, PhotoImage, StringVar, IntVar, BooleanVar,
+    Tk, Toplevel, ttk, Widget, Menu, Scrollbar, Button, Text, Label, Listbox, Checkbutton, PhotoImage, StringVar, IntVar, BooleanVar,
     filedialog, messagebox, HORIZONTAL, W, S, X, Y, NO, YES, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT, TOP, INSERT, NONE, SEL,
 )
 
@@ -58,12 +58,12 @@ from app_utils import normalize_path
 from app_validators import valid_proxy, valid_positive_int, valid_window_position, valid_api_key
 
 __all__ = (
-    'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'AskFirstLastWindow', 'LogWindow',
-    'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym', 'window_timeoutm', 'window_retriesm',
-    'window_apikeym', 'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets', 'text_cmdm', 'get_icon',
-    'init_additional_windows', 'get_global', 'config_global', 'is_global_disabled', 'is_menu_disabled', 'is_focusing', 'toggle_console',
-    'hotkey_text', 'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about', 'load_id_list',
-    'load_batch_download_tag_list', 'ask_filename', 'browse_path', 'register_menu_command', 'register_submenu_command',
+    'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'AskFirstLastWindow',
+    'AskChecksWindow', 'LogWindow', 'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym',
+    'window_timeoutm', 'window_retriesm', 'window_apikeym', 'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets',
+    'text_cmdm', 'get_icon', 'init_additional_windows', 'get_global', 'config_global', 'is_global_disabled', 'is_menu_disabled',
+    'is_focusing', 'toggle_console', 'hotkey_text', 'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about',
+    'load_id_list', 'load_batch_download_tag_list', 'ask_filename', 'browse_path', 'register_menu_command', 'register_submenu_command',
     'register_menu_checkbutton', 'register_menu_radiobutton', 'register_submenu_radiobutton', 'register_menu_separator',
     'get_all_media_files_in_cur_dir', 'get_media_files_dir', 'update_lastpath', 'config_menu', 'toggle_autocompletion',
     'trigger_autocomplete_tag',
@@ -446,6 +446,32 @@ class AwaitableAskWindow(BaseWindow, ABC):
     @abstractmethod
     def _put_widgets(self, frame: BaseFrame) -> None:
         ...
+
+
+class AskChecksWindow(AwaitableAskWindow):
+    def __init__(self, parent, texts: Iterable[str]) -> None:
+        self.texts = list(texts)
+        self.checkbuttons: list[Checkbutton | None] = [None for _ in texts]
+        super().__init__(parent, 'Options', variables_count=len(self.checkbuttons))
+
+    def finalize(self) -> None:
+        [self._set_variable(i + 1, '0') for i in range(len(self.checkbuttons))]
+        AwaitableAskWindow.finalize(self)
+        self.checkbuttons[0].focus_set()
+
+    def _put_widgets(self, frame: BaseFrame) -> None:
+        self.checkbuttons[0] = Checkbutton(frame, variable=self._variables[0], text=self.texts[0])
+        self.checkbuttons[0].grid(row=first_row(), column=first_column(), padx=12, columnspan=2)
+        for i in range(len(self.checkbuttons) - 1):
+            n = i + 1
+            self.checkbuttons[n] = Checkbutton(frame, variable=self._variables[n], text=self.texts[n])
+            self.checkbuttons[n].grid(row=next_row(), column=first_column(), padx=12, columnspan=2)
+
+    def value(self) -> list[bool] | None:
+        try:
+            return [bool(int(self.get_variable(_ + 1))) for _ in range(len(self.checkbuttons))]
+        except Exception:
+            return None
 
 
 class AskFileTypeFilterWindow(AwaitableAskWindow):
