@@ -32,7 +32,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **File -> Open download folder** \<Ctrl+L> ‒ open currently selected destination folder (**Path**), Windows only
 - **View -> Log** ‒ open a log window, if you want some readable output
 - **View -> Reveal module names** ‒ toggles between module abbreviation and website real name shown in module icon tooltip
-- **Edit -> Prefix file names with \<prefix>** ‒ all downloaded files will be named accordingly and not as just numbers. This option is enabled by default
+- **Edit -> Prefix file names with \<prefix>** ‒ all downloaded file names will be prefixed according to selected module (`rx_`, `rn_`, etc.) so they are not just numbers. This option is enabled by default
 - **Edit -> Save tags** ‒ an additional (text) file will be created containing tags for every post
 - **Edit -> Save source links** ‒ an additional (text) file will be created containing source (if present) for every post
 - **Edit -> Save comments** ‒ an additional (text) file will be created containing comments (if present) for every post
@@ -42,23 +42,23 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
   - **merge info lists** ‒ gather and parse existing info files, merge and save all infos together, one text file per info category will be stored. **Parsed old info files will be deleted**
 - **Edit -> Extend file names with extra info** ‒ all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
 - **Edit -> Warn if download folder is not empty** ‒ in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
-- **Edit -> Verbose log** ‒ Enable logging of technical messages not related to actual download process. Verbose log is one of proper issue report requirements
+- **Edit -> Verbose log** ‒ Enable logging of technical messages not related to actual download process. Verbose log is one of the requirements for a proper issue report
 - **Connection -> Headers / Cookies** \<F3> ‒ For some websites (RN) and in some other cases you'll have to provide your `cf_clearance` cookie, and the `User-Agent` header has to match the one used in your web browser for target website ‒ to find it while browsing said website open `Web Developer tools -> Network` (or similar), reload the page and check `request headers`
 - **Connection -> Set proxy** \<F4> ‒ you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
 - **Connection -> Set timeout** \<F5> ‒ override connection timeout if need be
 - **Connection -> Set retries count** \<F6> ‒ override connection retries count, may be useful when using a proxy
 - **Connection -> API Key** \<F7> ‒ set API authentication info (RX only)
 - **Connection -> Download without proxy** ‒ you can use this option if only the main domain of the selected module's website is blocked in your country
-- **Connection -> Ignore proxy** ‒ this is just a switch to disable proxy temporarily without wiping it
+- **Connection -> Ignore proxy** ‒ this is just a switch that disables proxy temporarily without wiping it
 - **Connection -> Cache processed HTML** ‒ by default HTML is cached as raw bytes, enabling this makes Ruxx cache HTML after it was processed into manageable form - a little bit faster but consumes much more memory. Mainly affects RS module
 - **Actions -> Download** \<Ctrl+Shift+D> ‒ same as download button
 - **Actions -> Check tags** \<Ctrl+Shift+C> ‒ same as check tags button
-- **Actions -> Batch download using tag list...** - Read and process tags using a text file. Each line forms a string which then gets put into **Tags** field and downloaded. Warning: download starts immediately! Adjust settings and download options beforehand
+- **Actions -> Batch download using tag list...** ‒ read and process tags using a text file. Each line forms a string which then gets put into **Tags** field and downloaded. Warning: download starts immediately! Adjust settings and download options beforehand
 - **Actions -> Clear log** \<Ctrl+Shift+E> ‒ same as clear log button
-- **Tools -> Load from ID list** ‒ Load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group [expression](#tag-syntax), effectively allowing you to search for those ids. ~~Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details.~~ Re-enabled since version `1.1.284` for all modules using a workaround, but doesn't run in parallel so be aware of that
+- **Tools -> Load from ID list** ‒ load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group [expression](#tag-syntax), effectively allowing you to search for those ids. ~~Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details.~~ Re-enabled since version `1.1.284` for all modules using a workaround, but doesn't run in parallel so be aware of that
 - **Tools -> Un-tag files...** ‒ renames selected Ruxx-downloaded media files, stripping file names of all extra info
 - **Tools -> Re-tag files...** ‒ renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)
-- **Tools -> Sort files into subfolders...** ‒ a set of tools to separate downloaded files if need be:
+- **Tools -> Sort files into subfolders...** ‒ a set of tools used to separate downloaded files if need be:
   - **by type** ‒ sort by file type (checking file extension). You can separate files by `videos`/`images`/`flash (RN, EN)` or by extension itself. Note that both `jpeg` and `jpg` files will be placed into **jpg** folder
   - **by size** ‒ sort by file size (you'll have to provide a threshold, in Megabytes). You can use multiple thesholds, separated by space, in any order: `0.5 10 3.0 5.00`
   - **by score** ‒ sort by post score. Make sure that selected files include score in their names or this won't work. You can use multiple thesholds, separated by space, in any order: `100 250 50 500`
@@ -213,7 +213,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 - To force a non-wildcarded tag without validation surround it with `%`, ex: `%mumbling%` (1 post, unlisted), or, if negative: `-%mumbling%`
 
 #### Tag autocompletion
-Ruxx provide lists of known tags for all modules (except RS), which can also be used to attempt to complete whatever word typed in **Tags** field
+Ruxx provide lists of known tags for all modules, which can also be used to attempt to complete whatever word typed in **Tags** field
 - Enable this feature by selecting **Tools -> Enable autocompletion**. You will be asked for a folder location - the folder containing tag list files. Once selected the following message will be logged (or similar):
   ```
   Found 7 tag lists:
@@ -247,6 +247,10 @@ Ruxx doesn't provide a method of authentication natively on either of supported 
   - Notes:
     - RN `cf_clearance` cookie duration is **15 minutes**
 
+#### API authentication
+Some modules (RX only actually) require authentication info provided in order to use their download API (dapi).  
+It's strongly recommended to use your own API key and not rely on a default one. Visit module's respective website, sign in and generate yourself a key, you can then save it in config.
+
 #### Favorites
 Downloading user's favorites using native tags search functionality is only available with RN, RP and EN (see meta tags above), other websites don't implement that neither through tags nor through API. In order to enable users to download one's favorites Ruxx implements `favorited_by` tag for other modules as well. It's an extra layer of functionality but here is what you need to use it:
 - Syntax: `favorited_by:X`. `X` = `<user ID>`. User ID you can get from user's favorites page, it's a part of its web address. Note: this syntax is not invalid as RN / RP / EN tag either but it won't do anything there
@@ -255,7 +259,7 @@ Downloading user's favorites using native tags search functionality is only avai
 - Downloading favorites isn't particulary fast, Ruxx will need to fetch info for every item in the list in order to enable filtering
 
 #### Pools
-Downloading post pool using native tags search functionality is not possible and only RX, EN, XB and BB implement pool functionality  
+Downloading post pool using native tags search functionality is not possible and only RX, EN, XB and BB implement pool functionality.  
 To download a pool use special `pool` tag:
 - Syntax: `pool:X`. `X` = `<pool ID>`. Pool ID you can get from pool page, it's a part of its web address
 - EN module also supports pool name syntax: `pool:Y`. `Y` = `<pool name>`. Pool name must be in lower case and with all spaces replaced with underscores, ex. `'Long Night' -> 'pool:long_night'`
