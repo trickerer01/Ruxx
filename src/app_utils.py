@@ -14,13 +14,13 @@ from math import ceil, log10
 from tkinter import messagebox
 
 # internal
-from app_defines import FMT_DATE, SUPPORTED_PLATFORMS, SUBFOLDER_NAME_LEN_MAX
+from app_defines import FMT_DATE, SUPPORTED_PLATFORMS, SUBFOLDER_NAME_LEN_MAX, MIN_PYTHON_VERSION, MIN_PYTHON_VERSION_STR
 from app_gui_defines import SLASH, UNDERSCORE
 from app_re import re_uscore_mult, re_replace_symbols_sub
 
 
 def ensure_compatibility() -> None:
-    assert sys.version_info >= (3, 9), 'Minimum python version required is 3.9!'
+    assert sys.version_info >= MIN_PYTHON_VERSION, f'Minimum python version required is {MIN_PYTHON_VERSION_STR}!'
     assert sys.platform in SUPPORTED_PLATFORMS, f'Unsupported OS \'{sys.platform}\'!'
 
 

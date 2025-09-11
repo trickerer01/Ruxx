@@ -218,7 +218,7 @@ class DownloaderGelbooru(Downloader):
                     item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
             return item_info
         except Exception:
-            self._on_thread_exception(current_process().getName())
+            self._on_thread_exception(current_process().name)
             raise
 
     def _split_or_group_into_tasks_always(self) -> bool:
@@ -275,7 +275,7 @@ class DownloaderGelbooru(Downloader):
 
             self._inc_proc_count()
         except Exception:
-            self._on_thread_exception(current_process().getName())
+            self._on_thread_exception(current_process().name)
             raise
 
     @abstractmethod

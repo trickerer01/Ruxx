@@ -10,6 +10,9 @@ from __future__ import annotations
 from datetime import datetime
 from enum import IntEnum, auto, unique
 
+MIN_PYTHON_VERSION = (3, 10)
+MIN_PYTHON_VERSION_STR = f'{MIN_PYTHON_VERSION[0]}.{MIN_PYTHON_VERSION[1]}'
+
 
 class Comment:
     """

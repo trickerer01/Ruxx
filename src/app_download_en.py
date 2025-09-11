@@ -248,7 +248,7 @@ class DownloaderEn(Downloader):
                     item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
             return item_info
         except Exception:
-            self._on_thread_exception(current_process().getName())
+            self._on_thread_exception(current_process().name)
             raise
 
     def get_re_tags_to_process(self) -> Pattern:
@@ -324,7 +324,7 @@ class DownloaderEn(Downloader):
 
             self._inc_proc_count()
         except Exception:
-            self._on_thread_exception(current_process().getName())
+            self._on_thread_exception(current_process().name)
             raise
 
     def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:

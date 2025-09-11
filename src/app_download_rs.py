@@ -199,7 +199,7 @@ class DownloaderRs(Downloader):
                         item_info.score = score_span.text
             return item_info
         except Exception:
-            self._on_thread_exception(current_process().getName())
+            self._on_thread_exception(current_process().name)
             raise
 
     def get_re_tags_to_process(self) -> Pattern:
@@ -267,7 +267,7 @@ class DownloaderRs(Downloader):
 
             self._inc_proc_count()
         except Exception:
-            self._on_thread_exception(current_process().getName())
+            self._on_thread_exception(current_process().name)
             raise
 
     def _form_tags_search_address(self, tags: str, *_) -> str:

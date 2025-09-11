@@ -253,7 +253,7 @@ class Downloader(DownloaderBase):
             if ProcModule.is_rp() or ProcModule.is_en() or ProcModule.is_xb() or ProcModule.is_bb():
                 thread_sleep(1.0)
         except Exception:
-            self._on_thread_exception(current_process().getName())
+            self._on_thread_exception(current_process().name)
             raise
 
     def _fetch_task_items(self, tag_str: str) -> None:
