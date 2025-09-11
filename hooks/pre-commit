@@ -1,0 +1,3 @@
+#!/bin/sh
+python src/app_genrev.py
+git add src/app_revision.py
