@@ -275,30 +275,52 @@ EN module also allows creating post sets. Essentially they are no different from
   - posts can be filtered further if needed
   - download process suffers no speed penalty
 
-#### Using from console
-- It is possible to use Ruxx as a cmdline tool. In main window you will find `Cmd` section ‒ it generates your cmdline arguments every time you make a change ‒ use those arguments as an example. In console window you may need to escape some of them (path, `OR` groups, tags containing dots, etc.). Most arguments are optional though ‒ the only ones required are `tags` (default module is RX)  
-- Python 3.10 or greater required. See `requirements.txt` for additional dependencies. Install with:
-  - `python -m pip install -r requirements.txt`
-
-- To run Ruxx directly using python target `ruxx_cmd.py` or `ruxx_gui.py`
-  - `python ruxx_cmd.py <...args>` - run Ruxx command
-  - `python ruxx_gui.py` - run Ruxx GUI
-- ...or just use `ruxx.py` universally
-  - `python ruxx.py <...args>` - run Ruxx command
-  - `python ruxx.py <no args>` - run Ruxx GUI
-
-Invoke `Ruxx --help` or `python ruxx_cmd.py --help` for full help
+### Technical info
+Ruxx is written in `Python 3.10`. Lines of code: 13300+. Compiled with `PyInstaller 6.15`
 
 #### Logging
-Ruxx will log most of its actions, which you can see in **Log** window  
+Ruxx will log most of its actions, which you can see in **Log** window.  
 If any problem occurs it will yield some info unless it's an unexpected fatal error. Ruxx is able to resolve most non-fatal networking errors and IO mishaps, including dropped searches (search overload), non-matching e-tags, file size mismatch, malformed packets, etc.
 - **W1**: a minor problem, more of the info
 - **W2**: a problem which is going to be fixed, but there is no guarantee it won't occur again
 - **W3**: a rather serious problem, Ruxx will attempt to fix it, but it may be not enough, may lead to an error down the road
 - **ERROR**: if you see this the download process may fail, Ruxx can only retry the failed action, in most cases that's enough
 
-### Technical info
-Ruxx is written in `Python 3.10`. Lines of code: 13300+. Executables built using PyInstaller 6.10
+#### Using from console
+- It is possible to use Ruxx pre-built executable as a cmdline tool. In main window you will find `Cmd` section ‒ it generates your cmdline arguments every time you make a change ‒ use those arguments as an example. In console window you may need to escape some of them (path, `OR` groups, tags containing dots, etc.). Most arguments are optional though ‒ the only ones required are `tags` (default module is RX):
+  - `Ruxx.exe <...args>`
+
+Invoke `Ruxx.exe --help` to list all possible arguments
+
+#### Using through python
+- `Python 3.10` or greater is required. See `requirements.txt` for additional dependencies. Install with:
+  - `python -m pip install -r requirements.txt`
+- Run Ruxx by targeting `ruxx_cmd.py` or `ruxx_gui.py` respectively...
+  - `python src/ruxx_cmd.py <...args>` - launch Ruxx in cmdline mode
+  - `python src/ruxx_gui.py <no args>` - launch Ruxx GUI
+- ...or simply use universal root entry point in `ruxx.py`
+  - `python src/ruxx.py <...args>` - launch Ruxx in cmdline mode
+  - `python src/ruxx.py <no args>` - launch Ruxx GUI
+
+Invoke `python src/ruxx.py --help` to list all possible arguments
+
+<BR>
+
+### How to build a standalone executable
+- **Dependencies:**
+  - `Python 3.10` or greater
+  - `git`
+- Clone the repository:
+  - `git clone https://github.com/trickerer01/Ruxx`
+- Enter project folder, create virtual environment and install required modules:
+  - `cd Ruxx`
+  - `python -m venv 1venv`
+    - `./1venv/Scripts/activate.ps1` (Windows)
+    - `source 1venv/bin/activate` (Linux)
+  - `python -m pip install -r requirements.txt`
+  - `python -m pip install pyinstaller`
+- Run the build script. It will do everything for you and clean up afterwards, your app will be put in `release` folder:
+  - `python src/app_release.py`
 
 ### Support
 For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/Ruxx/issues)
