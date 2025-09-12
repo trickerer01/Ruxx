@@ -2,12 +2,12 @@
 1ruxxenv/
 1ruxxvenv/
 1venv/
-release/
 images/*/
 version_info.txt
 *.pyc
 *.cfg
 *.lnk
+*.exe
 src/curr.py
 src/app_grab_tags.py
 
