@@ -7,7 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 from contextlib import ExitStack, suppress
-from os import path, listdir
+from os import DirEntry, path, scandir
 from threading import current_thread
 from typing import Literal
 
@@ -33,18 +33,19 @@ def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_d
 
         def scan_folder(base_folder: str, level: int) -> None:
             if path.isdir(base_folder):
-                for cname in listdir(base_folder):
-                    fullpath = f'{base_folder}{cname}'
-                    if path.isdir(fullpath):
+                dentry: DirEntry
+                for dentry in scandir(base_folder):
+                    fullpath = f'{base_folder}{dentry.name}'
+                    if dentry.is_dir():
                         fullpath = normalize_path(fullpath)
                         if level < scan_depth:
                             found_filenames_dict[fullpath] = list()
                             with suppress(PermissionError):
                                 scan_folder(fullpath, level + 1)
-                    elif path.isfile(fullpath):
-                        ext = path.splitext(cname)[1]
+                    elif dentry.is_file():
+                        ext = path.splitext(dentry.name)[1]
                         if ext[1:] in KNOWN_EXTENSIONS:
-                            found_filenames_dict[base_folder].append(cname)
+                            found_filenames_dict[base_folder].append(dentry.name)
 
         found_filenames_dict[base_path] = list()
         scan_folder(base_path, 0)

@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from collections.abc import Iterable, Sequence
-from os import path, rename as rename_file, listdir
+from os import DirEntry, path, rename as rename_file, scandir
 from re import Pattern, compile as re_compile
 
 # internal
@@ -45,11 +45,14 @@ def retag_files(files: Sequence[str], re_tags_to_process: Pattern, re_tags_to_ex
         re_media_untagged_name = re_compile(r'^([a-z]{2}_)?(\d+?)[.].+?$')
         re_tagsfile_name = re_compile(r'^[a-z]{2}_!tags_\d+?-\d+?\.txt$')
         base_path = path.split(normalize_path(files[0], False))[0]
-        tagdict = dict()
-        for diritem in listdir(base_path):
-            if path.splitext(diritem)[1] == '.txt':
-                if re_tagsfile_name.fullmatch(diritem) is not None:
-                    with open(f'{base_path}{SLASH}{diritem}', 'rt', encoding=UTF8) as tags_file:
+        tagdict = dict[str, str]()
+        dentry: DirEntry
+        for dentry in scandir(base_path):
+            if not dentry.is_file():
+                continue
+            if path.splitext(dentry.name)[1] == '.txt':
+                if re_tagsfile_name.fullmatch(dentry.name) is not None:
+                    with open(f'{base_path}{SLASH}{dentry.name}', 'rt', encoding=UTF8) as tags_file:
                         lines = tags_file.readlines()
                     for line in lines:
                         line = line.strip(' \n\ufeff')

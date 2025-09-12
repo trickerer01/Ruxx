@@ -14,7 +14,7 @@ from argparse import Namespace
 from collections.abc import Iterable, MutableSet, Callable
 from multiprocessing.dummy import Pool, current_process
 from multiprocessing.pool import ThreadPool
-from os import makedirs, listdir, path, remove
+from os import DirEntry, scandir, makedirs, path, remove
 from threading import Thread, Lock as ThreadLock
 from time import sleep as thread_sleep
 
@@ -568,7 +568,7 @@ class Downloader(DownloaderBase):
     def _process_all_tags(self) -> None:
         if self.warn_nonempty:
             if self._has_gui():
-                if path.isdir(self.dest_base) and len(listdir(self.dest_base)) > 0:
+                if path.isdir(self.dest_base) and len(list(scandir(self.dest_base))) > 0:
                     if not confirm_yes_no(title='Download', msg=f'Destination folder \'{self.dest_base}\' is not empty. Continue anyway?'):
                         return
             else:
@@ -869,9 +869,10 @@ class Downloader(DownloaderBase):
         if not path.isdir(dir_fullpath):
             return parsed_files
         abbrp = self._get_module_abbr_p()
+        f: DirEntry
         info_lists: list[Match[str]] = sorted(filter(
-            lambda x: not not x, [re_infolist_filename.fullmatch(f) for f in listdir(dir_fullpath)
-                                  if path.isfile(f'{dir_fullpath}{f}') and f.startswith(f'{abbrp}!')]
+            lambda x: not not x, [re_infolist_filename.fullmatch(f.name) for f in scandir(dir_fullpath)
+                                  if f.is_file() and f.name.startswith(f'{abbrp}!')]
         ), key=lambda m: m.string)
         if not info_lists:
             return parsed_files

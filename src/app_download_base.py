@@ -10,7 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from __future__ import annotations
 from abc import abstractmethod
 from collections.abc import MutableSet
-from os import path, curdir, listdir
+from os import DirEntry, path, curdir, scandir
 from re import Match, Pattern
 
 # requirements
@@ -655,7 +655,8 @@ class DownloaderBase(ThreadedHtmlWorker):
 
         total_count_temp = self.total_count
 
-        curdirfiles = [curfile for curfile in listdir(self.dest_base_s) if path.isfile(f'{self.dest_base_s}{curfile}')]
+        dentry: DirEntry
+        curdirfiles = [dentry.name for dentry in scandir(self.dest_base_s) if dentry.is_file()]
         if len(curdirfiles) == 0:
             return
 
