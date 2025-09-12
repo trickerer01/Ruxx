@@ -56,6 +56,7 @@ jobs:
           name: build-${{ github.job }}-${{ matrix.python-version }}
           path: |
             release/Ruxx
+            release/Ruxx.tar.gz
           compression-level: 0
 
   windows:
@@ -87,4 +88,5 @@ jobs:
           name: build-${{ github.job }}-${{ matrix.python-version }}
           path: |
             release/Ruxx.exe
+            release/Ruxx.zip
           compression-level: 0
