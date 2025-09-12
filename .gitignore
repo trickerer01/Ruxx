@@ -3,14 +3,13 @@
 1ruxxvenv/
 1venv/
 release/
-images/
+images/*/
 version_info.txt
 *.pyc
 *.cfg
 *.lnk
 src/curr.py
-src/app_grab_tags*.py
-src/app_release.py
+src/app_grab_tags.py
 
 # IDE
 /.idea/*
