@@ -754,7 +754,6 @@ class ProxyWindow(BaseWindow):
         self.cancel()
 
 
-# noinspection DuplicatedCode
 class HeadersAndCookiesWindow(BaseWindow):
     MAX_COOKIES = 3
     MAX_HEADERS = 3
