@@ -1,7 +1,7 @@
-name: Build
+name: Builds
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       linux:
         default: false
@@ -33,7 +33,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: [${{ inputs.python }}]
+        python-version: ${{ fromJSON(inputs.python) }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +64,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest]
-        python-version: [${{ inputs.python }}]
+        python-version: ${{ fromJSON(inputs.python) }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
