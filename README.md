@@ -312,7 +312,7 @@ Invoke `python src/ruxx.py --help` to list all possible arguments
   - `git`
 - Clone the repository:
   - `git clone https://github.com/trickerer01/Ruxx`
-- Enter project folder, create virtual environment and install required modules:
+- Enter project folder, create virtual environment and install required packages:
   - `cd Ruxx`
   - `python -m venv 1venv`
     - `./1venv/Scripts/activate.ps1` (Windows)
