@@ -7,7 +7,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from __future__ import annotations
 from abc import ABC, abstractmethod
 from argparse import Namespace
 from multiprocessing.dummy import current_process

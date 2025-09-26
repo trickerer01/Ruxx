@@ -7,7 +7,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from __future__ import annotations
 from enum import IntEnum, unique, auto
 
 # annotations
@@ -114,7 +113,7 @@ BEGIN = '1.0'
 
 
 # icons enum
-# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
 @unique
 class Icons(IntEnum):
@@ -137,7 +136,7 @@ class Icons(IntEnum):
 
 
 # targetable options: either having stored variables or hotkeys attached
-# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
 @unique
 class Options(IntEnum):
@@ -266,7 +265,7 @@ CVARS = {
 
 # global static objects for manipulation
 # root
-# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
 @unique
 class Globals(IntEnum):
@@ -336,7 +335,7 @@ BUTTONS_TO_UNFOCUS = (
 # end buttons to unfocus
 
 
-# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
 @unique
 class InfoSaveModes(IntEnum):
@@ -346,7 +345,7 @@ class InfoSaveModes(IntEnum):
 
 
 # menus
-# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
 @unique
 class Menus(IntEnum):

@@ -7,7 +7,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from __future__ import annotations
 from abc import abstractmethod
 from collections.abc import MutableSet
 from os import path, curdir, scandir

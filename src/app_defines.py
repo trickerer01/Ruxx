@@ -6,7 +6,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-from __future__ import annotations
 from datetime import datetime
 from enum import IntEnum, auto, unique
 
@@ -73,7 +72,7 @@ class PageCheck:
         return str(self)
 
 
-# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
 @unique
 class DownloaderStates(IntEnum):
@@ -258,7 +257,7 @@ class Mem:
     GB: int = MB * 1024
 
 
-# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
 class HtmlCacheMode(IntEnum):
     CACHE_BYTES = auto()

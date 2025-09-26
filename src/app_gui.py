@@ -7,7 +7,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from __future__ import annotations
 import ctypes
 import sys
 from collections.abc import Callable

@@ -43,7 +43,7 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Edit -> Extend file names with extra info** ‒ all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
 - **Edit -> Warn if download folder is not empty** ‒ in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
 - **Edit -> Verbose log** ‒ Enable logging of technical messages not related to actual download process. Verbose log is one of the requirements for a proper issue report
-- **Connection -> Headers / Cookies** \<F3> ‒ For some websites (RN) and in some other cases you'll have to provide your `cf_clearance` cookie, and the `User-Agent` header has to match the one used in your web browser for target website ‒ to find it while browsing said website open `Web Developer tools -> Network` (or similar), reload the page and check `request headers`
+- **Connection -> Headers / Cookies** \<F3> ‒ For some websites (RN) and in some other cases you'll have to provide your `cf_clearance` cookie, and the `User-Agent` header has to match the one used in your web browser for target website ‒ to find it while browsing said website open `Web Developer tools -> Network` (or similar), reload the page and check `request headers`
 - **Connection -> Set proxy** \<F4> ‒ you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
 - **Connection -> Set timeout** \<F5> ‒ override connection timeout if need be
 - **Connection -> Set retries count** \<F6> ‒ override connection retries count, may be useful when using a proxy
@@ -59,9 +59,9 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Tools -> Un-tag files...** ‒ renames selected Ruxx-downloaded media files, stripping file names of all extra info
 - **Tools -> Re-tag files...** ‒ renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)
 - **Tools -> Sort files into subfolders...** ‒ a set of tools used to separate downloaded files if need be:
-  - **by type** ‒ sort by file type (checking file extension). You can separate files by `videos`/`images`/`flash (RN, EN)` or by extension itself. Note that both `jpeg` and `jpg` files will be placed into **jpg** folder
-  - **by size** ‒ sort by file size (you'll have to provide a threshold, in Megabytes). You can use multiple thesholds, separated by space, in any order: `0.5 10 3.0 5.00`
-  - **by score** ‒ sort by post score. Make sure that selected files include score in their names or this won't work. You can use multiple thesholds, separated by space, in any order: `100 250 50 500`
+  - **by type** ‒ sort by file type (checking file extension). You can separate files by `videos`/`images`/`flash (RN, EN)` or by extension itself. Note that both `jpeg` and `jpg` files will be placed into **jpg** folder
+  - **by size** ‒ sort by file size (you'll have to provide a threshold, in Megabytes). You can use multiple thesholds, separated by space, in any order: `0.5 10 3.0 5.00`
+  - **by score** ‒ sort by post score. Make sure that selected files include score in their names or this won't work. You can use multiple thesholds, separated by space, in any order: `100 250 50 500`
 - **Tools -> Scan for duplicates...** ‒ download results deduplication tool. Select a folder and scan depth ‒ receive a list of binary equal files. Note that only media files will be scanned. Extra actions depend on selected option:
   - **and report** ‒ do nothing
   - **and separate** ‒ for each set of equal files leave one original file and **move** all its dupes to 'dupes' folder. The longest common path is used as base folder
@@ -178,14 +178,14 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
     - updated:
     - sort: `sort:X[:Y]`. `X` = `<sort type>`, ex. `score`, `id` (default). `Y` = `<sort direction>` (optional), `asc` or `desc` (default)
 3. `OR` groups
-- Ruxx syntax for `OR` group is simplified compared to what you would normally use for RX: `(tag1~tag2~...~tagN)` instead of `( tag1 ~ tag2 ~ ... ~ tagN )`
+- Ruxx syntax for `OR` group is simplified compared to what you would normally use for RX: `(tag1~tag2~...~tagN)` instead of `( tag1 ~ tag2 ~ ... ~ tagN )`
 - Ruxx allows using `OR` groups with any module, regardless of whether website supports it natively or not
 - The syntax is also the same for all modules, don't use curvy brackets for RS
 - `OR` group can't be negative and needs to be unwrapped:
   - `-(tag1~tag2~tag3)` => `-tag1 -tag2 -tag3`
 - Since using meta tags in `OR` groups `(id:=X~score:=Y)` is broken (RX), not always reliable (EN) or straight impossible (RS, RN, RP), Ruxx will always unwrap such groups to process them properly
 4. Negative groups
-- Syntax: `-(tag1,tag2,...,tagN)`. Ruxx allows to filter out tag combinations (posts where all tags in group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for `any symbol` and `any number of any symbols` repectively. You can also use pipe symbol `|` for direct regex `OR` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regular expressions `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
+- Syntax: `-(tag1,tag2,...,tagN)`. Ruxx allows to filter out tag combinations (posts where all tags in group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for `any symbol` and `any number of any symbols` repectively. You can also use pipe symbol `|` for direct regex `OR` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regular expressions `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
     - Important note: unlike normal `-tags`, negative group will not check tag aliases
 5. Tag limits
 - Any valid search query requires at least one positive non-sorting tag to search for. Search query cannot be formed using just `sort:...` tag or `-tags` only
@@ -234,7 +234,7 @@ Ruxx provide lists of known tags for all modules, which can also be used to atte
 #### User credentials
 Ruxx doesn't provide a method of authentication natively on either of supported sites. To use your identity during search you need to follow 3 simple steps:
 - Log in normally using web browser
-- Open `Web Developer tools -> Network` and reload the page, look for `request headers`
+- Open `Web Developer tools -> Network` and reload the page, look for `request headers`
 - Open `Headers / Cookies` window `<F3>` and fill Ruxx connection tables accordingly:
   - Headers: `User-Agent` (remove existing value first)
   - Cookies:
@@ -262,7 +262,7 @@ Downloading user's favorites using native tags search functionality is only avai
 Downloading post pool using native tags search functionality is not possible and only RX, EN, XB and BB implement pool functionality.  
 To download a pool use special `pool` tag:
 - Syntax: `pool:X`. `X` = `<pool ID>`. Pool ID you can get from pool page, it's a part of its web address
-- EN module also supports pool name syntax: `pool:Y`. `Y` = `<pool name>`. Pool name must be in lower case and with all spaces replaced with underscores, ex. `'Long Night' -> 'pool:long_night'`
+- EN module also supports pool name syntax: `pool:Y`. `Y` = `<pool name>`. Pool name must be in lower case and with all spaces replaced with underscores, ex. `'Long Night' -> 'pool:long_night'`
 - Downloading RX / XB / BB pool pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
 - Pool posts can be filtered as well. Date filter, additional required / excluded tags, etc.
 - Same as favorites, downloading using custom tags isn't particulary fast (RX / XB / BB), Ruxx will need to fetch info for every item in the list in order to enable filtering
@@ -319,8 +319,11 @@ Invoke `python src/ruxx.py --help` to list all possible arguments
     - `source 1venv/bin/activate` (Linux)
   - `python -m pip install -r requirements.txt`
   - `python -m pip install pyinstaller`
-- Run the build script. It will do everything for you and clean up afterwards, your app will be put in `release` folder:
+- Run the build script. It will do everything for you and clean up afterwards, your app will be placed into `release` folder:
   - `python src/app_release.py`
 
+#### Debug build
+To make a **Debug** build simply set `__RUXX_DEBUG__` variable to `True` in `app_debug.py`. Debug mode enables debug menu, console window display switch, additional logging and a few undocumented features. Some default settings are different in Debug mode
+
 ### Support
-For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/Ruxx/issues)
+For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/Ruxx/issues)

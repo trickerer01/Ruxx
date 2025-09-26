@@ -7,8 +7,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from __future__ import annotations
-
 from abc import abstractmethod
 from datetime import datetime
 from multiprocessing.dummy import current_process

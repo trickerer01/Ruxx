@@ -8,7 +8,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # app_gui, app_cmdargs
 
 # native
-from __future__ import annotations
 import ctypes
 import sys
 from abc import ABC, abstractmethod
@@ -568,9 +567,9 @@ class AskFileScoreFilterWindow(AwaitableAskWindow):
 
 class AskFirstLastWindow(AwaitableAskWindow):
     VALUES = ['Keep first', 'Keep last']
-    LITERAL_TYPE = Literal['first', 'last']
+    LITERAL_TYPE_FIRST_LAST = Literal['first', 'last']
 
-    def __init__(self, parent, title='Enter number', *, default: AskFirstLastWindow.LITERAL_TYPE) -> None:
+    def __init__(self, parent, title='Enter number', *, default: LITERAL_TYPE_FIRST_LAST) -> None:
         self.cbox: ttk.Combobox | None = None
         self.default = default
         super().__init__(parent, title)
@@ -583,7 +582,7 @@ class AskFirstLastWindow(AwaitableAskWindow):
         self.cbox = ttk.Combobox(frame, values=AskFirstLastWindow.VALUES, state=STATE_READONLY, width=25, textvariable=self._variables[0])
         self.cbox.grid(row=first_row(), column=first_column(), columnspan=2)
 
-    def value(self) -> AskFirstLastWindow.LITERAL_TYPE:
+    def value(self) -> LITERAL_TYPE_FIRST_LAST:
         try:
             if AskFirstLastWindow.VALUES.index(self.get_variable(1)) == 0:
                 return 'first'

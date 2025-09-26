@@ -7,7 +7,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from __future__ import annotations
 from collections.abc import Iterable, Sequence, Collection
 from enum import IntEnum, unique, auto
 from os import makedirs, path, rename, stat
@@ -21,7 +20,7 @@ from app_utils import normalize_path
 __all__ = ('FileTypeFilter', 'sort_files_by_type', 'sort_files_by_size', 'sort_files_by_score')
 
 
-# PyCharm bug PY-53388 (IDE thinks auto() needs an argument / Python 3.9.x)
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
 @unique
 class FileTypeFilter(IntEnum):
