@@ -21,7 +21,7 @@ from tkinter import END, messagebox
 from app_cmdargs import prepare_arglist
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    DownloaderStates, DownloaderOptions,
+    DownloaderStates, DownloaderOptions, ModuleConfigType,
     MODULE_CHOICES, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD,
     PROGRESS_VALUE_DOWNLOAD, FMT_DATE, DMODE_CHOICES, DATE_MAX_DEFAULT,
     max_progress_value_for_state,
@@ -36,9 +36,9 @@ from app_gui_base import (
     setrootconf, rootm, getrootconf, window_hcookiesm, window_proxym, window_timeoutm, window_retriesm, window_apikeym, register_menu,
     register_submenu, create_base_window_widgets, text_cmdm, get_icon, init_additional_windows, get_global, config_global,
     is_global_disabled, is_menu_disabled, is_focusing, set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list,
-    browse_path, register_menu_command, toggle_console, register_submenu_command, register_menu_checkbutton, register_menu_radiobutton,
-    register_submenu_radiobutton, register_menu_separator, get_all_media_files_in_cur_dir, update_lastpath, toggle_autocompletion,
-    trigger_autocomplete_tag, hotkey_text, config_menu, get_media_files_dir, load_batch_download_tag_list,
+    browse_path, update_garbled_text_states, register_menu_command, toggle_console, register_submenu_command, register_menu_checkbutton,
+    register_menu_radiobutton, register_submenu_radiobutton, register_menu_separator, get_all_media_files_in_cur_dir, update_lastpath,
+    toggle_autocompletion, trigger_autocomplete_tag, hotkey_text, config_menu, get_media_files_dir, load_batch_download_tag_list,
 )
 from app_gui_defines import (
     STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
@@ -56,7 +56,7 @@ from app_logger import Logger, trace
 from app_settings import Settings
 from app_tagger import TagsDB
 from app_tags_parser import reset_last_tags, parse_tags
-from app_utils import normalize_path, confirm_yes_no, ensure_compatibility
+from app_utils import normalize_path, confirm_yes_no, ensure_compatibility, garble_argument_values
 from app_validators import DateValidator
 
 __all__ = ('run_ruxx_gui',)
@@ -447,7 +447,6 @@ def prepare_cmdline() -> list[str]:
     newstr.append(module_name)
     # + path (tags included)
     pathstr = normalize_path(str(getrootconf(Options.PATH)))
-    # if pathstr != normalize_path(path.abspath(curdir)):
     newstr.append(OPTION_CMD_PATH_CMD)
     newstr.append(f'\'{pathstr}\'')
     # + options
@@ -590,6 +589,10 @@ def update_frame_cmdline() -> None:
     if not cant_update:
         args_list = prepare_cmdline()
         newstr = ' '.join(args_list)
+        if bool(int(getrootconf(Options.HIDE_PERSONAL_INFO))):
+            api_key_default = Downloader.get_module_specific_default_value(ModuleConfigType.CONFIG_API_KEY)
+            api_key_is_default = str(getrootconf(Options.APIKEY_KEY)) == api_key_default
+            newstr = garble_argument_values(newstr, *((OPTION_CMD_APIKEY_CMD,) if not api_key_is_default else ()))
         oldstr = text_cmdm().get(1.0, END)
         if oldstr != f'{newstr}\n':
             text_cmdm().config(state=STATE_NORMAL)
@@ -846,6 +849,10 @@ def do_download(**options: bool | int | str) -> None:
     if not is_processing_batch():
         get_global(Globals.BUTTON_DOWNLOAD).focus_force()
 
+    # update options with active conditionals
+    if bool(int(getrootconf(Options.HIDE_PERSONAL_INFO))):
+        options[DownloaderOptions.OPTION_GARBLE_PERSONAL_INFO] = True
+
     # force cmd line update
     update_frame_cmdline()
     # prepare arg list
@@ -927,6 +934,7 @@ def init_menus() -> None:
     if CAN_MANIPULATE_CONSOLE and __RUXX_DEBUG__:
         register_menu_checkbutton('Console', CVARS[Options.ISCONSOLELOGOPEN], toggle_console)
     register_menu_checkbutton('Reveal module names', CVARS[Options.REVEALNAMES])
+    register_menu_checkbutton('Hide personal info', CVARS[Options.HIDE_PERSONAL_INFO], update_garbled_text_states)
     # 4) Module
     register_menu('Module', Menus.MODULE)
     for abbr in MODULE_CHOICES:

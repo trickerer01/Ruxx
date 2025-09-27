@@ -24,11 +24,11 @@ from iteration_utilities import unique_everseen
 # internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    ThreadInterruptException, DownloaderStates, DownloaderOptions, DownloadModes, ItemInfo, Comment, Mem, APIKey,
+    ThreadInterruptException, DownloaderStates, DownloaderOptions, DownloadModes, ItemInfo, Comment, Mem, APIKey, ModuleConfigType,
     DATE_MIN_DEFAULT, CONNECT_TIMEOUT_BASE, UTF8, SOURCE_DEFAULT, PLATFORM_WINDOWS, DATE_MAX_DEFAULT, INT_BOUNDS_DEFAULT,
 )
 from app_download_base import DownloaderBase
-from app_gui_defines import UNDERSCORE, NEWLINE, NEWLINE_X2
+from app_gui_defines import UNDERSCORE, SLASH, NEWLINE, NEWLINE_X2, OPTION_CMD_APIKEY_CMD
 from app_logger import trace
 from app_module import ProcModule
 from app_network import ThreadedHtmlWorker, DownloadInterruptException, thread_exit
@@ -37,7 +37,7 @@ from app_revision import APP_NAME, APP_VERSION
 from app_tagger import append_filtered_tags, load_tag_aliases
 from app_tags_parser import convert_taglist
 from app_task import extract_neg_and_groups, split_tags_into_tasks
-from app_utils import confirm_yes_no, normalize_path, trim_underscores, format_score, make_subfolder_name
+from app_utils import confirm_yes_no, normalize_path, trim_underscores, format_score, make_subfolder_name, garble_argument_values
 
 # annotations
 if False is True:
@@ -126,7 +126,13 @@ class Downloader(DownloaderBase):
 
     def _at_launch(self) -> None:
         if self.verbose:
-            trace(f'Python {sys.version}\nBase args: {" ".join(sys.argv)}\nMy args: {self.cmdline}')
+            if self.options.get(DownloaderOptions.OPTION_GARBLE_PERSONAL_INFO, False):
+                api_key_default = self.get_module_specific_default_value(ModuleConfigType.CONFIG_API_KEY)
+                api_key_is_default = self.api_key.key == api_key_default
+                my_args = garble_argument_values(self.cmdline, *((OPTION_CMD_APIKEY_CMD,) if not api_key_is_default else ()))
+            else:
+                my_args = self.cmdline
+            trace(f'Python {sys.version}\nBase args: {" ".join(_[_.rfind(SLASH) + 1:] for _ in sys.argv)}\nMy args: {my_args}')
 
     def get_tags_count(self, offset=0) -> int:
         """Public, needed by tests"""

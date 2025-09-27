@@ -142,6 +142,7 @@ class Icons(IntEnum):
 class Options(IntEnum):
     ISLOGOPEN = 0
     REVEALNAMES = auto()
+    HIDE_PERSONAL_INFO = auto()
     VIDSETTING = auto()
     IMGSETTING = auto()
     PARCHISETTING = auto()
@@ -152,6 +153,7 @@ class Options(IntEnum):
     DATEMIN = auto()
     DATEMAX = auto()
     TAGS = auto()
+    PATH_VISUAL = auto()
     PATH = auto()
     LASTPATH = auto()  # unbound, internal
     PROGRESS = auto()
@@ -209,6 +211,7 @@ class Options(IntEnum):
 CVARS = {
     Options.ISLOGOPEN: 'isLogOpen',
     Options.REVEALNAMES: 'revealNames',
+    Options.HIDE_PERSONAL_INFO: 'hidepersonalinfo',
     Options.VIDSETTING: 'vidsetting',
     Options.IMGSETTING: 'imgsetting',
     Options.PARCHISETTING: 'parchisetting',
@@ -219,6 +222,7 @@ CVARS = {
     Options.DATEMIN: 'dateafter',
     Options.DATEMAX: 'datebefore',
     Options.TAGS: 'tags',
+    Options.PATH_VISUAL: 'pathvisual',
     Options.PATH: 'path',
     Options.LASTPATH: 'curpath',
     Options.PROGRESS: 'progress',

@@ -91,6 +91,10 @@ class DownloaderRx(DownloaderGelbooru):
                 body = comment_div.get('body')
                 self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
 
+    @staticmethod
+    def _get_default_api_key() -> str:
+        return API_KEY_DEFAULT_RX
+
 #
 #
 #########################################

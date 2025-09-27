@@ -53,7 +53,7 @@ from app_re import re_space_mult
 from app_revision import APP_VERSION, APP_NAME
 from app_tagger import TagsDB
 from app_tooltips import WidgetToolTip
-from app_utils import normalize_path
+from app_utils import normalize_path, garble_text
 from app_validators import valid_proxy, valid_positive_int, valid_window_position, valid_api_key
 
 __all__ = (
@@ -62,10 +62,10 @@ __all__ = (
     'window_timeoutm', 'window_retriesm', 'window_apikeym', 'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets',
     'text_cmdm', 'get_icon', 'init_additional_windows', 'get_global', 'config_global', 'is_global_disabled', 'is_menu_disabled',
     'is_focusing', 'toggle_console', 'hotkey_text', 'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about',
-    'load_id_list', 'load_batch_download_tag_list', 'ask_filename', 'browse_path', 'register_menu_command', 'register_submenu_command',
-    'register_menu_checkbutton', 'register_menu_radiobutton', 'register_submenu_radiobutton', 'register_menu_separator',
-    'get_all_media_files_in_cur_dir', 'get_media_files_dir', 'update_lastpath', 'config_menu', 'toggle_autocompletion',
-    'trigger_autocomplete_tag',
+    'load_id_list', 'load_batch_download_tag_list', 'ask_filename', 'browse_path', 'update_garbled_text_states', 'register_menu_command',
+    'register_submenu_command', 'register_menu_checkbutton', 'register_menu_radiobutton', 'register_submenu_radiobutton',
+    'register_menu_separator', 'get_all_media_files_in_cur_dir', 'get_media_files_dir', 'update_lastpath', 'config_menu',
+    'toggle_autocompletion', 'trigger_autocomplete_tag',
 )
 
 
@@ -176,6 +176,7 @@ class BaseText(Text):
     def __init__(self, parent=None, *args, **kw) -> None:
         known_bindings: dict[str, Callable[[...], None]] = kw.pop('bindings', {})
         self._textvariable = kw.pop('textvariable', StringVar(rootm(), '', ''))
+        self._textrealvariable: StringVar | None = kw.pop('encodevariable', None)
         kw.update(height=1, undo=True, maxundo=500, wrap=NONE)
         super().__init__(parent, *args, **kw)
 
@@ -208,6 +209,8 @@ class BaseText(Text):
         self.bind('<<Change>>', self._on_widget_change)
         self.bind('<<Paste>>', self._handle_paste)
         self.bind('<<Selection>>', self._handle_select)
+        self.bind('<FocusIn>', self._handle_enter)
+        self.bind('<FocusOut>', self._handle_exit)
         self.bind(BUT_RETURN, lambda e: parent_event(BUT_RETURN, e))
         self.bind(BUT_CTRL_BACKSPACE, self.on_event_ctrl_backspace)
         self.bind(BUT_CTRL_DELETE, self.on_event_ctrl_delete)
@@ -216,17 +219,52 @@ class BaseText(Text):
     def clear(self) -> None:
         self.delete(BEGIN, END)
 
+    @staticmethod
+    def encoding_enabled() -> bool:
+        return bool(int(getrootconf(Options.HIDE_PERSONAL_INFO)))
+
+    def is_encoded(self) -> bool:
+        return isinstance(self._textrealvariable, StringVar)
+
+    def is_text_encoded(self) -> bool:
+        assert self.is_encoded()
+        return self._textvariable.get().count('*') == len(self._textvariable.get())
+
+    def get_text_real(self) -> str:
+        assert self.is_encoded()
+        return self._textrealvariable.get()
+
+    def get_text_encoded(self) -> str:
+        assert self.is_encoded()
+        return garble_text(self.get_text_real())
+
+    def set_text_real(self) -> None:
+        assert self.is_encoded()
+        self.settext(self.get_text_real())
+
+    def set_text_encoded(self) -> None:
+        assert self.is_encoded()
+        self.settext(self.get_text_encoded())
+
+    def update_encoded_state(self) -> None:
+        assert self.is_encoded()
+        if self.encoding_enabled() and not is_focusing(self):
+            self.set_text_encoded()
+        else:
+            self.set_text_real()
+
     def gettext(self) -> str:
         return self.get(BEGIN, f'{END}-1c')
 
     def settext(self, text: str, *args) -> None:
         my_text = text
+        is_same = self.gettext() == my_text
         idx = int((self.index(INSERT) if is_focusing(self) else self.index(f'{END}-1c')).split('.')[1])
         self.clear()
         self.insert(BEGIN, my_text, *args)
         self._on_widget_change()
         if is_focusing(self):
-            self.mark_set(INSERT, f'1.{idx - 1:d}')
+            self.mark_set(INSERT, f'1.{idx - (1 - int(is_same)):d}')
 
     def select_all(self) -> None:
         end_index = f'{END}-1c'
@@ -235,6 +273,14 @@ class BaseText(Text):
 
     def set_state(self, state: str) -> None:
         self.configure(bg=self._bg_color_orig if state == STATE_NORMAL else rootm().default_bg_color)
+
+    def _handle_enter(self, *_) -> None:
+        if self.is_encoded() and self.encoding_enabled():
+            self.set_text_real()
+
+    def _handle_exit(self, *_) -> None:
+        if self.is_encoded() and self.encoding_enabled():
+            self.set_text_encoded()
 
     def _handle_select(self, *_) -> None:
         sel = self.tag_ranges(SEL)
@@ -267,6 +313,8 @@ class BaseText(Text):
         var_text = self._textvariable.get()
         if my_text != var_text:
             self.settext(var_text)
+        if self.is_encoded() and not self.is_text_encoded():
+            self._textrealvariable.set(var_text)
         if self._initted_value is False:
             self._initted_value = True
             self.edit_reset()
@@ -1434,9 +1482,10 @@ def create_base_window_widgets() -> None:
     opframe_path.grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX,
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=0)
     #  Text
-    op_pathstr = BaseText(opframe_path, width=0, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.PATH]))
+    op_pathstr = BaseText(opframe_path, width=0, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.PATH_VISUAL]),
+                          encodevariable=StringVar(rootm(), '', CVARS[Options.PATH]))
     register_global(Globals.FIELD_PATH, op_pathstr)
-    op_pathstr.insert(END, normalize_path(path.abspath(curdir), False))  # 3.8
+    op_pathstr.insert(END, normalize_path(path.abspath(curdir), False))
     op_pathstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button open
     op_pathbut = Button(opframe_path, image=get_icon(Icons.OPEN))
@@ -1613,6 +1662,11 @@ def browse_path() -> None:
     if len(loc) > 0:
         setrootconf(Options.PATH, loc)
         setrootconf(Options.LASTPATH, loc[:normalize_path(loc, False).rfind(SLASH) + 1])  # not bound
+        update_garbled_text_states()
+
+
+def update_garbled_text_states() -> None:
+    get_global(Globals.FIELD_PATH).update_encoded_state()
 
 
 def register_menu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind: bool = False,

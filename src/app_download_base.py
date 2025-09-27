@@ -11,12 +11,15 @@ from abc import abstractmethod
 from collections.abc import MutableSet
 from os import path, curdir, scandir
 from re import Match, Pattern
+from typing import final
 
 # requirements
 from bs4 import BeautifulSoup
 
 # internal
-from app_defines import DownloadModes, DownloaderStates, ItemInfo, PageCheck, APIKey, DATE_MIN_DEFAULT, DATE_MAX_DEFAULT, LAUCH_DATE
+from app_defines import (
+    DownloadModes, DownloaderStates, ItemInfo, PageCheck, APIKey, ModuleConfigType, DATE_MIN_DEFAULT, DATE_MAX_DEFAULT, LAUCH_DATE,
+)
 from app_logger import trace
 from app_network import ThreadedHtmlWorker, thread_exit
 from app_utils import normalize_path, as_date
@@ -215,6 +218,17 @@ class DownloaderBase(ThreadedHtmlWorker):
 
     def _execute_module_filters(self, parents: MutableSet[str]) -> None:
         pass
+
+    @staticmethod
+    def _get_default_api_key() -> str:
+        return ''
+
+    @staticmethod
+    @final
+    def get_module_specific_default_value(value_type: ModuleConfigType) -> int | str | None:
+        if value_type == ModuleConfigType.CONFIG_API_KEY:
+            return DownloaderBase._get_default_api_key()
+        return None
 
     def _extract_favorite_user(self, fav_user_tags: list[Match | None]) -> None:
         self.favorites_search_user = str(fav_user_tags[-1].group(1)) if fav_user_tags else 0

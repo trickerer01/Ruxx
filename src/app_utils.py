@@ -15,7 +15,7 @@ from tkinter import messagebox
 
 # internal
 from app_defines import FMT_DATE, SUPPORTED_PLATFORMS, SUBFOLDER_NAME_LEN_MAX, MIN_PYTHON_VERSION, MIN_PYTHON_VERSION_STR
-from app_gui_defines import SLASH, UNDERSCORE
+from app_gui_defines import SLASH, UNDERSCORE, OPTION_CMD_PATH_CMD, OPTION_CMD_PROXY_CMD
 from app_re import re_uscore_mult, re_replace_symbols_sub
 
 
@@ -63,6 +63,28 @@ def normalize_path(basepath: str, append_slash=True) -> str:
 
 def trim_underscores(base_str: str) -> str:
     return re_uscore_mult.sub('_', base_str).strip('_')
+
+
+def garble_text(base_str: str) -> str:
+    return '*' * (1 + len(base_str) + sum(divmod(len(base_str), 3)))
+
+
+def garble_argument_values(base_str: str, *arg_extra_names: str) -> str:
+    arguments_to_garble = (OPTION_CMD_PATH_CMD, OPTION_CMD_PROXY_CMD, *arg_extra_names)
+    args_list = base_str.split(' ')
+    try:
+        for arg_name in arguments_to_garble:
+            try:
+                idx = args_list.index(arg_name)
+            except Exception:
+                continue
+            assert len(args_list) > idx + 1
+            arg_value = args_list[idx + 1]
+            if arg_value:
+                args_list[idx + 1] = '<REDACTED>'  # garble_text(arg_value)
+        return ' '.join(args_list)
+    except (ValueError, AssertionError):
+        return base_str
 
 
 def format_score(score_str: str) -> str:

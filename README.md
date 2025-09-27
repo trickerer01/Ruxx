@@ -30,8 +30,6 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **File -> Load settings...** \<Ctrl+O> ‒ load run parameters from previously saved config file. You can also put a `.cfg` file folder with executable and Ruxx will automatically pick it and configure itself. You have to use one of the following names: ['ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg']
 - **File -> Reset all settings** ‒ resets all settings to initial ones. If autoconfigured this will reset to those parameters. Window position is unaffected by this action
 - **File -> Open download folder** \<Ctrl+L> ‒ open currently selected destination folder (**Path**), Windows only
-- **View -> Log** ‒ open a log window, if you want some readable output
-- **View -> Reveal module names** ‒ toggles between module abbreviation and website real name shown in module icon tooltip
 - **Edit -> Prefix file names with \<prefix>** ‒ all downloaded file names will be prefixed according to selected module (`rx_`, `rn_`, etc.) so they are not just numbers. This option is enabled by default
 - **Edit -> Save tags** ‒ an additional (text) file will be created containing tags for every post
 - **Edit -> Save source links** ‒ an additional (text) file will be created containing source (if present) for every post
@@ -43,6 +41,9 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 - **Edit -> Extend file names with extra info** ‒ all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
 - **Edit -> Warn if download folder is not empty** ‒ in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
 - **Edit -> Verbose log** ‒ Enable logging of technical messages not related to actual download process. Verbose log is one of the requirements for a proper issue report
+- **View -> Log** ‒ open a log window, if you want some readable output
+- **View -> Reveal module names** ‒ toggles between module abbreviation and website real name shown in module icon tooltip
+- **View -> Hide personal info** ‒ removes all mentions of paths, API key, proxy, etc. from your logs and main window. Useful in case you want to post logs / screenshots (ex. for a bugreport). This option is ignored when checking tags and is not saved to config
 - **Connection -> Headers / Cookies** \<F3> ‒ For some websites (RN) and in some other cases you'll have to provide your `cf_clearance` cookie, and the `User-Agent` header has to match the one used in your web browser for target website ‒ to find it while browsing said website open `Web Developer tools -> Network` (or similar), reload the page and check `request headers`
 - **Connection -> Set proxy** \<F4> ‒ you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
 - **Connection -> Set timeout** \<F5> ‒ override connection timeout if need be

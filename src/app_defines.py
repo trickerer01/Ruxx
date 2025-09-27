@@ -284,6 +284,14 @@ class DownloaderOptions:
     OPTION_CREATE_SUBFOLDERS = 'create_subfolders'
     OPTION_SUBFOLDER_TASK_NUM = 'override_task_num'
     OPTION_SUBFOLDER_TASKS_COUNT = 'override_tasks_count'
+    OPTION_GARBLE_PERSONAL_INFO = 'garble_personal_info'
+
+
+# PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
+# noinspection PyArgumentList
+class ModuleConfigType(IntEnum):
+    CONFIG_API_KEY = auto()
+    CONFIG_API_USER = auto()  # unused
 
 #
 #
