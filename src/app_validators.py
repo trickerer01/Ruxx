@@ -126,8 +126,9 @@ def valid_window_position(val: str, tk) -> str:
 
 def valid_api_key_key(key: str) -> str:
     try:
-        assert len(key) == API_KEY_LEN_RX
-        assert key.isalnum()
+        if key != '':
+            assert len(key) == API_KEY_LEN_RX
+            assert key.isalnum()
         return key
     except Exception:
         raise ArgumentError
@@ -135,7 +136,8 @@ def valid_api_key_key(key: str) -> str:
 
 def valid_api_key_userid(user_id: str) -> str:
     try:
-        assert user_id.isnumeric()
+        if user_id != '':
+            assert user_id.isnumeric()
         return user_id
     except Exception:
         raise ArgumentError
@@ -144,8 +146,8 @@ def valid_api_key_userid(user_id: str) -> str:
 def valid_api_key(val: str) -> str:
     try:
         key, user_id = tuple(val.split(',', 1))
-        assert valid_api_key_key(key)
-        assert valid_api_key_userid(user_id)
+        _ = valid_api_key_key(key)
+        _ = valid_api_key_userid(user_id)
         return f'{key},{user_id}'
     except Exception:
         raise ArgumentError
@@ -303,8 +305,6 @@ class InfoSaveModeValidator(IntValidator):
 class APIKeyKeyValidator(StrValidator):
     def __call__(self, val: str) -> bool:
         try:
-            if val == '':
-                return True
             _ = valid_api_key_key(val)
             return True
         except Exception:
@@ -314,8 +314,6 @@ class APIKeyKeyValidator(StrValidator):
 class APIKeyUserIdValidator(StrValidator):
     def __call__(self, val: str) -> bool:
         try:
-            if val == '':
-                return True
             _ = valid_api_key_userid(val)
             return True
         except Exception:
