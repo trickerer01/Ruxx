@@ -6,10 +6,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+# native
+from typing import final
+
 # internal
 from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, MODULE_ABBR_RP, MODULE_ABBR_EN, MODULE_ABBR_XB, MODULE_ABBR_BB
 
 
+@final
 class ProcModule:
     RX: int = 1
     RN: int = 2
@@ -22,7 +26,7 @@ class ProcModule:
     PROC_MODULE_DEFAULT: int = RX
     CUR_PROC_MODULE: int = PROC_MODULE_DEFAULT
     PROC_MODULE_MIN: int = RX
-    PROC_MODULE_MAX: int = EN
+    PROC_MODULE_MAX: int = BB
 
     PROC_MODULES_BY_NAME: dict[str, int] = {
         MODULE_ABBR_RX: RX,
