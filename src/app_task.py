@@ -93,7 +93,7 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> tuple[list[str]
     tgi: int
     for tgi in reversed(range(len(tags_list))):
         tag_group = tags_list[tgi]
-        if len(tag_group) < len('-(a,b)') or tag_group[0:2] != '-(':
+        if len(tag_group) < len('-(a,b)') or not tag_group.startswith('-('):
             continue
         plist = form_plist(tag_group)
         if plist:

@@ -79,8 +79,7 @@ class WidgetToolTip(ToolTipBase):
 
     def _showcontents(self) -> None:
         contents = self.items() if callable(self.items) else self.items
-        box = Listbox(self.tipwindow, background=self.bgcolor, relief=self.relief, borderwidth=self.border_width,
-                      height=len(contents))
+        box = Listbox(self.tipwindow, background=self.bgcolor, relief=self.relief, borderwidth=self.border_width, height=len(contents))
         if self.timed:
             box.bind('<ButtonPress>', self.leave)
 

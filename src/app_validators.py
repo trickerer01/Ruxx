@@ -90,12 +90,7 @@ def valid_positive_int(val: str, *, lb=0, ub=4294967295) -> int:
 
 
 def valid_thread_count(val: str) -> int:
-    try:
-        val = int(val)
-        assert 1 <= val <= THREADS_MAX_ITEMS
-        return val
-    except Exception:
-        raise ArgumentError
+    return valid_positive_int(val, lb=1, ub=THREADS_MAX_ITEMS)
 
 
 def valid_folder_path(pathstr: str) -> str:

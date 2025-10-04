@@ -119,24 +119,18 @@ class TagsDB:
     def _get_tag_matches(module: str, value: str, pred: Callable[[str, str], bool], limit: int) -> list[tuple[str, int]]:
         arr = list(TagsDB.DB[module].keys())
         lb, ub = 0, len(arr)
-        if not is_wtag(value):
-            while lb < ub:
-                mid = (lb + ub) // 2
-                if arr[mid] < value:
-                    lb = mid + 1
-                else:
-                    ub = mid
-        ub = len(arr)
-        gmatches: list[str] = list()
         while lb < ub:
-            limit_reached = limit > 0 and len(gmatches) >= limit * 5
-            if limit_reached or not pred(arr[lb], value):
-                if limit_reached:
+            mid = (lb + ub) // 2
+            if arr[mid] < value:
+                lb = mid + 1
+            else:
+                ub = mid - 1
+        gmatches = list[str]()
+        while lb < len(arr):
+            if pred(arr[lb], value):
+                gmatches.append(arr[lb])
+                if limit > 0 and len(gmatches) >= limit * 5:
                     break
-                else:
-                    lb += 1
-                    continue
-            gmatches.append(arr[lb])
             lb += 1
         glist = [(g, TagsDB.DB[module][g]) for g in sorted(gmatches, reverse=True, key=lambda gmatch: TagsDB.DB[module][gmatch])]
         return glist[:limit] if limit > 0 else glist
@@ -146,7 +140,7 @@ class TagsDB:
                          pred: Callable[[str, str], bool] = lambda x, y: x.startswith(y),
                          limit: int = None) -> list[tuple[str, int]]:
         matches = list()
-        if len(tag) >= TAG_AUTOCOMPLETE_LENGTH_MIN or limit is None:
+        if not is_wtag(tag) and len(tag) >= TAG_AUTOCOMPLETE_LENGTH_MIN:
             limit = limit or TAG_AUTOCOMPLETE_NUMBER_MAX
             TagsDB._load(module)
             base_matches = TagsDB._get_tag_matches(module, tag, pred, limit)

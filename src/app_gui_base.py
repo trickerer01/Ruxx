@@ -177,6 +177,7 @@ class BaseText(Text):
         known_bindings: dict[str, Callable[[...], None]] = kw.pop('bindings', {})
         self._textvariable = kw.pop('textvariable', StringVar(rootm(), '', ''))
         self._textrealvariable: StringVar | None = kw.pop('encodevariable', None)
+        self._option_name = str(self._textrealvariable) if str(self._textrealvariable) != str(None) else str(self._textvariable)
         kw.update(height=1, undo=True, maxundo=500, wrap=NONE)
         super().__init__(parent, *args, **kw)
 
@@ -218,6 +219,9 @@ class BaseText(Text):
 
     def clear(self) -> None:
         self.delete(BEGIN, END)
+
+    def is_type(self, check_type: Options) -> bool:
+        return CVARS[check_type] == self._option_name
 
     @staticmethod
     def encoding_enabled() -> bool:
@@ -371,7 +375,7 @@ class BaseText(Text):
         end_idx = int(self.index(f'{END}-1c').split('.')[1]) - 1
         prev_idx = min(cur_idx, end_idx)
         while prev_idx > 0:
-            if prev_idx != cur_idx and my_str[prev_idx] in ' ~':
+            if prev_idx != cur_idx and my_str[prev_idx] in ' ~' + '/\\' * self.is_type(Options.PATH):
                 last_idx = min(end_idx, cur_idx)
                 prev_idx = min(prev_idx + 1, last_idx)
                 if prev_idx < last_idx and my_str[prev_idx] == '-':

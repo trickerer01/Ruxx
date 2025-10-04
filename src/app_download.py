@@ -251,10 +251,7 @@ class Downloader(DownloaderBase):
             # convert to pure strings
             self.items_raw_per_page[n] = [str(item) for item in items_raw_temp]
             with self.items_all_lock:
-                total_count_temp = 0
-                for k in self.items_raw_per_page:
-                    total_count_temp += len(self.items_raw_per_page[k])
-                self.total_count = total_count_temp
+                self.total_count = sum(len(self.items_raw_per_page[_]) for _ in self.items_raw_per_page)
 
             if ProcModule.is_rp() or ProcModule.is_en() or ProcModule.is_xb() or ProcModule.is_bb():
                 thread_sleep(1.0)
@@ -887,7 +884,7 @@ class Downloader(DownloaderBase):
             list_type = fmatch.group(1)
             list_fullpath = f'{dir_fullpath}{fmname}'
             try:
-                with open(list_fullpath, 'rt') as listfile:
+                with open(list_fullpath, 'rt', encoding=UTF8) as listfile:
                     last_idstring = ''
                     lines = listfile.readlines()
                     for i, line in enumerate(lines):
