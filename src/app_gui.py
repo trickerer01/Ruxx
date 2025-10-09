@@ -218,9 +218,9 @@ def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], Non
             duplicates_check_thread = None
             config_global(Globals.BUTTON_CHECKTAGS, state=gobject_orig_states[Globals.BUTTON_CHECKTAGS])
             config_global(Globals.BUTTON_DOWNLOAD, state=gobject_orig_states[Globals.BUTTON_DOWNLOAD])
-            config_menu(Menus.ACTIONS, SubMenus.CHECKTAGS, state=menu_item_orig_states[Menus.ACTIONS][2])
-            config_menu(Menus.ACTIONS, SubMenus.DOWNLOAD, state=menu_item_orig_states[Menus.ACTIONS][1])
-            config_menu(Menus.TOOLS, SubMenus.DUPLICATES, state=menu_item_orig_states[Menus.TOOLS][8])
+            config_menu(Menus.ACTIONS, SubMenus.CHECKTAGS, state=menu_item_orig_states[Menus.ACTIONS][SubMenus.CHECKTAGS])
+            config_menu(Menus.ACTIONS, SubMenus.DOWNLOAD, state=menu_item_orig_states[Menus.ACTIONS][SubMenus.DOWNLOAD])
+            config_menu(Menus.TOOLS, SubMenus.DUPLICATES, state=menu_item_orig_states[Menus.TOOLS][SubMenus.DUPLICATES])
             callback(ret_files)
 
     rootm().after(int(THREAD_CHECK_PERIOD_DEFAULT), check_dupes_checker_thread)
@@ -658,7 +658,7 @@ def check_tags_direct_do() -> None:
     if downloading is False:
         config_global(Globals.FIELD_TAGS, bg=COLOR_WHITE)
         config_global(Globals.BUTTON_CHECKTAGS, state=gobject_orig_states[Globals.BUTTON_CHECKTAGS])
-        config_menu(Menus.ACTIONS, SubMenus.CHECKTAGS, state=menu_item_orig_states[Menus.ACTIONS][2])
+        config_menu(Menus.ACTIONS, SubMenus.CHECKTAGS, state=menu_item_orig_states[Menus.ACTIONS][SubMenus.CHECKTAGS])
 
 
 def check_tags_direct() -> None:

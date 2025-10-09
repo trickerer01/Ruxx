@@ -402,7 +402,7 @@ menu_items = {
     Menus.DEBUG: RuxxMenu(SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH),
 }
 
-menu_item_orig_states = {
+menu_item_orig_states: dict[Menus, tuple[str, ...]] = {
     k: (STATE_NORMAL,) * (1 + max(menu_items[k].statefuls)) for k in [m for m in Menus if m < Menus.MAX_MENUS]
 }
 # end global static
