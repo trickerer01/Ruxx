@@ -1,0 +1,14 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+
+# Whitespace rules
+# strict (no trailing, no tabs)
+*.py     whitespace=trailing-space,space-before-tab,tab-in-indent,cr-at-eol eol=lf
+
+# normal (no trailing)
+*.txt    whitespace=trailing-space,space-before-tab,cr-at-eol
+
+# special files which must ignore whitespace
+*.patch  whitespace=-trailing-space eol=lf
+*.diff   whitespace=-trailing-space eol=lf
