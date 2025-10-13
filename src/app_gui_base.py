@@ -1849,21 +1849,21 @@ def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt
 
 
 def register_menu_checkbutton(label: str, varname: str,
-                              command: Callable[...] | None = None, hotkey: str | None = None) -> None:
+                              command: Callable[[...], ...] | None = None, hotkey: str | None = None) -> None:
     if varname not in bool_vars:
         bool_vars[varname] = BooleanVar(rootm(), False, name=varname)  # needed so it won't be discarded
     c_menum().add_checkbutton(label=label, command=command, variable=bool_vars[varname], accelerator=hotkey)
 
 
 def register_menu_radiobutton(label: str, varname: str, value: int,
-                              command: Callable[...] | None = None, hotkey: str | None = None) -> None:
+                              command: Callable[[...], ...] | None = None, hotkey: str | None = None) -> None:
     if varname not in int_vars:
         int_vars[varname] = IntVar(rootm(), value=value, name=varname)  # needed so it won't be discarded
     c_menum().add_radiobutton(label=label, command=command, variable=int_vars[varname], value=value, accelerator=hotkey)
 
 
 def register_submenu_radiobutton(label: str, varname: str, value: int,
-                                 command: Callable[...] | None = None, hotkey: str | None = None) -> None:
+                                 command: Callable[[...], ...] | None = None, hotkey: str | None = None) -> None:
     if varname not in int_vars:
         int_vars[varname] = IntVar(rootm(), value=value, name=varname)  # needed so it won't be discarded
     c_submenum().add_radiobutton(label=label, command=command, variable=int_vars[varname], value=value, accelerator=hotkey)
