@@ -12,3 +12,4 @@
 # special files which must ignore whitespace
 *.patch  whitespace=-trailing-space eol=lf
 *.diff   whitespace=-trailing-space eol=lf
+*.toml   whitespace=-trailing-space eol=lf
