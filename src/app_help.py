@@ -51,7 +51,7 @@ HELP_ARG_DUMP_PER_ITEM = 'Create tags/sources/comments files for each downloaded
 HELP_ARG_MERGE_LISTS = 'Merge exising tags/sources/comments files(s) with saved info (only if saving is enabled)'
 HELP_ARG_APPEND_SOURCE_AND_TAGS = 'Append a shortened representation of major tags to file name'
 HELP_ARG_WARN_NON_EMPTY_FOLDER = 'In GUI mode, warn if download folder is not empty'
-HELP_ARG_VERBOSE = 'Enable verbose log mode'
+HELP_ARG_VERBOSE = 'Enable verbose logging'
 HELP_ARG_CACHE_HTML_BLOAT = 'Cache processed HTML instead of raw bytes, can be faster but increases memory usage'
 HELP_ARG_TAGS = 'Tags to search for, required'
 # GUI help messages

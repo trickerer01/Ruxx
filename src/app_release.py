@@ -64,6 +64,7 @@ MODULES_EXCLUDED = (
     'mccabe',
     'pycodestyle',
     'pyflakes',
+    'ruff',
     'importlib-metadata',
     'zipp',
     'mutagen',

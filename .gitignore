@@ -1,7 +1,5 @@
 # Dev
-1ruxxenv/
-1ruxxvenv/
-1venv/
+*venv/
 images/*/
 version_info.txt
 *.pyc
@@ -10,6 +8,7 @@ version_info.txt
 *.exe
 src/curr.py
 src/app_grab_tags.py
+!setup.cfg
 
 # IDE
 /.idea/*
