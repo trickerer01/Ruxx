@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'Ruxx'
-version = '1.7.798'
+version = '1.7.799'
 authors = [
     {name = 'trickerer01'},
 ]
@@ -47,6 +47,9 @@ dependencies = [
 ]
 [project.optional-dependencies]
 default = []
+static-analysis = [
+    'ruff~=0.14.0',
+]
 pyinstaller = [
     'pyinstaller>=6.13.0',
 ]
