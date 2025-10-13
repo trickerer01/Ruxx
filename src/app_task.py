@@ -7,8 +7,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from collections.abc import Iterable
 import re
+from collections.abc import Iterable
 
 # internal
 from app_debug import __RUXX_DEBUG__

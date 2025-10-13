@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'Ruxx'
-version = '1.7.796'
+version = '1.7.797'
 authors = [
     {name = 'trickerer01'},
 ]
