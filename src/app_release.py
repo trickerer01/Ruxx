@@ -7,16 +7,18 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+import itertools
+import os
+import shutil
 import sys
-from itertools import chain
-from os import path, remove as removefile
-from shutil import rmtree as removedirs, move as movefile
 from subprocess import call as call_subprocess
 
+# from shutil import move as movefile
+# from shutil import rmtree as removedirs
 # internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import PLATFORM_LINUX, PLATFORM_WINDOWS
-from app_revision import APP_VERSION, APP_NAME
+from app_revision import APP_NAME, APP_VERSION
 from app_unittests import run_all_tests
 from app_versioninfo import VERSIONINFO_FILE_PATH, generate_versioninfo
 
@@ -24,15 +26,15 @@ __all__ = ()
 
 RUN_TESTS = not __RUXX_DEBUG__ and sys.platform == PLATFORM_LINUX
 
-RELEASE_SRC_DIR = f'{path.curdir}/dist/'
-RELEASE_DEST_DIR = f'{path.curdir}/release/'
+RELEASE_SRC_DIR = f'{os.path.curdir}/dist/'
+RELEASE_DEST_DIR = f'{os.path.curdir}/release/'
 RELEASE_FILENAME = f'{APP_NAME}{".exe" if sys.platform == PLATFORM_WINDOWS else ""}'
 RELEASE_SRC = f'{RELEASE_SRC_DIR}{RELEASE_FILENAME}'
 RELEASE_DEST = f'{RELEASE_DEST_DIR}{RELEASE_FILENAME}'
 RELEASE_ICON_SIZE = 256
 
-CLEANUP_FILES = (VERSIONINFO_FILE_PATH, f'{path.curdir}/{APP_NAME}.spec')
-CLEANUP_DIRS = (f'{path.curdir}/build/', f'{path.curdir}/dist/')
+CLEANUP_FILES = (VERSIONINFO_FILE_PATH, f'{os.path.curdir}/{APP_NAME}.spec')
+CLEANUP_DIRS = (f'{os.path.curdir}/build/', f'{os.path.curdir}/dist/')
 
 MODULES_EXCLUDED = (
     'lxml',
@@ -84,15 +86,15 @@ MODULES_EXCLUDED = (
 
 def move_exe() -> None:
     try:
-        if not path.isfile(RELEASE_SRC):
+        if not os.path.isfile(RELEASE_SRC):
             raise FileNotFoundError('2')
     except FileNotFoundError:
-        print(f'{str(sys.exc_info()[0])}: {str(sys.exc_info()[1])}')
+        print(f'{sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}')
         return
-    if path.isfile(RELEASE_DEST):
-        removefile(RELEASE_DEST)
+    if os.path.isfile(RELEASE_DEST):
+        os.remove(RELEASE_DEST)
 
-    movefile(RELEASE_SRC, RELEASE_DEST_DIR)
+    shutil.move(RELEASE_SRC, RELEASE_DEST_DIR)
 
 
 def build_exe() -> None:
@@ -102,20 +104,20 @@ def build_exe() -> None:
         '-F', '--noupx', '-c', '-y',
         '-n', APP_NAME,
         '-i', f'./images/8_{RELEASE_ICON_SIZE:d}.ico',
-        *(chain.from_iterable(zip(('--exclude-module',) * len(MODULES_EXCLUDED), MODULES_EXCLUDED, strict=True))),
+        *(itertools.chain.from_iterable(zip(('--exclude-module',) * len(MODULES_EXCLUDED), MODULES_EXCLUDED, strict=True))),
         '--version-file=version_info.txt',
     ))
 
 
 def cleanup() -> None:
     def report_exc(*_) -> None:
-        print(f'{str(sys.exc_info()[0])}: {str(sys.exc_info()[1])}')
+        print(f'{sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}')
     for clean_item in CLEANUP_FILES:
-        if path.isfile(clean_item):
-            removefile(clean_item)
+        if os.path.isfile(clean_item):
+            os.remove(clean_item)
     for clean_item in CLEANUP_DIRS:
-        if path.isdir(clean_item):
-            removedirs(clean_item, onerror=report_exc)
+        if os.path.isdir(clean_item):
+            shutil.rmtree(clean_item, onerror=report_exc)
 
 
 def make_release() -> None:

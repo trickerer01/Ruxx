@@ -7,21 +7,24 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+import os
 import sys
-from os import path, curdir
 from tempfile import TemporaryDirectory
-from unittest import TestCase, main as run_tests
+from unittest import TestCase
+from unittest import main as run_tests
 
 # internal
 from app_cmdargs import prepare_arglist
-from app_defines import DownloadModes, ThreadInterruptException, DEFAULT_HEADERS, DATE_MIN_DEFAULT, MODULE_CHOICES
+from app_defines import DATE_MIN_DEFAULT, DEFAULT_HEADERS, MODULE_CHOICES, DownloadModes, ThreadInterruptException
+
 # noinspection PyProtectedMember
 from app_downloaders import make_downloader
 from app_logger import Logger
 from app_module import ProcModule
 from app_revision import APP_NAME
+
 # noinspection PyProtectedMember
-from app_tagger import TagsDB, load_tag_aliases, TAG_ALIASES
+from app_tagger import TAG_ALIASES, TagsDB, load_tag_aliases
 from app_tags_parser import parse_tags
 from app_utils import normalize_path
 
@@ -29,7 +32,7 @@ __all__ = ('run_all_tests',)
 
 
 RUN_CONN_TESTS = 0
-CUR_PATH = normalize_path(path.abspath(curdir))
+CUR_PATH = normalize_path(os.path.abspath(os.curdir))
 
 args_argparse_str01 = (
     'sfw asd ned -nds -proxr '
@@ -438,8 +441,8 @@ class ItemFilterTests(TestCase):
         with make_downloader(ProcModule.RX) as dwn:
             dwn.launch_download(arglist)
             # self.assertEqual(3015, len(dwn.item_info_dict_all))  # may change too frequently
-            self.assertEqual('9081766', list(dwn.item_info_dict_all.values())[0].id)
-            self.assertEqual('963172', list(dwn.item_info_dict_all.values())[-1].id)
+            self.assertEqual('9081766', next(iter(dwn.item_info_dict_all.values())).id)
+            self.assertEqual('963172', next(reversed(dwn.item_info_dict_all.values())).id)
         print(f'{self._testMethodName} passed')
 
 
@@ -473,7 +476,7 @@ class RealDownloadTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.RX) as dwn:
             dwn.launch_download(arglist)
-            self.assertTrue(path.isfile(tempfile_path))
+            self.assertTrue(os.path.isfile(tempfile_path))
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
@@ -492,7 +495,7 @@ class RealDownloadTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.RS) as dwn:
             dwn.launch_download(arglist)
-            self.assertTrue(path.isfile(tempfile_path))
+            self.assertTrue(os.path.isfile(tempfile_path))
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
@@ -512,7 +515,7 @@ class RealDownloadTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.RS) as dwn:
             dwn.launch_download(arglist)
-            self.assertTrue(path.isfile(tempfile_path))
+            self.assertTrue(os.path.isfile(tempfile_path))
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
@@ -531,7 +534,7 @@ class RealDownloadTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.RP) as dwn:
             dwn.launch_download(arglist)
-            self.assertTrue(path.isfile(tempfile_path))
+            self.assertTrue(os.path.isfile(tempfile_path))
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
@@ -551,7 +554,7 @@ class RealDownloadTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.RP) as dwn:
             dwn.launch_download(arglist)
-            self.assertTrue(path.isfile(tempfile_path))
+            self.assertTrue(os.path.isfile(tempfile_path))
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
@@ -570,7 +573,7 @@ class RealDownloadTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.EN) as dwn:
             dwn.launch_download(arglist)
-            self.assertTrue(path.isfile(tempfile_path))
+            self.assertTrue(os.path.isfile(tempfile_path))
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
@@ -590,7 +593,7 @@ class RealDownloadTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.EN) as dwn:
             dwn.launch_download(arglist)
-            self.assertTrue(path.isfile(tempfile_path))
+            self.assertTrue(os.path.isfile(tempfile_path))
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
@@ -610,7 +613,7 @@ class RealDownloadTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.EN) as dwn:
             dwn.launch_download(arglist)
-            self.assertTrue(path.isfile(tempfile_path))
+            self.assertTrue(os.path.isfile(tempfile_path))
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
@@ -643,7 +646,7 @@ class RealDownloadTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.XB) as dwn:
             dwn.launch_download(arglist)
-            self.assertTrue(path.isfile(tempfile_path))
+            self.assertTrue(os.path.isfile(tempfile_path))
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
@@ -663,7 +666,7 @@ class RealDownloadTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.XB) as dwn:
             dwn.launch_download(arglist)
-            self.assertTrue(path.isfile(tempfile_path))
+            self.assertTrue(os.path.isfile(tempfile_path))
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
@@ -683,7 +686,7 @@ class RealDownloadTests(TestCase):
         arglist = prepare_arglist(argslist)
         with make_downloader(ProcModule.XB) as dwn:
             dwn.launch_download(arglist)
-            self.assertTrue(path.isfile(tempfile_path))
+            self.assertTrue(os.path.isfile(tempfile_path))
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 

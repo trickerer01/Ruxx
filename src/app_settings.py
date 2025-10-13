@@ -7,24 +7,46 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+import os
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
-from os import path, curdir, stat
 from tkinter import Tk, filedialog
 
 # internal
-from app_defines import Mem, UTF8, DATE_MIN_DEFAULT, LAUCH_DATE
-from app_gui_base import window_hcookiesm, getrootconf, setrootconf, int_vars, get_curdir, ask_filename, rootm
+from app_defines import DATE_MIN_DEFAULT, LAUCH_DATE, UTF8, Mem
+from app_gui_base import ask_filename, get_curdir, getrootconf, int_vars, rootm, setrootconf, window_hcookiesm
 from app_gui_defines import (
-    Options, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_PARCHI, OPTION_VALUES_THREADING, CVARS, SLASH,
+    CVARS,
+    OPTION_VALUES_IMAGES,
+    OPTION_VALUES_PARCHI,
+    OPTION_VALUES_THREADING,
+    OPTION_VALUES_VIDEOS,
+    SLASH,
+    Options,
 )
-from app_module import ProcModule
 from app_logger import trace
-from app_utils import normalize_path, as_date
+from app_module import ProcModule
+from app_utils import as_date, normalize_path
 from app_validators import (
-    Validator, DummyValidator, ModuleValidator, VideosCBValidator, ImagesCBValidator, ParchiCBValidator, ThreadsCBValidator, DateValidator,
-    JsonValidator, ProxyTypeValidator, ProxyValidator, BoolStrValidator, TimeoutValidator, RetriesValidator, WindowPosValidator,
-    InfoSaveModeValidator, FolderPathValidator, APIKeyKeyValidator, APIKeyUserIdValidator,
+    APIKeyKeyValidator,
+    APIKeyUserIdValidator,
+    BoolStrValidator,
+    DateValidator,
+    DummyValidator,
+    FolderPathValidator,
+    ImagesCBValidator,
+    InfoSaveModeValidator,
+    JsonValidator,
+    ModuleValidator,
+    ParchiCBValidator,
+    ProxyTypeValidator,
+    ProxyValidator,
+    RetriesValidator,
+    ThreadsCBValidator,
+    TimeoutValidator,
+    Validator,
+    VideosCBValidator,
+    WindowPosValidator,
 )
 
 __all__ = ('Settings',)
@@ -34,7 +56,7 @@ class Settings(ABC):
     """
     Settings !Static!
     """
-    INITIAL_SETTINGS: list[str] = list()
+    INITIAL_SETTINGS: list[str] = []
     AUTOCONFIG_FILENAMES: tuple[str, str, str, str] = ('ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg')
     on_proc_module_change_callback: Callable[[int], None] | None = None
     on_init_autocompletion_callback: Callable[[str], None] | None = None
@@ -118,13 +140,13 @@ class Settings(ABC):
 
     @staticmethod
     def try_pick_autoconfig() -> None:
-        base_path = normalize_path(path.abspath(curdir))
+        base_path = normalize_path(os.path.abspath(os.curdir))
         try:
             for filename in Settings.AUTOCONFIG_FILENAMES:
                 full_path = f'{base_path}{filename}'
-                if not path.isfile(full_path):
+                if not os.path.isfile(full_path):
                     continue
-                file_size = stat(full_path).st_size
+                file_size = os.stat(full_path).st_size
                 if file_size > 16 * Mem.KB:
                     trace(f'Skipping \'{filename}\', file is too large ({file_size / Mem.KB:.2f})')
                     continue
@@ -151,7 +173,7 @@ class Settings(ABC):
     @staticmethod
     def _write_settings() -> list[str]:
         def to_cfg_line(name: str, value: str | int) -> str:
-            return f'{name}={str(value)}\n'
+            return f'{name}={value!s}\n'
 
         settings_strlist = ['# Ruxx config settings #\n\n']
         for k in Settings.settings:

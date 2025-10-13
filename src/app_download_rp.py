@@ -7,30 +7,44 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from base64 import b64decode
-from datetime import datetime
+import base64
+import datetime
+import re
 from multiprocessing.dummy import current_process
-from re import Pattern
 
 # requirements
 from bs4 import BeautifulSoup
 
 # internal
 from app_defines import (
-    DownloadModes, ItemInfo, Comment, SITENAME_B_RP, FILE_NAME_PREFIX_RP, MODULE_ABBR_RP, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RP,
-    TAGS_CONCAT_CHAR_RP, ID_VALUE_SEPARATOR_CHAR_RP, FMT_DATE,
+    FILE_NAME_FULL_MAX_LEN,
+    FILE_NAME_PREFIX_RP,
+    FMT_DATE,
+    ID_VALUE_SEPARATOR_CHAR_RP,
+    ITEMS_PER_PAGE_RP,
+    MODULE_ABBR_RP,
+    SITENAME_B_RP,
+    TAGS_CONCAT_CHAR_RP,
+    Comment,
+    DownloadModes,
+    ItemInfo,
 )
 from app_download import Downloader
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
-    re_tags_to_process_rp, re_tags_exclude_rp, re_item_info_part_xml, re_orig_file_link, re_sample_file_link,
-    re_favorited_by_tag, re_item_filename,
+    re_favorited_by_tag,
+    re_item_filename,
+    re_item_info_part_xml,
+    re_orig_file_link,
+    re_sample_file_link,
+    re_tags_exclude_rp,
+    re_tags_to_process_rp,
 )
 
 __all__ = ('DownloaderRp',)
 
-SITENAME = b64decode(SITENAME_B_RP).decode()
+SITENAME = base64.b64decode(SITENAME_B_RP).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RP
 
 MAX_SEARCH_DEPTH = 0
@@ -131,7 +145,7 @@ class DownloaderRp(Downloader):
         try:
             # '2017-04-19 16:15:13.053663' -> '19-04-2017'
             date_idx = raw.find(' date="') + len(' date="')
-            d = datetime.strptime(raw[date_idx:raw.find(' ', date_idx + 1)], '%Y-%m-%d')
+            d = datetime.datetime.strptime(raw[date_idx:raw.find(' ', date_idx + 1)], '%Y-%m-%d')
             return d.strftime(FMT_DATE)
         except Exception:
             thread_exit(f'Unable to extract post date from raw: {raw}', -446)
@@ -207,10 +221,10 @@ class DownloaderRp(Downloader):
             self._on_thread_exception(current_process().name)
             raise
 
-    def get_re_tags_to_process(self) -> Pattern:
+    def get_re_tags_to_process(self) -> re.Pattern:
         return re_tags_to_process_rp
 
-    def get_re_tags_to_exclude(self) -> Pattern:
+    def get_re_tags_to_exclude(self) -> re.Pattern:
         return re_tags_exclude_rp
 
     def _get_tags_concat_char(self) -> str:
@@ -285,7 +299,7 @@ class DownloaderRp(Downloader):
             self._on_thread_exception(current_process().name)
             raise
 
-    def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:
+    def _form_tags_search_address(self, tags: str, maxlim: int | None = None) -> str:
         return f'{self._get_sitename()}api/danbooru/find_posts?tags={tags}{self._maxlim_str(maxlim)}'
 
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:

@@ -7,30 +7,39 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from base64 import b64decode
-from re import Pattern
+import base64
+import re
 
 # internal
 from app_defines import (
-    Comment, SITENAME_B_RX, FILE_NAME_PREFIX_RX, MODULE_ABBR_RX, ITEMS_PER_PAGE_RX,
-    TAGS_CONCAT_CHAR_RX, ID_VALUE_SEPARATOR_CHAR_RX, API_KEY_DEFAULT_RX, API_USER_ID_DEFAULT_RX,
+    API_KEY_DEFAULT_RX,
+    API_USER_ID_DEFAULT_RX,
+    FILE_NAME_PREFIX_RX,
+    ID_VALUE_SEPARATOR_CHAR_RX,
+    ITEMS_PER_PAGE_RX,
+    MODULE_ABBR_RX,
+    SITENAME_B_RX,
+    TAGS_CONCAT_CHAR_RX,
+    Comment,
 )
 from app_download_gelbooru import DownloaderGelbooru
 from app_logger import trace
 from app_re import (
-    re_tags_to_process_rx, re_tags_exclude_rx, re_post_page_rx,
+    re_post_page_rx,
+    re_tags_exclude_rx,
+    re_tags_to_process_rx,
 )
 
 __all__ = ('DownloaderRx',)
 
-SITENAME = b64decode(SITENAME_B_RX).decode()
+SITENAME = base64.b64decode(SITENAME_B_RX).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RX
 ITEMS_PER_PAGE_F = 50
 ITEMS_PER_PAGE_P = 45
 MAX_SEARCH_DEPTH = 200000 + ITEMS_PER_PAGE - 1  # set by site devs
 
-API_KEY = b64decode(API_KEY_DEFAULT_RX).decode()
-USER_ID = b64decode(API_USER_ID_DEFAULT_RX).decode()
+API_KEY = base64.b64decode(API_KEY_DEFAULT_RX).decode()
+USER_ID = base64.b64decode(API_USER_ID_DEFAULT_RX).decode()
 
 
 class DownloaderRx(DownloaderGelbooru):
@@ -49,7 +58,7 @@ class DownloaderRx(DownloaderGelbooru):
     def _form_item_string_manually(self, *ignored) -> str:
         raise NotImplementedError
 
-    def _get_re_post_page(self) -> Pattern:
+    def _get_re_post_page(self) -> re.Pattern:
         return re_post_page_rx
 
     def _get_sitename(self) -> str:
@@ -67,10 +76,10 @@ class DownloaderRx(DownloaderGelbooru):
     def _get_max_search_depth(self) -> int:
         return MAX_SEARCH_DEPTH
 
-    def get_re_tags_to_process(self) -> Pattern:
+    def get_re_tags_to_process(self) -> re.Pattern:
         return re_tags_to_process_rx
 
-    def get_re_tags_to_exclude(self) -> Pattern:
+    def get_re_tags_to_exclude(self) -> re.Pattern:
         return re_tags_exclude_rx
 
     def _get_tags_concat_char(self) -> str:

@@ -7,23 +7,30 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from base64 import b64decode
-from re import Pattern
+import base64
+import re
 
 # internal
 from app_defines import (
-    Comment, SITENAME_B_XB, FILE_NAME_PREFIX_XB, MODULE_ABBR_XB, ITEMS_PER_PAGE_XB,
-    TAGS_CONCAT_CHAR_XB, ID_VALUE_SEPARATOR_CHAR_XB,
+    FILE_NAME_PREFIX_XB,
+    ID_VALUE_SEPARATOR_CHAR_XB,
+    ITEMS_PER_PAGE_XB,
+    MODULE_ABBR_XB,
+    SITENAME_B_XB,
+    TAGS_CONCAT_CHAR_XB,
+    Comment,
 )
 from app_download_gelbooru import DownloaderGelbooru
 from app_logger import trace
 from app_re import (
-    re_tags_to_process_xb, re_tags_exclude_xb, re_post_page_xb,
+    re_post_page_xb,
+    re_tags_exclude_xb,
+    re_tags_to_process_xb,
 )
 
 __all__ = ('DownloaderXb',)
 
-SITENAME = b64decode(SITENAME_B_XB).decode()
+SITENAME = base64.b64decode(SITENAME_B_XB).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_XB
 ITEMS_PER_PAGE_F = 50
 ITEMS_PER_PAGE_P = 20000  # unknown, all posts are on a single page always
@@ -46,7 +53,7 @@ class DownloaderXb(DownloaderGelbooru):
     def _form_item_string_manually(self, *ignored) -> str:
         raise NotImplementedError
 
-    def _get_re_post_page(self) -> Pattern:
+    def _get_re_post_page(self) -> re.Pattern:
         return re_post_page_xb
 
     def _get_sitename(self) -> str:
@@ -64,10 +71,10 @@ class DownloaderXb(DownloaderGelbooru):
     def _get_max_search_depth(self) -> int:
         return MAX_SEARCH_DEPTH
 
-    def get_re_tags_to_process(self) -> Pattern:
+    def get_re_tags_to_process(self) -> re.Pattern:
         return re_tags_to_process_xb
 
-    def get_re_tags_to_exclude(self) -> Pattern:
+    def get_re_tags_to_exclude(self) -> re.Pattern:
         return re_tags_exclude_xb
 
     def _get_tags_concat_char(self) -> str:

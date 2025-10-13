@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
-from tkinter import Listbox, Toplevel, Widget, END, SOLID
+from tkinter import END, SOLID, Listbox, Toplevel, Widget
 
 __all__ = ('WidgetToolTip',)
 

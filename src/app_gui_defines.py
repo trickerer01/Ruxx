@@ -7,7 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from enum import IntEnum, unique, auto
+from enum import IntEnum, auto, unique
 
 # annotations
 if False is True:
@@ -93,7 +93,7 @@ PADDING_ROOTFRAME_I = PADDING_DEFAULT
 GLOBAL_COLUMNCOUNT = 100
 GLOBAL_ROWCOUNT = 100
 COLUMNSPAN_MAX = GLOBAL_COLUMNCOUNT
-"""100"""
+'''100'''
 ROWSPAN_MAX = GLOBAL_ROWCOUNT
 WINDOW_MINSIZE = [670, 231]
 # Timers
@@ -386,7 +386,7 @@ class RuxxMenu:
         self.statefuls: set[SubMenus] = set(ind for ind in indecies)
 
     def __bool__(self) -> bool:
-        return not not self.menu
+        return bool(self.menu)
 
 
 menu_items = {

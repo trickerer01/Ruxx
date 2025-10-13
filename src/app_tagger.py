@@ -7,52 +7,52 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+import json
+import os
+import re
 from collections.abc import Callable
-from json import load as load_json
-from os import path, getcwd
-from re import Pattern, compile as re_compile
 
 # internal
-from app_defines import MODULE_CHOICES, TAG_AUTOCOMPLETE_LENGTH_MIN, TAG_AUTOCOMPLETE_NUMBER_MAX, UTF8, FILE_NAME_ALIASES
+from app_defines import FILE_NAME_ALIASES, MODULE_CHOICES, TAG_AUTOCOMPLETE_LENGTH_MIN, TAG_AUTOCOMPLETE_NUMBER_MAX, UTF8
 from app_gui_defines import UNDERSCORE
 from app_logger import trace
-from app_re import re_replace_symbols, re_tags_exclude_major1, re_tags_exclude_major2, re_numbered_or_counted_tag
-from app_utils import trim_underscores, normalize_path
+from app_re import re_numbered_or_counted_tag, re_replace_symbols, re_tags_exclude_major1, re_tags_exclude_major2
+from app_utils import normalize_path, trim_underscores
 
-__all__ = ('TagsDB', 'load_tag_aliases', 'append_filtered_tags', 'is_wtag', 'normalize_wtag', 'no_validation_tag')
+__all__ = ('TagsDB', 'append_filtered_tags', 'is_wtag', 'load_tag_aliases', 'no_validation_tag', 'normalize_wtag')
 
-TAG_ALIASES: dict[str, str] = dict()
+TAG_ALIASES: dict[str, str] = {}
 
-re_meta_group = re_compile(r'^([^(]+)\(([^)]+)\).*?$')
-re_not_a_letter = re_compile(r'[^a-z]+')
-re_wtag = re_compile(r'^(?:[^?*]*[?*]).*?$')
+re_meta_group = re.compile(r'^([^(]+)\(([^)]+)\).*?$')
+re_not_a_letter = re.compile(r'[^a-z]+')
+re_wtag = re.compile(r'^(?:[^?*]*[?*]).*?$')
 
 
 class TagsDB:
-    DB: dict[str, dict[str, int]] = dict()
-    DBFiles: dict[str, str] = dict()
-    AuxDB: dict[str, dict[str, str]] = dict()
-    AuxDBFiles: dict[str, str] = dict()
+    DB: dict[str, dict[str, int]] = {}
+    DBFiles: dict[str, str] = {}
+    AuxDB: dict[str, dict[str, str]] = {}
+    AuxDBFiles: dict[str, str] = {}
 
     @staticmethod
     def try_locate_file_single(filename: str) -> None:
         if filename in TagsDB.AuxDBFiles:
             return
-        acwd = path.abspath(getcwd())
-        afld = path.abspath(path.dirname(__file__))
+        acwd = os.path.abspath(os.getcwd())
+        afld = os.path.abspath(os.path.dirname(__file__))
         trace(f'cwd: \'{acwd}\'')
         trace(f'fld: \'{afld}\'')
-        if path.basename(acwd) == 'src':
-            acwd = path.abspath(f'{acwd}/..')
-        if path.basename(afld) == 'src':
-            afld = path.abspath(f'{afld}/..')
+        if os.path.basename(acwd) == 'src':
+            acwd = os.path.abspath(f'{acwd}/..')
+        if os.path.basename(afld) == 'src':
+            afld = os.path.abspath(f'{afld}/..')
         basepath1 = normalize_path(acwd, False)
         basepath2 = normalize_path(afld, False)
         for basepath in (basepath1, basepath2):
             for folder_path in (f'{basepath}/', f'{basepath}/tags/', f'{basepath}/2tags/'):
                 pfilename = f'{folder_path}{filename}'
                 trace(f'looking for {pfilename}...')
-                if path.isfile(pfilename):
+                if os.path.isfile(pfilename):
                     TagsDB.AuxDBFiles[filename] = pfilename
                     trace('...found')
                     break
@@ -64,21 +64,21 @@ class TagsDB:
         def collect_taglist_names(fpath: str, paths_dict: dict[str, str]) -> None:
             for module in MODULE_CHOICES:
                 taglist_path = f'{fpath}{module}_tags.json'
-                if path.isfile(taglist_path):
+                if os.path.isfile(taglist_path):
                     paths_dict[module] = taglist_path
 
         def collect_aux_file_names(fpath: str) -> None:
             tag_aliases_path = f'{fpath}all_tag_aliases.json'
-            if path.isfile(tag_aliases_path):
+            if os.path.isfile(tag_aliases_path):
                 TagsDB.AuxDBFiles[FILE_NAME_ALIASES] = tag_aliases_path
 
-        folder = normalize_path(basepath or path.abspath(f'{path.dirname(__file__)}/..'), False)
+        folder = normalize_path(basepath or os.path.abspath(f'{os.path.dirname(__file__)}/..'), False)
         TagsDB.clear()
         while not TagsDB.DBFiles:
-            folder_up, tail = tuple(path.split(folder))
+            folder_up, tail = tuple(os.path.split(folder))
             for folder_path in (f'{folder}/', f'{folder}/tags/', f'{folder}/2tags/'):
-                if path.isdir(folder_path):
-                    tlpaths: dict[str, str] = dict()
+                if os.path.isdir(folder_path):
+                    tlpaths: dict[str, str] = {}
                     collect_taglist_names(folder_path, tlpaths)
                     if tlpaths:
                         TagsDB.DBFiles.update(tlpaths)
@@ -101,11 +101,11 @@ class TagsDB:
     def _load(module: str) -> None:
         if module in TagsDB.DB:
             return
-        TagsDB.DB[module] = dict()
+        TagsDB.DB[module] = {}
         try:
             with open(TagsDB.DBFiles.get(module, ''), 'rt', encoding=UTF8) as dbfile:
                 lines = dbfile.readlines()
-                for idx, line in enumerate(lines):
+                for _idx, line in enumerate(lines):
                     try:
                         kv_k, kv_v = tuple(line.strip(' ,"\n\ufeff').split('": "', 1))
                         ivalue = int(kv_v[:kv_v.find(' ')])
@@ -138,8 +138,8 @@ class TagsDB:
     @staticmethod
     def autocomplete_tag(module: str, tag: str, *,
                          pred: Callable[[str, str], bool] = lambda x, y: x.startswith(y),
-                         limit: int = None) -> list[tuple[str, int]]:
-        matches = list()
+                         limit: int | None = None) -> list[tuple[str, int]]:
+        matches = []
         if not is_wtag(tag) and len(tag) >= TAG_AUTOCOMPLETE_LENGTH_MIN:
             limit = limit or TAG_AUTOCOMPLETE_NUMBER_MAX
             TagsDB._load(module)
@@ -155,7 +155,7 @@ class TagsDB:
         assert filename not in TagsDB.AuxDB
         filepath = TagsDB.AuxDBFiles.get(filename, '')
         with open(filepath, 'rt', encoding=UTF8) as auxfile:
-            dest.update(load_json(auxfile))
+            dest.update(json.load(auxfile))
             TagsDB.AuxDB[filename] = filepath
 
 
@@ -164,19 +164,19 @@ def no_validation_tag(tag: str) -> str:
 
 
 def is_wtag(tag: str) -> bool:
-    return not not re_wtag.fullmatch(tag)
+    return bool(re_wtag.fullmatch(tag))
 
 
 def normalize_wtag(wtag: str) -> str:
     return wtag.replace('*', '.*').replace('?', '.')
 
 
-def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: Pattern, re_tags_to_exclude: Pattern) -> str:
+def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: re.Pattern, re_tags_to_exclude: re.Pattern) -> str:
     if len(tags_str) == 0:
         return base_string
 
     tags_list = tags_str.split(' ')
-    tags_toadd_list: list[str] = list()
+    tags_toadd_list: list[str] = []
 
     for tag in tags_list:
         tag = tag.replace('-', '').replace('\'', '')

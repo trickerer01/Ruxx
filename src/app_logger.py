@@ -8,14 +8,15 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from __future__ import annotations
+
+import time
 from locale import getpreferredencoding
 from threading import Lock as ThreadLock
-from time import localtime, strftime
 from tkinter import END, INSERT
 
 # internal
 from app_defines import UTF8
-from app_gui_defines import STATE_NORMAL, STATE_DISABLED
+from app_gui_defines import STATE_DISABLED, STATE_NORMAL
 from app_utils import find_first_not_of
 
 # annotations
@@ -29,7 +30,7 @@ __all__ = ('Logger', 'trace')
 class Logger:
     print_lock: ThreadLock = ThreadLock()
 
-    pending_strings: list[str] = list()
+    pending_strings: list[str] = []
     is_cmdline: bool = False
     is_disabled: bool = False
     wnd: LogWindow | None = None
@@ -81,7 +82,7 @@ class Logger:
         if timestamp is True:
             non_n_idx = find_first_not_of(message, '\n')
             textparts = (message[:non_n_idx], message[non_n_idx:]) if non_n_idx != -1 else ('', message)
-            message = f'{textparts[0]}[{strftime("%X", localtime())}] {textparts[1]}'
+            message = f'{textparts[0]}[{time.strftime("%X", time.localtime())}] {textparts[1]}'
 
         if safe:
             with Logger.print_lock:

@@ -8,21 +8,26 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 from collections.abc import Iterable
-from re import Pattern, compile as re_compile
+import re
 
 # internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    TAGS_STRING_LENGTH_MAX_RX, TAGS_STRING_LENGTH_MAX_RN, TAGS_STRING_LENGTH_MAX_RS, TAGS_STRING_LENGTH_MAX_RP, TAGS_STRING_LENGTH_MAX_EN,
-    TAGS_STRING_LENGTH_MAX_XB, TAGS_STRING_LENGTH_MAX_BB,
+    TAGS_STRING_LENGTH_MAX_BB,
+    TAGS_STRING_LENGTH_MAX_EN,
+    TAGS_STRING_LENGTH_MAX_RN,
+    TAGS_STRING_LENGTH_MAX_RP,
+    TAGS_STRING_LENGTH_MAX_RS,
+    TAGS_STRING_LENGTH_MAX_RX,
+    TAGS_STRING_LENGTH_MAX_XB,
 )
+from app_logger import trace
 from app_module import ProcModule
 from app_network import thread_exit
-from app_logger import trace
 
-__all__ = ('split_tags_into_tasks', 'extract_neg_and_groups')
+__all__ = ('extract_neg_and_groups', 'split_tags_into_tasks')
 
-re_negative_and_group = re_compile(r'^-\(([^,]+(?:,[^,]+)+)\)$')
+re_negative_and_group = re.compile(r'^-\(([^,]+(?:,[^,]+)+)\)$')
 
 
 def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split_always: bool) -> list[str]:
@@ -35,12 +40,12 @@ def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split
     :param split_always: unconditionally separate all 'or' groups
     :return: list of fully formed tags directly injectable into request query template, len is up to max_or_group_len**2
     """
-    new_tags_str_arr: list[str] = list()
-    or_tags_to_append: list[list[str]] = list()
+    new_tags_str_arr: list[str] = []
+    or_tags_to_append: list[list[str]] = []
     has_negative = False
     for g_tags in tag_groups_arr:
         splitted = False
-        add_list: list[str] = g_tags[2:-2].split('+~+') if len(g_tags) >= len('(+_+~+_+)') else list()
+        add_list: list[str] = g_tags[2:-2].split('+~+') if len(g_tags) >= len('(+_+~+_+)') else []
         if len(add_list) > 1:
             do_split = split_always
             for add_s in add_list:
@@ -60,7 +65,7 @@ def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split
             thread_exit('Error: -tag in \'or\' group found, but no +tags! Cannot search by only -tags', -701)
         tags_multi_list = [f'{cc.join(new_tags_str_arr)}' if len(new_tags_str_arr) > 0 else '']
         for or_tags_list in reversed(or_tags_to_append):
-            toapp = list()
+            toapp = []
             for or_tag in or_tags_list:
                 for tags_string in tags_multi_list:
                     toapp.append(f'{or_tag}{f"{cc}{tags_string}" if len(tags_string) > 0 else ""}')
@@ -72,23 +77,23 @@ def split_tags_into_tasks(tag_groups_arr: Iterable[str], cc: str, sc: str, split
     return [cc.join(tag_groups_arr)]
 
 
-def extract_neg_and_groups(tags_str: str, split_always: bool) -> tuple[list[str], list[list[Pattern[str]]]]:
+def extract_neg_and_groups(tags_str: str, split_always: bool) -> tuple[list[str], list[list[re.Pattern[str]]]]:
     """
     Separates tags string into fully formed tags and negative tag patterns\n
-    Ex. 'a b (+c+~+d+) -(ff,gg)' => (['a', 'b' , '(+c+~+d+)'], [[re_compile(r'^ff$'), re_compile(r'^gg$')]])\n
+    Ex. 'a b (+c+~+d+) -(ff,gg)' => (['a', 'b' , '(+c+~+d+)'], [[re.compile(r'^ff$'), re.compile(r'^gg$')]])\n
     :param tags_str: provided string of tags separated by space
     :param split_always: unconditionally separate all 'or' groups
     :return: 1) list of fully-formed tags without negative groups, 2) list of zero or more tag pattern lists
     """
-    def form_plist(neg_tags_group: str) -> list[Pattern] | None:
+    def form_plist(neg_tags_group: str) -> list[re.Pattern] | None:
         def esc(s: str) -> str:
             for c in '.[]()-+':
                 s = s.replace(c, f'\\{c}')
             return s.replace('?', '.').replace('*', '.*')
         ngr = re_negative_and_group.fullmatch(neg_tags_group)
-        return [re_compile(rf'^{esc(s)}$') for s in ngr.group(1).split(',')] if ngr else None
+        return [re.compile(rf'^{esc(s)}$') for s in ngr.group(1).split(',')] if ngr else None
 
-    parsed = list()
+    parsed = []
     tags_list = tags_str.split(' ')
     tgi: int
     for tgi in reversed(range(len(tags_list))):
@@ -141,7 +146,7 @@ def extract_neg_and_groups(tags_str: str, split_always: bool) -> tuple[list[str]
     def tags_fixed() -> None:
         return total_len <= max_string_len and len(neg_tags_list_all) <= max_ntags and len(w_tags_list_all) <= max_wtags
 
-    neg_tags_list = list()
+    neg_tags_list = []
     if not tags_fixed():
         trace('Warning (W3): either total tags length, maximum negative tags count or maximum wildcarded tags count '
               'exceeds acceptable limit, trying to extract negative tags into negative group...')

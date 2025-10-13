@@ -7,21 +7,21 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+import datetime
+import re
 from abc import abstractmethod
-from datetime import datetime
 from multiprocessing.dummy import current_process
-from re import Pattern
 
 # requirements
 from bs4 import BeautifulSoup
 
 # internal
-from app_defines import DownloadModes, ItemInfo, FILE_NAME_FULL_MAX_LEN, FMT_DATE
+from app_defines import FILE_NAME_FULL_MAX_LEN, FMT_DATE, DownloadModes, ItemInfo
 from app_download import Downloader
 from app_logger import trace
 from app_module import ProcModule
 from app_network import thread_exit
-from app_re import re_sample_file_link, re_orig_file_link, re_item_info_part_xml
+from app_re import re_item_info_part_xml, re_orig_file_link, re_sample_file_link
 
 __all__ = ('DownloaderGelbooru',)
 
@@ -36,7 +36,7 @@ class DownloaderGelbooru(Downloader):
         super().__init__()
 
     @abstractmethod
-    def _get_re_post_page(self) -> Pattern:
+    def _get_re_post_page(self) -> re.Pattern:
         raise NotImplementedError
 
     def _get_module_specific_default_headers(self) -> dict[str, str]:
@@ -94,12 +94,12 @@ class DownloaderGelbooru(Downloader):
         try:
             # 'Mon Jan 06 21:51:58 +0000 2020' -> '06-01-2020'
             date_idx = raw.find('created_at="') + len('created_at="')
-            d = datetime.strptime(raw[date_idx:raw.find('"', date_idx + 1)], '%a %b %d %X %z %Y')
+            d = datetime.datetime.strptime(raw[date_idx:raw.find('"', date_idx + 1)], '%a %b %d %X %z %Y')
             return d.strftime(FMT_DATE)
         except Exception:
             thread_exit(f'Unable to extract post date from raw: {raw}', -446)
 
-    def _get_items_query_size_or_html(self, url: str, tries: int = None) -> int:
+    def _get_items_query_size_or_html(self, url: str, tries: int | None = None) -> int:
         if self.favorites_search_user:
             raw_html = self.fetch_html(f'{url}&pid=0', tries, do_cache=True)
             if raw_html is None:
@@ -155,8 +155,7 @@ class DownloaderGelbooru(Downloader):
                 thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
 
             try:
-                count_ = int(raw_html.find('posts').get('count'))
-                return count_
+                return int(raw_html.find('posts').get('count'))
             except Exception:
                 if ProcModule.is_rx() and 'Missing authentication' in str(raw_html):
                     thread_exit('FATAL: Invalid RX API key!', code=-478)
@@ -233,7 +232,7 @@ class DownloaderGelbooru(Downloader):
         hint_maxlen = FILE_NAME_FULL_MAX_LEN - (len(self.dest_base_s) + len(item_id) + 1 + len(fmt))
         self._download(address, item_id, f'{self.dest_base_s}{self._try_append_extra_info(item_id, hint_maxlen)}.{fmt}')
 
-    def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:
+    def _form_tags_search_address(self, tags: str, maxlim: int | None = None) -> str:
         return (f'{self._get_sitename()}index.php?page=favorites&s=view&id={self.favorites_search_user}' if self.favorites_search_user else
                 f'{self._get_sitename()}index.php?page=pool&s=show&id={self.pool_search_str}' if self.pool_search_str else
                 f'{self._get_sitename()}index.php?page=dapi&s=post&q=index{self._get_api_key()}&tags={tags}{self._maxlim_str(maxlim)}')

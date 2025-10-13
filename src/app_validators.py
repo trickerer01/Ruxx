@@ -7,27 +7,56 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+import datetime
+import json
+import os
 from abc import abstractmethod
 from argparse import ArgumentError
-from datetime import datetime
 from ipaddress import IPv4Address
-from json import loads as json_loads
-from os import path
 
 # internal
-from app_defines import DMODE_CHOICES, FMT_DATE, THREADS_MAX_ITEMS, API_KEY_LEN_RX
+from app_defines import API_KEY_LEN_RX, DMODE_CHOICES, FMT_DATE, THREADS_MAX_ITEMS
 from app_gui_defines import (
-    SLASH, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES, OPTION_VALUES_THREADING, OPTION_VALUES_PARCHI, OPTION_VALUES_PROXYTYPE,
+    OPTION_VALUES_IMAGES,
+    OPTION_VALUES_PARCHI,
+    OPTION_VALUES_PROXYTYPE,
+    OPTION_VALUES_THREADING,
+    OPTION_VALUES_VIDEOS,
+    SLASH,
 )
 from app_module import ProcModule
 from app_utils import normalize_path
 
 __all__ = (
-    'valid_thread_count', 'valid_date', 'valid_folder_path', 'valid_json', 'valid_kwarg', 'valid_download_mode', 'valid_proxy',
-    'valid_positive_int', 'valid_window_position', 'valid_api_key',
-    'Validator', 'DummyValidator', 'ModuleValidator', 'VideosCBValidator', 'ImagesCBValidator', 'ThreadsCBValidator', 'JsonValidator',
-    'BoolStrValidator', 'ProxyValidator', 'ProxyTypeValidator', 'DateValidator', 'ParchiCBValidator', 'TimeoutValidator',
-    'RetriesValidator', 'WindowPosValidator', 'InfoSaveModeValidator', 'FolderPathValidator', 'APIKeyKeyValidator', 'APIKeyUserIdValidator',
+    'APIKeyKeyValidator',
+    'APIKeyUserIdValidator',
+    'BoolStrValidator',
+    'DateValidator',
+    'DummyValidator',
+    'FolderPathValidator',
+    'ImagesCBValidator',
+    'InfoSaveModeValidator',
+    'JsonValidator',
+    'ModuleValidator',
+    'ParchiCBValidator',
+    'ProxyTypeValidator',
+    'ProxyValidator',
+    'RetriesValidator',
+    'ThreadsCBValidator',
+    'TimeoutValidator',
+    'Validator',
+    'VideosCBValidator',
+    'WindowPosValidator',
+    'valid_api_key',
+    'valid_date',
+    'valid_download_mode',
+    'valid_folder_path',
+    'valid_json',
+    'valid_kwarg',
+    'valid_positive_int',
+    'valid_proxy',
+    'valid_thread_count',
+    'valid_window_position',
 )
 
 
@@ -43,12 +72,12 @@ def valid_proxy(prox: str, with_type=True) -> str:
     if len(prox) == 0:
         return prox
     try:
-        from urllib.parse import urlparse
+        from urllib import parse as url_parse
         if with_type is False:
             assert '://' not in prox
-            url = urlparse(f'{OPTION_VALUES_PROXYTYPE[0]}://{prox}')
+            url = url_parse.urlparse(f'{OPTION_VALUES_PROXYTYPE[0]}://{prox}')
         else:
-            url = urlparse(prox)
+            url = url_parse.urlparse(prox)
         _ = valid_proxy_type(url.scheme)
         _ = IPv4Address(url.hostname)
         assert 20 < url.port < 65535
@@ -59,15 +88,15 @@ def valid_proxy(prox: str, with_type=True) -> str:
 
 def valid_date(date: str) -> str:
     try:
-        _ = datetime.strptime(date, FMT_DATE)
+        _ = datetime.datetime.strptime(date, FMT_DATE)
         return date
     except Exception:
         raise ArgumentError
 
 
-def valid_json(json: str) -> dict[str, str]:
+def valid_json(json_str: str) -> dict[str, str]:
     try:
-        return json_loads(json.strip('\'"').replace('\\', ''))
+        return json.loads(json_str.strip('\'"').replace('\\', ''))
     except Exception:
         raise ArgumentError
 
@@ -95,8 +124,8 @@ def valid_thread_count(val: str) -> int:
 
 def valid_folder_path(pathstr: str) -> str:
     try:
-        newpath = normalize_path(path.abspath(path.expanduser(pathstr.strip('\'"'))))
-        assert path.isdir(newpath[:(newpath.find(SLASH) + 1)])
+        newpath = normalize_path(os.path.abspath(os.path.expanduser(pathstr.strip('\'"'))))
+        assert os.path.isdir(newpath[:(newpath.find(SLASH) + 1)])
         return newpath
     except Exception:
         raise ArgumentError

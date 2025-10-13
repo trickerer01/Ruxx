@@ -7,37 +7,45 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+import os
+import re
+import sys
+import time
 from abc import ABC, abstractmethod
 from argparse import Namespace
 from multiprocessing.dummy import current_process
-from os import path, stat, remove
-from re import compile as re_compile
-from sys import exc_info
-from threading import Thread, Lock as ThreadLock
-from time import sleep as thread_sleep
-from urllib.parse import urlparse
+from threading import Lock, Thread
+from urllib import parse as url_parse
 from warnings import filterwarnings
 
 # requirements
 from bs4 import BeautifulSoup
-from requests import Session, Response, HTTPError, ConnectionError, adapters
+from requests import ConnectionError as RequestConnectionError
+from requests import HTTPError, Response, Session, adapters
 from requests.structures import CaseInsensitiveDict
 
 # internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    ThreadInterruptException, DownloadModes, HtmlCacheMode, CONNECT_TIMEOUT_BASE, CONNECT_RETRIES_BASE, CONNECT_RETRIES_CHUNK,
-    WRITE_CHUNK_SIZE, DOWNLOAD_CHUNK_SIZE, KNOWN_EXTENSIONS_VID,
+    CONNECT_RETRIES_BASE,
+    CONNECT_RETRIES_CHUNK,
+    CONNECT_TIMEOUT_BASE,
+    DOWNLOAD_CHUNK_SIZE,
+    KNOWN_EXTENSIONS_VID,
+    WRITE_CHUNK_SIZE,
+    DownloadModes,
+    HtmlCacheMode,
+    ThreadInterruptException,
 )
 from app_gui_defines import SLASH
 from app_logger import trace
 from app_module import ProcModule
 
-__all__ = ('ThreadedHtmlWorker', 'DownloadInterruptException', 'thread_exit')
+__all__ = ('DownloadInterruptException', 'ThreadedHtmlWorker', 'thread_exit')
 
 filterwarnings('ignore', category=UserWarning)
 
-re_content_range_str = re_compile(r'bytes (\d+)-(\d+)?(?:/(\d+))?')
+re_content_range_str = re.compile(r'bytes (\d+)-(\d+)?(?:/(\d+))?')
 
 
 class DownloadInterruptException(BaseException):
@@ -54,7 +62,7 @@ class FileDownloadResult:
 
 def thread_exit(err_str='', code=-1) -> None:
     trace(f'Exiting with code {code:d}, message:\n{err_str}', True)
-    thread_sleep(0.15)
+    time.sleep(0.15)
     raise ThreadInterruptException
 
 
@@ -65,8 +73,8 @@ class ThreadedWorker(ABC):
     @abstractmethod
     def __init__(self) -> None:
         self.my_root_thread: Thread | None = None
-        self.item_lock: ThreadLock = ThreadLock()
-        self.items_all_lock: ThreadLock = ThreadLock()
+        self.item_lock: Lock = Lock()
+        self.items_all_lock: Lock = Lock()
 
     def reset_root_thread(self, thread: Thread) -> None:
         self.my_root_thread = thread
@@ -87,7 +95,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
     def __init__(self) -> None:
         super().__init__()
         self.verbose: bool = False
-        self.raw_html_cache: dict[str, BeautifulSoup | bytes] = dict()
+        self.raw_html_cache: dict[str, BeautifulSoup | bytes] = {}
         self.cache_mode: HtmlCacheMode = HtmlCacheMode.CACHE_BYTES
         self.add_headers: CaseInsensitiveDict[str, str] = CaseInsensitiveDict()
         self.add_cookies: CaseInsensitiveDict[str, str] = CaseInsensitiveDict()
@@ -96,7 +104,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
         self.proxies: dict[str, str] | None = None
         self.timeout: int = CONNECT_TIMEOUT_BASE
         self.retries: int = CONNECT_RETRIES_BASE
-        self.etags: dict[str, str] = dict()
+        self.etags: dict[str, str] = {}
         self.session: Session | None = None
 
     @abstractmethod
@@ -136,7 +144,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
             self.add_headers.update(args.headers)
         if args.cookies:
             self.add_cookies.update(args.cookies)
-        for container_base, container_ext in zip((self.add_headers, self.add_cookies), (args.header, args.cookie)):
+        for container_base, container_ext in zip((self.add_headers, self.add_cookies), (args.header, args.cookie), strict=False):
             pair: tuple[str, str]
             for pair in container_ext or []:
                 if pair[0] in container_base:
@@ -166,7 +174,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
         elif mode == DownloadModes.FULL:
             with self.make_session() as s:
                 s.stream = True
-                while (not (path.isfile(dest) and result.file_size == result.expected_size)) and result.retries < self.retries:
+                while (not (os.path.isfile(dest) and result.file_size == result.expected_size)) and result.retries < self.retries:
                     if self.is_killed():
                         trace(f'{result.result_str} interrupted', True)
                         raise DownloadInterruptException
@@ -183,7 +191,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                             headers.update(self.add_headers.copy())
                             req = s.request('GET', link, timeout=self.timeout, stream=True, headers=headers, allow_redirects=False)
                             req.raise_for_status()
-                            temp = bytes()
+                            temp = b''
                             for chunk_w in req.iter_content(WRITE_CHUNK_SIZE):
                                 temp += chunk_w
                             req.close()
@@ -257,63 +265,63 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                     chunk_tries += 1
                                     sleep_time = 2
                                     if __RUXX_DEBUG__:
-                                        exc_p1, exc_p2 = tuple(str(exc_info()[k]) for k in range(2))
+                                        exc_p1, exc_p2 = tuple(str(sys.exc_info()[k]) for k in range(2))
                                         trace(f'Warning (W2): at {item_id} chunk {i + 1:d} catched {exc_p1}: {exc_p2} retrying...', True)
-                                    thread_sleep(sleep_time)
+                                    time.sleep(sleep_time)
                                     continue
                                 chunk_tries = 0
                                 i += 1
 
-                        result.file_size = stat(dest).st_size
+                        result.file_size = os.stat(dest).st_size
                         if result.file_size != result.expected_size:
                             trace(f'Warning (W3): size mismatch for {item_id} ({result.file_size:d} / {result.expected_size:d}).'
                                   f' Retrying file.', True)
-                            if path.isfile(dest):
-                                remove(dest)
+                            if os.path.isfile(dest):
+                                os.remove(dest)
                                 result.file_size = 0
-                            raise IOError
+                            raise OSError
                     except (KeyboardInterrupt, ThreadInterruptException):
-                        if path.isfile(dest):
-                            result.file_size = stat(dest).st_size
+                        if os.path.isfile(dest):
+                            result.file_size = os.stat(dest).st_size
                             if result.file_size != result.expected_size:
-                                remove(dest)
+                                os.remove(dest)
                                 result.file_size = 0
                         trace(f'{result.result_str}{("interrupted by user." if current_process() == self.my_root_thread else "")}', True)
                         raise DownloadInterruptException
                     except (HTTPError, Exception) as err:
                         if isinstance(err, HTTPError) and err.response.status_code == 404:  # RS cdn error
                             if ProcModule.is_rs():
-                                hostname: str = urlparse(link).hostname or 'unk'
+                                hostname: str = url_parse.urlparse(link).hostname or 'unk'
                                 if hostname.startswith('video') and '-cdn' in hostname:
                                     if __RUXX_DEBUG__:
                                         trace(f'Warning (W3): {item_id} catched HTTPError 404 (host: {hostname})! '
                                               f'Trying no-cdn source...', True)
-                                    re_vhost_cdn = re_compile(r'-cdn\d')  # video-cdn1.rs
+                                    re_vhost_cdn = re.compile(r'-cdn\d')  # video-cdn1.rs
                                     link = re_vhost_cdn.sub('', link)
                             elif ProcModule.is_rx():
                                 if link != oldlink:
                                     trace(f'Warning (W3): {item_id} catched HTTPError 404 for normalized link. '
                                           f'Switching to slow link \'{oldlink}\'...', True)
                                     link = oldlink
-                        if isinstance(err, ConnectionError) and err.response is None:  # RS cdn error
+                        if isinstance(err, RequestConnectionError) and err.response is None:  # RS cdn error
                             if ProcModule.is_rs():
-                                hostname: str = urlparse(link).hostname or 'unk'
+                                hostname: str = url_parse.urlparse(link).hostname or 'unk'
                                 if hostname.startswith('video') and '-cdn' in hostname:
                                     if __RUXX_DEBUG__:
                                         trace(f'Warning (W3): {item_id} catched ConnectionError (host: {hostname})! '
                                               f'Trying no-cdn source...', True)
-                                    re_vhost_cdn = re_compile(r'-cdn\d')  # video-cdn1.rs
+                                    re_vhost_cdn = re.compile(r'-cdn\d')  # video-cdn1.rs
                                     link = re_vhost_cdn.sub('', link)
                         if isinstance(err, HTTPError) and err.response.status_code == 416:  # Requested range is not satisfiable
                             if __RUXX_DEBUG__:
                                 trace(f'Warning (W3): {item_id} catched HTTPError 416!', True)
-                            if path.isfile(dest):
-                                remove(dest)
+                            if os.path.isfile(dest):
+                                os.remove(dest)
                                 result.file_size = 0
                         result.retries += 1
-                        s_result = f'{result.result_str}{str(exc_info()[0])}: {str(exc_info()[1])} retry {result.retries:d}...'
+                        s_result = f'{result.result_str}{sys.exc_info()[0]!s}: {sys.exc_info()[1]!s} retry {result.retries:d}...'
                         trace(s_result, True)
-                        thread_sleep(2)
+                        time.sleep(2)
                         continue
         return result
 
@@ -330,26 +338,26 @@ class ThreadedHtmlWorker(ThreadedWorker):
                 break
             except (KeyboardInterrupt, ThreadInterruptException):
                 thread_exit('interrupted by user.', code=1)
-            except (Exception, HTTPError,) as err:
+            except (Exception, HTTPError) as err:
                 retries += 1
                 sleep_time = 1.0
                 threadname = f'{current_process().name}: ' if current_process() != self.my_root_thread else ''
                 if isinstance(err, HTTPError) and err.response.status_code == 404:
                     if r is not None and r.content and len(r.content.decode()) > 2:
                         trace(f'{threadname}received code 404 but received html'
-                              f'\n{str(exc_info()[0])}: {str(exc_info()[1])}. Continuing...', True)
+                              f'\n{sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}. Continuing...', True)
                         break
-                    trace(f'{threadname}catched err 404 {str(exc_info()[0])}: {str(exc_info()[1])}. Aborting...', True)
+                    trace(f'{threadname}catched err 404 {sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}. Aborting...', True)
                     return None
                 elif isinstance(err, HTTPError) and err.response.status_code == 429:  # Too Many Requests
                     sleep_time += float(min(9, retries))
                     if __RUXX_DEBUG__:
-                        trace(f'{threadname}catched {str(exc_info()[0])}: {str(exc_info()[1])}.'
+                        trace(f'{threadname}catched {sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}.'
                               f'{f" Reconnecting in {sleep_time:.1f} sec... {retries:d}" if retries < tries else ""}', True)
                 else:
-                    trace(f'{threadname}catched {str(exc_info()[0])}: {str(exc_info()[1])}.'
+                    trace(f'{threadname}catched {sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}.'
                           f'{f" Reconnecting in {sleep_time:.1f} sec... {retries:d}" if retries < tries else ""}', True)
-                thread_sleep(sleep_time)
+                time.sleep(sleep_time)
                 continue
 
         if retries >= tries:

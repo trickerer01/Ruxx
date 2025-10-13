@@ -7,12 +7,12 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from datetime import datetime
-from os import path
+import datetime
+import os
 
 __all__ = ()
 
-CWD = path.abspath(path.curdir).replace('\\', '/')
+CWD = os.path.abspath(os.path.curdir).replace('\\', '/')
 APP_REV_FILE_PATH = f'{CWD}/src/app_revision.py'
 STR_APP_REVISION = 'APP_REVISION = \''
 STR_APP_DATE = 'APP_REV_DATE = \''
@@ -38,7 +38,7 @@ def write_revision_date() -> None:
                 lines[idx] = f'{STR_APP_REVISION}{Version.revision:d}\'\n'
                 set_rev = True
             elif line.startswith(STR_APP_DATE):
-                Version.date = datetime.today().strftime("%d %b %Y")
+                Version.date = datetime.datetime.today().strftime('%d %b %Y')
                 lines[idx] = f'{STR_APP_DATE}{Version.date}\'\n'
                 set_date = True
             else:

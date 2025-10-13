@@ -7,29 +7,44 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from base64 import b64decode
+import base64
+import re
 from multiprocessing.dummy import current_process
-from re import Pattern
 
 # requirements
 from bs4 import BeautifulSoup
 
 # internal
 from app_defines import (
-    DownloadModes, ItemInfo, Comment, SITENAME_B_RS, FILE_NAME_PREFIX_RS, MODULE_ABBR_RS, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RS,
-    TAGS_CONCAT_CHAR_RS, ID_VALUE_SEPARATOR_CHAR_RS, DATE_MIN_DEFAULT,
+    DATE_MIN_DEFAULT,
+    FILE_NAME_FULL_MAX_LEN,
+    FILE_NAME_PREFIX_RS,
+    ID_VALUE_SEPARATOR_CHAR_RS,
+    ITEMS_PER_PAGE_RS,
+    MODULE_ABBR_RS,
+    SITENAME_B_RS,
+    TAGS_CONCAT_CHAR_RS,
+    Comment,
+    DownloadModes,
+    ItemInfo,
 )
 from app_download import Downloader
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
-    re_tags_to_process_rs, re_tags_exclude_rs, re_post_style_rs, re_post_dims_rs, re_tag_video_rs, re_comment_page_rs, re_comment_a_rs,
+    re_comment_a_rs,
+    re_comment_page_rs,
+    re_post_dims_rs,
     re_post_page_rs,
+    re_post_style_rs,
+    re_tag_video_rs,
+    re_tags_exclude_rs,
+    re_tags_to_process_rs,
 )
 
 __all__ = ('DownloaderRs',)
 
-SITENAME = b64decode(SITENAME_B_RS).decode()
+SITENAME = base64.b64decode(SITENAME_B_RS).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RS
 ITEMS_PER_PAGE_F = 30
 MAX_SEARCH_DEPTH = 240 * ITEMS_PER_PAGE - 1  # set by site devs
@@ -108,17 +123,13 @@ class DownloaderRs(Downloader):
     def _extract_id(self, addr: str) -> str:
         idx1 = addr.find('id=') + len('id=')
         idx2 = addr.find('"', idx1 + 1)
-        h = addr[idx1:idx2 if idx2 > idx1 else None]
-        return h
+        return addr[idx1:idx2 if idx2 > idx1 else None]
 
     def _is_video(self, h: str) -> bool:
         # relying on tags for now
         idx1 = h.find('title=') + len('title=') + 1
         taglist = h[idx1:h.find('/>', idx1 + 1) - 1].strip(', ').split(', ')
-        for tag in taglist:
-            if re_tag_video_rs.fullmatch(tag):
-                return True
-        return False
+        return any(re_tag_video_rs.fullmatch(tag) for tag in taglist)
 
     def _get_item_html(self, h: str) -> BeautifulSoup | None:
         return self.fetch_html(h, do_cache=True)
@@ -126,7 +137,7 @@ class DownloaderRs(Downloader):
     def _extract_post_date(self, raw: str) -> str:
         return DATE_MIN_DEFAULT
 
-    def _get_items_query_size_or_html(self, url: str, tries: int = None) -> int | BeautifulSoup:
+    def _get_items_query_size_or_html(self, url: str, tries: int | None = None) -> int | BeautifulSoup:
         raw_html = self.fetch_html(f'{url}&page=0', tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
@@ -201,10 +212,10 @@ class DownloaderRs(Downloader):
             self._on_thread_exception(current_process().name)
             raise
 
-    def get_re_tags_to_process(self) -> Pattern:
+    def get_re_tags_to_process(self) -> re.Pattern:
         return re_tags_to_process_rs
 
-    def get_re_tags_to_exclude(self) -> Pattern:
+    def get_re_tags_to_exclude(self) -> re.Pattern:
         return re_tags_exclude_rs
 
     def _get_tags_concat_char(self) -> str:
@@ -303,8 +314,7 @@ class DownloaderRs(Downloader):
         link_wbm = content_div.find('source', type='video/webm') if content_div else None
         link_ori = raw_html.find('a', string='Original')
         link = ((link_wbm or link_mp4) if self.prefer_webm else (link_mp4 or link_wbm) if self.prefer_mp4 else link_ori) or link_img
-        orig_href = str(link.get('src') or link.get('href')) if link else ''
-        return orig_href
+        return str(link.get('src') or link.get('href')) if link else ''
 
     def _extract_sample_link(self, raw_html: BeautifulSoup) -> str:
         orig_link = self._extract_orig_link(raw_html)
@@ -312,8 +322,7 @@ class DownloaderRs(Downloader):
         lsd_index = link.rfind('.')
         link = link[:lsd_index] + '.jpg'
         lsl_index = link.rfind('/')
-        link = link[:lsl_index] + '/thumbnail_' + link[lsl_index + 1:]
-        return link
+        return link[:lsl_index] + '/thumbnail_' + link[lsl_index + 1:]
 
     def _form_comments_search_address(self, post_id: str, page_num: int) -> str:
         return f'{self._get_sitename()}index.php?r=posts/view&id={post_id}&page={page_num:d}'

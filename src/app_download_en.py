@@ -7,13 +7,13 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from base64 import b64decode
-from datetime import datetime
-from json import loads
-from multiprocessing.dummy import current_process
+import base64
+import datetime
+import json
+import re
+import time
 from collections.abc import MutableSet
-from re import Pattern
-from time import sleep as thread_sleep
+from multiprocessing.dummy import current_process
 
 # requirements
 from bs4 import BeautifulSoup
@@ -21,23 +21,36 @@ from bs4 import BeautifulSoup
 # internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    DownloadModes, ItemInfo, Comment, SITENAME_B_EN, FILE_NAME_PREFIX_EN, MODULE_ABBR_EN, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_EN,
-    TAGS_CONCAT_CHAR_EN, ID_VALUE_SEPARATOR_CHAR_EN, FMT_DATE,
+    FILE_NAME_FULL_MAX_LEN,
+    FILE_NAME_PREFIX_EN,
+    FMT_DATE,
+    ID_VALUE_SEPARATOR_CHAR_EN,
+    ITEMS_PER_PAGE_EN,
+    MODULE_ABBR_EN,
+    SITENAME_B_EN,
+    TAGS_CONCAT_CHAR_EN,
+    Comment,
+    DownloadModes,
+    ItemInfo,
 )
 from app_download import Downloader
 from app_help import APP_ADDRESS
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
-    re_tags_to_process_en, re_tags_exclude_en, re_item_info_part_xml, re_orig_file_link, re_sample_file_link, re_favorited_by_tag,
-
+    re_favorited_by_tag,
+    re_item_info_part_xml,
+    re_orig_file_link,
+    re_sample_file_link,
+    re_tags_exclude_en,
+    re_tags_to_process_en,
 )
 from app_revision import APP_VERSION
 from app_utils import format_score
 
 __all__ = ('DownloaderEn',)
 
-SITENAME = b64decode(SITENAME_B_EN).decode()
+SITENAME = base64.b64decode(SITENAME_B_EN).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_EN
 MAX_SEARCH_DEPTH_PAGES = 750
 MAX_SEARCH_DEPTH = MAX_SEARCH_DEPTH_PAGES * ITEMS_PER_PAGE  # set by site devs
@@ -53,7 +66,7 @@ class DownloaderEn(Downloader):
     def __init__(self) -> None:
         super().__init__()
         self._base_headers = {'User-Agent': f'Ruxx/{APP_VERSION} <{APP_ADDRESS}>'}
-        self._base_cookies = dict()
+        self._base_cookies = {}
 
     def _get_api_key(self) -> str:
         return ''
@@ -106,10 +119,10 @@ class DownloaderEn(Downloader):
         return f'{self.url}&page={n + 1:d}'
 
     def _get_all_post_tags(self, raw_html_page: BeautifulSoup) -> list:
-        base_json = loads(raw_html_page.text)
-        posts = list()
+        base_json = json.loads(raw_html_page.text)
+        posts = []
         for p in base_json['posts']:
-            post_tags_list = list()
+            post_tags_list = []
             post_id = str(p['id'])
             pfile = p['file'] or p['sample']['alternates'].get('original')
             assert pfile
@@ -163,17 +176,17 @@ class DownloaderEn(Downloader):
         try:
             # 'Mon Jan 06 21:51:58 +0000 2020' -> '06-01-2020'
             date_idx = raw.find('created_at="') + len('created_at="')
-            d = datetime.fromisoformat(raw[date_idx:raw.find('"', date_idx + 1)])
+            d = datetime.datetime.fromisoformat(raw[date_idx:raw.find('"', date_idx + 1)])
             return d.strftime(FMT_DATE)
         except Exception:
             thread_exit(f'Unable to extract post date from raw: {raw}', -446)
 
-    def _get_items_query_size_or_html(self, url: str, tries: int = None) -> int:
+    def _get_items_query_size_or_html(self, url: str, tries: int | None = None) -> int:
         page = 0
         raw_html = self.fetch_html(self._form_page_num_address(page), tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
-        last_count = len(loads(raw_html.text)['posts'])
+        last_count = len(json.loads(raw_html.text)['posts'])
         if last_count >= self._get_items_per_page() and not self.get_max_id:
             trace(f'[{self._get_module_abbr().upper()}] Looking for max page...')
             divider = 1
@@ -181,14 +194,14 @@ class DownloaderEn(Downloader):
             while last_count == 0 or last_count >= self._get_items_per_page():
                 if (page == MAX_SEARCH_DEPTH_PAGES - 1 and last_count == self._get_items_per_page()) or (page == 0 and last_count == 0):
                     break
-                thread_sleep(1.0)
+                time.sleep(1.0)
                 page += min(MAX_SEARCH_DEPTH_PAGES - 1, max(MAX_SEARCH_DEPTH_PAGES // divider, 1)) * direction
                 if __RUXX_DEBUG__:
                     trace(f'page {page + 1:d}...')
                 raw_html = self.fetch_html(self._form_page_num_address(page), do_cache=True)
                 if raw_html is None:
                     thread_exit(f'ERROR: GetItemsQueSize: unable to retreive html (page {page:d})', code=-445)
-                last_count = len(loads(raw_html.text)['posts'])
+                last_count = len(json.loads(raw_html.text)['posts'])
                 divider *= 2
                 direction = -1 if last_count == 0 else 1
         return page * self._get_items_per_page() + last_count
@@ -251,10 +264,10 @@ class DownloaderEn(Downloader):
             self._on_thread_exception(current_process().name)
             raise
 
-    def get_re_tags_to_process(self) -> Pattern:
+    def get_re_tags_to_process(self) -> re.Pattern:
         return re_tags_to_process_en
 
-    def get_re_tags_to_exclude(self) -> Pattern:
+    def get_re_tags_to_exclude(self) -> re.Pattern:
         return re_tags_exclude_en
 
     def _get_tags_concat_char(self) -> str:
@@ -327,12 +340,12 @@ class DownloaderEn(Downloader):
             self._on_thread_exception(current_process().name)
             raise
 
-    def _form_tags_search_address(self, tags: str, maxlim: int = None) -> str:
+    def _form_tags_search_address(self, tags: str, maxlim: int | None = None) -> str:
         return f'{self._get_sitename()}posts.json?tags={tags}{self._maxlim_str(maxlim)}'
 
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
         full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
-        comments_json = loads(raw_html.text)
+        comments_json = json.loads(raw_html.text)
         if not isinstance(comments_json, list):
             return
         for comment in comments_json:
@@ -376,7 +389,7 @@ class DownloaderEn(Downloader):
         abbrp = self._get_module_abbr_p()
         total_count_old = len(self.items_raw_per_task)
         removed_count = 0
-        removed_messages: list[str] = list()
+        removed_messages: list[str] = []
         idx: int
         for idx in reversed(range(total_count_old)):
             self.catch_cancel_or_ctrl_c()

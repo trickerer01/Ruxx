@@ -8,17 +8,49 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # app_gui, app_cmdargs
 
 # native
+import base64
 import ctypes
+import json
+import os
+import re
 import sys
 from abc import ABC, abstractmethod
-from base64 import b64decode
 from collections.abc import Callable, Iterable
-from json import dumps as json_dumps, loads as json_loads
-from os import curdir, path
-from re import compile as re_compile
 from tkinter import (
-    Tk, Toplevel, ttk, Widget, Menu, Scrollbar, Button, Text, Label, Listbox, Checkbutton, PhotoImage, StringVar, IntVar, BooleanVar,
-    filedialog, messagebox, HORIZONTAL, W, S, X, Y, NO, YES, SUNKEN, FLAT, END, LEFT, BOTH, RIGHT, TOP, INSERT, NONE, SEL,
+    BOTH,
+    END,
+    FLAT,
+    HORIZONTAL,
+    INSERT,
+    LEFT,
+    NO,
+    NONE,
+    RIGHT,
+    SEL,
+    SUNKEN,
+    TOP,
+    YES,
+    BooleanVar,
+    Button,
+    Checkbutton,
+    IntVar,
+    Label,
+    Listbox,
+    Menu,
+    PhotoImage,
+    S,
+    Scrollbar,
+    StringVar,
+    Text,
+    Tk,
+    Toplevel,
+    W,
+    Widget,
+    X,
+    Y,
+    filedialog,
+    messagebox,
+    ttk,
 )
 
 # internal
@@ -27,45 +59,166 @@ from typing import Literal
 
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    PROXY_DEFAULT_STR, USER_AGENT, PROGRESS_BAR_MAX, PLATFORM_WINDOWS, DATE_MIN_DEFAULT, CONNECT_TIMEOUT_BASE, DATE_MAX_DEFAULT,
-    KNOWN_EXTENSIONS_STR, CONNECT_RETRIES_BASE, API_KEY_LEN_RX,
-    SITENAME_B_RX, SITENAME_B_RN, SITENAME_B_RS, SITENAME_B_RP, SITENAME_B_EN, SITENAME_B_XB, SITENAME_B_BB,
+    API_KEY_LEN_RX,
+    CONNECT_RETRIES_BASE,
+    CONNECT_TIMEOUT_BASE,
+    DATE_MAX_DEFAULT,
+    DATE_MIN_DEFAULT,
+    KNOWN_EXTENSIONS_STR,
+    PLATFORM_WINDOWS,
+    PROGRESS_BAR_MAX,
+    PROXY_DEFAULT_STR,
+    SITENAME_B_BB,
+    SITENAME_B_EN,
+    SITENAME_B_RN,
+    SITENAME_B_RP,
+    SITENAME_B_RS,
+    SITENAME_B_RX,
+    SITENAME_B_XB,
+    USER_AGENT,
 )
 from app_file_parser import prepare_id_list, prepare_tag_lists
 from app_file_sorter import FileTypeFilter
 from app_gui_defines import (
-    BUT_ESCAPE, BUT_RETURN, STATE_READONLY, STATE_DISABLED, TOOLTIP_DELAY_DEFAULT, FONT_SANS_SMALL, COLOR_LIGHTGRAY, STATE_NORMAL,
-    TOOLTIP_INVALID_SYNTAX, CVARS, FONT_SANS_MEDIUM, COLUMNSPAN_MAX, BUT_CTRL_A, TOOLTIP_HCOOKIE_ADD_ENTRY, TOOLTIP_HCOOKIE_DELETE,
-    BUT_DELETE, WINDOW_MINSIZE, PADDING_ROOTFRAME_I, IMG_SAVE_DATA, IMG_PROC_RX_DATA, IMG_PROC_RN_DATA, IMG_PROC_RS_DATA, IMG_PROC_XB_DATA,
-    IMG_PROC_BB_DATA, IMG_PROC_RP_DATA, IMG_PROC_EN_DATA, IMG_OPEN_DATA, IMG_ADD_DATA, IMG_TEXT_DATA, IMG_PROC_RUXX_DATA, IMG_DELETE_DATA,
-    STICKY_HORIZONTAL, BUT_CTRL_DELETE, OPTION_VALUES_VIDEOS, TOOLTIP_VIDEOS, OPTION_VALUES_IMAGES, TOOLTIP_IMAGES, OPTION_VALUES_THREADING,
-    TOOLTIP_THREADING, SLASH, BEGIN, OPTION_VALUES_PROXYTYPE, TOOLTIP_DATE, FONT_LUCIDA_MEDIUM, TOOLTIP_TAGS_CHECK, ROWSPAN_MAX,
-    GLOBAL_COLUMNCOUNT, BUT_CTRL_BACKSPACE, COLOR_DARKGRAY, STICKY_ALLDIRECTIONS, OPTION_VALUES_PARCHI, TOOLTIP_PARCHI,
-    OPTION_VALUES_DOWNLOAD_ORDER, TOOLTIP_DOWNLOAD_ORDER, TOOLTIP_DOWNLOAD_LIMIT, BUTTONS_TO_UNFOCUS, PADDING_DEFAULT, BUT_CTRL_SPACE,
-    Icons, Options, Globals, Menus, SubMenus, menu_items, hotkeys, gobjects,
+    BEGIN,
+    BUT_CTRL_A,
+    BUT_CTRL_BACKSPACE,
+    BUT_CTRL_DELETE,
+    BUT_CTRL_SPACE,
+    BUT_DELETE,
+    BUT_ESCAPE,
+    BUT_RETURN,
+    BUTTONS_TO_UNFOCUS,
+    COLOR_DARKGRAY,
+    COLOR_LIGHTGRAY,
+    COLUMNSPAN_MAX,
+    CVARS,
+    FONT_LUCIDA_MEDIUM,
+    FONT_SANS_MEDIUM,
+    FONT_SANS_SMALL,
+    GLOBAL_COLUMNCOUNT,
+    IMG_ADD_DATA,
+    IMG_DELETE_DATA,
+    IMG_OPEN_DATA,
+    IMG_PROC_BB_DATA,
+    IMG_PROC_EN_DATA,
+    IMG_PROC_RN_DATA,
+    IMG_PROC_RP_DATA,
+    IMG_PROC_RS_DATA,
+    IMG_PROC_RUXX_DATA,
+    IMG_PROC_RX_DATA,
+    IMG_PROC_XB_DATA,
+    IMG_SAVE_DATA,
+    IMG_TEXT_DATA,
+    OPTION_VALUES_DOWNLOAD_ORDER,
+    OPTION_VALUES_IMAGES,
+    OPTION_VALUES_PARCHI,
+    OPTION_VALUES_PROXYTYPE,
+    OPTION_VALUES_THREADING,
+    OPTION_VALUES_VIDEOS,
+    PADDING_DEFAULT,
+    PADDING_ROOTFRAME_I,
+    ROWSPAN_MAX,
+    SLASH,
+    STATE_DISABLED,
+    STATE_NORMAL,
+    STATE_READONLY,
+    STICKY_ALLDIRECTIONS,
+    STICKY_HORIZONTAL,
+    TOOLTIP_DATE,
+    TOOLTIP_DELAY_DEFAULT,
+    TOOLTIP_DOWNLOAD_LIMIT,
+    TOOLTIP_DOWNLOAD_ORDER,
+    TOOLTIP_HCOOKIE_ADD_ENTRY,
+    TOOLTIP_HCOOKIE_DELETE,
+    TOOLTIP_IMAGES,
+    TOOLTIP_INVALID_SYNTAX,
+    TOOLTIP_PARCHI,
+    TOOLTIP_TAGS_CHECK,
+    TOOLTIP_THREADING,
+    TOOLTIP_VIDEOS,
+    WINDOW_MINSIZE,
+    Globals,
+    Icons,
+    Menus,
+    Options,
+    SubMenus,
+    gobjects,
+    hotkeys,
+    menu_items,
 )
-from app_module import ProcModule
 from app_help import (
-    HELP_TAGS_MSG_RX, HELP_TAGS_MSG_RN, HELP_TAGS_MSG_RS, HELP_TAGS_MSG_RP, HELP_TAGS_MSG_EN, HELP_TAGS_MSG_XB, HELP_TAGS_MSG_BB, ABOUT_MSG,
+    ABOUT_MSG,
+    HELP_TAGS_MSG_BB,
+    HELP_TAGS_MSG_EN,
+    HELP_TAGS_MSG_RN,
+    HELP_TAGS_MSG_RP,
+    HELP_TAGS_MSG_RS,
+    HELP_TAGS_MSG_RX,
+    HELP_TAGS_MSG_XB,
 )
 from app_logger import Logger
+from app_module import ProcModule
 from app_re import re_space_mult
-from app_revision import APP_VERSION, APP_NAME
+from app_revision import APP_NAME, APP_VERSION
 from app_tagger import TagsDB
 from app_tooltips import WidgetToolTip
-from app_utils import normalize_path, garble_text
-from app_validators import valid_proxy, valid_positive_int, valid_window_position, valid_api_key
+from app_utils import garble_text, normalize_path
+from app_validators import valid_api_key, valid_positive_int, valid_proxy, valid_window_position
 
 __all__ = (
-    'AskFileTypeFilterWindow', 'AskFileSizeFilterWindow', 'AskFileScoreFilterWindow', 'AskIntWindow', 'AskFirstLastWindow',
-    'AskChecksWindow', 'LogWindow', 'setrootconf', 'int_vars', 'rootm', 'getrootconf', 'window_hcookiesm', 'window_proxym',
-    'window_timeoutm', 'window_retriesm', 'window_apikeym', 'register_menu', 'register_submenu', 'GetRoot', 'create_base_window_widgets',
-    'text_cmdm', 'get_icon', 'init_additional_windows', 'get_global', 'config_global', 'is_global_disabled', 'is_menu_disabled',
-    'is_focusing', 'toggle_console', 'hotkey_text', 'get_curdir', 'set_console_shown', 'unfocus_buttons_once', 'help_tags', 'help_about',
-    'load_id_list', 'load_batch_download_tag_list', 'ask_filename', 'browse_path', 'update_garbled_text_states', 'register_menu_command',
-    'register_submenu_command', 'register_menu_checkbutton', 'register_menu_radiobutton', 'register_submenu_radiobutton',
-    'register_menu_separator', 'get_all_media_files_in_cur_dir', 'get_media_files_dir', 'update_lastpath', 'config_menu',
-    'toggle_autocompletion', 'trigger_autocomplete_tag',
+    'AskChecksWindow',
+    'AskFileScoreFilterWindow',
+    'AskFileSizeFilterWindow',
+    'AskFileTypeFilterWindow',
+    'AskFirstLastWindow',
+    'AskIntWindow',
+    'GetRoot',
+    'LogWindow',
+    'ask_filename',
+    'browse_path',
+    'config_global',
+    'config_menu',
+    'create_base_window_widgets',
+    'get_all_media_files_in_cur_dir',
+    'get_curdir',
+    'get_global',
+    'get_icon',
+    'get_media_files_dir',
+    'getrootconf',
+    'help_about',
+    'help_tags',
+    'hotkey_text',
+    'init_additional_windows',
+    'int_vars',
+    'is_focusing',
+    'is_global_disabled',
+    'is_menu_disabled',
+    'load_batch_download_tag_list',
+    'load_id_list',
+    'register_menu',
+    'register_menu_checkbutton',
+    'register_menu_command',
+    'register_menu_radiobutton',
+    'register_menu_separator',
+    'register_submenu',
+    'register_submenu_command',
+    'register_submenu_radiobutton',
+    'rootm',
+    'set_console_shown',
+    'setrootconf',
+    'text_cmdm',
+    'toggle_autocompletion',
+    'toggle_console',
+    'trigger_autocomplete_tag',
+    'unfocus_buttons_once',
+    'update_garbled_text_states',
+    'update_lastpath',
+    'window_apikeym',
+    'window_hcookiesm',
+    'window_proxym',
+    'window_retriesm',
+    'window_timeoutm',
 )
 
 
@@ -111,8 +264,8 @@ def first_column() -> int | None:
 
 
 def attach_tooltip(widget: Widget, contents: Iterable[str] | Callable[[], Iterable[str]],
-                   appeardelay=TOOLTIP_DELAY_DEFAULT, border_width: int = None, relief: str = None, bgcolor: str = None,
-                   timed=False) -> WidgetToolTip:
+                   appeardelay=TOOLTIP_DELAY_DEFAULT, border_width: int | None = None,
+                   relief: str | None = None, bgcolor: str | None = None, timed=False) -> WidgetToolTip:
     return WidgetToolTip(widget, contents, timed=timed, bgcolor=bgcolor, appear_delay=appeardelay, border_width=border_width,
                          relief=relief)
 
@@ -903,7 +1056,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         def get_maxlen(b: Listbox) -> int:
             return max(len(str(b.get(i))) for i in range(b.size())) if b.size() > 0 else 0
 
-        maxlen = max(max(get_maxlen(lbox) for lbox in (self.lbox_h, self.lbox_c)), HeadersAndCookiesWindow.LBOX_WIDTH)
+        maxlen = max(*(get_maxlen(lbox) for lbox in (self.lbox_h, self.lbox_c)), HeadersAndCookiesWindow.LBOX_WIDTH)
         self.lbox_h.configure(width=maxlen)
         self.lbox_c.configure(width=maxlen)
 
@@ -932,7 +1085,7 @@ class HeadersAndCookiesWindow(BaseWindow):
             part1, part2 = tuple(str(lb.get(i)).split(':', 1))
             ls.update({part1: part2})
 
-        return json_dumps(ls, skipkeys=True)
+        return json.dumps(ls, skipkeys=True)
 
     def get_json_h(self) -> str:
         return self._listbox_to_json(self.lbox_h)
@@ -1021,16 +1174,16 @@ class HeadersAndCookiesWindow(BaseWindow):
     def set_to_h(self, json_h: str) -> None:
         if self.lbox_h.size() > 0:
             self.lbox_h.delete(0, END)
-        newvals = json_loads(json_h)
+        newvals = json.loads(json_h)
         for k, v in newvals.items():
-            self.lbox_h.insert(END, f'{str(k)}:{str(v)}')
+            self.lbox_h.insert(END, f'{k!s}:{v!s}')
 
     def set_to_c(self, json_c: str) -> None:
         if self.lbox_c.size() > 0:
             self.lbox_c.delete(0, END)
-        newvals = json_loads(json_c)
+        newvals = json.loads(json_c)
         for k, v in newvals.items():
-            self.lbox_c.insert(END, f'{str(k)}:{str(v)}')
+            self.lbox_c.insert(END, f'{k!s}:{v!s}')
 
     def on_destroy(self) -> None:
         self.hide()
@@ -1361,19 +1514,19 @@ def create_base_window_widgets() -> None:
     CreateRoot()
 
     # icons
-    icons[Icons.RUXX] = PhotoImage(data=b64decode(IMG_PROC_RUXX_DATA))
-    icons[Icons.RX] = PhotoImage(data=b64decode(IMG_PROC_RX_DATA))
-    icons[Icons.RN] = PhotoImage(data=b64decode(IMG_PROC_RN_DATA))
-    icons[Icons.RS] = PhotoImage(data=b64decode(IMG_PROC_RS_DATA))
-    icons[Icons.RP] = PhotoImage(data=b64decode(IMG_PROC_RP_DATA))
-    icons[Icons.EN] = PhotoImage(data=b64decode(IMG_PROC_EN_DATA))
-    icons[Icons.XB] = PhotoImage(data=b64decode(IMG_PROC_XB_DATA))
-    icons[Icons.BB] = PhotoImage(data=b64decode(IMG_PROC_BB_DATA))
-    icons[Icons.OPEN] = PhotoImage(data=b64decode(IMG_OPEN_DATA))
-    icons[Icons.SAVE] = PhotoImage(data=b64decode(IMG_SAVE_DATA))
-    icons[Icons.DELETE] = PhotoImage(data=b64decode(IMG_DELETE_DATA))
-    icons[Icons.ADD] = PhotoImage(data=b64decode(IMG_ADD_DATA))
-    icons[Icons.TEXT] = PhotoImage(data=b64decode(IMG_TEXT_DATA))  # unused
+    icons[Icons.RUXX] = PhotoImage(data=base64.b64decode(IMG_PROC_RUXX_DATA))
+    icons[Icons.RS] = PhotoImage(data=base64.b64decode(IMG_PROC_RS_DATA))
+    icons[Icons.RN] = PhotoImage(data=base64.b64decode(IMG_PROC_RN_DATA))
+    icons[Icons.RP] = PhotoImage(data=base64.b64decode(IMG_PROC_RP_DATA))
+    icons[Icons.EN] = PhotoImage(data=base64.b64decode(IMG_PROC_EN_DATA))
+    icons[Icons.XB] = PhotoImage(data=base64.b64decode(IMG_PROC_XB_DATA))
+    icons[Icons.BB] = PhotoImage(data=base64.b64decode(IMG_PROC_BB_DATA))
+    icons[Icons.RX] = PhotoImage(data=base64.b64decode(IMG_PROC_RX_DATA))
+    icons[Icons.OPEN] = PhotoImage(data=base64.b64decode(IMG_OPEN_DATA))
+    icons[Icons.SAVE] = PhotoImage(data=base64.b64decode(IMG_SAVE_DATA))
+    icons[Icons.DELETE] = PhotoImage(data=base64.b64decode(IMG_DELETE_DATA))
+    icons[Icons.ADD] = PhotoImage(data=base64.b64decode(IMG_ADD_DATA))
+    icons[Icons.TEXT] = PhotoImage(data=base64.b64decode(IMG_TEXT_DATA))  # unused
 
     rootm().iconphoto(True, get_icon(Icons.RUXX))
 
@@ -1489,7 +1642,7 @@ def create_base_window_widgets() -> None:
     op_pathstr = BaseText(opframe_path, width=0, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.PATH_VISUAL]),
                           encodevariable=StringVar(rootm(), '', CVARS[Options.PATH]))
     register_global(Globals.FIELD_PATH, op_pathstr)
-    op_pathstr.insert(END, normalize_path(path.abspath(curdir), False))
+    op_pathstr.insert(END, normalize_path(os.path.abspath(os.curdir), False))
     op_pathstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button open
     op_pathbut = Button(opframe_path, image=get_icon(Icons.OPEN))
@@ -1580,9 +1733,9 @@ def get_curdir(prioritize_last_path=True) -> str:
     lastloc = str(getrootconf(Options.LASTPATH))
     curloc = str(getrootconf(Options.PATH))
     if prioritize_last_path:
-        return lastloc if len(lastloc) > 0 else curloc if path.isdir(curloc) else path.abspath(curdir)
+        return lastloc if len(lastloc) > 0 else curloc if os.path.isdir(curloc) else os.path.abspath(os.curdir)
     else:
-        return curloc if path.isdir(curloc) else lastloc if len(lastloc) > 0 else path.abspath(curdir)
+        return curloc if os.path.isdir(curloc) else lastloc if len(lastloc) > 0 else os.path.abspath(os.curdir)
 
 
 def get_cur_module_sitename() -> str:
@@ -1598,7 +1751,7 @@ def get_cur_module_sitename() -> str:
         ProcModule.XB: SITENAME_B_XB,
         ProcModule.BB: SITENAME_B_BB,
     }
-    return (b64decode(sitenames_b.get(ProcModule.value(), '')) or b'UNK ').decode()[:-1].replace('https://', '').replace('api.', '')
+    return (base64.b64decode(sitenames_b.get(ProcModule.value(), '')) or b'UNK ').decode()[:-1].replace('https://', '').replace('api.', '')
 
 
 # def unfocus_buttons() -> None:
@@ -1674,7 +1827,7 @@ def update_garbled_text_states() -> None:
 
 
 def register_menu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind: bool = False,
-                          icon: PhotoImage = None) -> None:
+                          icon: PhotoImage | None = None) -> None:
     try:
         accelerator = hotkey_text(hotkey_opt)
     except Exception:
@@ -1685,7 +1838,7 @@ def register_menu_command(label: str, command: Callable[[], None], hotkey_opt: O
 
 
 def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind: bool = False,
-                             icon: PhotoImage = None) -> None:
+                             icon: PhotoImage | None = None) -> None:
     try:
         accelerator = hotkey_text(hotkey_opt)
     except Exception:
@@ -1695,19 +1848,22 @@ def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt
         rootm().bind(hotkeys[hotkey_opt], func=lambda _: command())
 
 
-def register_menu_checkbutton(label: str, varname: str, command: Callable = None, hotkey: str = None) -> None:
+def register_menu_checkbutton(label: str, varname: str,
+                              command: Callable[...] | None = None, hotkey: str | None = None) -> None:
     if varname not in bool_vars:
         bool_vars[varname] = BooleanVar(rootm(), False, name=varname)  # needed so it won't be discarded
     c_menum().add_checkbutton(label=label, command=command, variable=bool_vars[varname], accelerator=hotkey)
 
 
-def register_menu_radiobutton(label: str, varname: str, value: int, command: Callable = None, hotkey: str = None) -> None:
+def register_menu_radiobutton(label: str, varname: str, value: int,
+                              command: Callable[...] | None = None, hotkey: str | None = None) -> None:
     if varname not in int_vars:
         int_vars[varname] = IntVar(rootm(), value=value, name=varname)  # needed so it won't be discarded
     c_menum().add_radiobutton(label=label, command=command, variable=int_vars[varname], value=value, accelerator=hotkey)
 
 
-def register_submenu_radiobutton(label: str, varname: str, value: int, command: Callable = None, hotkey: str = None) -> None:
+def register_submenu_radiobutton(label: str, varname: str, value: int,
+                                 command: Callable[...] | None = None, hotkey: str | None = None) -> None:
     if varname not in int_vars:
         int_vars[varname] = IntVar(rootm(), value=value, name=varname)  # needed so it won't be discarded
     c_submenum().add_radiobutton(label=label, command=command, variable=int_vars[varname], value=value, accelerator=hotkey)
@@ -1723,8 +1879,7 @@ def get_all_media_files_in_cur_dir() -> tuple[str]:
 
 
 def get_media_files_dir() -> str:
-    loc = str(filedialog.askdirectory(initialdir=get_curdir(), mustexist=True))
-    return loc
+    return str(filedialog.askdirectory(initialdir=get_curdir(), mustexist=True))
 
 
 def update_lastpath(filefullpath: str) -> None:
@@ -1770,9 +1925,9 @@ window_apikey: ApiKeyWindow | None = None
 c_menu: BaseMenu | None = None
 c_submenu: BaseMenu | None = None
 # these containers keep technically unbound variables so they arent purged by GC
-bool_vars: dict[str, BooleanVar] = dict()
-int_vars: dict[str, IntVar] = dict()
-string_vars: dict[str, StringVar] = dict()
+bool_vars: dict[str, BooleanVar] = {}
+int_vars: dict[str, IntVar] = {}
+string_vars: dict[str, StringVar] = {}
 # end globals
 
 # loaded
@@ -1781,11 +1936,11 @@ text_cmd: Text | None = None
 # end loaded
 
 # icons
-icons: dict[Icons, PhotoImage | None] = {ic: None for ic in Icons.__members__.values()}
+icons: dict[Icons, PhotoImage | None] = dict.fromkeys(Icons.__members__.values())
 # end icons
 
-re_ask_values = re_compile(r'[^, ]+')
-re_json_entry_value = re_compile(r'^([^: ,]+)[: ,](.+)$')
+re_ask_values = re.compile(r'[^, ]+')
+re_json_entry_value = re.compile(r'^([^: ,]+)[: ,](.+)$')
 
 # GUI grid composition: current column / row universal counters (resettable)
 c_col: int | None = None

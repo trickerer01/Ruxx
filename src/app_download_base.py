@@ -7,10 +7,10 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+import os
+import re
 from abc import abstractmethod
 from collections.abc import MutableSet
-from os import path, curdir, scandir
-from re import Match, Pattern
 from typing import final
 
 # requirements
@@ -18,11 +18,19 @@ from bs4 import BeautifulSoup
 
 # internal
 from app_defines import (
-    DownloadModes, DownloaderStates, ItemInfo, PageCheck, APIKey, ModuleConfigType, DATE_MIN_DEFAULT, DATE_MAX_DEFAULT, LAUCH_DATE,
+    DATE_MAX_DEFAULT,
+    DATE_MIN_DEFAULT,
+    LAUCH_DATE,
+    APIKey,
+    DownloaderStates,
+    DownloadModes,
+    ItemInfo,
+    ModuleConfigType,
+    PageCheck,
 )
 from app_logger import trace
 from app_network import ThreadedHtmlWorker, thread_exit
-from app_utils import normalize_path, as_date
+from app_utils import as_date, normalize_path
 
 
 class DownloaderBase(ThreadedHtmlWorker):
@@ -53,13 +61,13 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.low_res: bool = False
         self.date_min: str = DATE_MIN_DEFAULT
         self.date_max: str = DATE_MAX_DEFAULT
-        self.dest_base: str = normalize_path(path.abspath(curdir))
+        self.dest_base: str = normalize_path(os.path.abspath(os.curdir))
         self.warn_nonempty: bool = False
         self.api_key: APIKey = APIKey()
-        self.tags_str_arr: list[str] = list()
+        self.tags_str_arr: list[str] = []
         # extra
         self.cmdline: str = ''
-        self.options: dict[str, bool | int | str] = dict()
+        self.options: dict[str, bool | int | str] = {}
         self.get_max_id: bool = False
         self.check_tags: bool = False
 
@@ -69,7 +77,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.maxpage: int = 0
         self.success_count: int = 0
         self.fail_count: int = 0
-        self.failed_items: list[str] = list()
+        self.failed_items: list[str] = []
         self.total_count: int = 0
         self.total_count_old: int = 0
         self.processed_count: int = 0
@@ -77,12 +85,12 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.current_task_num: int = 0
         self.orig_tasks_count: int = 0
         self.current_state: DownloaderStates = DownloaderStates.IDLE
-        self.items_raw_per_task: list[str] = list()
-        self.items_raw_per_page: dict[int, list[str]] = dict()
-        self.items_raw_all: list[str] = list()
-        self.item_info_dict_per_task: dict[str, ItemInfo] = dict()
-        self.item_info_dict_all: dict[str, ItemInfo] = dict()
-        self.neg_and_groups: list[list[Pattern[str]]] = list()
+        self.items_raw_per_task: list[str] = []
+        self.items_raw_per_page: dict[int, list[str]] = {}
+        self.items_raw_all: list[str] = []
+        self.item_info_dict_per_task: dict[str, ItemInfo] = {}
+        self.item_info_dict_all: dict[str, ItemInfo] = {}
+        self.neg_and_groups: list[list[re.Pattern[str]]] = []
         self.known_parents: set[str] = set()
         self.filtered_out_ids_cache: set[str] = set()
         self.default_sort: bool = True
@@ -171,7 +179,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def _get_items_query_size_or_html(self, url: str, tries: int = None) -> int | BeautifulSoup:
+    def _get_items_query_size_or_html(self, url: str, tries: int | None = None) -> int | BeautifulSoup:
         ...
 
     @abstractmethod
@@ -187,12 +195,12 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def get_re_tags_to_process(self) -> Pattern:
+    def get_re_tags_to_process(self) -> re.Pattern:
         """Public, needed by tagging tools"""
         ...
 
     @abstractmethod
-    def get_re_tags_to_exclude(self) -> Pattern:
+    def get_re_tags_to_exclude(self) -> re.Pattern:
         """Public, needed by tagging tools"""
         ...
 
@@ -230,13 +238,13 @@ class DownloaderBase(ThreadedHtmlWorker):
             return DownloaderBase._get_default_api_key()
         return None
 
-    def _extract_favorite_user(self, fav_user_tags: list[Match | None]) -> None:
+    def _extract_favorite_user(self, fav_user_tags: list[re.Match | None]) -> None:
         self.favorites_search_user = str(fav_user_tags[-1].group(1)) if fav_user_tags else 0
 
     def _clean_favorite_user(self) -> None:
         self.favorites_search_user = ''
 
-    def _extract_pool_id(self, pool_tags: list[Match | None]) -> None:
+    def _extract_pool_id(self, pool_tags: list[re.Match | None]) -> None:
         self.pool_search_str = pool_tags[-1].group(1) if pool_tags else ''
 
     def _clean_pool_id(self) -> None:
@@ -252,8 +260,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         if 1 <= self._num_pages() <= 2 or boundary == 0:
             pnum = self.minpage if minpage else self.maxpage
         else:
-            p_chks = list()
-            for i in range(self.maxpage + 3):
+            p_chks = []
+            for _i in range(self.maxpage + 3):
                 p_chks.append(PageCheck())
 
             lim_backw = self.minpage - 1
@@ -362,8 +370,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('Max page: min date irrelevant! Skipping')
             pnum = self.maxpage
         else:
-            p_chks = list()
-            for i in range(self.maxpage + 3):
+            p_chks = []
+            for _i in range(self.maxpage + 3):
                 p_chks.append(PageCheck())
 
             lim_backw = self.minpage - 1
@@ -663,18 +671,17 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _filter_existing_items(self) -> None:
         trace('Filtering out existing items...')
 
-        if not path.isdir(self.dest_base_s):
+        if not os.path.isdir(self.dest_base_s):
             return
 
         total_count_temp = self.total_count
 
-        curdirfiles = [dentry.name for dentry in scandir(self.dest_base_s) if dentry.is_file()]
+        curdirfiles = [dentry.name for dentry in os.scandir(self.dest_base_s) if dentry.is_file()]
         if len(curdirfiles) == 0:
             return
 
         def file_matches(filename: str, iid: str) -> bool:
-            return (filename.startswith(f'{iid}.') or filename.startswith(f'{iid}_')
-                    or filename.startswith(f'{abbrp}{iid}.') or filename.startswith(f'{abbrp}{iid}_'))
+            return filename.startswith((f'{iid}.', f'{iid}_', f'{abbrp}{iid}.', f'{abbrp}{iid}_'))
 
         abbrp = self._get_module_abbr_p()
         idx: int
@@ -698,23 +705,23 @@ class DownloaderBase(ThreadedHtmlWorker):
         if len(self.neg_and_groups) == 0:
             return
 
-        m_dict: dict[str, list[str]] = dict()
+        m_dict: dict[str, list[str]] = {}
 
-        def match_neg_group(p: Pattern[str], t: str, pl: list[Pattern[str]]) -> bool:
+        def match_neg_group(p: re.Pattern[str], t: str, pl: list[re.Pattern[str]]) -> bool:
             ngm = p.fullmatch(t)
             if ngm:
                 pp_str = f'-({",".join(pp.pattern[1:-1] for pp in pl)})'
                 if len(pp_str) > 50:
                     pp_str = f'{pp_str[:47]}...'
                 if pp_str not in m_dict:
-                    m_dict[pp_str] = list()
+                    m_dict[pp_str] = []
                 m_dict[pp_str].append(t)
             return ngm is not None
 
         abbrp = self._get_module_abbr_p()
         total_count_old = len(self.items_raw_per_task)
         removed_count = 0
-        removed_messages: list[str] = list()
+        removed_messages: list[str] = []
         idx: int
         for idx in reversed(range(total_count_old)):
             h = self._local_addr_from_string(str(self.items_raw_per_task[idx]))

@@ -1,0 +1,9 @@
+repos:
+- repo: local
+  hooks:
+  - id: linter
+    name: Apply linter fixes
+    entry: ruff check --fix .
+    language: system
+    types: [python]
+    require_serial: true

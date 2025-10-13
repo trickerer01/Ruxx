@@ -8,55 +8,153 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 # native
 import ctypes
+import datetime
+import os
 import sys
+import time
 from collections.abc import Callable
-from datetime import datetime
 from multiprocessing.dummy import current_process
-from os import path, system, makedirs, remove, replace, getcwd
 from threading import Thread
-from time import sleep as thread_sleep
 from tkinter import END, messagebox
 
 # internal
 from app_cmdargs import prepare_arglist
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
-    DownloaderStates, DownloaderOptions, ModuleConfigType,
-    MODULE_CHOICES, STATE_WORK_START, DEFAULT_HEADERS, DATE_MIN_DEFAULT, PLATFORM_WINDOWS, STATUSBAR_INFO_MAP, PROGRESS_VALUE_NO_DOWNLOAD,
-    PROGRESS_VALUE_DOWNLOAD, FMT_DATE, DMODE_CHOICES, DATE_MAX_DEFAULT,
+    DATE_MAX_DEFAULT,
+    DATE_MIN_DEFAULT,
+    DEFAULT_HEADERS,
+    DMODE_CHOICES,
+    FMT_DATE,
+    MODULE_CHOICES,
+    PLATFORM_WINDOWS,
+    PROGRESS_VALUE_DOWNLOAD,
+    PROGRESS_VALUE_NO_DOWNLOAD,
+    STATE_WORK_START,
+    STATUSBAR_INFO_MAP,
+    DownloaderOptions,
+    DownloaderStates,
+    ModuleConfigType,
     max_progress_value_for_state,
 )
 from app_download import Downloader
 from app_downloaders import get_new_downloader
 from app_file_searcher import find_duplicated_files
-from app_file_sorter import sort_files_by_type, FileTypeFilter, sort_files_by_size, sort_files_by_score
-from app_file_tagger import untag_files, retag_files
+from app_file_sorter import FileTypeFilter, sort_files_by_score, sort_files_by_size, sort_files_by_type
+from app_file_tagger import retag_files, untag_files
 from app_gui_base import (
-    AskFileTypeFilterWindow, AskFileSizeFilterWindow, AskFileScoreFilterWindow, AskIntWindow, AskFirstLastWindow, AskChecksWindow, GetRoot,
-    setrootconf, rootm, getrootconf, window_hcookiesm, window_proxym, window_timeoutm, window_retriesm, window_apikeym, register_menu,
-    register_submenu, create_base_window_widgets, text_cmdm, get_icon, init_additional_windows, get_global, config_global,
-    is_global_disabled, is_menu_disabled, is_focusing, set_console_shown, unfocus_buttons_once, help_tags, help_about, load_id_list,
-    browse_path, update_garbled_text_states, register_menu_command, toggle_console, register_submenu_command, register_menu_checkbutton,
-    register_menu_radiobutton, register_submenu_radiobutton, register_menu_separator, get_all_media_files_in_cur_dir, update_lastpath,
-    toggle_autocompletion, trigger_autocomplete_tag, hotkey_text, config_menu, get_media_files_dir, load_batch_download_tag_list,
+    AskChecksWindow,
+    AskFileScoreFilterWindow,
+    AskFileSizeFilterWindow,
+    AskFileTypeFilterWindow,
+    AskFirstLastWindow,
+    AskIntWindow,
+    GetRoot,
+    browse_path,
+    config_global,
+    config_menu,
+    create_base_window_widgets,
+    get_all_media_files_in_cur_dir,
+    get_global,
+    get_icon,
+    get_media_files_dir,
+    getrootconf,
+    help_about,
+    help_tags,
+    hotkey_text,
+    init_additional_windows,
+    is_focusing,
+    is_global_disabled,
+    is_menu_disabled,
+    load_batch_download_tag_list,
+    load_id_list,
+    register_menu,
+    register_menu_checkbutton,
+    register_menu_command,
+    register_menu_radiobutton,
+    register_menu_separator,
+    register_submenu,
+    register_submenu_command,
+    register_submenu_radiobutton,
+    rootm,
+    set_console_shown,
+    setrootconf,
+    text_cmdm,
+    toggle_autocompletion,
+    toggle_console,
+    trigger_autocomplete_tag,
+    unfocus_buttons_once,
+    update_garbled_text_states,
+    update_lastpath,
+    window_apikeym,
+    window_hcookiesm,
+    window_proxym,
+    window_retriesm,
+    window_timeoutm,
 )
 from app_gui_defines import (
-    STATE_DISABLED, STATE_NORMAL, COLOR_WHITE, COLOR_BROWN1, COLOR_PALEGREEN, OPTION_VALUES_VIDEOS, OPTION_VALUES_IMAGES,
-    OPTION_VALUES_THREADING, OPTION_CMD_VIDEOS, OPTION_CMD_IMAGES, OPTION_CMD_THREADING_CMD, OPTION_CMD_THREADING, OPTION_CMD_FNAMEPREFIX,
-    OPTION_CMD_DOWNMODE_CMD, OPTION_CMD_DOWNMODE, OPTION_CMD_DOWNLIMIT_CMD, OPTION_CMD_SAVE_TAGS, OPTION_CMD_SAVE_SOURCES,
-    OPTION_CMD_SAVE_COMMENTS, OPTION_CMD_INFO_SAVE_MODE, OPTION_CMD_DATEAFTER_CMD, OPTION_CMD_DATEBEFORE_CMD, OPTION_CMD_PATH_CMD,
-    OPTION_CMD_COOKIES_CMD, OPTION_CMD_HEADERS_CMD, OPTION_CMD_PROXY_CMD, OPTION_CMD_IGNORE_PROXY, OPTION_CMD_PROXY_NO_DOWNLOAD,
-    OPTION_CMD_TIMEOUT_CMD, OPTION_CMD_RETRIES_CMD, OPTION_CMD_APIKEY_CMD, GUI2_UPDATE_DELAY_DEFAULT, THREAD_CHECK_PERIOD_DEFAULT, SLASH,
-    BUT_ALT_F4, OPTION_CMD_APPEND_SOURCE_AND_TAGS, OPTION_CMD_VERBOSE, OPTION_CMD_WARN_NONEMPTY_DEST, OPTION_CMD_MODULE_CMD,
-    OPTION_CMD_PARCHI, OPTION_VALUES_PARCHI, OPTION_CMD_DOWNLOAD_ORDER, OPTION_VALUES_DOWNLOAD_ORDER, OPTION_CMD_CACHE_PROCCED_HTML,
-    Options, Globals, Menus, SubMenus, Icons, InfoSaveModes, CVARS, hotkeys, menu_items, menu_item_orig_states, gobject_orig_states,
+    BUT_ALT_F4,
+    COLOR_BROWN1,
+    COLOR_PALEGREEN,
+    COLOR_WHITE,
+    CVARS,
+    GUI2_UPDATE_DELAY_DEFAULT,
+    OPTION_CMD_APIKEY_CMD,
+    OPTION_CMD_APPEND_SOURCE_AND_TAGS,
+    OPTION_CMD_CACHE_PROCCED_HTML,
+    OPTION_CMD_COOKIES_CMD,
+    OPTION_CMD_DATEAFTER_CMD,
+    OPTION_CMD_DATEBEFORE_CMD,
+    OPTION_CMD_DOWNLIMIT_CMD,
+    OPTION_CMD_DOWNLOAD_ORDER,
+    OPTION_CMD_DOWNMODE,
+    OPTION_CMD_DOWNMODE_CMD,
+    OPTION_CMD_FNAMEPREFIX,
+    OPTION_CMD_HEADERS_CMD,
+    OPTION_CMD_IGNORE_PROXY,
+    OPTION_CMD_IMAGES,
+    OPTION_CMD_INFO_SAVE_MODE,
+    OPTION_CMD_MODULE_CMD,
+    OPTION_CMD_PARCHI,
+    OPTION_CMD_PATH_CMD,
+    OPTION_CMD_PROXY_CMD,
+    OPTION_CMD_PROXY_NO_DOWNLOAD,
+    OPTION_CMD_RETRIES_CMD,
+    OPTION_CMD_SAVE_COMMENTS,
+    OPTION_CMD_SAVE_SOURCES,
+    OPTION_CMD_SAVE_TAGS,
+    OPTION_CMD_THREADING,
+    OPTION_CMD_THREADING_CMD,
+    OPTION_CMD_TIMEOUT_CMD,
+    OPTION_CMD_VERBOSE,
+    OPTION_CMD_VIDEOS,
+    OPTION_CMD_WARN_NONEMPTY_DEST,
+    OPTION_VALUES_DOWNLOAD_ORDER,
+    OPTION_VALUES_IMAGES,
+    OPTION_VALUES_PARCHI,
+    OPTION_VALUES_THREADING,
+    OPTION_VALUES_VIDEOS,
+    SLASH,
+    STATE_DISABLED,
+    STATE_NORMAL,
+    THREAD_CHECK_PERIOD_DEFAULT,
+    Globals,
+    Icons,
+    InfoSaveModes,
+    Menus,
+    Options,
+    SubMenus,
+    gobject_orig_states,
+    hotkeys,
+    menu_item_orig_states,
+    menu_items,
 )
-from app_module import ProcModule
 from app_logger import Logger, trace
+from app_module import ProcModule
 from app_settings import Settings
 from app_tagger import TagsDB
-from app_tags_parser import reset_last_tags, parse_tags
-from app_utils import normalize_path, confirm_yes_no, ensure_compatibility, garble_argument_values
+from app_tags_parser import parse_tags, reset_last_tags
+from app_utils import confirm_yes_no, ensure_compatibility, garble_argument_values, normalize_path
 from app_validators import DateValidator
 
 __all__ = ('run_ruxx_gui',)
@@ -200,7 +298,7 @@ def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], Non
 
         try:
             duplicates_check_threadm().join()
-            dupe_messages = list()
+            dupe_messages = []
             if ret_files:
                 dupe_messages.append('Duplicates found:')
                 file_num = 0
@@ -235,18 +333,18 @@ def find_duplicates_separate_do() -> None:
         if not dfiles:
             return
         moved_files = 0
-        filepaths = list()
-        for basefile in dfiles:
-            filepaths.extend(dfiles[basefile])
-        root_folder = normalize_path(path.commonpath([path.split(dfilepath)[0] for dfilepath in dfiles]))
+        filepaths = []
+        for _basefile, dupes in dfiles.items():
+            filepaths.extend(dupes)
+        root_folder = normalize_path(os.path.commonpath([os.path.split(dfilepath)[0] for dfilepath in dfiles]))
         move_folder = f'{root_folder}dupes/'
         try:
-            if not path.isdir(move_folder):
-                makedirs(move_folder)
+            if not os.path.isdir(move_folder):
+                os.makedirs(move_folder)
             for dupe_file_path in filepaths:
-                dest_file_path = f'{move_folder}{path.split(dupe_file_path)[1]}'
-                if path.abspath(dupe_file_path) != path.abspath(dest_file_path):
-                    replace(dupe_file_path, dest_file_path)
+                dest_file_path = f'{move_folder}{os.path.split(dupe_file_path)[1]}'
+                if os.path.abspath(dupe_file_path) != os.path.abspath(dest_file_path):
+                    os.replace(dupe_file_path, dest_file_path)
                 moved_files += 1
         finally:
             file_worker_report(moved_files, sum(len(dfiles[_]) for _ in dfiles), 'mov', f' to \'{move_folder}\'')
@@ -260,9 +358,9 @@ def find_duplicates_remove_do() -> None:
             return
         removed_files = 0
         try:
-            for dfkey in dfiles:
-                for filepath in dfiles[dfkey]:
-                    remove(filepath)
+            for _dfkey, dupes in dfiles.items():
+                for filepath in dupes:
+                    os.remove(filepath)
                     removed_files += 1
         finally:
             file_worker_report(removed_files, sum(len(dfiles[_]) for _ in dfiles), 'remov')
@@ -273,21 +371,21 @@ def find_duplicates_remove_do() -> None:
 def open_download_folder() -> None:
     cur_path = normalize_path(getrootconf(Options.PATH))
 
-    if not path.isdir(cur_path[:(cur_path.find(SLASH) + 1)]):
+    if not os.path.isdir(cur_path[:(cur_path.find(SLASH) + 1)]):
         messagebox.showerror('Open download folder', f'Path \'{cur_path}\' is invalid.')
         return
 
-    if not path.isdir(cur_path):
+    if not os.path.isdir(cur_path):
         if not confirm_yes_no('Open download folder', f'Path \'{cur_path}\' doesn\'t exist. Create it?'):
             return
         try:
-            makedirs(cur_path)
+            os.makedirs(cur_path)
         except Exception:
             trace(f'Unable to create path \'{cur_path}\'.')
             return
 
     try:
-        res = system(f'start "" "{path.abspath(cur_path)}"')
+        res = os.system(f'start "" "{os.path.abspath(cur_path)}"')
         if res != 0:
             trace(f'Couldn\'t open \'{cur_path}\', error: {res:d}.')
     except Exception:
@@ -309,7 +407,7 @@ def init_autocompletion(loc='', force=True) -> None:
         if force is False:
             return
         elif not loc:
-            loc = getcwd()
+            loc = os.getcwd()
     if TagsDB.try_set_basepath(loc, traverse=False):
         setrootconf(Options.TAGLISTS_PATH, loc)
         setrootconf(Options.AUTOCOMPLETION_ENABLE, 1)
@@ -425,7 +523,7 @@ def update_statusbar() -> None:
         if state_texts[1]:
             status_str += str(getattr(dwnm(), state_texts[1], 0))
         if state_texts[2] and state_texts[3] and getattr(dwnm(), state_texts[3], 0) > 0:
-            status_str += f'{state_texts[2]}{str(getattr(dwnm(), state_texts[3]))}'
+            status_str += f'{state_texts[2]}{getattr(dwnm(), state_texts[3])!s}'
 
         setrootconf(Options.STATUS, status_str)
     except Exception:
@@ -653,7 +751,7 @@ def check_tags_direct_do() -> None:
         if count > 0:
             Thread(target=lambda: messagebox.showinfo(title='', message=f'Found {count:d} results!', icon='info')).start()
 
-    thread_sleep(1.5)
+    time.sleep(1.5)
 
     if downloading is False:
         config_global(Globals.FIELD_TAGS, bg=COLOR_WHITE)
@@ -673,10 +771,10 @@ def recheck_args() -> tuple[bool, str]:
     if not parse_result:
         return False, 'Invalid tags'
     # path
-    pathstr = normalize_path(path.expanduser(str(getrootconf(Options.PATH))))
+    pathstr = normalize_path(os.path.expanduser(str(getrootconf(Options.PATH))))
     if len(pathstr) <= 0:
         return False, 'No path specified'
-    if not path.isdir(pathstr[:(pathstr.find(SLASH) + 1)]):
+    if not os.path.isdir(pathstr[:(pathstr.find(SLASH) + 1)]):
         return False, 'Invalid path'
     # dates
     dateafter_str = '""'
@@ -684,17 +782,17 @@ def recheck_args() -> tuple[bool, str]:
     # date after
     try:
         dateafter_str = str(getrootconf(Options.DATEMIN))
-        datetime.strptime(dateafter_str, FMT_DATE)
+        datetime.datetime.strptime(dateafter_str, FMT_DATE)
     except Exception:
         return False, f'{dateafter_str} is not a valid date format'
     # date before
     try:
         datebefore_str = str(getrootconf(Options.DATEMAX))
-        datetime.strptime(datebefore_str, FMT_DATE)
+        datetime.datetime.strptime(datebefore_str, FMT_DATE)
     except Exception:
         return False, f'{datebefore_str} is not a valid date format'
     # dates minmax compare
-    if datetime.strptime(datebefore_str, FMT_DATE) < datetime.strptime(dateafter_str, FMT_DATE):
+    if datetime.datetime.strptime(datebefore_str, FMT_DATE) < datetime.datetime.strptime(dateafter_str, FMT_DATE):
         return False, 'Maximum date cannot be lower than minimum date'
     # Not downloading anything
     if (str(getrootconf(Options.IMGSETTING)) == OPTION_VALUES_IMAGES[0] and
@@ -793,9 +891,10 @@ def do_process_batch() -> None:
             trace(f'Invalid checkbutton 1 value \'{aw.get_variable(1)}\'')
         return
 
-    options: dict[str, bool | int | str] = dict()
-    options[DownloaderOptions.OPTION_CREATE_SUBFOLDERS] = values[0]
-    options[DownloaderOptions.OPTION_SUBFOLDER_TASKS_COUNT] = len(cmdlines)
+    options: dict[str, bool | int | str] = {
+        DownloaderOptions.OPTION_CREATE_SUBFOLDERS: values[0],
+        DownloaderOptions.OPTION_SUBFOLDER_TASKS_COUNT: len(cmdlines),
+    }
     batch_download_thread = Thread(target=start_batch_download_thread, args=(cmdlines,), kwargs=options)
     batch_download_threadm().killed = False
     batch_download_threadm().start()
@@ -1093,7 +1192,7 @@ def run_ruxx_gui() -> None:
         Logger.pending_strings.append('[Launcher] Hiding own console...')
         ctypes.windll.user32.ShowWindow(ctypes.windll.kernel32.GetConsoleWindow(), 0)
         ctypes.windll.user32.DeleteMenu(
-            ctypes.windll.user32.GetSystemMenu(ctypes.windll.kernel32.GetConsoleWindow(), 0), 0xF060, ctypes.c_ulong(0)
+            ctypes.windll.user32.GetSystemMenu(ctypes.windll.kernel32.GetConsoleWindow(), 0), 0xF060, ctypes.c_ulong(0),
         )
         set_console_shown(False)
     init_gui()

@@ -7,17 +7,17 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+import re
 from collections.abc import Sequence
-from re import Pattern, compile as re_compile
 
 # requirements
 from iteration_utilities import unique_everseen
 
 # internal
 from app_module import ProcModule
-from app_re import re_space_mult, re_favorited_by_tag, re_pool_tag
+from app_re import re_favorited_by_tag, re_pool_tag, re_space_mult
 
-__all__ = ('reset_last_tags', 'parse_tags', 'convert_taglist')
+__all__ = ('convert_taglist', 'parse_tags', 'reset_last_tags')
 
 DEFAULT_TAGS = ('sfw',)
 
@@ -45,7 +45,7 @@ META_SORT_RX = r'sort(?::[^:]+?){1,2}'
 META_SORT_RN = r'order=(?:id|score)_desc'
 # language=PythonRegExp
 META_SORT_RS = r'sort(?::[^:]+?){1,2}'
-"""not supported"""
+'''not supported'''
 # language=PythonRegExp
 META_SORT_RP = r'order=(?:id|score)_desc'
 # language=PythonRegExp
@@ -72,13 +72,13 @@ META_FAV_BB = r'favorited_by:\d+?'
 META_POOL_RX = r'pool:\d+?'
 # language=PythonRegExp
 META_POOL_RN = r''
-"""not supported"""
+'''not supported'''
 # language=PythonRegExp
 META_POOL_RS = r''
-"""not supported"""
+'''not supported'''
 # language=PythonRegExp
 META_POOL_RP = r''
-"""not supported"""
+'''not supported'''
 # language=PythonRegExp
 META_POOL_EN = r'(?:pool|set):[^:]+?'
 # language=PythonRegExp
@@ -106,71 +106,71 @@ ANDGR_CHAR = r'[a-zÀ-ʯА-яぁ-㋾･-ﾟ一-鿿\d_+\-/!()*\'.|?]'
 RE_ANDGR_PART_U = fr'{ANDGR_CHAR}+?'
 
 re_plains = {
-    ProcModule.RX: re_compile(fr'^-?{TAG_CHAR}+?$'),
-    ProcModule.RN: re_compile(fr'^-?{TAG_CHAR}+?$'),
-    ProcModule.RS: re_compile(fr'^-?{TAG_CHAR}+?$'),
-    ProcModule.RP: re_compile(fr'^-?{TAG_CHAR}+?$'),
-    ProcModule.EN: re_compile(fr'^-?{TAG_CHAR}+?$'),
-    ProcModule.XB: re_compile(fr'^-?{TAG_CHAR}+?$'),
-    ProcModule.BB: re_compile(fr'^-?{TAG_CHAR}+?$'),
+    ProcModule.RX: re.compile(fr'^-?{TAG_CHAR}+?$'),
+    ProcModule.RN: re.compile(fr'^-?{TAG_CHAR}+?$'),
+    ProcModule.RS: re.compile(fr'^-?{TAG_CHAR}+?$'),
+    ProcModule.RP: re.compile(fr'^-?{TAG_CHAR}+?$'),
+    ProcModule.EN: re.compile(fr'^-?{TAG_CHAR}+?$'),
+    ProcModule.XB: re.compile(fr'^-?{TAG_CHAR}+?$'),
+    ProcModule.BB: re.compile(fr'^-?{TAG_CHAR}+?$'),
 }
 re_metas = {
-    ProcModule.RX: re_compile(fr'^{META_CHAR}+?{META_COUNT_RX}$'),
-    ProcModule.RN: re_compile(fr'^{META_CHAR}+?{META_COUNT_RN}$'),
-    ProcModule.RS: re_compile(fr'^{META_CHAR}+?{META_COUNT_RS}$'),
-    ProcModule.RP: re_compile(fr'^{META_CHAR}+?{META_COUNT_RP}$'),
-    ProcModule.EN: re_compile(fr'^{META_CHAR}+?{META_COUNT_EN}$'),
-    ProcModule.XB: re_compile(fr'^{META_CHAR}+?{META_COUNT_XB}$'),
-    ProcModule.BB: re_compile(fr'^{META_CHAR}+?{META_COUNT_BB}$'),
+    ProcModule.RX: re.compile(fr'^{META_CHAR}+?{META_COUNT_RX}$'),
+    ProcModule.RN: re.compile(fr'^{META_CHAR}+?{META_COUNT_RN}$'),
+    ProcModule.RS: re.compile(fr'^{META_CHAR}+?{META_COUNT_RS}$'),
+    ProcModule.RP: re.compile(fr'^{META_CHAR}+?{META_COUNT_RP}$'),
+    ProcModule.EN: re.compile(fr'^{META_CHAR}+?{META_COUNT_EN}$'),
+    ProcModule.XB: re.compile(fr'^{META_CHAR}+?{META_COUNT_XB}$'),
+    ProcModule.BB: re.compile(fr'^{META_CHAR}+?{META_COUNT_BB}$'),
 }
 re_sorts = {
-    ProcModule.RX: re_compile(fr'^{META_SORT_RX}$'),
-    ProcModule.RN: re_compile(fr'^{META_SORT_RN}$'),
-    ProcModule.RS: re_compile(fr'^{META_SORT_RS}$'),
-    ProcModule.RP: re_compile(fr'^{META_SORT_RP}$'),
-    ProcModule.EN: re_compile(fr'^{META_SORT_EN}$'),
-    ProcModule.XB: re_compile(fr'^{META_SORT_XB}$'),
-    ProcModule.BB: re_compile(fr'^{META_SORT_BB}$'),
+    ProcModule.RX: re.compile(fr'^{META_SORT_RX}$'),
+    ProcModule.RN: re.compile(fr'^{META_SORT_RN}$'),
+    ProcModule.RS: re.compile(fr'^{META_SORT_RS}$'),
+    ProcModule.RP: re.compile(fr'^{META_SORT_RP}$'),
+    ProcModule.EN: re.compile(fr'^{META_SORT_EN}$'),
+    ProcModule.XB: re.compile(fr'^{META_SORT_XB}$'),
+    ProcModule.BB: re.compile(fr'^{META_SORT_BB}$'),
 }
 re_favs = {
-    ProcModule.RX: re_compile(fr'^{META_FAV_RX}$'),
-    ProcModule.RN: re_compile(fr'^{META_FAV_RN}$'),
-    ProcModule.RS: re_compile(fr'^{META_FAV_RS}$'),
-    ProcModule.RP: re_compile(fr'^{META_FAV_RP}$'),
-    ProcModule.EN: re_compile(fr'^{META_FAV_EN}$'),
-    ProcModule.XB: re_compile(fr'^{META_FAV_XB}$'),
-    ProcModule.BB: re_compile(fr'^{META_FAV_BB}$'),
+    ProcModule.RX: re.compile(fr'^{META_FAV_RX}$'),
+    ProcModule.RN: re.compile(fr'^{META_FAV_RN}$'),
+    ProcModule.RS: re.compile(fr'^{META_FAV_RS}$'),
+    ProcModule.RP: re.compile(fr'^{META_FAV_RP}$'),
+    ProcModule.EN: re.compile(fr'^{META_FAV_EN}$'),
+    ProcModule.XB: re.compile(fr'^{META_FAV_XB}$'),
+    ProcModule.BB: re.compile(fr'^{META_FAV_BB}$'),
 }
 re_pools = {
-    ProcModule.RX: re_compile(fr'^{META_POOL_RX}$'),
-    ProcModule.RN: re_compile(fr'^{META_POOL_RN}$'),
-    ProcModule.RS: re_compile(fr'^{META_POOL_RS}$'),
-    ProcModule.RP: re_compile(fr'^{META_POOL_RP}$'),
-    ProcModule.EN: re_compile(fr'^{META_POOL_EN}$'),
-    ProcModule.XB: re_compile(fr'^{META_POOL_XB}$'),
-    ProcModule.BB: re_compile(fr'^{META_POOL_BB}$'),
+    ProcModule.RX: re.compile(fr'^{META_POOL_RX}$'),
+    ProcModule.RN: re.compile(fr'^{META_POOL_RN}$'),
+    ProcModule.RS: re.compile(fr'^{META_POOL_RS}$'),
+    ProcModule.RP: re.compile(fr'^{META_POOL_RP}$'),
+    ProcModule.EN: re.compile(fr'^{META_POOL_EN}$'),
+    ProcModule.XB: re.compile(fr'^{META_POOL_XB}$'),
+    ProcModule.BB: re.compile(fr'^{META_POOL_BB}$'),
 }
 re_orgrs_full = {
-    ProcModule.RX: re_compile(fr'^\((?:{RE_ORGR_PART_RX})(?:~{RE_ORGR_PART_RX})+?\)$'),
-    ProcModule.RN: re_compile(fr'^\((?:{RE_ORGR_PART_RN})(?:~{RE_ORGR_PART_RN})+?\)$'),
-    ProcModule.RS: re_compile(fr'^\((?:{RE_ORGR_PART_RS})(?:~{RE_ORGR_PART_RS})+?\)$'),
-    ProcModule.RP: re_compile(fr'^\((?:{RE_ORGR_PART_RP})(?:~{RE_ORGR_PART_RP})+?\)$'),
-    ProcModule.EN: re_compile(fr'^\((?:{RE_ORGR_PART_EN})(?:~{RE_ORGR_PART_EN})+?\)$'),
-    ProcModule.XB: re_compile(fr'^\((?:{RE_ORGR_PART_XB})(?:~{RE_ORGR_PART_XB})+?\)$'),
-    ProcModule.BB: re_compile(fr'^\((?:{RE_ORGR_PART_BB})(?:~{RE_ORGR_PART_BB})+?\)$'),
+    ProcModule.RX: re.compile(fr'^\((?:{RE_ORGR_PART_RX})(?:~{RE_ORGR_PART_RX})+?\)$'),
+    ProcModule.RN: re.compile(fr'^\((?:{RE_ORGR_PART_RN})(?:~{RE_ORGR_PART_RN})+?\)$'),
+    ProcModule.RS: re.compile(fr'^\((?:{RE_ORGR_PART_RS})(?:~{RE_ORGR_PART_RS})+?\)$'),
+    ProcModule.RP: re.compile(fr'^\((?:{RE_ORGR_PART_RP})(?:~{RE_ORGR_PART_RP})+?\)$'),
+    ProcModule.EN: re.compile(fr'^\((?:{RE_ORGR_PART_EN})(?:~{RE_ORGR_PART_EN})+?\)$'),
+    ProcModule.XB: re.compile(fr'^\((?:{RE_ORGR_PART_XB})(?:~{RE_ORGR_PART_XB})+?\)$'),
+    ProcModule.BB: re.compile(fr'^\((?:{RE_ORGR_PART_BB})(?:~{RE_ORGR_PART_BB})+?\)$'),
 }
 re_orgrs_full_s = {
-    ProcModule.RX: re_compile(fr'^\( (?:{RE_ORGR_PART_RX})(?: ~ {RE_ORGR_PART_RX})+? \)$'),
-    ProcModule.RN: re_compile(fr'^\( (?:{RE_ORGR_PART_RN})(?: ~ {RE_ORGR_PART_RN})+? \)$'),
-    ProcModule.RS: re_compile(fr'^\( (?:{RE_ORGR_PART_RS})(?: ~ {RE_ORGR_PART_RS})+? \)$'),
-    ProcModule.RP: re_compile(fr'^\( (?:{RE_ORGR_PART_RP})(?: ~ {RE_ORGR_PART_RP})+? \)$'),
-    ProcModule.EN: re_compile(fr'^\( (?:{RE_ORGR_PART_EN})(?: ~ {RE_ORGR_PART_EN})+? \)$'),
-    ProcModule.XB: re_compile(fr'^\( (?:{RE_ORGR_PART_XB})(?: ~ {RE_ORGR_PART_XB})+? \)$'),
-    ProcModule.BB: re_compile(fr'^\( (?:{RE_ORGR_PART_BB})(?: ~ {RE_ORGR_PART_BB})+? \)$'),
+    ProcModule.RX: re.compile(fr'^\( (?:{RE_ORGR_PART_RX})(?: ~ {RE_ORGR_PART_RX})+? \)$'),
+    ProcModule.RN: re.compile(fr'^\( (?:{RE_ORGR_PART_RN})(?: ~ {RE_ORGR_PART_RN})+? \)$'),
+    ProcModule.RS: re.compile(fr'^\( (?:{RE_ORGR_PART_RS})(?: ~ {RE_ORGR_PART_RS})+? \)$'),
+    ProcModule.RP: re.compile(fr'^\( (?:{RE_ORGR_PART_RP})(?: ~ {RE_ORGR_PART_RP})+? \)$'),
+    ProcModule.EN: re.compile(fr'^\( (?:{RE_ORGR_PART_EN})(?: ~ {RE_ORGR_PART_EN})+? \)$'),
+    ProcModule.XB: re.compile(fr'^\( (?:{RE_ORGR_PART_XB})(?: ~ {RE_ORGR_PART_XB})+? \)$'),
+    ProcModule.BB: re.compile(fr'^\( (?:{RE_ORGR_PART_BB})(?: ~ {RE_ORGR_PART_BB})+? \)$'),
 }
-re_andgr_full = re_compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$')
+re_andgr_full = re.compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$')
 
-re_negative_meta = re_compile(r'^-[^:]+:.+?$')
+re_negative_meta = re.compile(r'^-[^:]+:.+?$')
 
 last_tags = ''
 last_fulltags: Sequence[str] | None = None
@@ -181,31 +181,31 @@ def reset_last_tags() -> None:
     last_tags = ''
 
 
-def re_plain() -> Pattern:
+def re_plain() -> re.Pattern:
     return re_plains.get(ProcModule.CUR_PROC_MODULE)
 
 
-def re_meta() -> Pattern:
+def re_meta() -> re.Pattern:
     return re_metas.get(ProcModule.CUR_PROC_MODULE)
 
 
-def re_sort() -> Pattern:
+def re_sort() -> re.Pattern:
     return re_sorts.get(ProcModule.CUR_PROC_MODULE)
 
 
-def re_fav() -> Pattern:
+def re_fav() -> re.Pattern:
     return re_favs.get(ProcModule.CUR_PROC_MODULE)
 
 
-def re_pool() -> Pattern:
+def re_pool() -> re.Pattern:
     return re_pools.get(ProcModule.CUR_PROC_MODULE)
 
 
-def re_orgr_full() -> Pattern:
+def re_orgr_full() -> re.Pattern:
     return re_orgrs_full.get(ProcModule.CUR_PROC_MODULE)
 
 
-def re_orgr_full_s() -> Pattern:
+def re_orgr_full_s() -> re.Pattern:
     return re_orgrs_full_s.get(ProcModule.CUR_PROC_MODULE)
 
 
@@ -223,7 +223,7 @@ def normalize_tag(tag: str) -> str:
 
 def convert_taglist(taglist: Sequence[str]) -> list[str]:
     parse_suc, parsed = parse_tags(' '.join(taglist))
-    assert parse_suc, f'Invalid tags: {str(taglist)}'
+    assert parse_suc, f'Invalid tags: {taglist!s}'
     return [normalize_tag(tag) for tag in parsed]
 
 
@@ -254,7 +254,7 @@ def parse_tags(tags: str) -> tuple[bool, Sequence[str]]:
     if not tags:
         return fail()
 
-    fulltags = list()
+    fulltags = []
     sort_tags_count = 0
     custom_tags_count = 0
     tag: str

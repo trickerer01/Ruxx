@@ -7,20 +7,20 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from base64 import b64decode
-from os import path
+import base64
+import os
 
 # internal
 from app_defines import UTF8
-from app_help import APP_AUTHOR_NICKNAME, APP_ADDRESS
-from app_revision import APP_NAME, APP_VER_MAJOR, APP_VER_SUB, APP_REVISION, APP_IS_BETA_TEXT
+from app_help import APP_ADDRESS, APP_AUTHOR_NICKNAME
+from app_revision import APP_IS_BETA_TEXT, APP_NAME, APP_REVISION, APP_VER_MAJOR, APP_VER_SUB
 
-APP_DOWNLOADER_TYPE = b64decode('cnVsZTM0').decode()
+APP_DOWNLOADER_TYPE = base64.b64decode('cnVsZTM0').decode()
 
 APP_EMBED_VERSION = f'{APP_VER_MAJOR}.{APP_VER_SUB} r{APP_REVISION}{APP_IS_BETA_TEXT}'
 
 APP_VERSION_INFO_FILENAME = 'version_info.txt'
-VERSIONINFO_FILE_PATH = f'{path.curdir}/{APP_VERSION_INFO_FILENAME}'
+VERSIONINFO_FILE_PATH = f'{os.path.curdir}/{APP_VERSION_INFO_FILENAME}'
 APP_VERSION_INFO_CONTENT = (
     f'VSVersionInfo(\n'
     f'  ffi=FixedFileInfo(\n'

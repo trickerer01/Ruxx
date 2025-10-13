@@ -6,8 +6,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+import os
 from contextlib import ExitStack, suppress
-from os import DirEntry, path, scandir
 from threading import current_thread
 from typing import Literal
 
@@ -27,47 +27,47 @@ def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_d
             return f'{self.folder}{self.name}'
 
     try:
-        found_filenames_dict: dict[str, list[str]] = dict()
+        found_filenames_dict: dict[str, list[str]] = {}
         base_path = normalize_path(basepath)
         read_buffer_size = 16 * 1024
 
         def scan_folder(base_folder: str, level: int) -> None:
-            if path.isdir(base_folder):
-                dentry: DirEntry
-                for dentry in scandir(base_folder):
+            if os.path.isdir(base_folder):
+                dentry: os.DirEntry
+                for dentry in os.scandir(base_folder):
                     fullpath = f'{base_folder}{dentry.name}'
                     if dentry.is_dir():
                         fullpath = normalize_path(fullpath)
                         if level < scan_depth:
-                            found_filenames_dict[fullpath] = list()
+                            found_filenames_dict[fullpath] = []
                             with suppress(PermissionError):
                                 scan_folder(fullpath, level + 1)
                     elif dentry.is_file():
-                        ext = path.splitext(dentry.name)[1]
+                        ext = os.path.splitext(dentry.name)[1]
                         if ext[1:] in KNOWN_EXTENSIONS:
                             found_filenames_dict[base_folder].append(dentry.name)
 
-        found_filenames_dict[base_path] = list()
+        found_filenames_dict[base_path] = []
         scan_folder(base_path, 0)
 
         filepaths_all = set()
-        for dirpath in found_filenames_dict:
-            for filename in found_filenames_dict[dirpath]:
+        for dirpath, filenames in found_filenames_dict.items():
+            for filename in filenames:
                 filepaths_all.add(f'{dirpath}{filename}')
 
-        files_by_size: dict[int, list[DFileInfo]] = dict()
+        files_by_size: dict[int, list[DFileInfo]] = {}
         for filepath in filepaths_all:
-            fsize = path.getsize(filepath)
+            fsize = os.path.getsize(filepath)
             if fsize and fsize not in files_by_size:
-                files_by_size[fsize] = list()
-            fsbase_folder, fname = path.split(filepath)
+                files_by_size[fsize] = []
+            fsbase_folder, fname = os.path.split(filepath)
             files_by_size[fsize].append(DFileInfo(fsbase_folder, fname, fsize))
         for fsz in list(files_by_size.keys()).copy():
             if fsz in files_by_size and len(files_by_size[fsz]) < 2:
                 del files_by_size[fsz]
 
-        for filesize in files_by_size:
-            files_list = sorted(files_by_size[filesize], key=lambda x: x.name, reverse=True)
+        for filesize, dinfos in files_by_size.items():
+            files_list = sorted(dinfos, key=lambda x: x.name, reverse=True)
             with ExitStack() as ctx:
                 open_files = [ctx.enter_context(open(f.fullpath, 'rb')) for f in files_list]
                 open_fnames = [f.name for f in open_files]

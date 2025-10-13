@@ -10,7 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from typing import final
 
 # internal
-from app_defines import MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, MODULE_ABBR_RP, MODULE_ABBR_EN, MODULE_ABBR_XB, MODULE_ABBR_BB
+from app_defines import MODULE_ABBR_BB, MODULE_ABBR_EN, MODULE_ABBR_RN, MODULE_ABBR_RP, MODULE_ABBR_RS, MODULE_ABBR_RX, MODULE_ABBR_XB
 
 
 @final

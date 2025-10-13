@@ -6,7 +6,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-from datetime import datetime
+import datetime
 from enum import IntEnum, auto, unique
 
 MIN_PYTHON_VERSION = (3, 10)
@@ -34,7 +34,7 @@ class ItemInfo:
     """
     Used to store universal info for processed item
     """
-    __slots__ = ('id', 'height', 'width', 'tags', 'ext', 'source', 'comments', 'score', 'has_children', 'parent_id')
+    __slots__ = ('comments', 'ext', 'has_children', 'height', 'id', 'parent_id', 'score', 'source', 'tags', 'width')
     optional_slots = frozenset(__slots__[__slots__.index('source'):])
 
     def __init__(self) -> None:
@@ -44,7 +44,7 @@ class ItemInfo:
         self.tags: str = ''
         self.ext: str = ''
         self.source: str = ''
-        self.comments: list[Comment] = list()
+        self.comments: list[Comment] = []
         self.score: str = ''
         self.has_children: str = ''
         self.parent_id: str = ''
@@ -99,7 +99,7 @@ PROGRESS_BAR_PCT = {
     DownloaderStates.FILTERING_ITEMS2: 0.005,
     DownloaderStates.FILTERING_ITEMS3: 0.005,
     DownloaderStates.FILTERING_ITEMS4: 0.005,
-    DownloaderStates.DOWNLOADING: 0.965
+    DownloaderStates.DOWNLOADING: 0.965,
 }
 assert sum(v for v in PROGRESS_BAR_PCT.values()) == 1.000
 
@@ -137,7 +137,7 @@ STATUSBAR_INFO_MAP: dict[DownloaderStates, tuple[str, str | None, str | None, st
     DownloaderStates.FILTERING_ITEMS2: ('Filtering files (2/4)... ', 'total_count', None, None),
     DownloaderStates.FILTERING_ITEMS3: ('Filtering files (3/4)... ', 'total_count', None, None),
     DownloaderStates.FILTERING_ITEMS4: ('Filtering files (4/4)... ', 'total_count', None, None),
-    DownloaderStates.DOWNLOADING: ('Downloading... ', 'processed_count', ' / ', 'total_count_all')
+    DownloaderStates.DOWNLOADING: ('Downloading... ', 'processed_count', ' / ', 'total_count_all'),
 }
 
 CONNECT_TIMEOUT_BASE = 10
@@ -196,7 +196,7 @@ MODULE_CHOICES = (MODULE_ABBR_RX, MODULE_ABBR_RN, MODULE_ABBR_RS, MODULE_ABBR_RP
 
 DATE_MIN_DEFAULT = '01-01-1970'
 FMT_DATE = '%d-%m-%Y'
-LAUCH_DATE = datetime.today().date()
+LAUCH_DATE = datetime.datetime.today().date()
 DATE_MAX_DEFAULT = LAUCH_DATE.strftime(FMT_DATE)
 ITEMS_PER_PAGE_RX = 1000  # fixed 42 for html, up to 1000 for dapi
 ITEMS_PER_PAGE_RN = 63  # fixed 63

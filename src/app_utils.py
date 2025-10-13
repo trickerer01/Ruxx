@@ -7,16 +7,16 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+import datetime
+import math
 import sys
 from collections.abc import Iterable
-from datetime import datetime, date
-from math import ceil, log10
 from tkinter import messagebox
 
 # internal
-from app_defines import FMT_DATE, SUPPORTED_PLATFORMS, SUBFOLDER_NAME_LEN_MAX, MIN_PYTHON_VERSION, MIN_PYTHON_VERSION_STR
-from app_gui_defines import SLASH, UNDERSCORE, OPTION_CMD_PATH_CMD, OPTION_CMD_PROXY_CMD
-from app_re import re_uscore_mult, re_replace_symbols_sub
+from app_defines import FMT_DATE, MIN_PYTHON_VERSION, MIN_PYTHON_VERSION_STR, SUBFOLDER_NAME_LEN_MAX, SUPPORTED_PLATFORMS
+from app_gui_defines import OPTION_CMD_PATH_CMD, OPTION_CMD_PROXY_CMD, SLASH, UNDERSCORE
+from app_re import re_replace_symbols_sub, re_uscore_mult
 
 
 def ensure_compatibility() -> None:
@@ -25,7 +25,7 @@ def ensure_compatibility() -> None:
 
 
 def assert_nonempty(container: Iterable[str], message='') -> Iterable[str]:
-    assert (not not container), message
+    assert container, message
     return container
 
 
@@ -43,11 +43,11 @@ def find_first_not_of(s: str, chars: str) -> int:
 
 
 def number_len_fmt(number: int) -> str:
-    return f'0{ceil(log10(number + 1)):d}d'
+    return f'0{math.ceil(math.log10(number + 1)):d}d'
 
 
-def as_date(date_s: str) -> date:
-    return datetime.strptime(date_s, FMT_DATE).date()
+def as_date(date_s: str) -> datetime.date:
+    return datetime.datetime.strptime(date_s, FMT_DATE).date()
 
 
 def confirm_yes_no(title: str, msg: str) -> bool:

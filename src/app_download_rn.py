@@ -7,30 +7,44 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from base64 import b64decode
-from datetime import datetime
+import base64
+import datetime
+import re
 from multiprocessing.dummy import current_process
-from re import Pattern
 
 # requirements
 from bs4 import BeautifulSoup
 
 # internal
 from app_defines import (
-    DownloadModes, ItemInfo, Comment, SITENAME_B_RN, FILE_NAME_PREFIX_RN, MODULE_ABBR_RN, FILE_NAME_FULL_MAX_LEN, ITEMS_PER_PAGE_RN,
-    TAGS_CONCAT_CHAR_RN, ID_VALUE_SEPARATOR_CHAR_RN, FMT_DATE,
+    FILE_NAME_FULL_MAX_LEN,
+    FILE_NAME_PREFIX_RN,
+    FMT_DATE,
+    ID_VALUE_SEPARATOR_CHAR_RN,
+    ITEMS_PER_PAGE_RN,
+    MODULE_ABBR_RN,
+    SITENAME_B_RN,
+    TAGS_CONCAT_CHAR_RN,
+    Comment,
+    DownloadModes,
+    ItemInfo,
 )
 from app_download import Downloader
 from app_logger import trace
 from app_network import thread_exit
 from app_re import (
-    re_tags_to_process_rn, re_tags_exclude_rn, re_item_info_part_rn, re_shimmie_image_href, re_shimmie_thumb, re_shimmie_orig_source,
-    re_shimmie_image_href_full
+    re_item_info_part_rn,
+    re_shimmie_image_href,
+    re_shimmie_image_href_full,
+    re_shimmie_orig_source,
+    re_shimmie_thumb,
+    re_tags_exclude_rn,
+    re_tags_to_process_rn,
 )
 
 __all__ = ('DownloaderRn',)
 
-SITENAME = b64decode(SITENAME_B_RN).decode()
+SITENAME = base64.b64decode(SITENAME_B_RN).decode()
 ITEMS_PER_PAGE = ITEMS_PER_PAGE_RN
 
 MAX_SEARCH_DEPTH = 0
@@ -115,8 +129,7 @@ class DownloaderRn(Downloader):
     def _extract_id(self, addr: str) -> str:
         idx1 = addr.find('view/') + len('view/')
         idx2 = addr.find('"', idx1 + 1)
-        h = addr[idx1:idx2 if idx2 > idx1 else None]
-        return h
+        return addr[idx1:idx2 if idx2 > idx1 else None]
 
     def _is_video(self, h: str) -> bool:
         # tags are not 100% accurate so use a more direct approach
@@ -129,10 +142,10 @@ class DownloaderRn(Downloader):
         try:
             # '2017-04-19T11:55:45+00:00' -> '19-04-2017'
             d_raw = raw_html.find('time').get('datetime')
-            d = datetime.fromisoformat(d_raw)
+            d = datetime.datetime.fromisoformat(d_raw)
             return d.strftime(FMT_DATE)
         except Exception:
-            thread_exit(f'Unable to extract post date from raw: {str(raw_html)}', -446)
+            thread_exit(f'Unable to extract post date from raw: {raw_html!s}', -446)
 
     def _get_items_query_size_or_html(self, url: str, tries=0) -> int | BeautifulSoup:
         raw_html = self.fetch_html(f'{url}{1:d}', tries, do_cache=True)
@@ -198,10 +211,10 @@ class DownloaderRn(Downloader):
             self._on_thread_exception(current_process().name)
             raise
 
-    def get_re_tags_to_process(self) -> Pattern:
+    def get_re_tags_to_process(self) -> re.Pattern:
         return re_tags_to_process_rn
 
-    def get_re_tags_to_exclude(self) -> Pattern:
+    def get_re_tags_to_exclude(self) -> re.Pattern:
         return re_tags_exclude_rn
 
     def _get_tags_concat_char(self) -> str:
@@ -306,8 +319,7 @@ class DownloaderRn(Downloader):
     @staticmethod
     def extract_local_addr(raw: str) -> str:
         h = raw[raw.find('href="') + len('href="') + 1:]
-        h = h[:h.find('"')]
-        return h
+        return h[:h.find('"')]
 
 #
 #
