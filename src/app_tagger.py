@@ -10,7 +10,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import json
 import os
 import re
-from collections.abc import Callable
 
 # internal
 from app_defines import FILE_NAME_ALIASES, MODULE_CHOICES, TAG_AUTOCOMPLETE_LENGTH_MIN, TAG_AUTOCOMPLETE_NUMBER_MAX, UTF8
@@ -116,38 +115,29 @@ class TagsDB:
             return
 
     @staticmethod
-    def _get_tag_matches(module: str, value: str, pred: Callable[[str, str], bool], limit: int) -> list[tuple[str, int]]:
+    def _get_tag_matches(module: str, tag: str) -> list[tuple[str, int]]:
         arr = list(TagsDB.DB[module].keys())
-        lb, ub = 0, len(arr)
+        lb, ub = 0, len(arr) - 1
         while lb < ub:
-            mid = (lb + ub) // 2
-            if arr[mid] < value:
+            mid = lb + (ub - lb) // 2
+            if arr[mid] < tag:
                 lb = mid + 1
             else:
-                ub = mid - 1
+                ub = mid
         gmatches = list[str]()
-        while lb < len(arr):
-            if pred(arr[lb], value):
-                gmatches.append(arr[lb])
-                if limit > 0 and len(gmatches) >= limit * 5:
-                    break
+        while lb < len(arr) and arr[lb].startswith(tag):
+            gmatches.append(arr[lb])
             lb += 1
         glist = [(g, TagsDB.DB[module][g]) for g in sorted(gmatches, reverse=True, key=lambda gmatch: TagsDB.DB[module][gmatch])]
-        return glist[:limit] if limit > 0 else glist
+        return glist
 
     @staticmethod
-    def autocomplete_tag(module: str, tag: str, *,
-                         pred: Callable[[str, str], bool] = lambda x, y: x.startswith(y),
-                         limit: int | None = None) -> list[tuple[str, int]]:
+    def autocomplete_tag(module: str, tag: str) -> list[tuple[str, int]]:
         matches = []
         if not is_wtag(tag) and len(tag) >= TAG_AUTOCOMPLETE_LENGTH_MIN:
-            limit = limit or TAG_AUTOCOMPLETE_NUMBER_MAX
             TagsDB._load(module)
-            base_matches = TagsDB._get_tag_matches(module, tag, pred, limit)
-            if limit > 0:
-                matches.extend((mtag[len(tag):], count) for mtag, count in base_matches)
-            else:
-                matches.extend(base_matches)
+            base_matches = TagsDB._get_tag_matches(module, tag)
+            matches.extend((mtag[len(tag):], count) for mtag, count in base_matches[:TAG_AUTOCOMPLETE_NUMBER_MAX])
         return matches
 
     @staticmethod
