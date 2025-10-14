@@ -4,12 +4,15 @@
 
 # Whitespace rules
 # strict (no trailing, no tabs)
-*.py     whitespace=trailing-space,space-before-tab,tab-in-indent,cr-at-eol eol=lf
+*.py            whitespace=trailing-space,space-before-tab,tab-in-indent,cr-at-eol eol=lf
+*.toml          whitespace=trailing-space,space-before-tab,tab-in-indent,cr-at-eol eol=lf
+*.gitignore     whitespace=trailing-space,space-before-tab,tab-in-indent,cr-at-eol eol=lf
+*.editorconfig  whitespace=trailing-space,space-before-tab,tab-in-indent,cr-at-eol eol=lf
+*.gitattributes whitespace=trailing-space,space-before-tab,tab-in-indent,cr-at-eol eol=lf
 
 # normal (no trailing)
-*.txt    whitespace=trailing-space,space-before-tab,cr-at-eol
+*.txt           whitespace=trailing-space,space-before-tab,cr-at-eol
 
 # special files which must ignore whitespace
-*.patch  whitespace=-trailing-space eol=lf
-*.diff   whitespace=-trailing-space eol=lf
-*.toml   whitespace=-trailing-space eol=lf
+*.patch         whitespace=-trailing-space eol=lf
+*.diff          whitespace=-trailing-space eol=lf
