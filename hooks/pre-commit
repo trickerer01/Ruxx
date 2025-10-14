@@ -3,5 +3,3 @@ python src/app_genrev.py
 git add src/app_revision.py
 git add pyproject.toml
 ruff check --fix
-git add src/\*.py
-git restore --staged src/app_debug.py
