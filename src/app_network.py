@@ -144,7 +144,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
             self.add_headers.update(args.headers)
         if args.cookies:
             self.add_cookies.update(args.cookies)
-        for container_base, container_ext in zip((self.add_headers, self.add_cookies), (args.header, args.cookie), strict=False):
+        for container_base, container_ext in zip((self.add_headers, self.add_cookies), (args.header, args.cookie), strict=True):
             pair: tuple[str, str]
             for pair in container_ext or []:
                 if pair[0] in container_base:
