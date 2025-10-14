@@ -1,6 +1,6 @@
 # Dev
 *venv/
-.ruff_cache/
+/.ruff_cache/
 images/*/
 version_info.txt
 *.pyc
