@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'Ruxx'
-version = '1.7.807'
+version = '1.7.808'
 authors = [
     {name = 'trickerer01'},
 ]
@@ -108,6 +108,7 @@ ignore = [
     'PLW1510', # subprocess-run-without-check
     'PLW1641', # eq-without-hash
     'PLW2901', # redefined-loop-name
+    'RET504',  # unnecessary-assign
     'RUF001',  # ambiguous-unicode-character-string
     'RUF012',  # mutable-class-default
     'RUF100',  # unused-noqa (flake8 has slightly different behavior)
