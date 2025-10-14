@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'Ruxx'
-version = '1.7.804'
+version = '1.7.805'
 authors = [
     {name = 'trickerer01'},
 ]
@@ -77,6 +77,7 @@ ignore = [
     'UP036',   # outdated-version-block
     'B006',    # mutable-argument-default
     'B008',    # function-call-in-default-argument
+    'B009',    # get-attr-with-constant
     'B011',    # assert-false
     'B017',    # assert-raises-exception
     'B023',    # function-uses-loop-variable (false positives)
@@ -87,6 +88,7 @@ ignore = [
     'C402',    # unnecessary-generator-dict
     'PIE790',  # unnecessary-placeholder
     'SIM102',  # collapsible-if
+    'SIM105',  # suppressible-exception
     'SIM108',  # if-else-block-instead-of-if-exp
     'SIM112',  # uncapitalized-environment-variables
     'SIM113',  # enumerate-for-loop
