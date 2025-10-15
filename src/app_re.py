@@ -123,6 +123,9 @@ re_pool_tag = re.compile(r'^pool[:=]([^:=]+)$')
 
 re_infolist_filename = re.compile(fr'(?:{"|".join(MODULE_CHOICES)})_!(tags|sources|comments)_\d+-\d+\.txt')
 
+re_ask_values = re.compile(r'[^, ]+')
+re_json_entry_value = re.compile(r'^([^: ,]+)[: ,](.+)$')
+
 
 def prepare_regex_fullmatch(raw_string: str) -> re.Pattern[str]:
     return re.compile(rf'^{raw_string}$')

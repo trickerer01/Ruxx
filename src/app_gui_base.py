@@ -12,7 +12,6 @@ import base64
 import ctypes
 import json
 import os
-import re
 import sys
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
@@ -159,7 +158,7 @@ from app_help import (
 )
 from app_logger import Logger
 from app_module import ProcModule
-from app_re import re_space_mult
+from app_re import re_ask_values, re_json_entry_value, re_space_mult
 from app_revision import APP_NAME, APP_VERSION
 from app_tagger import TagsDB
 from app_tooltips import WidgetToolTip
@@ -1849,21 +1848,21 @@ def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt
 
 
 def register_menu_checkbutton(label: str, varname: str,
-                              command: Callable[[...], ...] | None = None, hotkey: str | None = None) -> None:
+                              command: Callable[[], None] | None = None, hotkey: str | None = None) -> None:
     if varname not in bool_vars:
         bool_vars[varname] = BooleanVar(rootm(), False, name=varname)  # needed so it won't be discarded
     c_menum().add_checkbutton(label=label, command=command, variable=bool_vars[varname], accelerator=hotkey)
 
 
 def register_menu_radiobutton(label: str, varname: str, value: int,
-                              command: Callable[[...], ...] | None = None, hotkey: str | None = None) -> None:
+                              command: Callable[[], None] | None = None, hotkey: str | None = None) -> None:
     if varname not in int_vars:
         int_vars[varname] = IntVar(rootm(), value=value, name=varname)  # needed so it won't be discarded
     c_menum().add_radiobutton(label=label, command=command, variable=int_vars[varname], value=value, accelerator=hotkey)
 
 
 def register_submenu_radiobutton(label: str, varname: str, value: int,
-                                 command: Callable[[...], ...] | None = None, hotkey: str | None = None) -> None:
+                                 command: Callable[[], None] | None = None, hotkey: str | None = None) -> None:
     if varname not in int_vars:
         int_vars[varname] = IntVar(rootm(), value=value, name=varname)  # needed so it won't be discarded
     c_submenum().add_radiobutton(label=label, command=command, variable=int_vars[varname], value=value, accelerator=hotkey)
@@ -1938,9 +1937,6 @@ text_cmd: Text | None = None
 # icons
 icons: dict[Icons, PhotoImage | None] = dict.fromkeys(Icons.__members__.values())
 # end icons
-
-re_ask_values = re.compile(r'[^, ]+')
-re_json_entry_value = re.compile(r'^([^: ,]+)[: ,](.+)$')
 
 # GUI grid composition: current column / row universal counters (resettable)
 c_col: int | None = None
