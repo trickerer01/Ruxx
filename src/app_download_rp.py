@@ -11,6 +11,7 @@ import base64
 import datetime
 import re
 from multiprocessing.dummy import current_process
+from typing import final
 
 # requirements
 from bs4 import BeautifulSoup
@@ -67,6 +68,7 @@ ext_pet_content_type = {
 }
 
 
+@final
 class DownloaderRp(Downloader):
     """
     DownloaderRp

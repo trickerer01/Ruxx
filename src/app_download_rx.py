@@ -9,6 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 import base64
 import re
+from typing import final
 
 # internal
 from app_defines import (
@@ -42,6 +43,7 @@ API_KEY = base64.b64decode(API_KEY_DEFAULT_RX).decode()
 USER_ID = base64.b64decode(API_USER_ID_DEFAULT_RX).decode()
 
 
+@final
 class DownloaderRx(DownloaderGelbooru):
     """
     DownloaderRx

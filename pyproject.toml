@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'Ruxx'
-version = '1.7.810'
+version = '1.7.811'
 authors = [
     {name = 'trickerer01'},
 ]
@@ -98,9 +98,9 @@ ignore = [
     'SIM223',  # expr-and-false
     'SIM300',  # yoda-conditions
     'T201',    # print
-    'TD001',   # invalid-todo-tag
-    'TD002',   # missing-todo-author
-    'TD003',   # missing-todo-link
+    'TD001',   # invalid-todo_tag
+    'TD002',   # missing-todo_author
+    'TD003',   # missing-todo_link
     'PLC0415', # import-outside-top-level
     'PLE0604', # invalid-all-object (false positives)
     'PLE0643', # potential-index-error (false positives)

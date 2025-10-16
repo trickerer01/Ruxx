@@ -10,6 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import base64
 import re
 from multiprocessing.dummy import current_process
+from typing import final
 
 # requirements
 from bs4 import BeautifulSoup
@@ -50,6 +51,7 @@ ITEMS_PER_PAGE_F = 30
 MAX_SEARCH_DEPTH = 240 * ITEMS_PER_PAGE - 1  # set by site devs
 
 
+@final
 class DownloaderRs(Downloader):
     """
     DownloaderRs

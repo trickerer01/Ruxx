@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # From this module only import to highest level (app_unittests.py, app_gui.py, ruxx_cmd.py, ruxx_gui.py)
 #
 
+# internal
 from app_download import Downloader
 from app_download_bb import DownloaderBb
 from app_download_en import DownloaderEn

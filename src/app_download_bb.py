@@ -9,6 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 import base64
 import re
+from typing import final
 
 # internal
 from app_defines import (
@@ -37,6 +38,7 @@ ITEMS_PER_PAGE_P = 20000  # unknown, all posts are on a single page always
 MAX_SEARCH_DEPTH = 200000 + ITEMS_PER_PAGE - 1  # set by site devs
 
 
+@final
 class DownloaderBb(DownloaderGelbooru):
     """
     DownloaderBb

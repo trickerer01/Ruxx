@@ -14,6 +14,7 @@ import re
 import time
 from collections.abc import MutableSet
 from multiprocessing.dummy import current_process
+from typing import final
 
 # requirements
 from bs4 import BeautifulSoup
@@ -59,6 +60,7 @@ item_info_fields = {'file_url': 'ext', 'post_id': 'id'}
 tag_blacklisted_always = 'en_always_blacklisted'
 
 
+@final
 class DownloaderEn(Downloader):
     """
     DownloaderEn

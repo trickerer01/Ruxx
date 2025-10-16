@@ -11,6 +11,7 @@ import base64
 import datetime
 import re
 from multiprocessing.dummy import current_process
+from typing import final
 
 # requirements
 from bs4 import BeautifulSoup
@@ -52,6 +53,7 @@ MAX_SEARCH_DEPTH = 0
 item_info_fields = {'data-post-id': 'id', 'data-tags': 'tags', 'title': 'ext'}
 
 
+@final
 class DownloaderRn(Downloader):
     """
     DownloaderRn
