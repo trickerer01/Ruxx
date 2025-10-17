@@ -14,7 +14,9 @@ Ruxx is a content downloader with a lot of filters for maximum search precision 
 
 ![ruxx](https://github.com/user-attachments/assets/d5deb7c4-b942-4764-a78f-613d6a3df0af)
 
-Note that Ruxx does not restrict your searches to a couple pages or something. You may even search for something like *id:>=0* (everything), this won't work though as websites actually put a limit on maximum search results returned. For something stupid like this you'll have to split your searches using id filter. Plus you may still get banned for abusing the resource. **Ruxx is not a scraping tool**
+Note that Ruxx does not restrict your searches to a couple pages or something. You may even search for something like *id:>=0* 
+(everything), this won't work though as websites actually put a limit on maximum search depth. For something stupid like this you'll have 
+to split your searches using id filter. Plus you may still get banned for abusing the resource. **Ruxx is not a scraping tool**
 
 #### Download Options
 - *Videos* ‒ some websites serve videos in multiple formats, here you can select a prefered one. You may also exclude videos altogether
@@ -216,7 +218,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 #### Tag autocompletion
 Ruxx provide lists of known tags for all modules, which can also be used to attempt to complete whatever word typed in **Tags** field
 - Enable this feature by selecting **Tools -> Enable autocompletion**. You will be asked for a folder location - the folder containing tag list files. Once selected the following message will be logged (or similar):
-  ```
+  ```shell script
   Found 7 tag lists:
    - <full path to folder>/rx_tags.json
    - <full path to folder>/rn_tags.json
@@ -277,7 +279,7 @@ EN module also allows creating post sets. Essentially they are no different from
   - download process suffers no speed penalty
 
 ### Technical info
-Ruxx is written in `Python 3.10`. Lines of code: 13300+. Compiled with `PyInstaller 6.15`
+Ruxx is written in `Python 3.10`. Lines of code: 12800+. Compiled with `PyInstaller 6.15`
 
 #### Logging
 Ruxx will log most of its actions, which you can see in **Log** window.  
