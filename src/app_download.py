@@ -17,7 +17,7 @@ from argparse import Namespace
 from collections.abc import Callable, Iterable, MutableSet
 from multiprocessing.dummy import Pool, current_process
 from multiprocessing.pool import ThreadPool
-from threading import Lock, Thread
+from threading import Lock
 
 # requirements
 from iteration_utilities import unique_everseen
@@ -54,11 +54,6 @@ from app_tags_parser import convert_taglist
 from app_task import extract_neg_and_groups, split_tags_into_tasks
 from app_utils import confirm_yes_no, format_score, garble_argument_values, make_subfolder_name, normalize_path, trim_underscores
 
-# annotations
-if False is True:
-    # native
-    import re
-
 __all__ = ('Downloader',)
 
 
@@ -74,9 +69,8 @@ class Downloader(DownloaderBase):
     @abstractmethod
     def __init__(self) -> None:
         super().__init__()
-        self._exception_checker: Thread | None = None
         self._thread_exception_lock = Lock()
-        self._thread_exceptions = dict[str, list[str]]()
+        self._thread_exceptions: dict[str, list[str]] = {}
         self._file_name_ext_cache: dict[str, tuple[str, str]] = {}
 
     @property
@@ -101,20 +95,6 @@ class Downloader(DownloaderBase):
             self.session.close()
             self.session = None
         self._thread_exceptions.clear()
-        if self._exception_checker:
-            self._exception_checker.join()
-            self._exception_checker = None
-
-    def _start_exception_checker(self) -> None:
-        self._exception_checker = Thread(target=self._thread_exceptions_checker)
-        self._exception_checker.start()
-
-    def _thread_exceptions_checker(self) -> None:
-        while self.current_state != DownloaderStates.IDLE:
-            with self._thread_exception_lock:
-                if not all(not excl for excl in self._thread_exceptions):
-                    break
-            time.sleep(0.5)
 
     # threaded
     def _on_thread_exception(self, thread_name: str) -> None:
@@ -664,7 +644,6 @@ class Downloader(DownloaderBase):
     def _launch(self, args: Namespace, thiscall: Callable[[], None], enable_preprocessing=True) -> None:
         self.current_state = DownloaderStates.LAUNCHING
         self.reset_root_thread(current_process())
-        self._start_exception_checker()
         try:
             self._parse_args(args, enable_preprocessing)
             self._at_launch()
@@ -842,13 +821,10 @@ class Downloader(DownloaderBase):
             comments = f'\n{NEWLINE_X2.join(str(c) for c in item_info.comments)}\n' if item_info.comments else ''
             return f'{abbrp}{item_info.id}:{comments}\n'
 
-        name: str
-        proc: Callable[[ItemInfo], str]
-        conf: bool
-        for name, proc, conf in (
-            ('tags', proc_tags, self.dump_tags),
-            ('sources', proc_sources, self.dump_sources),
-            ('comments', proc_comments, self.dump_comments),
+        for name, proc, conf in zip(
+            ('tags', 'sources', 'comments'),
+            (proc_tags, proc_sources, proc_comments),
+            (self.dump_tags, self.dump_sources, self.dump_comments), strict=False,
         ):
             if conf is False:
                 continue
@@ -887,10 +863,9 @@ class Downloader(DownloaderBase):
         if not os.path.isdir(dir_fullpath):
             return parsed_files
         abbrp = self._get_module_abbr_p()
-        info_lists: list[re.Match[str]] = sorted(filter(
-            lambda x: bool(x), [re_infolist_filename.fullmatch(f.name) for f in os.scandir(dir_fullpath)
-                                if f.is_file() and f.name.startswith(f'{abbrp}!')],
-        ), key=lambda m: m.string)
+        info_lists = sorted([
+            re_infolist_filename.fullmatch(f.name) for f in os.scandir(dir_fullpath) if f.is_file() and f.name.startswith(f'{abbrp}!')
+        ], key=lambda m: m.string)
         if not info_lists:
             return parsed_files
         parsed_dict: dict[str, ItemInfo] = {}
