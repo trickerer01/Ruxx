@@ -35,7 +35,7 @@ class ItemInfo:
     Used to store universal info for processed item
     """
     __slots__ = ('comments', 'ext', 'has_children', 'height', 'id', 'parent_id', 'score', 'source', 'tags', 'width')
-    optional_slots = frozenset(__slots__[__slots__.index('source'):])
+    optional_slots = frozenset(('source', 'comments', 'score', 'has_children', 'parent_id'))
 
     def __init__(self) -> None:
         self.id: str = ''
