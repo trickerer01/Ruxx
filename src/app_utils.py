@@ -25,8 +25,11 @@ def ensure_compatibility() -> None:
 
 
 def assert_nonempty(container: Iterable[str], message='') -> Iterable[str]:
-    assert container, message
-    return container
+    try:
+        next(iter(container))
+        return container
+    except StopIteration:
+        assert False, message
 
 
 # def is_sorted(c: Iterable) -> bool:
@@ -34,11 +37,9 @@ def assert_nonempty(container: Iterable[str], message='') -> Iterable[str]:
 
 
 def find_first_not_of(s: str, chars: str) -> int:
-    i = 0
-    for c in s:
+    for i, c in enumerate(s):
         if c not in chars:
             return i
-        i += 1
     return -1
 
 
