@@ -105,7 +105,7 @@ ANDGR_CHAR = r'[a-zÀ-ʯА-яぁ-㋾･-ﾟ一-鿿\d_+\-/!()*\'.|?]'
 # language=PythonRegExp
 RE_ANDGR_PART_U = fr'{ANDGR_CHAR}+?'
 
-re_plains = {
+RE_PLAINS = {
     ProcModule.RX: re.compile(fr'^-?{TAG_CHAR}+?$'),
     ProcModule.RN: re.compile(fr'^-?{TAG_CHAR}+?$'),
     ProcModule.RS: re.compile(fr'^-?{TAG_CHAR}+?$'),
@@ -114,7 +114,7 @@ re_plains = {
     ProcModule.XB: re.compile(fr'^-?{TAG_CHAR}+?$'),
     ProcModule.BB: re.compile(fr'^-?{TAG_CHAR}+?$'),
 }
-re_metas = {
+RE_METAS = {
     ProcModule.RX: re.compile(fr'^{META_CHAR}+?{META_COUNT_RX}$'),
     ProcModule.RN: re.compile(fr'^{META_CHAR}+?{META_COUNT_RN}$'),
     ProcModule.RS: re.compile(fr'^{META_CHAR}+?{META_COUNT_RS}$'),
@@ -123,7 +123,7 @@ re_metas = {
     ProcModule.XB: re.compile(fr'^{META_CHAR}+?{META_COUNT_XB}$'),
     ProcModule.BB: re.compile(fr'^{META_CHAR}+?{META_COUNT_BB}$'),
 }
-re_sorts = {
+RE_SORTS = {
     ProcModule.RX: re.compile(fr'^{META_SORT_RX}$'),
     ProcModule.RN: re.compile(fr'^{META_SORT_RN}$'),
     ProcModule.RS: re.compile(fr'^{META_SORT_RS}$'),
@@ -132,7 +132,7 @@ re_sorts = {
     ProcModule.XB: re.compile(fr'^{META_SORT_XB}$'),
     ProcModule.BB: re.compile(fr'^{META_SORT_BB}$'),
 }
-re_favs = {
+RE_FAVS = {
     ProcModule.RX: re.compile(fr'^{META_FAV_RX}$'),
     ProcModule.RN: re.compile(fr'^{META_FAV_RN}$'),
     ProcModule.RS: re.compile(fr'^{META_FAV_RS}$'),
@@ -141,7 +141,7 @@ re_favs = {
     ProcModule.XB: re.compile(fr'^{META_FAV_XB}$'),
     ProcModule.BB: re.compile(fr'^{META_FAV_BB}$'),
 }
-re_pools = {
+RE_POOLS = {
     ProcModule.RX: re.compile(fr'^{META_POOL_RX}$'),
     ProcModule.RN: re.compile(fr'^{META_POOL_RN}$'),
     ProcModule.RS: re.compile(fr'^{META_POOL_RS}$'),
@@ -150,7 +150,7 @@ re_pools = {
     ProcModule.XB: re.compile(fr'^{META_POOL_XB}$'),
     ProcModule.BB: re.compile(fr'^{META_POOL_BB}$'),
 }
-re_orgrs_full = {
+RE_ORGRS_FULL = {
     ProcModule.RX: re.compile(fr'^\((?:{RE_ORGR_PART_RX})(?:~{RE_ORGR_PART_RX})+?\)$'),
     ProcModule.RN: re.compile(fr'^\((?:{RE_ORGR_PART_RN})(?:~{RE_ORGR_PART_RN})+?\)$'),
     ProcModule.RS: re.compile(fr'^\((?:{RE_ORGR_PART_RS})(?:~{RE_ORGR_PART_RS})+?\)$'),
@@ -159,7 +159,7 @@ re_orgrs_full = {
     ProcModule.XB: re.compile(fr'^\((?:{RE_ORGR_PART_XB})(?:~{RE_ORGR_PART_XB})+?\)$'),
     ProcModule.BB: re.compile(fr'^\((?:{RE_ORGR_PART_BB})(?:~{RE_ORGR_PART_BB})+?\)$'),
 }
-re_orgrs_full_s = {
+RE_ORGRS_FULL_S = {
     ProcModule.RX: re.compile(fr'^\( (?:{RE_ORGR_PART_RX})(?: ~ {RE_ORGR_PART_RX})+? \)$'),
     ProcModule.RN: re.compile(fr'^\( (?:{RE_ORGR_PART_RN})(?: ~ {RE_ORGR_PART_RN})+? \)$'),
     ProcModule.RS: re.compile(fr'^\( (?:{RE_ORGR_PART_RS})(?: ~ {RE_ORGR_PART_RS})+? \)$'),
@@ -168,52 +168,59 @@ re_orgrs_full_s = {
     ProcModule.XB: re.compile(fr'^\( (?:{RE_ORGR_PART_XB})(?: ~ {RE_ORGR_PART_XB})+? \)$'),
     ProcModule.BB: re.compile(fr'^\( (?:{RE_ORGR_PART_BB})(?: ~ {RE_ORGR_PART_BB})+? \)$'),
 }
-re_andgr_full = re.compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$')
+RE_ANDGR_FULL = {
+    ProcModule.RX: re.compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$'),
+    ProcModule.RN: re.compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$'),
+    ProcModule.RS: re.compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$'),
+    ProcModule.RP: re.compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$'),
+    ProcModule.EN: re.compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$'),
+    ProcModule.XB: re.compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$'),
+    ProcModule.BB: re.compile(fr'^-\((?:{RE_ANDGR_PART_U})(?:,{RE_ANDGR_PART_U})+?\)$'),
+}
+RE_NEGATIVE_META = re.compile(r'^-[^:]+:.+?$')
 
-re_negative_meta = re.compile(r'^-[^:]+:.+?$')
 
-last_tags = ''
-last_fulltags: Sequence[str] | None = None
-
-
-def reset_last_tags() -> None:
-    global last_tags
-    last_tags = ''
+def re_by_type(re_dict: dict[int, re.Pattern[str]]) -> re.Pattern:
+    return re_dict[ProcModule.CUR_PROC_MODULE]
 
 
 def re_plain() -> re.Pattern:
-    return re_plains.get(ProcModule.CUR_PROC_MODULE)
+    return re_by_type(RE_PLAINS)
 
 
 def re_meta() -> re.Pattern:
-    return re_metas.get(ProcModule.CUR_PROC_MODULE)
+    return re_by_type(RE_METAS)
 
 
 def re_sort() -> re.Pattern:
-    return re_sorts.get(ProcModule.CUR_PROC_MODULE)
+    return re_by_type(RE_SORTS)
 
 
 def re_fav() -> re.Pattern:
-    return re_favs.get(ProcModule.CUR_PROC_MODULE)
+    return re_by_type(RE_FAVS)
 
 
 def re_pool() -> re.Pattern:
-    return re_pools.get(ProcModule.CUR_PROC_MODULE)
+    return re_by_type(RE_POOLS)
 
 
 def re_orgr_full() -> re.Pattern:
-    return re_orgrs_full.get(ProcModule.CUR_PROC_MODULE)
+    return re_by_type(RE_ORGRS_FULL)
 
 
 def re_orgr_full_s() -> re.Pattern:
-    return re_orgrs_full_s.get(ProcModule.CUR_PROC_MODULE)
+    return re_by_type(RE_ORGRS_FULL_S)
+
+
+def re_andgr() -> re.Pattern:
+    return re_by_type(RE_ANDGR_FULL)
 
 
 def split_or_group(gr: str) -> str:
     assert re_orgr_full().fullmatch(gr)
     orgr_parts = gr[1:-1].split('~')
     for part in orgr_parts:
-        assert not re_negative_meta.fullmatch(part)  # negative meta tags
+        assert not RE_NEGATIVE_META.fullmatch(part)  # negative meta tags
     return f'( {" ~ ".join(part for part in orgr_parts)} )'
 
 
@@ -236,20 +243,20 @@ def fail() -> tuple[bool, Sequence[str]]:
 
 
 def parse_tags(tags: str) -> tuple[bool, Sequence[str]]:
-    global last_tags
-    global last_fulltags
+    parse_tags.last_tags = getattr(parse_tags, 'last_tags', '')
+    parse_tags.last_fulltags = getattr(parse_tags, 'last_fulltags', tuple[str, ...]())
 
     if '  ' in tags:
         tags = re_space_mult.sub(' ', tags)
     tags = tags.strip()
 
-    if last_tags == tags:
-        if last_fulltags:
-            return ret_tags(True, last_fulltags)
+    if parse_tags.last_tags == tags:
+        if parse_tags.last_fulltags:
+            return ret_tags(True, parse_tags.last_fulltags)
         return fail()
 
-    last_tags = tags
-    last_fulltags = None
+    parse_tags.last_tags = tags
+    parse_tags.last_fulltags = None
 
     if not tags:
         return fail()
@@ -276,16 +283,20 @@ def parse_tags(tags: str) -> tuple[bool, Sequence[str]]:
                 return fail()
         elif re_sort().fullmatch(tag):
             sort_tags_count += 1
-        if not (re_orgr_full_s().fullmatch(tag) or re_andgr_full.fullmatch(tag) or re_meta().fullmatch(tag) or re_plain().fullmatch(tag)):
+        if not (re_orgr_full_s().fullmatch(tag) or re_andgr().fullmatch(tag) or re_meta().fullmatch(tag) or re_plain().fullmatch(tag)):
             return fail()
         fulltags.append(tag)
 
     if len(fulltags) <= sort_tags_count > 0 or custom_tags_count > 1:
         return fail()
 
-    last_fulltags = tuple(fulltags)
+    parse_tags.last_fulltags = tuple(fulltags)
 
-    return ret_tags(True, last_fulltags)
+    return ret_tags(True, parse_tags.last_fulltags)
+
+
+def reset_last_tags() -> None:
+    parse_tags.last_tags = ''
 
 #
 #
