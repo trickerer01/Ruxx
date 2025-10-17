@@ -15,7 +15,7 @@ from unittest import main as run_tests
 
 # internal
 from app_cmdargs import prepare_arglist
-from app_defines import DATE_MIN_DEFAULT, DEFAULT_HEADERS, MODULE_CHOICES, DownloadModes, ThreadInterruptException
+from app_defines import DATE_MIN_DEFAULT, DEFAULT_HEADERS, MODULE_CHOICES, DownloadModes, ItemInfo, ThreadInterruptException
 
 # noinspection PyProtectedMember
 from app_downloaders import make_downloader
@@ -100,6 +100,13 @@ item_str01_xb = (
     'md5="f0ed148c17e0beb2a4c321098522cdde" creator_id="22119" has_children="false" created_at="Thu Aug 15 23:02:04 +0200 2024" '
     'status="active" source="Pixiv" has_notes="false" has_comments="false" preview_width="150" preview_height="84"/>'
 )
+
+
+class DataStructureIntegrityTests(TestCase):
+    def test_integrity01_iteminfo(self) -> None:
+        Logger.init(True, True)
+        self.assertSetEqual({'source', 'comments', 'score', 'has_children', 'parent_id'}, ItemInfo.optional_slots)
+        print(f'{self._testMethodName} passed')
 
 
 class FileCheckTests(TestCase):
