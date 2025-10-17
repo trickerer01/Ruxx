@@ -104,7 +104,7 @@ class DownloaderRx(DownloaderGelbooru):
 
     @staticmethod
     def _get_default_api_key() -> str:
-        return API_KEY_DEFAULT_RX
+        return API_KEY
 
 #
 #
