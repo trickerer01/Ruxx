@@ -52,7 +52,7 @@ def retag_files(files: Sequence[str], re_tags_to_process: re.Pattern, re_tags_to
                 continue
             if os.path.splitext(dentry.name)[1] == '.txt':
                 if re_tagsfile_name.fullmatch(dentry.name) is not None:
-                    with open(f'{base_path}{SLASH}{dentry.name}', encoding=UTF8) as tags_file:
+                    with open(f'{base_path}{SLASH}{dentry.name}', 'rt', encoding=UTF8) as tags_file:
                         lines = tags_file.readlines()
                     for line in lines:
                         line = line.strip(' \n\ufeff')

@@ -17,7 +17,7 @@ def write_commit_msg() -> None:
     msg_file_path = sys.argv[1]
     rev = check_output(('grep', 'src/app_revision.py', '-Poe', r'(?<=APP_REVISION = .)([0-9]+)(?=.+)')).decode(errors='replace').strip()
     assert rev.isnumeric(), f'\'{rev}\''
-    with open(msg_file_path, 'r+', encoding=UTF8) as f:
+    with open(msg_file_path, 'rt+', encoding=UTF8) as f:
         commit_msg = f.read()
         f.flush()
         f.seek(0)

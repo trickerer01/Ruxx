@@ -28,7 +28,7 @@ class Version:
 
 
 def write_revision_date() -> None:
-    with open(APP_REV_FILE_PATH, 'r+', encoding=UTF8, newline='\n') as f:
+    with open(APP_REV_FILE_PATH, 'rt+', encoding=UTF8, newline='\n') as f:
         lines = f.readlines()
         set_rev = set_date = False
         for idx, line in enumerate(lines):
@@ -53,7 +53,7 @@ def write_revision_date() -> None:
 
 def write_revision_date_toml() -> None:
     assert Version.revision
-    with open(PYPROJECT_TOML_FILE_PATH, 'r+', encoding=UTF8, newline='\n') as f:
+    with open(PYPROJECT_TOML_FILE_PATH, 'rt+', encoding=UTF8, newline='\n') as f:
         lines = f.readlines()
         for idx, line in enumerate(lines):
             if line.startswith(STR_TOML_VERSION):

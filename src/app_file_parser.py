@@ -87,7 +87,7 @@ def id_list_from_string(id_str: str) -> list[str]:
 def parse_ids_file(filepath: str) -> tuple[bool, list[str]]:
     id_list = []
     try:
-        for line in open(filepath, encoding=UTF8).readlines():
+        for line in open(filepath, 'rt', encoding=UTF8).readlines():
             line = line.strip(' \n\ufeff')
             if len(line) == 0 or re_comments.fullmatch(line):
                 continue
@@ -107,7 +107,7 @@ def prepare_id_list(filepath: str) -> tuple[bool, str]:
 def parse_tags_file(filepath: str) -> tuple[bool, list[str]]:
     tag_list: list[str] = []
     try:
-        for line in open(filepath, encoding=UTF8).readlines():
+        for line in open(filepath, 'rt', encoding=UTF8).readlines():
             line = line.strip(' \n\ufeff')
             if len(line) == 0 or re_comments.fullmatch(line):
                 continue

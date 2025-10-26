@@ -836,7 +836,7 @@ class Downloader(DownloaderBase):
                         if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{ifilename}\' already exists. Overwrite?'):
                             trace('Skipped.')
                             continue
-                    with open(ifilename, 'w', encoding=UTF8) as idump:
+                    with open(ifilename, 'wt', encoding=UTF8) as idump:
                         idump.write(proc(iinfo))
             else:
                 filename = f'{self.dest_base_s}{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
@@ -845,7 +845,7 @@ class Downloader(DownloaderBase):
                     if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{filename}\' already exists. Overwrite?'):
                         trace('Skipped.')
                         continue
-                with open(filename, 'w', encoding=UTF8) as dump:
+                with open(filename, 'wt', encoding=UTF8) as dump:
                     for iteminfo in item_info_list:
                         dump_string = proc(iteminfo)
                         if dump_string or (iteminfo.id in orig_ids):
@@ -873,7 +873,7 @@ class Downloader(DownloaderBase):
             list_type = fmatch.group(1)
             list_fullpath = f'{dir_fullpath}{fmname}'
             try:
-                with open(list_fullpath, encoding=UTF8) as listfile:
+                with open(list_fullpath, 'rt', encoding=UTF8) as listfile:
                     last_idstring = ''
                     lines = listfile.readlines()
                     for i, line in enumerate(lines):
