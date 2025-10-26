@@ -66,7 +66,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.api_key: APIKey = APIKey()
         self.tags_str_arr: list[str] = []
         # extra
-        self.cmdline: str = ''
+        self.cmdline: list[str] = []
         self.options: dict[str, bool | int | str] = {}
         self.get_max_id: bool = False
         self.check_tags: bool = False

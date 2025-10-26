@@ -10,7 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import datetime
 import math
 import sys
-from collections.abc import Iterable
+from collections.abc import Iterable, MutableSequence
 from tkinter import messagebox
 
 # internal
@@ -70,9 +70,8 @@ def garble_text(base_str: str) -> str:
     return '*' * (1 + len(base_str) + sum(divmod(len(base_str), 3)))
 
 
-def garble_argument_values(base_str: str, *arg_extra_names: str) -> str:
+def garble_argument_values(args_list: MutableSequence[str], *arg_extra_names: str) -> None:
     arguments_to_garble = (OPTION_CMD_PATH_CMD, OPTION_CMD_PROXY_CMD, *arg_extra_names)
-    args_list = base_str.split(' ')
     try:
         for arg_name in arguments_to_garble:
             try:
@@ -83,9 +82,8 @@ def garble_argument_values(base_str: str, *arg_extra_names: str) -> str:
             arg_value = args_list[idx + 1]
             if arg_value:
                 args_list[idx + 1] = '<REDACTED>'  # garble_text(arg_value)
-        return ' '.join(args_list)
     except (ValueError, AssertionError):
-        return base_str
+        return
 
 
 def format_score(score_str: str) -> str:

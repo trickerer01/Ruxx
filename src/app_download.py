@@ -114,7 +114,7 @@ class Downloader(DownloaderBase):
             self.processed_count += 1
 
     def save_cmdline(self, cmdline: Iterable[str]) -> None:
-        self.cmdline = ' '.join(cmdline)
+        self.cmdline = list(cmdline)
 
     def set_options(self, **options: bool | int | str) -> None:
         self.options = options
@@ -124,10 +124,9 @@ class Downloader(DownloaderBase):
             if self.options.get(DownloaderOptions.OPTION_GARBLE_PERSONAL_INFO, False):
                 api_key_default = self.get_module_specific_default_value(ModuleConfigType.CONFIG_API_KEY)
                 api_key_is_default = self.api_key.key == api_key_default
-                my_args = garble_argument_values(self.cmdline, *((OPTION_CMD_APIKEY_CMD,) if not api_key_is_default else ()))
-            else:
-                my_args = self.cmdline
-            trace(f'Python {sys.version}\nBase args: {" ".join(_[_.rfind(SLASH) + 1:] for _ in sys.argv)}\nMy args: {my_args}')
+                garble_argument_values(self.cmdline, *((OPTION_CMD_APIKEY_CMD,) if not api_key_is_default else ()))
+            trace(f'Python {sys.version}\nBase args: {" ".join(_[_.rfind(SLASH) + 1:] for _ in sys.argv)}'
+                  f'\nMy args: {" ".join(self.cmdline)}')
 
     def get_tags_count(self, offset=0) -> int:
         """Public, needed by tests"""

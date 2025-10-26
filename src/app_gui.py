@@ -680,17 +680,17 @@ def prepare_cmdline() -> list[str]:
 
 
 def update_frame_cmdline() -> None:
-    cant_update = False
+    can_update = True
     for gidx in {Globals.FIELD_DATEMIN, Globals.FIELD_DATEMAX}:
-        cant_update |= is_focusing(gidx)
+        can_update &= not is_focusing(gidx)
 
-    if not cant_update:
+    if can_update:
         args_list = prepare_cmdline()
-        newstr = ' '.join(args_list)
         if bool(int(getrootconf(Options.HIDE_PERSONAL_INFO))):
             api_key_default = Downloader.get_module_specific_default_value(ModuleConfigType.CONFIG_API_KEY)
             api_key_is_default = str(getrootconf(Options.APIKEY_KEY)) == api_key_default
-            newstr = garble_argument_values(newstr, *((OPTION_CMD_APIKEY_CMD,) if not api_key_is_default else ()))
+            garble_argument_values(args_list, *((OPTION_CMD_APIKEY_CMD,) if not api_key_is_default else ()))
+        newstr = ' '.join(args_list)
         oldstr = text_cmdm().get(1.0, END)
         if oldstr != f'{newstr}\n':
             text_cmdm().config(state=STATE_NORMAL)
