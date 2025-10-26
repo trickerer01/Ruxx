@@ -53,12 +53,11 @@ def retag_files(files: Sequence[str], re_tags_to_process: re.Pattern, re_tags_to
             if os.path.splitext(dentry.name)[1] == '.txt':
                 if re_tagsfile_name.fullmatch(dentry.name) is not None:
                     with open(f'{base_path}{SLASH}{dentry.name}', 'rt', encoding=UTF8) as tags_file:
-                        lines = tags_file.readlines()
-                    for line in lines:
-                        line = line.strip(' \n\ufeff')
-                        if len(line) > 1:
-                            parts = line.split(': ', 1)
-                            tagdict[parts[0][3:]] = parts[1]
+                        for line in tags_file:
+                            line = line.strip(' \n\ufeff')
+                            if len(line) > 1:
+                                parts = line.split(': ', 1)
+                                tagdict[parts[0][3:]] = parts[1]
 
         assert len(tagdict) > 0
 

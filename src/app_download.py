@@ -872,47 +872,47 @@ class Downloader(DownloaderBase):
             fmname = fmatch.string
             list_type = fmatch.group(1)
             list_fullpath = f'{dir_fullpath}{fmname}'
+            last_idstring = ''
+            prev_line = ''
             try:
                 with open(list_fullpath, 'rt', encoding=UTF8) as listfile:
-                    last_idstring = ''
-                    lines = listfile.readlines()
-                    for i, line in enumerate(lines):
+                    for line in listfile:
                         line = line.strip('\ufeff')
-                        if line in ('', '\n'):
-                            continue
-                        if line.startswith(abbrp):
-                            delim_idx = line.find(':')
-                            idi = line[len(abbrp):delim_idx]
-                            last_id = int(idi)
-                            last_idstring = f'{(abbrp if self.add_filename_prefix else "")}{last_id:d}'
-                            if last_idstring not in parsed_dict:
-                                ii = ItemInfo()
-                                ii.id = idi
-                                parsed_dict[last_idstring] = ii
-                            ii = parsed_dict[last_idstring]
-                            if len(line) > delim_idx + 2:
-                                if list_type == 'tags':
-                                    tags_idx = line.find(' ', delim_idx + 2) + 1
-                                    score_str = line[delim_idx + 2:tags_idx - 1][1:-1]
-                                    tags_str = line[tags_idx:]
-                                    ii.score = score_str
-                                    ii.tags = tags_str.strip()
-                                else:
-                                    source_str = line[delim_idx + 2:]
-                                    ii.source = source_str.strip()
-                                last_idstring = ''
-                        else:
-                            assert last_idstring
-                            lii = parsed_dict[last_idstring]
-                            new_comment = line.strip().endswith(':') and (lines[i - 1].startswith(abbrp) or lines[i - 1] in ('', '\n'))
-                            if not lii.comments or new_comment:
-                                lii.comments.append(Comment('', ''))
-                            comment = lii.comments[-1]
-                            if new_comment:
-                                comment_author = line.strip()[:-1]
-                                comment.author = comment_author
+                        if line not in ('', '\n'):
+                            if line.startswith(abbrp):
+                                delim_idx = line.find(':')
+                                idi = line[len(abbrp):delim_idx]
+                                last_id = int(idi)
+                                last_idstring = f'{(abbrp if self.add_filename_prefix else "")}{last_id:d}'
+                                if last_idstring not in parsed_dict:
+                                    ii = ItemInfo()
+                                    ii.id = idi
+                                    parsed_dict[last_idstring] = ii
+                                ii = parsed_dict[last_idstring]
+                                if len(line) > delim_idx + 2:
+                                    if list_type == 'tags':
+                                        tags_idx = line.find(' ', delim_idx + 2) + 1
+                                        score_str = line[delim_idx + 2:tags_idx - 1][1:-1]
+                                        tags_str = line[tags_idx:]
+                                        ii.score = score_str
+                                        ii.tags = tags_str.strip()
+                                    else:
+                                        source_str = line[delim_idx + 2:]
+                                        ii.source = source_str.strip()
+                                    last_idstring = ''
                             else:
-                                comment.body += line
+                                assert last_idstring
+                                lii = parsed_dict[last_idstring]
+                                new_comment = line.strip().endswith(':') and (prev_line.startswith(abbrp) or prev_line in ('', '\n'))
+                                if not lii.comments or new_comment:
+                                    lii.comments.append(Comment('', ''))
+                                comment = lii.comments[-1]
+                                if new_comment:
+                                    comment_author = line.strip()[:-1]
+                                    comment.author = comment_author
+                                else:
+                                    comment.body += line
+                        prev_line = line
                     parsed_files.append(list_fullpath)
             except Exception:
                 trace(f'Error reading from {fmname}. Skipped')

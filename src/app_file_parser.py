@@ -87,13 +87,14 @@ def id_list_from_string(id_str: str) -> list[str]:
 def parse_ids_file(filepath: str) -> tuple[bool, list[str]]:
     id_list = []
     try:
-        for line in open(filepath, 'rt', encoding=UTF8).readlines():
-            line = line.strip(' \n\ufeff')
-            if len(line) == 0 or re_comments.fullmatch(line):
-                continue
-            elif not get_r_idstring().fullmatch(line):
-                raise OSError
-            id_list.extend(id_list_from_string(line))
+        with open(filepath, 'rt', encoding=UTF8) as ifile:
+            for line in ifile:
+                line = line.strip(' \n\ufeff')
+                if len(line) == 0 or re_comments.fullmatch(line):
+                    continue
+                elif not get_r_idstring().fullmatch(line):
+                    raise OSError
+                id_list.extend(id_list_from_string(line))
         return True, [f'id{get_idval_eq_sep()}{s}' for s in sorted(unique_everseen(id_list), key=lambda item: int(item))]
     except Exception:
         return False, id_list
@@ -107,11 +108,12 @@ def prepare_id_list(filepath: str) -> tuple[bool, str]:
 def parse_tags_file(filepath: str) -> tuple[bool, list[str]]:
     tag_list: list[str] = []
     try:
-        for line in open(filepath, 'rt', encoding=UTF8).readlines():
-            line = line.strip(' \n\ufeff')
-            if len(line) == 0 or re_comments.fullmatch(line):
-                continue
-            tag_list.append(line)
+        with open(filepath, 'rt', encoding=UTF8) as tfile:
+            for line in tfile:
+                line = line.strip(' \n\ufeff')
+                if len(line) == 0 or re_comments.fullmatch(line):
+                    continue
+                tag_list.append(line)
         return True, list(unique_everseen(tag_list))
     except Exception:
         return False, tag_list

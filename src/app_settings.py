@@ -9,8 +9,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 import os
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
 from tkinter import Tk, filedialog
+from typing import TextIO
 
 # internal
 from app_defines import DATE_MIN_DEFAULT, LAUCH_DATE, UTF8, Mem
@@ -153,7 +154,7 @@ class Settings(ABC):
                 trace(f'Trying to autoconfigure using {filename}...')
                 try:
                     with open(full_path, 'rt', encoding=UTF8) as rfile:
-                        Settings._read_settings(rfile.readlines())
+                        Settings._read_settings(rfile)
                     trace('Ok')
                     break
                 except Exception:
@@ -200,8 +201,8 @@ class Settings(ABC):
         return settings_strlist
 
     @staticmethod
-    def _read_settings(lines: Iterable[str], set_window_pos=True) -> None:
-        for line in lines:
+    def _read_settings(rfile: TextIO | list[str], set_window_pos=True) -> None:
+        for line in rfile:
             line = line.strip(' \n\ufeff')  # remove BOM too
             if line.startswith('#') or line == '':  # comment or a newline
                 continue
@@ -256,7 +257,7 @@ class Settings(ABC):
             if filepath is not None and len(filepath) > 0:
                 trace(f'Loading setting from {filepath}...')
                 with open(filepath, 'rt', encoding=UTF8) as rfile:
-                    Settings._read_settings(rfile.readlines())
+                    Settings._read_settings(rfile)
                 trace('Ok')
         except Exception:
             trace('Error loading settings.')

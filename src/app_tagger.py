@@ -103,8 +103,7 @@ class TagsDB:
         TagsDB.DB[module] = {}
         try:
             with open(TagsDB.DBFiles.get(module, ''), 'rt', encoding=UTF8) as dbfile:
-                lines = dbfile.readlines()
-                for _idx, line in enumerate(lines):
+                for line in dbfile:
                     try:
                         kv_k, kv_v = tuple(line.strip(' ,"\n\ufeff').split('": "', 1))
                         ivalue = int(kv_v[:kv_v.find(' ')])
