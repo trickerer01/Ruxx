@@ -10,7 +10,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import os
 import re
 from collections.abc import Collection, Iterable, Sequence
-from enum import IntEnum, auto, unique
+from enum import IntEnum, auto
 
 # internal
 from app_defines import Mem
@@ -22,9 +22,7 @@ __all__ = ('FileTypeFilter', 'sort_files_by_score', 'sort_files_by_size', 'sort_
 
 # PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
-@unique
 class FileTypeFilter(IntEnum):
-    BY_VIDEO_AUDIO = 1
     BY_EXTENSION = auto()
     INVALID = auto()
 

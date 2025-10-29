@@ -7,7 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
-from enum import IntEnum, auto, unique
+from enum import IntEnum, auto
 
 # annotations
 if False is True:
@@ -115,7 +115,6 @@ BEGIN = '1.0'
 # icons enum
 # PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
-@unique
 class Icons(IntEnum):
     RUXX = 0
     RX = auto()
@@ -138,7 +137,6 @@ class Icons(IntEnum):
 # targetable options: either having stored variables or hotkeys attached
 # PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
-@unique
 class Options(IntEnum):
     ISLOGOPEN = 0
     REVEALNAMES = auto()
@@ -271,7 +269,6 @@ CVARS = {
 # root
 # PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
-@unique
 class Globals(IntEnum):
     COMBOBOX_VIDEOS = 0
     COMBOBOX_IMAGES = auto()
@@ -341,7 +338,6 @@ BUTTONS_TO_UNFOCUS = (
 
 # PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
-@unique
 class InfoSaveModes(IntEnum):
     PER_RUN = 0
     PER_FILE = auto()
@@ -351,7 +347,6 @@ class InfoSaveModes(IntEnum):
 # menus
 # PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
 # noinspection PyArgumentList
-@unique
 class Menus(IntEnum):
     FILE = 0
     EDIT = auto()

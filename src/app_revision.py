@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 APP_NAME = 'Ruxx'
 APP_VER_MAJOR = '1'
 APP_VER_SUB = '7'
-APP_REVISION = '825'
+APP_REVISION = '826'
 APP_IS_BETA = False
 APP_IS_BETA_TEXT = 'b' * APP_IS_BETA
 APP_REV_DATE = '29 Oct 2025'
