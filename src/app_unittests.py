@@ -16,16 +16,14 @@ from unittest import main as run_tests
 # internal
 from app_cmdargs import prepare_arglist
 from app_defines import DATE_MIN_DEFAULT, DEFAULT_HEADERS, MODULE_CHOICES, DownloadModes, ItemInfo, ThreadInterruptException
-
-# noinspection PyProtectedMember
-from app_downloaders import make_downloader
+from app_downloaders import DOWNLOADERS_BY_PROC_MODULE, make_downloader
+from app_file_parser import IDSTRING_PATTERNS, IDVAL_EQ_SEPARATORS, PREFIX_OPTIONAL_PATTERNS
 from app_logger import Logger
 from app_module import ProcModule
 from app_revision import APP_NAME
-
-# noinspection PyProtectedMember
 from app_tagger import TAG_ALIASES, TagsDB, load_tag_aliases
-from app_tags_parser import parse_tags
+from app_tags_parser import RE_ANDGR_FULL, RE_FAVS, RE_METAS, RE_ORGRS_FULL, RE_ORGRS_FULL_S, RE_PLAINS, RE_POOLS, RE_SORTS, parse_tags
+from app_task import MAX_NEGATIVE_TAGS, MAX_STRING_LENGTHS, MAX_WILDCARDS
 from app_utils import normalize_path
 
 __all__ = ('run_all_tests',)
@@ -106,6 +104,29 @@ class DataStructureIntegrityTests(TestCase):
     def test_integrity01_iteminfo(self) -> None:
         Logger.init(True, True)
         self.assertSetEqual({'source', 'comments', 'score', 'has_children', 'parent_id'}, ItemInfo.optional_slots)
+        print(f'{self._testMethodName} passed')
+
+    def test_integrity02_procmodule_dicts(self) -> None:
+        Logger.init(True, True)
+        self.assertEqual(1, ProcModule.PROC_MODULE_MIN)
+        self.assertEqual(7, ProcModule.PROC_MODULE_MAX)
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(ProcModule.PROC_MODULES_BY_NAME))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(ProcModule.PROC_MODULES_NAMES_BY_ID))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(MAX_STRING_LENGTHS))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(MAX_NEGATIVE_TAGS))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(MAX_WILDCARDS))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(RE_PLAINS))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(RE_METAS))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(RE_SORTS))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(RE_FAVS))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(RE_POOLS))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(RE_ORGRS_FULL))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(RE_ORGRS_FULL_S))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(RE_ANDGR_FULL))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(IDVAL_EQ_SEPARATORS))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(IDSTRING_PATTERNS))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(PREFIX_OPTIONAL_PATTERNS))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(DOWNLOADERS_BY_PROC_MODULE))
         print(f'{self._testMethodName} passed')
 
 

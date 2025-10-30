@@ -37,7 +37,7 @@ __all__ = ('prepare_id_list', 'prepare_tag_lists')
 re_comments = re.compile(r'^(?:--|//|#).*?$')
 re_separators = re.compile(r'(?:, *| +)')
 
-idval_eq_separators = {
+IDVAL_EQ_SEPARATORS = {
     ProcModule.RX: ID_VALUE_SEPARATOR_CHAR_RX,
     ProcModule.RN: ID_VALUE_SEPARATOR_CHAR_RN,
     ProcModule.RS: ID_VALUE_SEPARATOR_CHAR_RS,
@@ -46,7 +46,7 @@ idval_eq_separators = {
     ProcModule.XB: ID_VALUE_SEPARATOR_CHAR_XB,
     ProcModule.BB: ID_VALUE_SEPARATOR_CHAR_BB,
 }
-idstring_patterns = {
+IDSTRING_PATTERNS = {
     ProcModule.RX: re.compile(fr'^(?:{FILE_NAME_PREFIX_RX}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RX}?)?\d+?)*$'),
     ProcModule.RN: re.compile(fr'^(?:{FILE_NAME_PREFIX_RN}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RN}?)?\d+?)*$'),
     ProcModule.RS: re.compile(fr'^(?:{FILE_NAME_PREFIX_RS}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RS}?)?\d+?)*$'),
@@ -55,7 +55,7 @@ idstring_patterns = {
     ProcModule.XB: re.compile(fr'^(?:{FILE_NAME_PREFIX_XB}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_XB}?)?\d+?)*$'),
     ProcModule.BB: re.compile(fr'^(?:{FILE_NAME_PREFIX_BB}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_BB}?)?\d+?)*$'),
 }
-prefix_optional_patterns = {
+PREFIX_OPTIONAL_PATTERNS = {
     ProcModule.RX: re.compile(fr'{FILE_NAME_PREFIX_RX}?'),
     ProcModule.RN: re.compile(fr'{FILE_NAME_PREFIX_RN}?'),
     ProcModule.RS: re.compile(fr'{FILE_NAME_PREFIX_RS}?'),
@@ -67,15 +67,15 @@ prefix_optional_patterns = {
 
 
 def get_idval_eq_sep() -> str:
-    return idval_eq_separators.get(ProcModule.value())
+    return IDVAL_EQ_SEPARATORS.get(ProcModule.value())
 
 
 def get_r_idstring() -> re.Pattern:
-    return idstring_patterns.get(ProcModule.value())
+    return IDSTRING_PATTERNS.get(ProcModule.value())
 
 
 def get_r_prefix_optional() -> re.Pattern:
-    return prefix_optional_patterns.get(ProcModule.value())
+    return PREFIX_OPTIONAL_PATTERNS.get(ProcModule.value())
 
 
 def id_list_from_string(id_str: str) -> list[str]:
@@ -85,7 +85,7 @@ def id_list_from_string(id_str: str) -> list[str]:
 
 
 def parse_ids_file(filepath: str) -> tuple[bool, list[str]]:
-    id_list = []
+    id_list: list[str] = []
     try:
         with open(filepath, 'rt', encoding=UTF8) as ifile:
             for line in ifile:

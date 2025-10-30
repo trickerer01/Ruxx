@@ -136,8 +136,10 @@ class Settings(ABC):
                    on_init_autocompletion_callback: Callable[[str], None]):
         Settings.on_proc_module_change_callback = on_proc_module_change_callback
         Settings.on_init_autocompletion_callback = on_init_autocompletion_callback
-        for s in Settings.settings.values():
+        for _, s in Settings.settings.items():
             s.check.tk = tk
+        Settings.try_pick_autoconfig()
+        Settings.save_initial_settings()
 
     @staticmethod
     def try_pick_autoconfig() -> None:

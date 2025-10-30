@@ -770,7 +770,7 @@ class AskFileScoreFilterWindow(AwaitableAskWindow):
 
 
 class AskFirstLastWindow(AwaitableAskWindow):
-    VALUES = ['Keep first', 'Keep last']
+    VALUES = ('Keep first', 'Keep last')
     LITERAL_TYPE_FIRST_LAST = Literal['first', 'last']
 
     def __init__(self, parent, title='Enter number', *, default: LITERAL_TYPE_FIRST_LAST) -> None:

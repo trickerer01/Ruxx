@@ -38,10 +38,7 @@ class ToolTipBase(ABC):
 
     def schedule(self) -> None:
         self.unschedule()
-        if self.timed and self.tipwindow:
-            self.id = self.widget.after(self.appear_delay, self.hidetip)
-        else:
-            self.id = self.widget.after(self.appear_delay, self.showtip)
+        self.id = self.widget.after(self.appear_delay, (self.showtip, self.hidetip)[bool(self.timed and self.tipwindow)])
 
     def unschedule(self) -> None:
         my_id = self.id

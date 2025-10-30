@@ -1138,8 +1138,6 @@ def init_gui() -> None:
     rootm().option_add('*Dialog.msg.wrapLength', 0)
     # Init Settings system
     Settings.initialize(tk=rootm(), on_proc_module_change_callback=set_proc_module, on_init_autocompletion_callback=init_autocompletion)
-    Settings.try_pick_autoconfig()
-    Settings.save_initial_settings()
     # Init autocompletion from current folder
     init_autocompletion(force=False)
     # Final widget states update
