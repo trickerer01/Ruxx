@@ -7,8 +7,10 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 # native
+import functools
 import os
 import sys
+from collections.abc import Callable
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 from unittest import main as run_tests
@@ -100,14 +102,26 @@ item_str01_xb = (
 )
 
 
+def test_prepare(*, log_disable=True, log_cmd=True) -> Callable[[], Callable[[], None]]:
+    def invoke1(test_func) -> Callable[[], None]:
+        @functools.wraps(test_func)
+        def invoke_test(*args, **kwargs) -> None:
+            def set_up_test() -> None:
+                Logger.init(log_cmd, log_disable)
+            set_up_test()
+            test_func(*args, **kwargs)
+        return invoke_test
+    return invoke1
+
+
 class DataStructureIntegrityTests(TestCase):
+    @test_prepare()
     def test_integrity01_iteminfo(self) -> None:
-        Logger.init(True, True)
         self.assertSetEqual({'source', 'comments', 'score', 'has_children', 'parent_id'}, ItemInfo.optional_slots)
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_integrity02_procmodule_dicts(self) -> None:
-        Logger.init(True, True)
         self.assertEqual(1, ProcModule.PROC_MODULE_MIN)
         self.assertEqual(7, ProcModule.PROC_MODULE_MAX)
         self.assertEqual(ProcModule.PROC_MODULE_MAX, len(ProcModule.PROC_MODULES_BY_NAME))
@@ -131,20 +145,20 @@ class DataStructureIntegrityTests(TestCase):
 
 
 class FileCheckTests(TestCase):
+    @test_prepare()
     def test_filecheck01_aliases(self) -> None:
-        Logger.init(True, True)
         load_tag_aliases()
         self.assertIsNone(TAG_ALIASES.get(''))
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_filecheck02_tags(self) -> None:
-        Logger.init(True, True)
         TagsDB.try_set_basepath('', traverse=False)
         self.assertEqual(len(MODULE_CHOICES), len(TagsDB.DBFiles))
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_filecheck03_tags_load(self) -> None:
-        Logger.init(True, True)
         TagsDB.try_set_basepath('', traverse=False)
         for module in MODULE_CHOICES:
             TagsDB._load(module)
@@ -153,6 +167,7 @@ class FileCheckTests(TestCase):
 
 
 class ArgParseTests(TestCase):
+    @test_prepare()
     def test_argparse01(self) -> None:
         # 5 tags and all bools, try to intersect
         ProcModule.set(ProcModule.RX)
@@ -163,6 +178,7 @@ class ArgParseTests(TestCase):
         self.assertEqual(5, len(arglist.tags))
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_argparse02(self) -> None:
         # 5 tags, value types check
         ProcModule.set(ProcModule.RX)
@@ -182,6 +198,7 @@ class ArgParseTests(TestCase):
 
 
 class TagParseTests(TestCase):
+    @test_prepare()
     def test_tagparse01(self) -> None:
         ProcModule.set(ProcModule.RX)
         args = args_tagparse_str1
@@ -192,15 +209,15 @@ class TagParseTests(TestCase):
 
 
 class LoggerTests(TestCase):
+    @test_prepare(log_disable=False)
     def test_log01(self) -> None:
-        Logger.init(True, False)
         Logger.log('‴﴾₽ὁﻼé₼☼ἦ﴿‴', True, True)
         print(f'{self._testMethodName} passed')
 
 
 class DownloaderBaseTests(TestCase):
+    @test_prepare()
     def test_item01_rx(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RX) as dwn:
@@ -209,8 +226,8 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('06-05-2023', dwn._extract_post_date(item_str01_rx))
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_item01_rn(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RN) as dwn:
@@ -218,8 +235,8 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('427251', dwn._extract_id(item_str01_rn))
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_item01_rs(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RS) as dwn:
@@ -228,8 +245,8 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual(DATE_MIN_DEFAULT, dwn._extract_post_date(item_str01_rs))
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_item01_rp(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RP) as dwn:
@@ -238,8 +255,8 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('26-07-2024', dwn._extract_post_date(item_str01_rp))
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_item01_en(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.EN) as dwn:
@@ -248,8 +265,8 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('30-09-2023', dwn._extract_post_date(item_str01_en))
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_item01_xb(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.XB) as dwn:
@@ -258,8 +275,8 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('15-08-2024', dwn._extract_post_date(item_str01_xb))
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_cmdline01(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str01
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RX) as dwn:
@@ -280,8 +297,8 @@ class DownloaderBaseTests(TestCase):
             self.assertTrue(dwn.append_info)
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_cmdline02(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str02
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RX) as dwn:
@@ -298,16 +315,16 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('5555', dwn.api_key.user_id)
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_cmdline03(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str03
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RX) as dwn:
             self.assertRaises(ThreadInterruptException, dwn._parse_args, arglist)
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_cmdline04(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str04
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RX) as dwn:
@@ -316,8 +333,8 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual(7, dwn.get_tags_count())
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_cmdline05(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str05
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RX) as dwn:
@@ -325,8 +342,8 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual(2, len(dwn.add_headers))
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_cmdline06(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str06
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RX) as dwn:
@@ -336,8 +353,8 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('value4', dwn.add_headers['name2'])
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_cmdline07(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str07
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RX) as dwn:
@@ -345,8 +362,8 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('25000', dwn.favorites_search_user)
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_cmdline08(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str08
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RX) as dwn:
@@ -354,14 +371,14 @@ class DownloaderBaseTests(TestCase):
             self.assertTrue(dwn.merge_lists)
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_cmdline09(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str09
         self.assertRaises(BaseException, prepare_arglist, args.split())
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_cmdline10(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str10
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RX) as dwn:
@@ -369,8 +386,8 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('33600', dwn.pool_search_str)
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_cmdline11(self) -> None:
-        Logger.init(True, True)
         args = args_argparse_str11
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RX) as dwn:
@@ -381,11 +398,11 @@ class DownloaderBaseTests(TestCase):
 # Tests below require actual connection
 
 class ConnTests(TestCase):
+    @test_prepare()
     def test_connect_rx01(self) -> None:
         if not RUN_CONN_TESTS:
             return
         # connection and downloading for rx is performed using same web address, we are free to use dry run here (-dmode 1)
-        Logger.init(True, True)
         #                tag           tag        flag       v       flag      v      flag            v           flag      v
         argslist = ('id:=2000000', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
@@ -396,11 +413,11 @@ class ConnTests(TestCase):
             self.assertEqual(1, dwn.total_count)
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_connect_rs01(self) -> None:
         if not RUN_CONN_TESTS:
             return
         # connection and downloading for rx is performed using same web address, we are free to use dry run here
-        Logger.init(True, True)
         #                tag           tag        flag       v       flag      v      flag            v           flag      v
         argslist = ('id:=7939303', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
@@ -411,11 +428,11 @@ class ConnTests(TestCase):
             self.assertEqual(1, dwn.total_count)
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_connect_rp01(self) -> None:
         if not RUN_CONN_TESTS:
             return
         # connection and downloading for rx is performed using same web address, we are free to use dry run here
-        Logger.init(True, True)
         #               tag           tag        flag       v       flag      v      flag            v           flag      v
         argslist = ('id=5915464', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
@@ -426,11 +443,11 @@ class ConnTests(TestCase):
             self.assertEqual(1, dwn.total_count)
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_connect_en01(self) -> None:
         if not RUN_CONN_TESTS:
             return
         # connection and downloading for rx is performed using same web address, we are free to use dry run here
-        Logger.init(True, True)
         #               tag           tag        flag       v       flag      v      flag            v           flag      v
         argslist = ('id:4322823', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
@@ -441,11 +458,11 @@ class ConnTests(TestCase):
             self.assertEqual(1, dwn.total_count)
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_connect_xb01(self) -> None:
         if not RUN_CONN_TESTS:
             return
         # connection and downloading for xb is performed using same web address, we are free to use dry run here (-dmode 1)
-        Logger.init(True, True)
         #                tag           tag        flag       v       flag      v      flag            v           flag      v
         argslist = ('id:=1010000', '-severals', '-dmode', 'skip', '-threads', '3', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
@@ -458,10 +475,10 @@ class ConnTests(TestCase):
 
 
 class ItemFilterTests(TestCase):
+    @test_prepare()
     def test_filter_rx01(self) -> None:
         if not RUN_CONN_TESTS:
             return
-        Logger.init(True, True)
         #              tag         flag       v       flag      v     flag      v         flag          v           flag          v
         argslist = ('moonlight', '-dmode', 'skip', '-threads', '8', '-path', CUR_PATH, '-mindate', '01-01-2012', '-maxdate', '01-12-2023')
         # this search yields at least 3200 results (before date filter)
@@ -475,11 +492,11 @@ class ItemFilterTests(TestCase):
 
 
 class RealDownloadTests(TestCase):
+    @test_prepare()
     def test_down_rx01(self) -> None:
         if not RUN_CONN_TESTS:
             return
         # connection and downloading for rx is performed using same web address, we are free to use dry run here
-        Logger.init(True, True)
         #                tag           tag        flag       v       flag      v      flag            v           flag      v
         argslist = ('id:=2000000', '-overflow', '-dmode', 'skip', '-threads', '2', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
@@ -489,6 +506,7 @@ class RealDownloadTests(TestCase):
             self.assertTrue(dwn.processed_count == 1, f'dwn.processed_count {dwn.fail_count:d} == 1')
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_down_rx02(self) -> None:
         if not RUN_CONN_TESTS:
             return
@@ -498,7 +516,6 @@ class RealDownloadTests(TestCase):
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        Logger.init(True, True)
         #                  tag               flag      v      flag            v           flag      v
         argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
@@ -508,6 +525,7 @@ class RealDownloadTests(TestCase):
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_down_rs01(self) -> None:
         if not RUN_CONN_TESTS:
             return
@@ -517,7 +535,6 @@ class RealDownloadTests(TestCase):
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        Logger.init(True, True)
         #                  tag               flag      v      flag            v           flag      v
         argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
@@ -527,6 +544,7 @@ class RealDownloadTests(TestCase):
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_down_rs02_fav1(self) -> None:
         if not RUN_CONN_TESTS:
             return
@@ -537,7 +555,6 @@ class RealDownloadTests(TestCase):
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        Logger.init(True, True)
         #                  tag                        flag      v      flag            v           flag      v
         argslist = (f'favorited_by:{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
@@ -547,6 +564,7 @@ class RealDownloadTests(TestCase):
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_down_rp01(self) -> None:
         if not RUN_CONN_TESTS:
             return
@@ -556,7 +574,6 @@ class RealDownloadTests(TestCase):
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        Logger.init(True, True)
         #                  tag              flag      v      flag            v           flag      v
         argslist = (f'id={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
@@ -566,6 +583,7 @@ class RealDownloadTests(TestCase):
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_down_rp02_fav1(self) -> None:
         if not RUN_CONN_TESTS:
             return
@@ -576,7 +594,6 @@ class RealDownloadTests(TestCase):
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        Logger.init(True, True)
         #                 tag                      flag      v      flag            v           flag      v
         argslist = (f'favorited_by={fav_user}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
@@ -586,6 +603,7 @@ class RealDownloadTests(TestCase):
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_down_en01(self) -> None:
         if not RUN_CONN_TESTS:
             return
@@ -595,7 +613,6 @@ class RealDownloadTests(TestCase):
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        Logger.init(True, True)
         #                  tag              flag      v      flag            v           flag      v
         argslist = (f'id:{tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
@@ -605,6 +622,7 @@ class RealDownloadTests(TestCase):
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_down_en02_fav1(self) -> None:
         if not RUN_CONN_TESTS:
             return
@@ -615,7 +633,6 @@ class RealDownloadTests(TestCase):
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        Logger.init(True, True)
         #                 tag                          flag      v      flag            v           flag      v
         argslist = (f'favorited_by:!{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
@@ -625,6 +642,7 @@ class RealDownloadTests(TestCase):
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_down_en03_fav2(self) -> None:
         if not RUN_CONN_TESTS:
             return
@@ -635,7 +653,6 @@ class RealDownloadTests(TestCase):
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        Logger.init(True, True)
         #                 tag                          flag      v      flag            v           flag      v
         argslist = (f'favoritedby:{fav_user_name}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
@@ -645,11 +662,11 @@ class RealDownloadTests(TestCase):
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_down_xb01(self) -> None:
         if not RUN_CONN_TESTS:
             return
         # connection and downloading for xb is performed using same web address, we are free to use dry run here
-        Logger.init(True, True)
         #                tag           tag        flag       v       flag      v      flag            v           flag       v
         argslist = ('id:=1010000', '-overflow', '-dmode', 'skip', '-threads', '2', '-headers', DEFAULT_HEADERS, '-path', CUR_PATH)
         arglist = prepare_arglist(argslist)
@@ -659,6 +676,7 @@ class RealDownloadTests(TestCase):
             self.assertTrue(dwn.processed_count == 1, f'dwn.processed_count {dwn.fail_count:d} == 1')
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_down_xb02(self) -> None:
         if not RUN_CONN_TESTS:
             return
@@ -668,7 +686,6 @@ class RealDownloadTests(TestCase):
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        Logger.init(True, True)
         #                  tag               flag      v      flag            v           flag      v
         argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
@@ -678,6 +695,7 @@ class RealDownloadTests(TestCase):
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_down_xb03_fav1(self) -> None:
         if not RUN_CONN_TESTS:
             return
@@ -688,7 +706,6 @@ class RealDownloadTests(TestCase):
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        Logger.init(True, True)
         #                 tag                          flag      v      flag            v           flag      v
         argslist = (f'favorited_by:{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
@@ -698,6 +715,7 @@ class RealDownloadTests(TestCase):
         tdir.cleanup()
         print(f'{self._testMethodName} passed')
 
+    @test_prepare()
     def test_down_xb04_pool1(self) -> None:
         if not RUN_CONN_TESTS:
             return
@@ -708,7 +726,6 @@ class RealDownloadTests(TestCase):
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        Logger.init(True, True)
         #                 tag                          flag      v      flag            v           flag      v
         argslist = (f'pool:{pool_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
         arglist = prepare_arglist(argslist)
