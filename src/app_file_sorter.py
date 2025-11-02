@@ -87,7 +87,7 @@ def sort_files_by_score(files: Sequence[str], thresholds: Collection[int]) -> in
     try:
         base_path = os.path.split(normalize_path(files[0], False))[0]
         folder_names = [f'score({f"{th - 1:d}-"})' for th in thresholds] + [f'score({f"{thresholds[-1]:d}+"})']
-        re_media_scored_name = re.compile(r'^(?:[a-z]{2}_)?(?:\d+?)_score\([-+]?(\d+)\).+?$')
+        re_media_scored_name = re.compile(r'^(?:[a-z]{2}_)?(?:\d+?)_(?:score)?\([-+]?(\d+)\).+?$')
         for full_path in files:
             try:
                 full_name = os.path.split(full_path)[1]
