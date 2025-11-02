@@ -160,15 +160,14 @@ class ThreadedHtmlWorker(ThreadedWorker):
         ext_full = fullname[fullname.rfind('.') + 1:]
         ext_char = ext_full[0]
         is_video_ext = ext_full in KNOWN_EXTENSIONS_VID
-        touch_mode = mode == DownloadModes.TOUCH
         oldlink = link
         if ProcModule.is_rx():
             link = link.replace('api-cdn-mp4.', 'ws-cdn-video.')
 
         result = FileDownloadResult()
-        result.result_str = f'[{current_process().name}]{" <touch>" if touch_mode else ""} {item_id}({ext_char})... '
+        result.result_str = f'[{current_process().name}]{" <touch>" if mode == DownloadModes.TOUCH else ""} {item_id}({ext_char})... '
 
-        if touch_mode:
+        if mode == DownloadModes.TOUCH:
             with open(dest, 'wb'):
                 pass
         elif mode == DownloadModes.FULL:
@@ -222,11 +221,10 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                 if __RUXX_DEBUG__:
                                     trace(f'Warning (W2): {item_id} invalid chunk {chunk_num:d} err {errcode:d}', True)
                                 # website may send not an HTTP error but instead just a mismatched chunk and call it good
-                                severe_err = errcode in (1, 2, 3, 4)
+                                severe_err = errcode in range(1, 4 + 1)
                                 response = Response()
                                 response.status_code = 416 if severe_err else 417  # Expectation Failed
-                                new_exc = HTTPError(response=response)
-                                raise new_exc
+                                raise HTTPError(response=response)
                             ofile.write(temp)
 
                         sreq = s.request('HEAD', link, timeout=self.timeout, allow_redirects=False, headers={'Bytes': str(10**12)})
@@ -243,7 +241,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
 
                         use_chunked = is_video_ext if ProcModule.is_rx() else True
                         chunks = list(range(0, result.expected_size, DOWNLOAD_CHUNK_SIZE if use_chunked else result.expected_size))
-                        single_chunk = (len(chunks) == 1)
+                        single_chunk = len(chunks) == 1
                         with open(dest, 'wb') as outf:
                             i = 0
                             chunk_tries = 0
@@ -361,8 +359,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                 continue
 
         if retries >= tries:
-            errmsg = f'Unable to connect. Aborting {url}'
-            trace(errmsg, True)
+            trace(f'Unable to connect. Aborting {url}', True)
             r = None
         elif r is None:
             trace('ERROR: Failed to receive any data', True)
@@ -375,8 +372,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
 
     # threaded
     def fetch_html(self, url: str, tries=0, do_cache=False, method='GET', **kwargs) -> BeautifulSoup | None:
-        cached = self.raw_html_cache.get(url, b'')
-        if cached:
+        if cached := self.raw_html_cache.get(url, b''):
             return cached if isinstance(cached, BeautifulSoup) else BeautifulSoup(cached, 'html.parser')
         r = self.wrap_request(url, tries or self.retries, method, **kwargs)
         result = BeautifulSoup(r.content, 'html.parser') if r is not None else None

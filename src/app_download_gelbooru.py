@@ -123,8 +123,7 @@ class DownloaderGelbooru(Downloader):
 
             # items count on all full pages plus items count on last page
             last_thumbs = len(self._get_all_post_tags(raw_html))
-            count: int | BeautifulSoup = (last - 1) + last_thumbs
-            return count
+            return (last - 1) + last_thumbs
         elif self.pool_search_str:
             raw_html = self.fetch_html(f'{url}&pid=0', tries, do_cache=True)
             if raw_html is None:
@@ -147,8 +146,7 @@ class DownloaderGelbooru(Downloader):
 
             # items count on all full pages plus items count on last page
             last_thumbs = len(self._get_all_post_tags(raw_html))
-            count: int | BeautifulSoup = (last - 1) * self._get_items_per_page() + last_thumbs
-            return count
+            return (last - 1) * self._get_items_per_page() + last_thumbs
         else:
             raw_html = self.fetch_html(f'{url}&pid=0', tries)
             if raw_html is None:
@@ -181,8 +179,7 @@ class DownloaderGelbooru(Downloader):
                 address, fmt = low_res_addr()
 
         if len(address) == 0:
-            trace('FATAL: GetPicAddr could not find anything!', True)
-            trace(f'\nstring:\n\n{h}', True)
+            trace('FATAL: GetPicAddr could not find anything!\n\nstring:\n\n{h}', True)
             assert False
 
         return address, fmt
@@ -193,8 +190,7 @@ class DownloaderGelbooru(Downloader):
             addr, ext = self.extract_sample_url(h)
 
         if len(addr) == 0:
-            trace('FATAL: GetVidAddr could not find anything!', True)
-            trace(f'\nstring:\n\n{h}', True)
+            trace('FATAL: GetVidAddr could not find anything!\n\nstring:\n\n{h}', True)
             assert False
 
         return addr, ext
@@ -281,11 +277,11 @@ class DownloaderGelbooru(Downloader):
 
     @staticmethod
     def extract_file_url(h: str) -> tuple[str, str]:
-        file_re_res = re_sample_file_link.search(h)
-        if file_re_res is None:
-            return '', ''
-        file_url = file_re_res.group(1)
-        file_ext = file_url[file_url.rfind('.') + 1:]
+        if file_re_res := re_sample_file_link.search(h):
+            file_url = file_re_res.group(1)
+            file_ext = file_url[file_url.rfind('.') + 1:]
+        else:
+            file_url = file_ext = ''
         return file_url, file_ext
 
     @staticmethod
@@ -296,11 +292,11 @@ class DownloaderGelbooru(Downloader):
 
     @staticmethod
     def extract_sample_url(h: str) -> tuple[str, str]:
-        sample_re_res = re_sample_file_link.search(h)
-        if sample_re_res is None:
-            return '', ''
-        file_url = sample_re_res.group(1)
-        file_ext = file_url[file_url.rfind('.') + 1:]
+        if sample_re_res := re_sample_file_link.search(h):
+            file_url = sample_re_res.group(1)
+            file_ext = file_url[file_url.rfind('.') + 1:]
+        else:
+            file_url = file_ext = ''
         return file_url, file_ext
 
     def _maxlim_str(self, maxlim: int) -> str:

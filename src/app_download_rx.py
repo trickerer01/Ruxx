@@ -91,16 +91,15 @@ class DownloaderRx(DownloaderGelbooru):
         return ID_VALUE_SEPARATOR_CHAR_RX
 
     def _extract_comments(self, item_id: str) -> None:
-        raw_html = self.fetch_html(self._form_comments_search_address(item_id))
-        if raw_html is None:
-            trace(f'Warning (W3): ProcItem: unable to retreive comments for {item_id}!', True)
-        else:
+        if raw_html := self.fetch_html(self._form_comments_search_address(item_id)):
             full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
             comment_divs = raw_html.find_all('comment')
             for comment_div in comment_divs:
                 author = comment_div.get('creator')
                 body = comment_div.get('body')
                 self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
+        else:
+            trace(f'Warning (W3): ProcItem: unable to retreive comments for {item_id}!', True)
 
     @staticmethod
     def _get_default_api_key() -> str:

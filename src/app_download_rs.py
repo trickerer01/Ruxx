@@ -128,7 +128,7 @@ class DownloaderRs(Downloader):
         return addr[idx1:idx2 if idx2 > idx1 else None]
 
     def _is_video(self, h: str) -> bool:
-        # relying on tags for now
+        # relying on tags for now TODO
         idx1 = h.find('title=') + len('title=') + 1
         taglist = h[idx1:h.find('/>', idx1 + 1) - 1].strip(', ').split(', ')
         return any(re_tag_video_rs.fullmatch(tag) for tag in taglist)
@@ -139,7 +139,7 @@ class DownloaderRs(Downloader):
     def _extract_post_date(self, raw: str) -> str:
         return DATE_MIN_DEFAULT
 
-    def _get_items_query_size_or_html(self, url: str, tries: int | None = None) -> int | BeautifulSoup:
+    def _get_items_query_size_or_html(self, url: str, tries: int | None = None) -> int:
         raw_html = self.fetch_html(f'{url}&page=0', tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
@@ -160,8 +160,7 @@ class DownloaderRs(Downloader):
 
         # items count on all full pages plus items count on last page
         last_thumbs = len(self._get_all_post_tags(raw_html))
-        count: int | BeautifulSoup = (last - 1) * self._get_items_per_page() + last_thumbs
-        return count
+        return (last - 1) * self._get_items_per_page() + last_thumbs
 
     def _get_image_address(self, h: str) -> tuple[str, str]:
         try:
@@ -189,8 +188,7 @@ class DownloaderRs(Downloader):
             if raw_html is None:
                 trace(f'Warning (W2): Item info was not extracted for {item_id}')
                 return item_info
-            keywords_meta = raw_html.find('meta', attrs={'name': 'keywords'})
-            if keywords_meta:
+            if keywords_meta := raw_html.find('meta', attrs={'name': 'keywords'}):
                 tags_list = str(keywords_meta.get('content')).strip(', ').split(', ')
                 item_info.tags = ' '.join(tag.replace(' ', '_') for tag in tags_list)
             orig_href = self._extract_orig_link(raw_html)
@@ -200,14 +198,12 @@ class DownloaderRs(Downloader):
             for li in lis:
                 li_str: str = li.text
                 if li_str.startswith('Size:'):
-                    dims = re_post_dims_rs.search(li_str)
-                    if dims:
+                    if dims := re_post_dims_rs.search(li_str):
                         w, h = tuple(dims.groups())
                         item_info.height = h
                         item_info.width = w
                 elif li_str.startswith('Score:'):
-                    score_span = li.find('span')
-                    if score_span:
+                    if score_span := li.find('span'):
                         item_info.score = score_span.text
             return item_info
         except Exception:

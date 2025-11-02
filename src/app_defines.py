@@ -8,6 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import datetime
 from enum import IntEnum, auto
+from typing import NamedTuple
 
 MIN_PYTHON_VERSION = (3, 10)
 MIN_PYTHON_VERSION_STR = f'{MIN_PYTHON_VERSION[0]:d}.{MIN_PYTHON_VERSION[1]:d}'
@@ -53,23 +54,19 @@ class ItemInfo:
         return int(self.id or 0) < int(other.id or 0)
 
 
-class PageCheck:
+class PageCheck(NamedTuple):
     """
     PageCheck\n
     Used to store page items check info for binary page search subchecks\n
     first x ... x last
     """
-    __slots__ = ('first', 'last')
-
-    def __init__(self) -> None:
-        self.first: bool = False
-        self.last: bool = False
+    first: bool
+    last: bool
 
     def __str__(self) -> str:
         return f'{self.first} <--> {self.last}'
 
-    def __repr__(self) -> str:
-        return str(self)
+    __repr__ = __str__
 
 
 # PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
@@ -243,6 +240,7 @@ API_KEY_DEFAULT_RX = (
 )
 API_USER_ID_DEFAULT_RX = 'NTI3Mzg3OQ=='
 
+NEGATIVE_GROUP_MATCH_LIST_MAX_LEN = 50
 SUBFOLDER_NAME_LEN_MAX = 20
 
 

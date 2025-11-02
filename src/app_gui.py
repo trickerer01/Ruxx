@@ -159,6 +159,17 @@ from app_validators import DateValidator
 
 __all__ = ('run_ruxx_gui',)
 
+# icons
+ICON_TYPE_PER_PROC_MODULE = {
+    ProcModule.RX: Icons.RX,
+    ProcModule.RN: Icons.RN,
+    ProcModule.RS: Icons.RS,
+    ProcModule.RP: Icons.RP,
+    ProcModule.EN: Icons.EN,
+    ProcModule.XB: Icons.XB,
+    ProcModule.BB: Icons.BB,
+}
+
 # loaded
 batch_download_thread: Thread | None = None
 download_thread: Thread | None = None
@@ -189,67 +200,52 @@ def file_worker_report(succ_count: int, total_count: int, word1: str, word2='') 
 
 
 def untag_files_do() -> None:
-    filelist = get_all_media_files_in_cur_dir()
-    if len(filelist) == 0:
-        return
-    update_lastpath(filelist[0])
-    untagged_count = untag_files(filelist)
-    file_worker_report(untagged_count, len(filelist), 'un-tagg')
+    if filelist := get_all_media_files_in_cur_dir():
+        update_lastpath(filelist[0])
+        untagged_count = untag_files(filelist)
+        file_worker_report(untagged_count, len(filelist), 'un-tagg')
 
 
 def retag_files_do() -> None:
-    filelist = get_all_media_files_in_cur_dir()
-    if len(filelist) == 0:
-        return
-    update_lastpath(filelist[0])
-    module = get_new_downloader()
-    retagged_count = retag_files(filelist, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
-    file_worker_report(retagged_count, len(filelist), 're-tagg')
+    if filelist := get_all_media_files_in_cur_dir():
+        update_lastpath(filelist[0])
+        module = get_new_downloader()
+        retagged_count = retag_files(filelist, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
+        file_worker_report(retagged_count, len(filelist), 're-tagg')
 
 
 def sort_files_by_type_do() -> None:
-    filelist = get_all_media_files_in_cur_dir()
-    if len(filelist) == 0:
-        return
-    aw = AskFileTypeFilterWindow(rootm())
-    aw.finalize()
-    rootm().wait_window(aw.window)
-    filter_type = aw.value()
-    if filter_type == FileTypeFilter.INVALID:
-        return
-    update_lastpath(filelist[0])
-    result = sort_files_by_type(filelist, filter_type)
-    file_worker_report(result, len(filelist), 'sort')
+    if filelist := get_all_media_files_in_cur_dir():
+        aw = AskFileTypeFilterWindow(rootm())
+        aw.finalize()
+        rootm().wait_window(aw.window)
+        filter_type = aw.value()
+        if filter_type != FileTypeFilter.INVALID:
+            update_lastpath(filelist[0])
+            result = sort_files_by_type(filelist, filter_type)
+            file_worker_report(result, len(filelist), 'sort')
 
 
 def sort_files_by_size_do() -> None:
-    filelist = get_all_media_files_in_cur_dir()
-    if len(filelist) == 0:
-        return
-    aw = AskFileSizeFilterWindow(rootm())
-    aw.finalize()
-    rootm().wait_window(aw.window)
-    thresholds_mb = aw.value()
-    if thresholds_mb is None:
-        return
-    update_lastpath(filelist[0])
-    result = sort_files_by_size(filelist, thresholds_mb)
-    file_worker_report(result, len(filelist), 'sort')
+    if filelist := get_all_media_files_in_cur_dir():
+        aw = AskFileSizeFilterWindow(rootm())
+        aw.finalize()
+        rootm().wait_window(aw.window)
+        if thresholds_mb := aw.value():
+            update_lastpath(filelist[0])
+            result = sort_files_by_size(filelist, thresholds_mb)
+            file_worker_report(result, len(filelist), 'sort')
 
 
 def sort_files_by_score_do() -> None:
-    filelist = get_all_media_files_in_cur_dir()
-    if len(filelist) == 0:
-        return
-    aw = AskFileScoreFilterWindow(rootm())
-    aw.finalize()
-    rootm().wait_window(aw.window)
-    thresholds = aw.value()
-    if thresholds is None:
-        return
-    update_lastpath(filelist[0])
-    result = sort_files_by_score(filelist, thresholds)
-    file_worker_report(result, len(filelist), 'sort')
+    if filelist := get_all_media_files_in_cur_dir():
+        aw = AskFileScoreFilterWindow(rootm())
+        aw.finalize()
+        rootm().wait_window(aw.window)
+        if thresholds := aw.value():
+            update_lastpath(filelist[0])
+            result = sort_files_by_score(filelist, thresholds)
+            file_worker_report(result, len(filelist), 'sort')
 
 
 def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], None]) -> None:
@@ -298,7 +294,7 @@ def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], Non
 
         try:
             duplicates_check_threadm().join()
-            dupe_messages = []
+            dupe_messages: list[str] = []
             if ret_files:
                 dupe_messages.append('Duplicates found:')
                 file_num = 0
@@ -333,7 +329,7 @@ def find_duplicates_separate_do() -> None:
         if not dfiles:
             return
         moved_files = 0
-        filepaths = []
+        filepaths: list[str] = []
         for _basefile, dupes in dfiles.items():
             filepaths.extend(dupes)
         root_folder = normalize_path(os.path.commonpath([os.path.split(dfilepath)[0] for dfilepath in dfiles]))
@@ -385,8 +381,7 @@ def open_download_folder() -> None:
             return
 
     try:
-        res = os.system(f'start "" "{os.path.abspath(cur_path)}"')
-        if res != 0:
+        if res := os.system(f'start "" "{os.path.abspath(cur_path)}"'):
             trace(f'Couldn\'t open \'{cur_path}\', error: {res:d}.')
     except Exception:
         trace(f'Couldn\'t open \'{cur_path}\'.')
@@ -437,10 +432,7 @@ def set_proc_module(dwnmodule: int) -> None:
 
     if GetRoot() is not None:
         config_menu(Menus.EDIT, SubMenus.PREFIX, label=prefix_opt_text)
-        # icon
-        icontypes = {ProcModule.RX: Icons.RX, ProcModule.RN: Icons.RN, ProcModule.RS: Icons.RS, ProcModule.RP: Icons.RP,
-                     ProcModule.EN: Icons.EN, ProcModule.XB: Icons.XB, ProcModule.BB: Icons.BB}
-        config_global(Globals.MODULE_ICON, image=get_icon(icontypes[ProcModule.value()]))
+        config_global(Globals.MODULE_ICON, image=get_icon(ICON_TYPE_PER_PROC_MODULE[ProcModule.value()]))
         # enable/disable features specific to the module
         update_widget_enabled_states()
 
@@ -456,8 +448,7 @@ def update_widget_enabled_states() -> None:
     checkingdupes = is_checking_duplicates()
     i: Menus
     for i in [m for m in Menus.__members__.values() if m < Menus.MAX_MENUS]:
-        menu = menu_items.get(i)
-        if menu:
+        if menu := menu_items.get(i):
             for j in menu.statefuls:
                 if i == Menus.ACTIONS and j == SubMenus.CHECKTAGS and checkingtags:  # Check tags, disabled when active
                     newstate = STATE_DISABLED
@@ -596,8 +587,7 @@ def prepare_cmdline() -> list[str]:
                     setrootconf(datestr[0], DATE_MIN_DEFAULT if datestr[0] == Options.DATEMIN else DATE_MAX_DEFAULT)
     # API key
     if ProcModule.is_rx():
-        addstr = str(getrootconf(Options.APIKEY_KEY))
-        if len(addstr) > 0:
+        if addstr := str(getrootconf(Options.APIKEY_KEY)):
             addstr2 = str(getrootconf(Options.APIKEY_USERID))
             newstr.append(OPTION_CMD_APIKEY_CMD)
             newstr.append(f'{addstr},{addstr2}')
@@ -612,68 +602,54 @@ def prepare_cmdline() -> list[str]:
         newstr.append(OPTION_CMD_COOKIES_CMD)
         newstr.append(addstr)
     # proxy
-    addstr = str(getrootconf(Options.PROXYSTRING))
-    if len(addstr) > 0:
+    if addstr := str(getrootconf(Options.PROXYSTRING)):
         ptype = str(getrootconf(Options.PROXYTYPE))
         addstr = f'{ptype}://{addstr}'
         newstr.append(OPTION_CMD_PROXY_CMD)
         newstr.append(addstr)
-    addstr = OPTION_CMD_IGNORE_PROXY[int(getrootconf(Options.IGNORE_PROXY))]
-    if len(addstr) > 0:
+    if addstr := OPTION_CMD_IGNORE_PROXY[int(getrootconf(Options.IGNORE_PROXY))]:
         newstr.append(addstr)
-    addstr = OPTION_CMD_PROXY_NO_DOWNLOAD[int(getrootconf(Options.PROXY_NO_DOWNLOAD))]
-    if len(addstr) > 0:
+    if addstr := OPTION_CMD_PROXY_NO_DOWNLOAD[int(getrootconf(Options.PROXY_NO_DOWNLOAD))]:
         newstr.append(addstr)
-    addstr = OPTION_CMD_CACHE_PROCCED_HTML[int(getrootconf(Options.CACHE_PROCCED_HTML))]
-    if len(addstr) > 0:
+    if addstr := OPTION_CMD_CACHE_PROCCED_HTML[int(getrootconf(Options.CACHE_PROCCED_HTML))]:
         newstr.append(addstr)
     # timeout
-    addstr = str(getrootconf(Options.TIMEOUTSTRING))
-    if len(addstr) > 0:
+    if addstr := str(getrootconf(Options.TIMEOUTSTRING)):
         newstr.append(OPTION_CMD_TIMEOUT_CMD)
         newstr.append(addstr)
     # retries
-    addstr = str(getrootconf(Options.RETRIESSTRING))
-    if len(addstr) > 0:
+    if addstr := str(getrootconf(Options.RETRIESSTRING)):
         newstr.append(OPTION_CMD_RETRIES_CMD)
         newstr.append(addstr)
     # prefix
-    addstr = OPTION_CMD_FNAMEPREFIX[int(getrootconf(Options.FNAMEPREFIX))]
-    if len(addstr) > 0:
+    if addstr := OPTION_CMD_FNAMEPREFIX[int(getrootconf(Options.FNAMEPREFIX))]:
         newstr.append(addstr)
     # download mode
     if __RUXX_DEBUG__:
-        addstr = OPTION_CMD_DOWNMODE[int(getrootconf(Options.DOWNLOAD_MODE))]
-        if len(addstr) > 0:
+        if addstr := OPTION_CMD_DOWNMODE[int(getrootconf(Options.DOWNLOAD_MODE))]:
             newstr.append(OPTION_CMD_DOWNMODE_CMD)
             newstr.append(addstr)
     # save tags (dump_tags)
-    addstr = OPTION_CMD_SAVE_TAGS[int(getrootconf(Options.SAVE_TAGS))]
-    if len(addstr) > 0:
+    if addstr := OPTION_CMD_SAVE_TAGS[int(getrootconf(Options.SAVE_TAGS))]:
         newstr.append(addstr)
     # save sources (dump_sources)
     addstr = OPTION_CMD_SAVE_SOURCES[int(getrootconf(Options.SAVE_SOURCES))]
     if len(addstr) > 0 and not is_menu_disabled(Menus.EDIT, SubMenus.SSOURCE):
         newstr.append(addstr)
     # save comments (dump_comments)
-    addstr = OPTION_CMD_SAVE_COMMENTS[int(getrootconf(Options.SAVE_COMMENTS))]
-    if len(addstr) > 0:
+    if addstr := OPTION_CMD_SAVE_COMMENTS[int(getrootconf(Options.SAVE_COMMENTS))]:
         newstr.append(addstr)
     # info save mode: per file (dump_per_item) or merge lists (or normal)
-    addstr = OPTION_CMD_INFO_SAVE_MODE[int(getrootconf(Options.INFO_SAVE_MODE))]
-    if len(addstr) > 0:
+    if addstr := OPTION_CMD_INFO_SAVE_MODE[int(getrootconf(Options.INFO_SAVE_MODE))]:
         newstr.append(addstr)
     # extend name with info
-    addstr = OPTION_CMD_APPEND_SOURCE_AND_TAGS[int(getrootconf(Options.APPEND_SOURCE_AND_TAGS))]
-    if len(addstr) > 0:
+    if addstr := OPTION_CMD_APPEND_SOURCE_AND_TAGS[int(getrootconf(Options.APPEND_SOURCE_AND_TAGS))]:
         newstr.append(addstr)
     # warn on non-empty folder
-    addstr = OPTION_CMD_WARN_NONEMPTY_DEST[int(getrootconf(Options.WARN_NONEMPTY_DEST))]
-    if len(addstr) > 0:
+    if addstr := OPTION_CMD_WARN_NONEMPTY_DEST[int(getrootconf(Options.WARN_NONEMPTY_DEST))]:
         newstr.append(addstr)
     # verbose log
-    addstr = OPTION_CMD_VERBOSE[int(getrootconf(Options.VERBOSE))]
-    if len(addstr) > 0:
+    if addstr := OPTION_CMD_VERBOSE[int(getrootconf(Options.VERBOSE))]:
         newstr.append(addstr)
 
     return newstr
@@ -682,7 +658,7 @@ def prepare_cmdline() -> list[str]:
 def update_frame_cmdline() -> None:
     can_update = True
     for gidx in {Globals.FIELD_DATEMIN, Globals.FIELD_DATEMAX}:
-        can_update &= not is_focusing(gidx)
+        can_update = can_update and not is_focusing(gidx)
 
     if can_update:
         args_list = prepare_cmdline()
@@ -765,9 +741,10 @@ def check_tags_direct() -> None:
 
 def recheck_args() -> tuple[bool, str]:
     # tags
-    if len(str(getrootconf(Options.TAGS))) <= 0:
+    tags_conf = str(getrootconf(Options.TAGS))
+    if not tags_conf:
         return False, 'No tags specified'
-    parse_result, _ = parse_tags(str(getrootconf(Options.TAGS)))
+    parse_result, _ = parse_tags(tags_conf)
     if not parse_result:
         return False, 'Invalid tags'
     # path
@@ -782,17 +759,17 @@ def recheck_args() -> tuple[bool, str]:
     # date after
     try:
         dateafter_str = str(getrootconf(Options.DATEMIN))
-        datetime.datetime.strptime(dateafter_str, FMT_DATE)
+        dateafter_date = datetime.datetime.strptime(dateafter_str, FMT_DATE)
     except Exception:
         return False, f'{dateafter_str} is not a valid date format'
     # date before
     try:
         datebefore_str = str(getrootconf(Options.DATEMAX))
-        datetime.datetime.strptime(datebefore_str, FMT_DATE)
+        datebefore_date = datetime.datetime.strptime(datebefore_str, FMT_DATE)
     except Exception:
         return False, f'{datebefore_str} is not a valid date format'
     # dates minmax compare
-    if datetime.datetime.strptime(datebefore_str, FMT_DATE) < datetime.datetime.strptime(dateafter_str, FMT_DATE):
+    if datebefore_date < dateafter_date:
         return False, 'Maximum date cannot be lower than minimum date'
     # Not downloading anything
     if (str(getrootconf(Options.IMGSETTING)) == OPTION_VALUES_IMAGES[0] and
@@ -901,7 +878,7 @@ def do_process_batch() -> None:
 
 
 def start_batch_download_thread(cmdlines: list[str], **options: bool | int | str) -> None:
-    cmdline_errors = list[str]()
+    cmdline_errors: list[str] = []
     for cmdline1 in cmdlines:
         parse_result, _ = parse_tags(cmdline1)
         if not parse_result:

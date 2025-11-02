@@ -135,7 +135,7 @@ class DownloaderRn(Downloader):
 
     def _is_video(self, h: str) -> bool:
         # tags are not 100% accurate so use a more direct approach
-        return 'mp4' in h or 'webm' in h or 'swf' in h
+        return any(_ in h for _ in ('mp4', 'webm', 'swf'))
 
     def _get_item_html(self, h: str) -> BeautifulSoup | None:
         return self.fetch_html(f'{self._get_sitename()}{h}')
@@ -233,6 +233,9 @@ class DownloaderRn(Downloader):
 
     def _consume_custom_module_tags(self, tags: str) -> str:
         return tags
+
+    def _is_custom_sort_tag(self, tag_str: str) -> bool:
+        return tag_str.startswith('order=') and tag_str != 'order=id_desc'
 
     def _send_to_download(self, raw: str, item_id: str, is_video: bool) -> None:
         address, fmt = self._get_video_address(raw) if is_video else self._get_image_address(raw)

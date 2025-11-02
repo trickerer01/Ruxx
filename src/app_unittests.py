@@ -20,6 +20,8 @@ from app_cmdargs import prepare_arglist
 from app_defines import DATE_MIN_DEFAULT, DEFAULT_HEADERS, MODULE_CHOICES, DownloadModes, ItemInfo, ThreadInterruptException
 from app_downloaders import DOWNLOADERS_BY_PROC_MODULE, make_downloader
 from app_file_parser import IDSTRING_PATTERNS, IDVAL_EQ_SEPARATORS, PREFIX_OPTIONAL_PATTERNS
+from app_gui import ICON_TYPE_PER_PROC_MODULE
+from app_gui_base import HELP_TAGS_PER_PROC_MODULE, SITENAMES_PER_PROC_MODULE
 from app_logger import Logger
 from app_module import ProcModule
 from app_revision import APP_NAME
@@ -141,6 +143,9 @@ class DataStructureIntegrityTests(TestCase):
         self.assertEqual(ProcModule.PROC_MODULE_MAX, len(IDSTRING_PATTERNS))
         self.assertEqual(ProcModule.PROC_MODULE_MAX, len(PREFIX_OPTIONAL_PATTERNS))
         self.assertEqual(ProcModule.PROC_MODULE_MAX, len(DOWNLOADERS_BY_PROC_MODULE))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(ICON_TYPE_PER_PROC_MODULE))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(SITENAMES_PER_PROC_MODULE))
+        self.assertEqual(ProcModule.PROC_MODULE_MAX, len(HELP_TAGS_PER_PROC_MODULE))
         print(f'{self._testMethodName} passed')
 
 

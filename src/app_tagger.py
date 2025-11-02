@@ -123,7 +123,7 @@ class TagsDB:
                 lb = mid + 1
             else:
                 ub = mid
-        gmatches = list[str]()
+        gmatches: list[str] = []
         while lb < len(arr) and arr[lb].startswith(tag):
             gmatches.append(arr[lb])
             lb += 1
@@ -132,7 +132,7 @@ class TagsDB:
 
     @staticmethod
     def autocomplete_tag(module: str, tag: str) -> list[tuple[str, int]]:
-        matches = []
+        matches: list[tuple[str, int]] = []
         if not is_wtag(tag) and len(tag) >= TAG_AUTOCOMPLETE_LENGTH_MIN:
             TagsDB._load(module)
             base_matches = TagsDB._get_tag_matches(module, tag)
@@ -142,10 +142,10 @@ class TagsDB:
     @staticmethod
     def load_aux_file(filename: str, dest: dict[str, str]) -> None:
         assert filename not in TagsDB.AuxDB
-        filepath = TagsDB.AuxDBFiles.get(filename, '')
-        with open(filepath, 'rt', encoding=UTF8) as auxfile:
-            dest.update(json.load(auxfile))
-            TagsDB.AuxDB[filename] = filepath
+        if filepath := TagsDB.AuxDBFiles.get(filename, ''):
+            with open(filepath, 'rt', encoding=UTF8) as auxfile:
+                dest.update(json.load(auxfile))
+                TagsDB.AuxDB[filename] = filepath
 
 
 def no_validation_tag(tag: str) -> str:
@@ -187,8 +187,7 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: re
             aser_valid = True
 
         tag = trim_underscores(tag)
-        alias = TAG_ALIASES.get(tag)
-        if alias:
+        if alias := TAG_ALIASES.get(tag):
             tag = alias
 
         if re_tags_to_exclude.fullmatch(tag):

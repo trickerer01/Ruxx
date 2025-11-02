@@ -14,7 +14,7 @@ import re
 import time
 from collections.abc import MutableSet
 from multiprocessing.dummy import current_process
-from typing import final
+from typing import Final, final
 
 # requirements
 from bs4 import BeautifulSoup
@@ -122,9 +122,9 @@ class DownloaderEn(Downloader):
 
     def _get_all_post_tags(self, raw_html_page: BeautifulSoup) -> list:
         base_json = json.loads(raw_html_page.text)
-        posts = []
+        posts: list[str] = []
         for p in base_json['posts']:
-            post_tags_list = []
+            post_tags_list: list[str] = []
             post_id = str(p['id'])
             pfile = p['file'] or p['sample']['alternates'].get('original')
             assert pfile
@@ -143,7 +143,7 @@ class DownloaderEn(Downloader):
             post_surl = str(p['sample']['url'] or post_furl)
             post_fheight = str(pfile['height'])
             post_fwidth = str(pfile['width'])
-            [post_tags_list.extend(li) for li in p['tags'].values()]
+            [post_tags_list.extend(str(li)) for li in p['tags'].values()]
             post_tags = ' '.join(post_tags_list).replace('"', '\'')
             post_source = ' '.join(p['sources'])
             post_score = str(p['score']['total'])
@@ -188,20 +188,18 @@ class DownloaderEn(Downloader):
         raw_html = self.fetch_html(self._form_page_num_address(page), tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
-        last_count = len(json.loads(raw_html.text)['posts'])
-        if last_count >= self._get_items_per_page() and not self.get_max_id:
+        if (last_count := len(json.loads(raw_html.text)['posts'])) >= self._get_items_per_page() and not self.get_max_id:
             trace(f'[{self._get_module_abbr().upper()}] Looking for max page...')
             divider = 1
             direction = 1
-            while last_count == 0 or last_count >= self._get_items_per_page():
+            while not 0 < last_count < self._get_items_per_page():
                 if (page == MAX_SEARCH_DEPTH_PAGES - 1 and last_count == self._get_items_per_page()) or (page == 0 and last_count == 0):
                     break
                 time.sleep(1.0)
                 page += min(MAX_SEARCH_DEPTH_PAGES - 1, max(MAX_SEARCH_DEPTH_PAGES // divider, 1)) * direction
                 if __RUXX_DEBUG__:
                     trace(f'page {page + 1:d}...')
-                raw_html = self.fetch_html(self._form_page_num_address(page), do_cache=True)
-                if raw_html is None:
+                if (raw_html := self.fetch_html(self._form_page_num_address(page), do_cache=True)) is None:
                     thread_exit(f'ERROR: GetItemsQueSize: unable to retreive html (page {page:d})', code=-445)
                 last_count = len(json.loads(raw_html.text)['posts'])
                 divider *= 2
@@ -346,38 +344,36 @@ class DownloaderEn(Downloader):
         return f'{self._get_sitename()}posts.json?tags={tags}{self._maxlim_str(maxlim)}'
 
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
-        full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
-        comments_json = json.loads(raw_html.text)
-        if not isinstance(comments_json, list):
-            return
-        for comment in comments_json:
-            author = comment['creator_name']
-            body = f'{comment["body"]}\n{format_score(str(comment["score"]))}'
-            self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
+        comments_json: list[dict[str, str]] = json.loads(raw_html.text)
+        if isinstance(comments_json, list):
+            item_info = self.item_info_dict_per_task[f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}']
+            for comment in comments_json:
+                item_info.comments.append(Comment(comment['creator_name'], f'{comment["body"]}\n{format_score(str(comment["score"]))}'))
 
     @staticmethod
     def extract_comment_count(h: str) -> int:
-        c_idx = h.find(' comment_count="') + len(' comment_count="')
+        text_to_find: Final = ' comment_count="'
+        c_idx = h.find(text_to_find) + len(text_to_find)
         count_str = h[c_idx:h.find('"', c_idx + 1)]
         assert count_str.isnumeric()
         return int(count_str)
 
     @staticmethod
     def extract_file_url(h: str) -> tuple[str, str]:
-        file_re_res = re_orig_file_link.search(h)
-        if file_re_res is None:
-            return '', ''
-        file_url = file_re_res.group(1)
-        file_ext = file_url[file_url.rfind('.') + 1:]
+        if file_re_res := re_orig_file_link.search(h):
+            file_url = file_re_res.group(1)
+            file_ext = file_url[file_url.rfind('.') + 1:]
+        else:
+            file_url = file_ext = ''
         return file_url, file_ext
 
     @staticmethod
     def extract_sample_url(h: str) -> tuple[str, str]:
-        sample_re_res = re_sample_file_link.search(h)
-        if sample_re_res is None:
-            return '', ''
-        file_url = sample_re_res.group(1)
-        file_ext = file_url[file_url.rfind('.') + 1:]
+        if sample_re_res := re_sample_file_link.search(h):
+            file_url = sample_re_res.group(1)
+            file_ext = file_url[file_url.rfind('.') + 1:]
+        else:
+            file_url = file_ext = ''
         return file_url, file_ext
 
     def _maxlim_str(self, maxlim: int) -> str:
@@ -390,7 +386,6 @@ class DownloaderEn(Downloader):
     def _execute_module_filters(self, parents: MutableSet[str]) -> None:
         abbrp = self._get_module_abbr_p()
         total_count_old = len(self.items_raw_per_task)
-        removed_count = 0
         removed_messages: list[str] = []
         idx: int
         for idx in reversed(range(total_count_old)):
@@ -408,10 +403,9 @@ class DownloaderEn(Downloader):
                 del self.item_info_dict_per_task[idstring]
                 del self.items_raw_per_task[idx]
                 self.filtered_out_ids_cache.add(idstring)
-                removed_count += 1
-        if removed_count > 0:
+        if len(removed_messages) > 0:
             trace('\n'.join(removed_messages))
-            trace(f'Filtered out {removed_count:d} / {total_count_old:d} items!')
+            trace(f'Filtered out {len(removed_messages):d} / {total_count_old:d} items!')
 
 #
 #

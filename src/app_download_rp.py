@@ -152,7 +152,7 @@ class DownloaderRp(Downloader):
         except Exception:
             thread_exit(f'Unable to extract post date from raw: {raw}', -446)
 
-    def _get_items_query_size_or_html(self, url: str, tries=0) -> int | BeautifulSoup:
+    def _get_items_query_size_or_html(self, url: str, tries=0) -> int:
         raw_html = self.fetch_html(f'{url}&page=1', tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
@@ -318,45 +318,45 @@ class DownloaderRp(Downloader):
         fullid = f'{self._get_module_abbr_p()}{self._extract_id(h)}'
         if fullid in self._file_name_ext_cache:
             return self._file_name_ext_cache[fullid]
-        file_re_res = re_orig_file_link.search(h)
-        if file_re_res is None:
-            return '', ''
-        file_url = file_re_res.group(1)
-        filename_re_res = re_item_filename.search(h)
-        filename = filename_re_res.group(1)
-        value = filename
-        if '.' in value:
-            value = value[value.rfind('.') + 1:].strip('."\'\n\\/')
-            value = value if value in valid_extensions else ''
-        if len(value) not in (3, 4):
-            for formatname in valid_extensions:
-                if formatname in value:
-                    value = formatname
-                    break
-        if len(value) not in (3, 4):
-            trace(f'Warning (W2): can\'t extract format for {fullid} from filename, fetching content type...', True)
-            r = self.wrap_request(file_url, tries=self.retries, method='HEAD')
-            if r is not None:
-                content_type = r.headers.get('Content-Type', '')
-                value = ext_pet_content_type.get(content_type, value)
-                if len(value) not in (3, 4) and '/' in content_type:
-                    value = content_type[content_type.find('/') + 1:]
-        if len(value) not in (3, 4):
-            trace(f'Warning (W3): unable to retrieve format for {fullid} from url, setting to default...', True)
-            value = 'jpg'
-        file_ext = value
-        self._file_name_ext_cache[fullid] = (file_url, file_ext)
+        if file_re_res := re_orig_file_link.search(h):
+            file_url = file_re_res.group(1)
+            filename_re_res = re_item_filename.search(h)
+            filename = filename_re_res.group(1)
+            value = filename
+            if '.' in value:
+                value = value[value.rfind('.') + 1:].strip('."\'\n\\/')
+                value = value if value in valid_extensions else ''
+            if not 3 <= len(value) <= 4:
+                for formatname in valid_extensions:
+                    if formatname in value:
+                        value = formatname
+                        break
+            if not 3 <= len(value) <= 4:
+                trace(f'Warning (W2): can\'t extract format for {fullid} from filename, fetching content type...', True)
+                r = self.wrap_request(file_url, tries=self.retries, method='HEAD')
+                if r is not None:
+                    content_type = r.headers.get('Content-Type', '')
+                    value = ext_pet_content_type.get(content_type, value)
+                    if len(value) not in (3, 4) and '/' in content_type:
+                        value = content_type[content_type.find('/') + 1:]
+            if len(value) not in (3, 4):
+                trace(f'Warning (W3): unable to retrieve format for {fullid} from url, setting to default...', True)
+                value = 'jpg'
+            file_ext = value
+            self._file_name_ext_cache[fullid] = (file_url, file_ext)
+        else:
+            file_url = file_ext = ''
         return file_url, file_ext
 
     @staticmethod
     def extract_sample_url(h: str) -> tuple[str, str]:
-        sample_re_res = re_sample_file_link.search(h)
-        if sample_re_res is None:
-            return '', ''
-        file_url = sample_re_res.group(1)
-        filename_re_res = re_item_filename.search(h)
-        filename = filename_re_res.group(1)
-        file_ext = filename[filename.rfind('.') + 1:]
+        if sample_re_res := re_sample_file_link.search(h):
+            file_url = sample_re_res.group(1)
+            filename_re_res = re_item_filename.search(h)
+            filename = filename_re_res.group(1)
+            file_ext = filename[filename.rfind('.') + 1:]
+        else:
+            file_url = file_ext = ''
         return file_url, file_ext
 
     def _maxlim_str(self, maxlim: int) -> str:

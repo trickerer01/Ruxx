@@ -9,11 +9,13 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # native
 from __future__ import annotations
 
+import itertools
 import os
 import sys
 import time
 from abc import abstractmethod
 from argparse import Namespace
+from collections import deque
 from collections.abc import Callable, Iterable, MutableSet
 from multiprocessing.dummy import Pool, current_process
 from multiprocessing.pool import ThreadPool
@@ -164,7 +166,7 @@ class Downloader(DownloaderBase):
                 if not os.path.isdir(self.dest_base_s):
                     try:
                         os.makedirs(self.dest_base_s)
-                    except Exception:
+                    except OSError:
                         thread_exit('ERROR: Unable to create subfolder!')
 
         try:
@@ -263,7 +265,7 @@ class Downloader(DownloaderBase):
         if isinstance(total_count_or_html, int):
             self.total_count = total_count_or_html
             self.minpage = 0
-            self.maxpage = (self.total_count - 1) // page_size  # (self.total_count + page_size - 1) // page_size - 1
+            self.maxpage = (self.total_count - 1) // page_size
 
             if self.total_count <= 0:
                 trace('Nothing to process: query result is empty')
@@ -283,22 +285,19 @@ class Downloader(DownloaderBase):
                     trace(f'\nWarning (W3): too many results, can only fetch html for {pages_depth:d} pages!\n')
                     time.sleep(4.0)
 
-            self.total_pages = self._num_pages()
-
             if self._supports_native_id_filter() is False and self._get_id_bounds() != INT_BOUNDS_DEFAULT:
                 pageargs_ex1 = ((DownloaderStates.SCANNING_PAGES1, True), (DownloaderStates.SCANNING_PAGES1, False))
 
                 def page_filter_ex1(st: DownloaderStates, di: bool) -> int:
                     self.current_state = st
                     trace(f'[{self._get_module_abbr().upper()}] Looking for {"min" if di else "max"} page by id...')
-                    return self._get_page_boundary_by_id(di, self._get_id_bounds()[1 - int(di)])
+                    return self._get_page_boundary_by_id(di, self._get_id_bounds()[1 - di])
 
                 for fstate, direction in pageargs_ex1:
                     if direction is True:
                         self.minpage = page_filter_ex1(fstate, direction)
                     else:
                         self.maxpage = page_filter_ex1(fstate, direction)
-                    self.total_pages = self._num_pages()
 
             pageargs = ((DownloaderStates.SCANNING_PAGES1, True), (DownloaderStates.SCANNING_PAGES2, False))
 
@@ -315,7 +314,6 @@ class Downloader(DownloaderBase):
                     self.minpage = page_filter(fstate, direction)
                 else:
                     self.maxpage = page_filter(fstate, direction)
-                self.total_pages = self._num_pages()
 
             self.total_count = min(self._num_pages() * page_size, self.total_count)
             trace(f'new totalcount: {self.total_count:d}')
@@ -326,54 +324,38 @@ class Downloader(DownloaderBase):
 
             if self.maxthreads_items > 1 and self._num_pages() > 1:
                 trace(f'  ...using {self.maxthreads_items:d} threads...')
-                c_page = 0
-                arr_temp = []
-                for n in range(self.minpage, self.maxpage + 1):
-                    c_page += 1
-                    arr_temp.append((n, c_page, self.maxpage))
+                arr_temp = [(n, n - self.minpage + 1, self.maxpage) for n in range(self.minpage, self.maxpage + 1)]
 
                 active_pool: ThreadPool
                 with Pool(max(2, self.maxthreads_items // (4 if ProcModule.is_rp() else 2))) as active_pool:
-                    ress = [active_pool.apply_async(self._get_page_items, args=larr) for larr in arr_temp]
+                    ress = deque(active_pool.apply_async(self._get_page_items, args=larr) for larr in arr_temp)
                     active_pool.close()
                     while len(ress) > 0:
                         self.catch_cancel_or_ctrl_c()
                         while len(ress) > 0 and ress[0].ready():
-                            ress.pop(0)
+                            ress.popleft()
                         time.sleep(0.2)
             else:
-                c_page = 0
                 for n in range(self.minpage, self.maxpage + 1):
                     self.catch_cancel_or_ctrl_c()
-                    c_page += 1
-                    self._get_page_items(n, c_page, self.maxpage)
+                    self._get_page_items(n, n - self.minpage + 1, self.maxpage)
 
-            # move out async result into a linear array
-            self.items_raw_per_task = [''] * self.total_count
-            cur_idx = 0
-            for k in range(self.minpage, self.maxpage + 1):
-                cur_l = self.items_raw_per_page[k]
-                for i in range(len(cur_l)):
-                    self.items_raw_per_task[cur_idx] = cur_l[i]
-                    cur_idx += 1
-
+            self.items_raw_per_task[:] = list(unique_everseen(itertools.chain(*self.items_raw_per_page.values())))
             self.items_raw_per_page.clear()
-
-            self.items_raw_per_task = list(unique_everseen(self.items_raw_per_task))
         else:
             # we have been redirected to a page with our single result! compose item string manually
             if __RUXX_DEBUG__:
                 trace('Warning (W1): A single match redirect was hit, forming item string manually')
 
+            self.items_raw_per_task[:] = [self._form_item_string_manually(total_count_or_html)]
             self.total_count = 1
-            self.items_raw_per_task = [self._form_item_string_manually(total_count_or_html)]
 
     def _extract_custom_argument_tags(self) -> None:
-        fav_user_tags = list(filter(lambda x: x, [re_favorited_by_tag.fullmatch(t) for t in self.tags_str_arr]))
+        fav_user_tags = list(filter(None, [re_favorited_by_tag.fullmatch(t) for t in self.tags_str_arr]))
         self._extract_favorite_user(fav_user_tags)
         if self.favorites_search_user and self._is_fav_search_conversion_required():
             [self.tags_str_arr.remove(f.string) for f in fav_user_tags]
-        pool_tags = list(filter(lambda x: x, [re_pool_tag.fullmatch(t) for t in self.tags_str_arr]))
+        pool_tags = list(filter(None, [re_pool_tag.fullmatch(t) for t in self.tags_str_arr]))
         self._extract_pool_id(pool_tags)
         if self.pool_search_str and self._is_pool_search_conversion_required():
             [self.tags_str_arr.remove(f.string) for f in pool_tags]
@@ -462,14 +444,14 @@ class Downloader(DownloaderBase):
             self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
             self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_by_module_filters, task_parents)
 
-        self.items_raw_all: list[str] = list(unique_everseen(self.items_raw_all + self.items_raw_per_task))
+        self.items_raw_all: list[str] = list(unique_everseen(itertools.chain(self.items_raw_all,  self.items_raw_per_task)))
         self.item_info_dict_all.update(self.item_info_dict_per_task)
         if self.current_task_num > 1:
             trace(f'overall totalcount: {self.total_count_all:d}')
 
         if len(task_parents) > 0:
             trace(f'\nParent post(s) detected! Scheduling {len(task_parents):d} extra task(s)!')
-            parent_messages = []
+            parent_messages: list[str] = []
             for parent in sorted(task_parents):
                 new_task_str = f'parent{self._get_idval_equal_seaparator()}{parent}'
                 self.tags_str_arr.append(new_task_str)
@@ -487,14 +469,14 @@ class Downloader(DownloaderBase):
                     self._apply_filter(DownloaderStates.DOWNLOADING, self._filter_last_items)
                     self._apply_filter(DownloaderStates.DOWNLOADING, self._filter_first_items)
                     self.items_raw_all.reverse()
-                    ids_to_preserve = []
-                    ids_to_pop = []
-                    for index in range(len(self.items_raw_all)):
-                        h = self._local_addr_from_string(str(self.items_raw_all[index]))
-                        ids_to_preserve.append(f'{self._get_module_abbr_p()}{self._extract_id(h)}')
+                    ids_to_preserve = set[str]()
+                    ids_to_pop = set[str]()
+                    for hstr in self.items_raw_all:
+                        h = self._local_addr_from_string(str(hstr))
+                        ids_to_preserve.add(f'{self._get_module_abbr_p()}{self._extract_id(h)}')
                     for ifi in self.item_info_dict_all:
                         if ifi not in ids_to_preserve:
-                            ids_to_pop.append(ifi)
+                            ids_to_pop.add(ifi)
                     [self.item_info_dict_all.pop(ifi) for ifi in ids_to_pop]
 
         if self.total_count_all <= 0:
@@ -507,13 +489,12 @@ class Downloader(DownloaderBase):
         if self.download_limit > 0:
             if self.total_count_all > self.download_limit:
                 trace(f'\nShrinking queue down to {self.download_limit:d} item(s)...')
-                self.items_raw_all = self.items_raw_all[:self.download_limit]
+                del self.items_raw_all[self.download_limit:]
             else:
                 trace('\nShrinking queue down is not required!')
 
-        min_id = self._extract_id(min(self.items_raw_all, key=lambda x: int(self._extract_id(x))))
-        max_id = self._extract_id(max(self.items_raw_all, key=lambda x: int(self._extract_id(x))))
-        trace(f'\nProcessing {self.total_count_all:d} item(s), bound {min_id} to {max_id}')
+        minmax_ids = self._extract_minmax_id()
+        trace(f'\nProcessing {self.total_count_all:d} item(s), bound {minmax_ids[0]:d} to {minmax_ids[1]:d}')
 
         load_tag_aliases()
 
@@ -523,24 +504,24 @@ class Downloader(DownloaderBase):
         if self.maxthreads_items > 1 and self.total_count_all > 1:
             active_pool: ThreadPool
             with Pool(self.maxthreads_items) as active_pool:
-                ress = [active_pool.apply_async(self._process_item, args=(iarr,)) for iarr in self.items_raw_all]
+                ress = deque(active_pool.apply_async(self._process_item, args=(iarr,)) for iarr in self.items_raw_all)
                 active_pool.close()
                 while len(ress) > 0:
                     self.catch_cancel_or_ctrl_c()
                     while len(ress) > 0 and ress[0].ready():
-                        ress.pop(0)
+                        ress.popleft()
                     time.sleep(0.2)
         else:
-            for i in range(self.total_count_all):
+            for iraw in self.items_raw_all:
                 self.catch_cancel_or_ctrl_c()
-                self._process_item(self.items_raw_all[i])
+                self._process_item(iraw)
 
         skip_all = self.download_mode == DownloadModes.SKIP
         trace(f'\nAll {"skipped" if skip_all else "processed"} ({self.total_count_all:d} item(s))...')
 
     def _extract_negative_and_groups(self) -> None:
         split_always = self._split_or_group_into_tasks_always()
-        self.tags_str_arr[0:], self.neg_and_groups = extract_neg_and_groups(' '.join(self.tags_str_arr), split_always)
+        self.tags_str_arr[:], self.neg_and_groups = extract_neg_and_groups(' '.join(self.tags_str_arr), split_always)
 
     def _parse_tags(self) -> None:
         cc = self._get_tags_concat_char()
@@ -548,26 +529,22 @@ class Downloader(DownloaderBase):
         split_always = self._split_or_group_into_tasks_always()
         # join by ' ' is required by tests, although normally len(args.tags) == 1
         for t in self.tags_str_arr:
-            if len(t) > 2 and f'{t[0]}{t[-1]}' == '()' and f'{t[:2]}{t[-2:]}' != f'({"+" * 2})':
+            if len(t) > 2 and f'{t[0]}{t[-1]}' == '()' and f'{t[:2]}{t[-2:]}' != '(++)':
                 thread_exit(f'Error: invalid tag \'{t}\'! Looks like \'or\' group but not fully contatenated by \'+\'')
         # conflict: non-default sorting
-        sort_checker = (lambda s: (s.startswith('order=') and s != 'order=id_desc') if ProcModule.is_rn() else
-                                  (s.startswith('sort:') and s != 'sort:id' and s != 'sort:id:desc'))
-        self.default_sort = not any(sort_checker(tag) for tag in self.tags_str_arr)
-        self.tags_str_arr[0:] = split_tags_into_tasks(self.tags_str_arr, cc, sc, split_always)
+        self.default_sort = not any(self._is_custom_sort_tag(tag) for tag in self.tags_str_arr)
+        self.tags_str_arr[:] = split_tags_into_tasks(self.tags_str_arr, cc, sc, split_always)
         self.orig_tasks_count = self._tasks_count()
-        if not self.default_sort:
-            if self._tasks_count() > 1:
-                thread_exit('Error: cannot use non-default sorting with multi-task query!')
-            if self.date_min != DATE_MIN_DEFAULT or self.date_max != DATE_MAX_DEFAULT:
-                thread_exit('Error: cannot use both sort tag and date filter at the same time!')
 
     def _process_all_tags(self) -> None:
         if self.warn_nonempty:
             if self._has_gui():
-                if os.path.isdir(self.dest_base) and len(list(os.scandir(self.dest_base))) > 0:
-                    if not confirm_yes_no(title='Download', msg=f'Destination folder \'{self.dest_base}\' is not empty. Continue anyway?'):
-                        return
+                if os.path.isdir(self.dest_base):
+                    with os.scandir(self.dest_base) as listing:
+                        if next(listing, None):
+                            if not confirm_yes_no(title='Download',
+                                                  msg=f'Destination folder \'{self.dest_base}\' is not empty. Continue anyway?'):
+                                return
             else:
                 trace('Warning (W1): argument \'-warn_nonempty\' is ignored in non-GUI mode')
 
@@ -615,7 +592,7 @@ class Downloader(DownloaderBase):
             trace('\n'.join(self.failed_items))
 
     def _check_tags(self) -> None:
-        if self._tasks_count() != 1:
+        if self._tasks_count() > 1:
             trace('Cannot check tags: more than 1 task was formed')
             raise ThreadInterruptException
         cur_tags = self._consume_custom_module_tags(self.tags_str_arr[0])
@@ -630,15 +607,11 @@ class Downloader(DownloaderBase):
         if isinstance(count_or_html, int):
             self.total_count = count_or_html
             self._get_page_items(0, 1, self.maxpage)
-            self.items_raw_per_task = self.items_raw_per_page.get(0)[:1]
+            self.items_raw_per_task = self.items_raw_per_page[0][:1]
         else:
             self.total_count = 1
             self.items_raw_per_task = [self._form_item_string_manually(count_or_html)]
         trace(f'{self._get_module_abbr().upper()}: {self._extract_id(self.items_raw_per_task[0])}')
-
-    @abstractmethod
-    def _form_tags_search_address(self, tags: str, maxlim: int | None = None) -> str:
-        ...
 
     def _launch(self, args: Namespace, thiscall: Callable[[], None], enable_preprocessing=True) -> None:
         self.current_state = DownloaderStates.LAUNCHING
@@ -697,7 +670,7 @@ class Downloader(DownloaderBase):
         self.dest_base = normalize_path(args.path) if args.path else self.dest_base
         self.warn_nonempty = args.warn_nonempty or self.warn_nonempty
         self.api_key = APIKey(args.api_key) or self.api_key
-        self.tags_str_arr[0:] = [] if self.get_max_id else convert_taglist(args.tags)
+        self.tags_str_arr[:] = [] if self.get_max_id else convert_taglist(args.tags)
         self._extract_negative_and_groups()
         self._extract_custom_argument_tags()
         if enable_preprocessing:
@@ -708,6 +681,13 @@ class Downloader(DownloaderBase):
             time.sleep(2.0)
 
     def _solve_argument_conflicts(self) -> bool:
+        # fatal
+        if not self.default_sort:
+            if self._tasks_count() > 1:
+                thread_exit('Error: cannot use non-default sorting with multi-task query!')
+            if self.date_min != DATE_MIN_DEFAULT or self.date_max != DATE_MAX_DEFAULT:
+                thread_exit('Error: cannot use both sort tag and date filter at the same time!')
+        # non-fatal
         ret = False
         if ProcModule.is_rx():
             if not self.api_key:
@@ -762,9 +742,7 @@ class Downloader(DownloaderBase):
             if len(item_info.source) < 2:
                 item_info.source = SOURCE_DEFAULT
             if __RUXX_DEBUG__ and not self.favorites_search_user and not self.pool_search_str:
-                for key in item_info.__slots__:
-                    if key in ItemInfo.optional_slots:
-                        continue
+                for key in (_ for _ in item_info.__slots__ if _ not in ItemInfo.optional_slots):
                     if getattr(item_info, key) == '':
                         trace(f'Info: extract info {abbrp}{item_info.id}: uninitialized field \'{key}\'!')
 
@@ -777,17 +755,17 @@ class Downloader(DownloaderBase):
         else:  # RS
             active_pool: ThreadPool
             with Pool(self.maxthreads_items) as active_pool:
-                ress = [active_pool.apply_async(self._extract_item_info, args=(elem,)) for elem in self.items_raw_per_task]
+                ress = deque(active_pool.apply_async(self._extract_item_info, args=(elem,)) for elem in self.items_raw_per_task)
                 active_pool.close()
                 while len(ress) > 0:
                     self.catch_cancel_or_ctrl_c()
                     while len(ress) > 0 and ress[0].ready():
-                        res = ress.pop(0).get()
-                        put_info(res)
+                        res = ress.popleft()
+                        put_info(res.get())
                     time.sleep(0.2)
 
     def _dump_all_info(self) -> None:
-        if len(self.item_info_dict_all) == 0 or True not in (self.dump_tags, self.dump_sources, self.dump_comments):
+        if len(self.item_info_dict_all) == 0 or not any((self.dump_tags, self.dump_sources, self.dump_comments)):
             return
 
         if not os.path.isdir(self.dest_base_s):
@@ -798,7 +776,7 @@ class Downloader(DownloaderBase):
 
         orig_ids: set[str] = {self.item_info_dict_all[k].id for k in self.item_info_dict_all}
         merged_files = self._try_merge_info_files()
-        saved_files = []
+        saved_files = set[str]()
         item_info_list = sorted(self.item_info_dict_all.values())
         id_begin = item_info_list[0].id
         id_end = item_info_list[-1].id
@@ -823,7 +801,8 @@ class Downloader(DownloaderBase):
         for name, proc, conf in zip(
             ('tags', 'sources', 'comments'),
             (proc_tags, proc_sources, proc_comments),
-            (self.dump_tags, self.dump_sources, self.dump_comments), strict=False,
+            (self.dump_tags, self.dump_sources, self.dump_comments),
+            strict=False,
         ):
             if conf is False:
                 continue
@@ -831,7 +810,7 @@ class Downloader(DownloaderBase):
             if self.dump_per_item:
                 for iinfo in item_info_list:
                     ifilename = f'{self.dest_base_s}{abbrp}!{name}{UNDERSCORE}{iinfo.id}.txt'
-                    saved_files.append(ifilename)
+                    saved_files.add(ifilename)
                     if self._has_gui() and os.path.isfile(ifilename):
                         if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{ifilename}\' already exists. Overwrite?'):
                             trace('Skipped.')
@@ -840,7 +819,7 @@ class Downloader(DownloaderBase):
                         idump.write(proc(iinfo))
             else:
                 filename = f'{self.dest_base_s}{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
-                saved_files.append(filename)
+                saved_files.add(filename)
                 if self._has_gui() and os.path.isfile(filename):
                     if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{filename}\' already exists. Overwrite?'):
                         trace('Skipped.')
@@ -848,25 +827,24 @@ class Downloader(DownloaderBase):
                 with open(filename, 'wt', encoding=UTF8) as dump:
                     for iteminfo in item_info_list:
                         dump_string = proc(iteminfo)
-                        if dump_string or (iteminfo.id in orig_ids):
+                        if dump_string or iteminfo.id in orig_ids:
                             dump.write(dump_string)
             trace('Done.')
         [os.remove(merged_file) for merged_file in merged_files if merged_file not in saved_files]
         trace(BR)
 
     def _try_merge_info_files(self) -> list[str]:
-        parsed_files = []
+        parsed_files: list[str] = []
         if not self.merge_lists:
             return parsed_files
         dir_fullpath = normalize_path(f'{self.dest_base_s}')
         if not os.path.isdir(dir_fullpath):
             return parsed_files
         abbrp = self._get_module_abbr_p()
-        info_lists = sorted([
-            re_infolist_filename.fullmatch(f.name) for f in os.scandir(dir_fullpath) if f.is_file() and f.name.startswith(f'{abbrp}!')
-        ], key=lambda m: m.string)
-        if not info_lists:
-            return parsed_files
+        with os.scandir(dir_fullpath) as listing:
+            info_lists = sorted(filter(
+                None, (re_infolist_filename.fullmatch(f.name) for f in listing
+                       if f.is_file() and f.name.startswith(f'{abbrp}!'))), key=lambda m: m.string)
         parsed_dict: dict[str, ItemInfo] = {}
         for fmatch in info_lists:
             fmname = fmatch.string
@@ -882,8 +860,7 @@ class Downloader(DownloaderBase):
                             if line.startswith(abbrp):
                                 delim_idx = line.find(':')
                                 idi = line[len(abbrp):delim_idx]
-                                last_id = int(idi)
-                                last_idstring = f'{(abbrp if self.add_filename_prefix else "")}{last_id:d}'
+                                last_idstring = f'{(abbrp if self.add_filename_prefix else "")}{idi}'
                                 if last_idstring not in parsed_dict:
                                     ii = ItemInfo()
                                     ii.id = idi

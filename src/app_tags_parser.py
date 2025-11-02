@@ -261,7 +261,7 @@ def parse_tags(tags: str) -> tuple[bool, Sequence[str]]:
     if not tags:
         return fail()
 
-    fulltags = []
+    fulltags: list[str] = []
     sort_tags_count = 0
     custom_tags_count = 0
     tag: str

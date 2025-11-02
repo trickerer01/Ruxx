@@ -220,6 +220,25 @@ __all__ = (
     'window_timeoutm',
 )
 
+SITENAMES_PER_PROC_MODULE = {
+    ProcModule.RX: SITENAME_B_RX,
+    ProcModule.RN: SITENAME_B_RN,
+    ProcModule.RS: SITENAME_B_RS,
+    ProcModule.RP: SITENAME_B_RP,
+    ProcModule.EN: SITENAME_B_EN,
+    ProcModule.XB: SITENAME_B_XB,
+    ProcModule.BB: SITENAME_B_BB,
+}
+HELP_TAGS_PER_PROC_MODULE = {
+    ProcModule.RX: HELP_TAGS_MSG_RX,
+    ProcModule.RN: HELP_TAGS_MSG_RN,
+    ProcModule.RS: HELP_TAGS_MSG_RS,
+    ProcModule.RP: HELP_TAGS_MSG_RP,
+    ProcModule.EN: HELP_TAGS_MSG_EN,
+    ProcModule.XB: HELP_TAGS_MSG_XB,
+    ProcModule.BB: HELP_TAGS_MSG_BB,
+}
+
 
 def set_console_shown(shown: bool) -> None:
     global console_shown
@@ -265,8 +284,7 @@ def first_column() -> int | None:
 def attach_tooltip(widget: Widget, contents: Iterable[str] | Callable[[], Iterable[str]],
                    appeardelay=TOOLTIP_DELAY_DEFAULT, border_width: int | None = None,
                    relief: str | None = None, bgcolor: str | None = None, timed=False) -> WidgetToolTip:
-    return WidgetToolTip(widget, contents, timed=timed, bgcolor=bgcolor, appear_delay=appeardelay, border_width=border_width,
-                         relief=relief)
+    return WidgetToolTip(widget, contents, timed=timed, bgcolor=bgcolor, appear_delay=appeardelay, border_width=border_width, relief=relief)
 
 
 def register_global(index: Globals, gobject: Widget) -> None:
@@ -510,7 +528,7 @@ class BaseText(Text):
             if next_idx < end_idx and my_str[next_idx] == my_str[next_idx + 1]:
                 continue
             if my_str[next_idx] in self.CTRL_DELETION_DELIMS:
-                if next_idx == cur_idx:
+                if next_idx != cur_idx:
                     continue
                 if my_str[next_idx] != my_str[next_idx - 1]:
                     next_idx -= 1
@@ -960,7 +978,6 @@ class ProxyWindow(BaseWindow):
 class HeadersAndCookiesWindow(BaseWindow):
     MAX_COOKIES = 3
     MAX_HEADERS = 3
-
     LBOX_WIDTH = 65
 
     def __init__(self, parent) -> None:
@@ -1119,8 +1136,7 @@ class HeadersAndCookiesWindow(BaseWindow):
             self.select_all_h()
 
     def delete_selected_h(self) -> None:
-        cur = self.lbox_h.curselection()
-        if cur:
+        if cur := self.lbox_h.curselection():
             i = self.lbox_h.index(cur)
             self.lbox_h.delete(cur)
             if self.lbox_h.size() != 0:
@@ -1158,8 +1174,7 @@ class HeadersAndCookiesWindow(BaseWindow):
             self.select_all_c()
 
     def delete_selected_c(self) -> None:
-        cur = self.lbox_c.curselection()
-        if cur:
+        if cur := self.lbox_c.curselection():
             i = self.lbox_c.index(cur)
             self.lbox_c.delete(cur)
             if self.lbox_c.size() != 0:
@@ -1416,9 +1431,8 @@ def register_menu(label: str, menu_id: Menus = None) -> Menu:
     global c_menu
     menu = BaseMenu(rootMenu)
     # register in global container for later
-    if menu_id is not None:
-        if menu_id in menu_items:
-            menu_items[menu_id].menu = menu
+    if menu_id and menu_id in menu_items:
+        menu_items[menu_id].menu = menu
     root_menum().add_cascade(menu=menu, label=label)
     c_menu = menu
     return menu
@@ -1696,15 +1710,14 @@ def is_global_disabled(index: Globals) -> bool:
 
 
 def config_menu(menu: Menus, submenu: SubMenus, **kwargs) -> None:
-    gmenu = menu_items.get(menu)
-    if gmenu:
+    if gmenu := menu_items.get(menu):
         gmenu.menu.entryconfigure(submenu.value, **kwargs)
 
 
 def is_menu_disabled(menu: Menus, submenu: SubMenus) -> bool:
-    gmenu = menu_items.get(menu)
-    if gmenu and submenu in gmenu.statefuls:
-        return gmenu.menu.entrycget(submenu.value, 'state') == STATE_DISABLED
+    if gmenu := menu_items.get(menu):
+        if submenu in gmenu.statefuls:
+            return gmenu.menu.entrycget(submenu.value, 'state') == STATE_DISABLED
     return False
 
 
@@ -1722,10 +1735,9 @@ def toggle_console() -> None:
 
 
 def hotkey_text(option: Options) -> str:
-    return (
-        hotkeys[option].strip('<>').replace('-', '+').upper()
-                       .replace('CONTROL', 'Ctrl').replace('SHIFT', 'Shift').replace('ALT', 'Alt').replace('SPACE', 'Space')
-    )
+    return (hotkeys[option].strip('<>').replace('-', '+').upper()
+            .replace('CONTROL', 'Ctrl').replace('SHIFT', 'Shift')
+            .replace('ALT', 'Alt').replace('SPACE', 'Space'))
 
 
 def get_curdir(prioritize_last_path=True) -> str:
@@ -1740,17 +1752,8 @@ def get_curdir(prioritize_last_path=True) -> str:
 def get_cur_module_sitename() -> str:
     if int(getrootconf(Options.REVEALNAMES)) == 0:
         return ProcModule.name().upper()
-
-    sitenames_b = {
-        ProcModule.RX: SITENAME_B_RX,
-        ProcModule.RN: SITENAME_B_RN,
-        ProcModule.RS: SITENAME_B_RS,
-        ProcModule.RP: SITENAME_B_RP,
-        ProcModule.EN: SITENAME_B_EN,
-        ProcModule.XB: SITENAME_B_XB,
-        ProcModule.BB: SITENAME_B_BB,
-    }
-    return (base64.b64decode(sitenames_b.get(ProcModule.value(), '')) or b'UNK ').decode()[:-1].replace('https://', '').replace('api.', '')
+    return ((base64.b64decode(SITENAMES_PER_PROC_MODULE.get(ProcModule.value(), '')) or b'UNK/').decode()[:-1]
+            .replace('https://', '').replace('api.', ''))
 
 
 # def unfocus_buttons() -> None:
@@ -1765,26 +1768,16 @@ def unfocus_buttons_once() -> None:
             break
 
 
-def help_tags(title: str = 'Tags') -> None:
-    messages = {
-        ProcModule.RX: HELP_TAGS_MSG_RX,
-        ProcModule.RN: HELP_TAGS_MSG_RN,
-        ProcModule.RS: HELP_TAGS_MSG_RS,
-        ProcModule.RP: HELP_TAGS_MSG_RP,
-        ProcModule.EN: HELP_TAGS_MSG_EN,
-        ProcModule.XB: HELP_TAGS_MSG_XB,
-        ProcModule.BB: HELP_TAGS_MSG_BB,
-    }
-    messagebox.showinfo(title=title, message=messages[ProcModule.value()], icon='info')
+def help_tags(title='Tags') -> None:
+    messagebox.showinfo(title=title, message=HELP_TAGS_PER_PROC_MODULE[ProcModule.value()], icon='info')
 
 
-def help_about(title: str = f'About {APP_NAME}', message: str = ABOUT_MSG) -> None:
-    messagebox.showinfo(title=title, message=message, icon='info')
+def help_about(title=f'About {APP_NAME}', message=ABOUT_MSG, icon='info') -> None:
+    messagebox.showinfo(title=title, message=message, icon=icon)
 
 
 def load_id_list() -> None:
-    filepath = ask_filename((('Text files', '*.txt'), ('All files', '*.*')))
-    if filepath:
+    if filepath := ask_filename((('Text files', '*.txt'), ('All files', '*.*'))):
         success, file_tags = prepare_id_list(filepath)
         if success:
             setrootconf(Options.TAGS, file_tags)
@@ -1796,8 +1789,7 @@ def load_id_list() -> None:
 
 
 def load_batch_download_tag_list() -> list[str]:
-    filepath = ask_filename((('Text files', '*.txt'), ('All files', '*.*')))
-    if filepath:
+    if filepath := ask_filename((('Text files', '*.txt'), ('All files', '*.*'))):
         success, file_tag_lists = prepare_tag_lists(filepath)
         if success:
             return file_tag_lists
@@ -1807,15 +1799,13 @@ def load_batch_download_tag_list() -> list[str]:
 
 
 def ask_filename(ftypes: Iterable[tuple[str, str]]) -> str:
-    fullpath = filedialog.askopenfilename(filetypes=ftypes, initialdir=get_curdir())
-    if fullpath and len(fullpath) > 0:
+    if fullpath := filedialog.askopenfilename(filetypes=ftypes, initialdir=get_curdir()):
         setrootconf(Options.LASTPATH, fullpath[:normalize_path(fullpath, False).rfind(SLASH) + 1])  # not bound
-    return fullpath
+    return ''
 
 
 def browse_path() -> None:
-    loc = str(filedialog.askdirectory(initialdir=get_curdir()))
-    if len(loc) > 0:
+    if loc := filedialog.askdirectory(initialdir=get_curdir()):
         setrootconf(Options.PATH, loc)
         setrootconf(Options.LASTPATH, loc[:normalize_path(loc, False).rfind(SLASH) + 1])  # not bound
         update_garbled_text_states()
@@ -1825,7 +1815,7 @@ def update_garbled_text_states() -> None:
     get_global(Globals.FIELD_PATH).update_encoded_state()
 
 
-def register_menu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind: bool = False,
+def register_menu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind=False,
                           icon: PhotoImage | None = None) -> None:
     try:
         accelerator = hotkey_text(hotkey_opt)
@@ -1836,7 +1826,7 @@ def register_menu_command(label: str, command: Callable[[], None], hotkey_opt: O
         rootm().bind(hotkeys[hotkey_opt], func=lambda _: command())
 
 
-def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind: bool = False,
+def register_submenu_command(label: str, command: Callable[[], None], hotkey_opt: Options = None, do_bind=False,
                              icon: PhotoImage | None = None) -> None:
     try:
         accelerator = hotkey_text(hotkey_opt)
@@ -1873,8 +1863,7 @@ def register_menu_separator() -> None:
 
 
 def get_all_media_files_in_cur_dir() -> tuple[str]:
-    flist: tuple[str] = filedialog.askopenfilenames(initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),))
-    return flist
+    return filedialog.askopenfilenames(initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),))
 
 
 def get_media_files_dir() -> str:
@@ -1887,8 +1876,7 @@ def update_lastpath(filefullpath: str) -> None:
 
 def toggle_autocompletion() -> None:
     # current state is AFTER being toggled
-    cur_state = int(getrootconf(Options.AUTOCOMPLETION_ENABLE))
-    if cur_state == 1:
+    if bool(int(getrootconf(Options.AUTOCOMPLETION_ENABLE))):
         last_path = str(getrootconf(Options.TAGLISTS_PATH)) or get_curdir()
         if TagsDB.try_set_basepath(last_path):
             setrootconf(Options.TAGLISTS_PATH, last_path)
@@ -1930,7 +1918,7 @@ string_vars: dict[str, StringVar] = {}
 # end globals
 
 # loaded
-console_shown = True
+console_shown: bool = True
 text_cmd: Text | None = None
 # end loaded
 

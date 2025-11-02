@@ -52,6 +52,8 @@ from app_validators import (
 
 __all__ = ('Settings',)
 
+SETTINGS_FILE_SIZE_LIMIT = 16 * Mem.KB
+
 
 class Settings(ABC):
     """
@@ -150,7 +152,7 @@ class Settings(ABC):
                 if not os.path.isfile(full_path):
                     continue
                 file_size = os.stat(full_path).st_size
-                if file_size > 16 * Mem.KB:
+                if file_size > SETTINGS_FILE_SIZE_LIMIT:
                     trace(f'Skipping \'{filename}\', file is too large ({file_size / Mem.KB:.2f})')
                     continue
                 trace(f'Trying to autoconfigure using {filename}...')
@@ -208,12 +210,10 @@ class Settings(ABC):
             line = line.strip(' \n\ufeff')  # remove BOM too
             if line.startswith('#') or line == '':  # comment or a newline
                 continue
-            kv_k: str
-            kv_v: str
-            kv_k, kv_v = line.split('=', 1)
+            kv_k, kv_v = tuple(line.split('=', 1))
             if kv_k in Settings.settings:
                 conf = Settings.settings[kv_k].conf
-                val = Settings.settings[kv_k].type(kv_v)
+                val: int | str = Settings.settings[kv_k].type(kv_v)
                 assert Settings.settings[kv_k].validate(val)
                 if conf == Options.HEADER_ADD_STR:
                     window_hcookiesm().set_to_h(val)
@@ -240,13 +240,12 @@ class Settings(ABC):
     @staticmethod
     def save_settings() -> None:
         try:
-            filepath = filedialog.asksaveasfilename(initialdir=get_curdir(), filetypes=(('Config files', '*.cfg'), ('All files', '*.*')))
-            if filepath and len(filepath) > 0:
-                setrootconf(Options.LASTPATH, filepath[:normalize_path(filepath, False).rfind(SLASH) + 1])
-                if str(filepath).endswith('.cfg') is False:
-                    filepath += '.cfg'
-                trace(f'Saving setting to {filepath}...')
-                with open(filepath, 'wt', encoding=UTF8) as wfile:
+            if fpath := filedialog.asksaveasfilename(initialdir=get_curdir(), filetypes=(('Config files', '*.cfg'), ('All files', '*.*'))):
+                setrootconf(Options.LASTPATH, fpath[:normalize_path(fpath, False).rfind(SLASH) + 1])
+                if not str(fpath).endswith('.cfg'):
+                    fpath += '.cfg'
+                trace(f'Saving setting to {fpath}...')
+                with open(fpath, 'wt', encoding=UTF8) as wfile:
                     wfile.writelines(Settings._write_settings())
                 trace('Ok')
         except Exception:
@@ -255,10 +254,9 @@ class Settings(ABC):
     @staticmethod
     def load_settings() -> None:
         try:
-            filepath = ask_filename((('Config files', '*.cfg'), ('All files', '*.*')))
-            if filepath is not None and len(filepath) > 0:
-                trace(f'Loading setting from {filepath}...')
-                with open(filepath, 'rt', encoding=UTF8) as rfile:
+            if fpath := ask_filename((('Config files', '*.cfg'), ('All files', '*.*'))):
+                trace(f'Loading setting from {fpath}...')
+                with open(fpath, 'rt', encoding=UTF8) as rfile:
                     Settings._read_settings(rfile)
                 trace('Ok')
         except Exception:

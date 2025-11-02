@@ -14,61 +14,40 @@ from typing import BinaryIO, Literal
 from app_defines import KNOWN_EXTENSIONS
 from app_utils import normalize_path
 
+READ_BUFFER_SIZE = 16 * 1024
+EXTENSIONS_SET = set(KNOWN_EXTENSIONS)
+
 
 def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_depth: int, keep: Literal['first', 'last']) -> None:
-    class DFileInfo:
-        def __init__(self, folder: str, name: str) -> None:
-            self.folder: str = normalize_path(folder)
-            self.name: str = name
-
-        @property
-        def fullpath(self) -> str:
-            return f'{self.folder}{self.name}'
-
     try:
-        found_filenames_dict: dict[str, list[str]] = {}
+        found_files_dict: dict[int, list[os.DirEntry]] = {}
         base_path = normalize_path(basepath)
-        read_buffer_size = 16 * 1024
 
         def scan_folder(base_folder: str, level: int) -> None:
             if os.path.isdir(base_folder):
-                dentry: os.DirEntry
-                for dentry in os.scandir(base_folder):
-                    fullpath = f'{base_folder}{dentry.name}'
-                    if dentry.is_dir():
-                        fullpath = normalize_path(fullpath)
-                        if level < scan_depth:
-                            found_filenames_dict[fullpath] = []
-                            with suppress(PermissionError):
-                                scan_folder(fullpath, level + 1)
-                    elif dentry.is_file():
-                        ext = os.path.splitext(dentry.name)[1]
-                        if ext[1:] in KNOWN_EXTENSIONS:
-                            found_filenames_dict[base_folder].append(dentry.name)
+                with os.scandir(base_folder) as listing:
+                    for dentry in listing:
+                        if dentry.is_dir():
+                            if level < scan_depth:
+                                with suppress(PermissionError):
+                                    scan_folder(f'{base_folder}{dentry.name}', level + 1)
+                        elif dentry.is_file():
+                            ext = os.path.splitext(dentry.name)[1]
+                            if ext[1:] in EXTENSIONS_SET:
+                                if fsize := dentry.stat().st_size:
+                                    if fsize not in found_files_dict:
+                                        found_files_dict[fsize] = []
+                                    found_files_dict[fsize].append(dentry)
 
-        found_filenames_dict[base_path] = []
         scan_folder(base_path, 0)
+        for fsz in list(found_files_dict.keys()):
+            if len(found_files_dict[fsz]) < 2:
+                del found_files_dict[fsz]
 
-        filepaths_all = set()
-        for dirpath, filenames in found_filenames_dict.items():
-            for filename in filenames:
-                filepaths_all.add(f'{dirpath}{filename}')
-
-        files_by_size: dict[int, list[DFileInfo]] = {}
-        for filepath in filepaths_all:
-            fsize = os.path.getsize(filepath)
-            if fsize and fsize not in files_by_size:
-                files_by_size[fsize] = []
-            fsbase_folder, fname = os.path.split(filepath)
-            files_by_size[fsize].append(DFileInfo(fsbase_folder, fname))
-        for fsz in list(files_by_size.keys()):
-            if fsz in files_by_size and len(files_by_size[fsz]) < 2:
-                del files_by_size[fsz]
-
-        for filesize, dinfos in files_by_size.items():
-            files_list = sorted(dinfos, key=lambda x: x.name, reverse=True)
+        for filesize, dentries in found_files_dict.items():
+            files_list = sorted(dentries, key=lambda x: x.name, reverse=True)
             with ExitStack() as ctx:
-                open_files: list[BinaryIO] = [ctx.enter_context(open(f.fullpath, 'rb')) for f in files_list]
+                open_files: list[BinaryIO] = [ctx.enter_context(open(f.path, 'rb')) for f in files_list]
                 open_fnames = [f.name for f in open_files]
                 exacts = [open_files]
                 fidx = 0  # container may get extended during iteration
@@ -79,7 +58,7 @@ def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_d
                             bf.flush()
                             bf.seek(0)
                     while exacts_fi[0].tell() + 1 < filesize and len(exacts_fi) > 1:
-                        rbyteslist = [bf.read(read_buffer_size) for bf in exacts_fi]
+                        rbyteslist = [bf.read(READ_BUFFER_SIZE) for bf in exacts_fi]
                         nexacts = [exacts_fi[ri] for ri in range(1, len(rbyteslist)) if rbyteslist[ri] != rbyteslist[0]]
                         for nex in nexacts:
                             exacts_fi.remove(nex)
@@ -89,7 +68,7 @@ def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_d
                         if keep == 'first':
                             exacts_fi.sort(key=lambda x: x.name)
                         dfinfos = [files_list[open_fnames.index(exacts_fi[fli].name)] for fli in range(len(exacts_fi))]
-                        dest_dict[dfinfos[0].fullpath] = [dfinfos[_].fullpath for _ in range(1, len(dfinfos))]
+                        dest_dict[dfinfos[0].path] = [normalize_path(dfinfos[_].path, False) for _ in range(1, len(dfinfos))]
                     fidx += 1
     finally:
         if hasattr(current_thread(), 'killed'):

@@ -21,6 +21,7 @@ from app_defines import (
     DATE_MAX_DEFAULT,
     DATE_MIN_DEFAULT,
     LAUCH_DATE,
+    NEGATIVE_GROUP_MATCH_LIST_MAX_LEN,
     APIKey,
     DownloaderStates,
     DownloadModes,
@@ -81,7 +82,6 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.total_count: int = 0
         self.total_count_old: int = 0
         self.processed_count: int = 0
-        self.total_pages: int = 0
         self.current_task_num: int = 0
         self.orig_tasks_count: int = 0
         self.current_state: DownloaderStates = DownloaderStates.IDLE
@@ -101,6 +101,10 @@ class DownloaderBase(ThreadedHtmlWorker):
     @property
     def dest_base_s(self) -> str:
         return normalize_path(f'{self.dest_base}{self.current_task_subfolder}')
+
+    @property
+    def total_pages(self) -> int:
+        return self._num_pages()
 
     @abstractmethod
     def _get_api_key(self) -> str:
@@ -224,8 +228,15 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _consume_custom_module_tags(self, tags: str) -> str:
         ...
 
+    @abstractmethod
+    def _form_tags_search_address(self, tags: str, maxlim: int | None = None) -> str:
+        ...
+
     def _execute_module_filters(self, parents: MutableSet[str]) -> None:
         pass
+
+    def _is_custom_sort_tag(self, tag_str: str) -> bool:
+        return tag_str.startswith('sort:') and tag_str not in ('sort:id', 'sort:id:desc')
 
     @staticmethod
     def _get_default_api_key() -> str:
@@ -256,13 +267,21 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _num_pages(self) -> int:
         return (self.maxpage - self.minpage) + 1
 
+    def _extract_minmax_id(self) -> tuple[int, int]:
+        min_id, max_id = 10 ** 18, 0
+        for iraw in self.items_raw_all:
+            id_ = int(self._extract_id(iraw))
+            if id_ < min_id:
+                min_id = id_
+            if id_ > max_id:
+                max_id = id_
+        return min_id, max_id
+
     def _get_page_boundary_by_id(self, minpage: bool, boundary: int) -> int:
         if 1 <= self._num_pages() <= 2 or boundary == 0:
             pnum = self.minpage if minpage else self.maxpage
         else:
-            p_chks = []
-            for _i in range(self.maxpage + 3):
-                p_chks.append(PageCheck())
+            p_chks = [PageCheck(False, False) for _ in range(self.maxpage + 3)]
 
             lim_backw = self.minpage - 1
             lim_forw = self.maxpage + 1
@@ -370,9 +389,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('Max page: min date irrelevant! Skipping')
             pnum = self.maxpage
         else:
-            p_chks = []
-            for _i in range(self.maxpage + 3):
-                p_chks.append(PageCheck())
+            p_chks = [PageCheck(False, False) for _ in range(self.maxpage + 3)]
 
             lim_backw = self.minpage - 1
             lim_forw = self.maxpage + 1
@@ -479,16 +496,16 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace('Filtering trailing back items...')
 
         if as_date(self.date_min) <= as_date(DATE_MIN_DEFAULT):
-            trace('last items filter is irrelevant! Skipping')
+            trace('last items filter is irrelevant! Skipping!')
             return
 
         items_raw_list = self.items_raw_all if self.current_state == DownloaderStates.DOWNLOADING else self.items_raw_per_task
         orig_len = len(items_raw_list)
         if orig_len < 2:
-            trace('less than 2 items: skipping')
+            trace('less than 2 items: skipping!')
             return
 
-        trace(f'mindate at {self.date_min}, filtering')
+        trace(f'mindate at {self.date_min}, filtering...')
         boundary = orig_len - min(orig_len, self._get_items_per_page() * 2)
 
         divider = 1
@@ -556,16 +573,16 @@ class DownloaderBase(ThreadedHtmlWorker):
         trace('Filtering trailing front items...')
 
         if as_date(self.date_max) >= LAUCH_DATE:
-            trace('first items filter is irrelevant! Skipping')
+            trace('first items filter is irrelevant! Skipping!')
             return
 
         items_raw_list = self.items_raw_all if self.current_state == DownloaderStates.DOWNLOADING else self.items_raw_per_task
         orig_len = len(items_raw_list)
         if orig_len < 2:
-            trace('less than 2 items: skipping')
+            trace('less than 2 items: skipping!')
             return
 
-        trace(f'maxdate at {self.date_max}, filtering')
+        trace(f'maxdate at {self.date_max}, filtering...')
         boundary = min(orig_len, self._get_items_per_page() * 2)
 
         divider = 1
@@ -674,11 +691,13 @@ class DownloaderBase(ThreadedHtmlWorker):
         if not os.path.isdir(self.dest_base_s):
             return
 
-        total_count_temp = self.total_count
+        with os.scandir(self.dest_base_s) as listing:
+            curdirfiles = [f.name for f in listing if f.is_file()]
 
-        curdirfiles = [dentry.name for dentry in os.scandir(self.dest_base_s) if dentry.is_file()]
         if len(curdirfiles) == 0:
             return
+
+        total_count_temp = self.total_count
 
         def file_matches(filename: str, iid: str) -> bool:
             return filename.startswith((f'{iid}.', f'{iid}_', f'{abbrp}{iid}.', f'{abbrp}{iid}_'))
@@ -711,8 +730,8 @@ class DownloaderBase(ThreadedHtmlWorker):
             ngm = p.fullmatch(t)
             if ngm:
                 pp_str = f'-({",".join(pp.pattern[1:-1] for pp in pl)})'
-                if len(pp_str) > 50:
-                    pp_str = f'{pp_str[:47]}...'
+                if len(pp_str) > NEGATIVE_GROUP_MATCH_LIST_MAX_LEN:
+                    pp_str = f'{pp_str[:NEGATIVE_GROUP_MATCH_LIST_MAX_LEN - 3]}...'
                 if pp_str not in m_dict:
                     m_dict[pp_str] = []
                 m_dict[pp_str].append(t)
@@ -727,7 +746,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             h = self._local_addr_from_string(str(self.items_raw_per_task[idx]))
             item_id = self._extract_id(h)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'
-            item_info = self.item_info_dict_per_task.get(idstring)
+            item_info = self.item_info_dict_per_task[idstring]
             tags_list = item_info.tags.lower().split(' ')
             m_dict.clear()
             if any(all(any(match_neg_group(patt, tag, plist) for tag in tags_list) for patt in plist) for plist in self.neg_and_groups):
