@@ -340,7 +340,8 @@ class Downloader(DownloaderBase):
                     self.catch_cancel_or_ctrl_c()
                     self._get_page_items(n, n - self.minpage + 1, self.maxpage)
 
-            self.items_raw_per_task[:] = list(unique_everseen(itertools.chain(*self.items_raw_per_page.values())))
+            self.items_raw_per_task[:] = list(unique_everseen(itertools.chain(
+                *(self.items_raw_per_page[n] for n in range(self.minpage, self.maxpage + 1)))))
             self.items_raw_per_page.clear()
         else:
             # we have been redirected to a page with our single result! compose item string manually

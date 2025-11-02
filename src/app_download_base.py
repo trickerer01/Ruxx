@@ -281,7 +281,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         if 1 <= self._num_pages() <= 2 or boundary == 0:
             pnum = self.minpage if minpage else self.maxpage
         else:
-            p_chks = [PageCheck(False, False) for _ in range(self.maxpage + 3)]
+            p_chks = [PageCheck() for _ in range(self.maxpage + 3)]
 
             lim_backw = self.minpage - 1
             lim_forw = self.maxpage + 1
@@ -389,7 +389,7 @@ class DownloaderBase(ThreadedHtmlWorker):
             trace('Max page: min date irrelevant! Skipping')
             pnum = self.maxpage
         else:
-            p_chks = [PageCheck(False, False) for _ in range(self.maxpage + 3)]
+            p_chks = [PageCheck() for _ in range(self.maxpage + 3)]
 
             lim_backw = self.minpage - 1
             lim_forw = self.maxpage + 1
