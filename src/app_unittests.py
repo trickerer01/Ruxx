@@ -632,9 +632,9 @@ class RealDownloadTests(TestCase):
         if not RUN_CONN_TESTS:
             return
         # this test actually performs a download
-        fav_user_id = '40533'
-        tempfile_id = '3539510'
-        tempfile_ext = 'webm'
+        fav_user_id = '83917'
+        tempfile_id = '272335'
+        tempfile_ext = 'png'
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
@@ -652,9 +652,9 @@ class RealDownloadTests(TestCase):
         if not RUN_CONN_TESTS:
             return
         # this test actually performs a download
-        fav_user_name = 'link901'
-        tempfile_id = '3539510'
-        tempfile_ext = 'webm'
+        fav_user_name = 'lolwut535'
+        tempfile_id = '272335'
+        tempfile_ext = 'png'
         tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
         tempdir = normalize_path(tdir.name)
         tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
