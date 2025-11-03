@@ -538,22 +538,16 @@ class Downloader(DownloaderBase):
         self.orig_tasks_count = self._tasks_count()
 
     def _process_all_tags(self) -> None:
-        if self.warn_nonempty:
-            if self._has_gui():
-                if os.path.isdir(self.dest_base):
-                    with os.scandir(self.dest_base) as listing:
-                        if next(listing, None):
-                            if not confirm_yes_no(title='Download',
-                                                  msg=f'Destination folder \'{self.dest_base}\' is not empty. Continue anyway?'):
-                                return
-            else:
-                trace('Warning (W1): argument \'-warn_nonempty\' is ignored in non-GUI mode')
+        if self.warn_nonempty and os.path.isdir(self.dest_base):
+            with os.scandir(self.dest_base) as listing:
+                if next(listing, None):
+                    if not confirm_yes_no('Download', f'Destination folder \'{self.dest_base}\' is not empty. Continue anyway?'):
+                        return
 
-        if self.download_mode != DownloadModes.FULL:
-            trace(f'{BR}\n\n(Emulation Mode)')
         trace(f'\n{BR}\n{APP_NAME} core ver {APP_VERSION}')
         trace(f'Starting {self._get_module_abbr().upper()} downloader', timestamp=True)
-        trace(f'\n{len(self.neg_and_groups):d} \'excluded tags combination\' custom filter(s) parsed')
+        trace(f'\nDownload mode: \'{self.download_mode}\'')
+        trace(f'{len(self.neg_and_groups):d} \'excluded tags combination\' custom filter(s) parsed')
         trace(f'{self._tasks_count():d} task(s) scheduled:\n{NEWLINE.join(self.tags_str_arr)}\n\n{BR}')
         self.current_task_num = 0
         while self.current_task_num < self._tasks_count():  # tasks count may increase during this loop
@@ -690,6 +684,10 @@ class Downloader(DownloaderBase):
                 thread_exit('Error: cannot use both sort tag and date filter at the same time!')
         # non-fatal
         ret = False
+        if self.warn_nonempty and not self._has_gui():
+            trace('Warning (W1): argument \'-warn_nonempty\' is ignored in non-GUI mode')
+            self.warn_nonempty = False
+            ret = True
         if ProcModule.is_rx():
             if not self.api_key:
                 trace(f'Warning (W3): NO \'{ProcModule.name().upper()}\' API KEY PROVIDED! DEFAULT API KEY MAY STOP WORKING AT ANY MOMENT!')
