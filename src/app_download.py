@@ -445,7 +445,7 @@ class Downloader(DownloaderBase):
             self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
             self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_by_module_filters, task_parents)
 
-        self.items_raw_all: list[str] = list(unique_everseen(itertools.chain(self.items_raw_all,  self.items_raw_per_task)))
+        self.items_raw_all: list[str] = list(unique_everseen(itertools.chain(self.items_raw_all, self.items_raw_per_task)))
         self.item_info_dict_all.update(self.item_info_dict_per_task)
         if self.current_task_num > 1:
             trace(f'overall totalcount: {self.total_count_all:d}')
