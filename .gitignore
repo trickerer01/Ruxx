@@ -1,7 +1,5 @@
 # Dev
 *venv/
-/.ruff_cache/
-images/*/
 version_info.txt
 *.pyc
 *.cfg
