@@ -11,10 +11,11 @@ from contextlib import ExitStack, suppress
 from threading import current_thread
 from typing import BinaryIO, Literal
 
-from app_defines import KNOWN_EXTENSIONS
+from app_defines import KNOWN_EXTENSIONS, Mem
 from app_utils import normalize_path
 
-READ_BUFFER_SIZE = 16 * 1024
+READ_BUFFER_SIZE_BASE = 32 * Mem.KB
+READ_BUFFER_SIZE_MAX = 256 * Mem.KB
 EXTENSIONS_SET = set(KNOWN_EXTENSIONS)
 
 
@@ -57,8 +58,10 @@ def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_d
                         for bf in exacts_fi:
                             bf.flush()
                             bf.seek(0)
+                    read_buffer_size = READ_BUFFER_SIZE_BASE
                     while exacts_fi[0].tell() + 1 < filesize and len(exacts_fi) > 1:
-                        rbyteslist = [bf.read(READ_BUFFER_SIZE) for bf in exacts_fi]
+                        rbyteslist = [bf.read(read_buffer_size) for bf in exacts_fi]
+                        read_buffer_size = min(read_buffer_size * 2, READ_BUFFER_SIZE_MAX)
                         nexacts = [exacts_fi[ri] for ri in range(1, len(rbyteslist)) if rbyteslist[ri] != rbyteslist[0]]
                         for nex in nexacts:
                             exacts_fi.remove(nex)
