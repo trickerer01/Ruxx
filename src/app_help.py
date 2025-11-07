@@ -17,7 +17,7 @@ APP_BUILD_TYPE_STR = 'Debug' if __RUXX_DEBUG__ else 'Release'
 
 # cmdline args help messages
 HELP_ARG_HELP = 'Print this message'
-HELP_ARG_VERSION = 'Show program version number and exit'
+HELP_ARG_VERSION = 'Show program version string and exit'
 HELP_ARG_MODULE = 'Download module to use, default is \'rx\''
 HELP_ARG_DOWNLOAD_MODE = '[Debug] Download mode, default is \'full\''
 HELP_ARG_DOWNLOAD_LIMIT = 'Maximum number of posts to download, default is \'0\' (disabled)'

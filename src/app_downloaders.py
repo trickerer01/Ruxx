@@ -5,7 +5,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #########################################
 #
 # Downloader subclasses should be imported only to here
-# From this module only import to highest level (app_unittests.py, app_gui.py, ruxx_cmd.py, ruxx_gui.py)
+# From this module only import to top level (app_unittests.py, app_gui.py, ruxx_cmd.py, ruxx_gui.py)
 #
 
 # internal

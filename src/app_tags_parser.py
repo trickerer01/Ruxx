@@ -45,7 +45,6 @@ META_SORT_RX = r'sort(?::[^:]+?){1,2}'
 META_SORT_RN = r'order=(?:id|score)_desc'
 # language=PythonRegExp
 META_SORT_RS = r'sort(?::[^:]+?){1,2}'
-'''not supported'''
 # language=PythonRegExp
 META_SORT_RP = r'order=(?:id|score)_desc'
 # language=PythonRegExp
