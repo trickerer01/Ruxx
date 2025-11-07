@@ -14,7 +14,8 @@ from collections.abc import Iterable, Sequence
 # internal
 from app_defines import FILE_NAME_FULL_MAX_LEN, UTF8
 from app_gui_defines import SLASH, UNDERSCORE
-from app_tagger import append_filtered_tags, load_tag_aliases
+from app_tagger import append_filtered_tags
+from app_tagsdb import load_tag_aliases
 from app_utils import normalize_path, trim_underscores
 
 __all__ = ('retag_files', 'untag_files')

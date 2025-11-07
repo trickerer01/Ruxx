@@ -152,8 +152,8 @@ from app_gui_defines import (
 from app_logger import Logger, trace
 from app_module import ProcModule
 from app_settings import Settings
-from app_tagger import TagsDB
 from app_tags_parser import parse_tags, reset_last_tags
+from app_tagsdb import TagsDB
 from app_utils import confirm_yes_no, ensure_compatibility, garble_argument_values, normalize_path
 from app_validators import DateValidator
 
@@ -280,7 +280,7 @@ def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], Non
     config_menu(Menus.TOOLS, SubMenus.DUPLICATES, state=STATE_DISABLED)
     unfocus_buttons_once()
 
-    ret_files = dict[str, list[str]]()
+    ret_files: dict[str, list[str]] = {}
     trace(f'Looking for duplicated files in \'{loc}\'...')
     duplicates_check_thread = Thread(target=lambda: find_duplicated_files(ret_files, loc, depth, keep))
     duplicates_check_threadm().killed = False

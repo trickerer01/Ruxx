@@ -51,8 +51,9 @@ from app_module import ProcModule
 from app_network import DownloadInterruptException, ThreadedHtmlWorker, thread_exit
 from app_re import re_favorited_by_tag, re_infolist_filename, re_pool_tag
 from app_revision import APP_NAME, APP_VERSION
-from app_tagger import append_filtered_tags, load_tag_aliases
+from app_tagger import append_filtered_tags
 from app_tags_parser import convert_taglist
+from app_tagsdb import load_tag_aliases
 from app_task import extract_neg_and_groups, split_tags_into_tasks
 from app_utils import confirm_yes_no, format_score, garble_argument_values, make_subfolder_name, normalize_path, trim_underscores
 

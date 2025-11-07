@@ -13,8 +13,6 @@ import shutil
 import sys
 from subprocess import call as call_subprocess
 
-# from shutil import move as movefile
-# from shutil import rmtree as removedirs
 # internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import PLATFORM_LINUX, PLATFORM_WINDOWS

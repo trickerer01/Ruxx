@@ -160,7 +160,7 @@ from app_logger import Logger
 from app_module import ProcModule
 from app_re import re_ask_values, re_json_entry_value, re_space_mult
 from app_revision import APP_NAME, APP_VERSION
-from app_tagger import TagsDB
+from app_tagsdb import TagsDB
 from app_tooltips import WidgetToolTip
 from app_utils import garble_text, normalize_path
 from app_validators import valid_api_key, valid_positive_int, valid_proxy, valid_window_position

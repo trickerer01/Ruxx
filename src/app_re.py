@@ -18,17 +18,9 @@ from app_re_3 import re_tags_exclude_rx_s_z_ex
 re_space_mult = re.compile(r' {2,}')
 re_uscore_mult = re.compile(r'_{2,}')
 
-re_replace_symbols = re.compile(
-    r'[^0-9a-zA-Z_+\-\[\]]+',
-)
-
-re_replace_symbols_sub = re.compile(
-    r'[^0-9a-zA-Z_.\-]+',
-)
-
-re_numbered_or_counted_tag = re.compile(
-    r'^(?!rule_?\d+)1?([^\d]+?)(?:_?\d+|s)?$',
-)
+re_replace_symbols = re.compile(r'[^0-9a-zA-Z_+\-\[\]]+')
+re_replace_symbols_sub = re.compile(r'[^0-9a-zA-Z_.\-]+')
+re_numbered_or_counted_tag = re.compile(r'^(?!rule_?\d+)1?([^\d]+?)(?:_?\d+|s)?$')
 
 re_tags_to_process_rx = re.compile(
     r'^(?:.+?_warc.+?|(?:[a-z]+?_)?elf|drae.{3}|tent[a-z]{3}es|(?:bell[a-z]|sto[a-z]{4})_bul[a-z]{2,3}|inf[a-z]{5}n|egg(?:_[a-z]{3,9}|s)?|'
@@ -65,9 +57,7 @@ re_tags_exclude_major2 = re.compile(
 )
 
 # noinspection RegExpDuplicateAlternationBranch
-re_tags_exclude_rx = re.compile(
-    fr'^(?:{re_tags_exclude_rx_a_i}|{re_tags_exclude_rx_j_r}|{re_tags_exclude_rx_s_z_ex})$',
-)
+re_tags_exclude_rx = re.compile(fr'^(?:{re_tags_exclude_rx_a_i}|{re_tags_exclude_rx_j_r}|{re_tags_exclude_rx_s_z_ex})$')
 re_tags_exclude_rn = re.compile(
     r'^(?:'
     r'a(?:nimated|u(?:d(?:io(?:dude|elk|gman|noob)?|r(?:arius|ix))|todesk(?:_.+?)?))|'  # a
@@ -125,6 +115,10 @@ re_infolist_filename = re.compile(fr'(?:{"|".join(MODULE_CHOICES)})_!(tags|sourc
 
 re_ask_values = re.compile(r'[^, ]+')
 re_json_entry_value = re.compile(r'^([^: ,]+)[: ,](.+)$')
+
+re_meta_group = re.compile(r'^([^(]+)\(([^)]+)\).*?$')
+re_not_a_letter = re.compile(r'[^a-z]+')
+re_wtag = re.compile(r'^(?:[^?*]*[?*]).*?$')
 
 
 def prepare_regex_fullmatch(raw_string: str) -> re.Pattern[str]:

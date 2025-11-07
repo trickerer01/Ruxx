@@ -25,8 +25,8 @@ from app_gui_base import HELP_TAGS_PER_PROC_MODULE, SITENAMES_PER_PROC_MODULE
 from app_logger import Logger
 from app_module import ProcModule
 from app_revision import APP_NAME
-from app_tagger import TAG_ALIASES, TagsDB, load_tag_aliases
 from app_tags_parser import RE_ANDGR_FULL, RE_FAVS, RE_METAS, RE_ORGRS_FULL, RE_ORGRS_FULL_S, RE_PLAINS, RE_POOLS, RE_SORTS, parse_tags
+from app_tagsdb import TAG_ALIASES, TagsDB, load_tag_aliases
 from app_task import MAX_NEGATIVE_TAGS, MAX_STRING_LENGTHS, MAX_WILDCARDS
 from app_utils import normalize_path
 

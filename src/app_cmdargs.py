@@ -63,6 +63,7 @@ from app_help import (
     HELP_ARG_VERSION,
     HELP_ARG_WARN_NON_EMPTY_FOLDER,
 )
+from app_module import ProcModule
 from app_revision import APP_NAME, APP_VERSION
 from app_validators import (
     valid_api_key,
@@ -89,7 +90,7 @@ def create_parser() -> ArgumentParser:
 
 def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser = create_parser()
-    parser.usage = f'{os.path.basename(stack()[2].filename)} [-module #module=rx] [options...] tags...'
+    parser.usage = f'{os.path.basename(stack()[2].filename)} [-module #module={ProcModule.PROC_MODULE_NAME_DEFAULT}] [options...] tags...'
     parser.add_argument('-module', default=MODULE_ABBR_RX, help=HELP_ARG_MODULE, choices=MODULE_CHOICES)
     ex1 = parser.add_mutually_exclusive_group(required=False)
     ex2 = parser.add_mutually_exclusive_group(required=False)
@@ -131,7 +132,7 @@ def prepare_arglist(args: Sequence[str]) -> Namespace:
     parser.add_argument(dest='tags', nargs=ZERO_OR_MORE, help=HELP_ARG_TAGS)
     parsed, unks = parser.parse_known_args(args)
     parsed.tags.extend(unks)  # -tags will be placed here; shove them into parsed tags
-    if (not parsed.get_maxid) and (not parsed.tags):
+    if not parsed.get_maxid and not parsed.tags:
         parser.error('the following arguments are required: tags')
     return parsed
 

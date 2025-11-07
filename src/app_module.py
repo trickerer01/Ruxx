@@ -23,11 +23,6 @@ class ProcModule:
     XB: int = 6
     BB: int = 7
 
-    PROC_MODULE_DEFAULT: int = RX
-    CUR_PROC_MODULE: int = PROC_MODULE_DEFAULT
-    PROC_MODULE_MIN: int = RX
-    PROC_MODULE_MAX: int = BB
-
     PROC_MODULES_BY_NAME: dict[str, int] = {
         MODULE_ABBR_RX: RX,
         MODULE_ABBR_RN: RN,
@@ -46,6 +41,12 @@ class ProcModule:
         XB: MODULE_ABBR_XB,
         BB: MODULE_ABBR_BB,
     }
+
+    PROC_MODULE_DEFAULT: int = RX
+    PROC_MODULE_NAME_DEFAULT: int = PROC_MODULES_NAMES_BY_ID[PROC_MODULE_DEFAULT]
+    CUR_PROC_MODULE: int = PROC_MODULE_DEFAULT
+    PROC_MODULE_MIN: int = RX
+    PROC_MODULE_MAX: int = BB
 
     @staticmethod
     def set(dwnmodule: int) -> None:
