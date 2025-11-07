@@ -266,7 +266,7 @@ def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], Non
             trace(f'Invalid scan depth value \'{aw.get_variable(1)}\'')
         return
 
-    aw = AskFirstLastWindow(rootm(), title='Enter preservation mode', default='first')
+    aw = AskFirstLastWindow(rootm(), title='Enter preservation mode', default=None)
     aw.finalize()
     rootm().wait_window(aw.window)
     keep = aw.value()

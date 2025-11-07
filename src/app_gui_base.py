@@ -54,7 +54,7 @@ from tkinter import (
 
 # internal
 from tkinter.ttk import Entry
-from typing import Literal
+from typing import Literal, TypeAlias
 
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
@@ -219,6 +219,8 @@ __all__ = (
     'window_retriesm',
     'window_timeoutm',
 )
+
+LITERAL_TYPE_FIRST_LAST: TypeAlias = Literal['first', 'last', None]
 
 SITENAMES_PER_PROC_MODULE = {
     ProcModule.RX: SITENAME_B_RX,
@@ -789,7 +791,6 @@ class AskFileScoreFilterWindow(AwaitableAskWindow):
 
 class AskFirstLastWindow(AwaitableAskWindow):
     VALUES = ('Keep first', 'Keep last')
-    LITERAL_TYPE_FIRST_LAST = Literal['first', 'last']
 
     def __init__(self, parent, title='Enter number', *, default: LITERAL_TYPE_FIRST_LAST) -> None:
         self.cbox: ttk.Combobox | None = None
