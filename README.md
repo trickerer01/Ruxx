@@ -29,7 +29,7 @@ to split your searches using id filter. Plus you may still get banned for abusin
 
 #### Misc & Tools
 - **File -> Save settings...** \<Ctrl+S> ‒ allows you to save current run parameters to a config file for later or as a template. `Note that only recognized parameters will be loaded - missing parameters will just stay unchanged without any errors given, so if you want to not save some parameters (ex. window position) just remove associated rows from the file`
-- **File -> Load settings...** \<Ctrl+O> ‒ load run parameters from previously saved config file. You can also put a `.cfg` file folder with executable and Ruxx will automatically pick it and configure itself. You have to use one of the following names: ['ruxx.cfg', 'auto.cfg', 'settings.cfg', 'config.cfg']
+- **File -> Load settings...** \<Ctrl+O> ‒ load run parameters from previously saved config file. You can also put a `.cfg` or `.json` file into Ruxx folder for autoconfiguration. You have to use one of the following names: ['ruxx', 'auto', 'settings', 'config']
 - **File -> Reset all settings** ‒ resets all settings to initial ones. If autoconfigured this will reset to those parameters. Window position is unaffected by this action
 - **File -> Open download folder** \<Ctrl+L> ‒ open currently selected destination folder (**Path**), Windows only
 - **Edit -> Prefix file names with \<prefix>** ‒ all downloaded file names will be prefixed according to selected module (`rx_`, `rn_`, etc.) so they are not just numbers. This option is enabled by default

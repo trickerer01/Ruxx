@@ -1096,19 +1096,28 @@ class HeadersAndCookiesWindow(BaseWindow):
         setrootconf(Options.ISHCOOKIESOPEN, self.visible)
 
     @staticmethod
-    def _listbox_to_json(lb: Listbox) -> str:
+    def _listbox_to_json(lb: Listbox) -> dict[str, str]:
         ls: dict[str, str] = {}
         for i in range(lb.size()):
             part1, part2 = tuple(str(lb.get(i)).split(':', 1))
             ls.update({part1: part2})
+        return ls
 
-        return json.dumps(ls, skipkeys=True)
+    @staticmethod
+    def _listbox_to_json_s(lb: Listbox) -> str:
+        return json.dumps(HeadersAndCookiesWindow._listbox_to_json(lb), skipkeys=True)
 
-    def get_json_h(self) -> str:
+    def get_json_h(self) -> dict[str, str]:
         return self._listbox_to_json(self.lbox_h)
 
-    def get_json_c(self) -> str:
+    def get_json_c(self) -> dict[str, str]:
         return self._listbox_to_json(self.lbox_c)
+
+    def get_json_h_s(self) -> str:
+        return self._listbox_to_json_s(self.lbox_h)
+
+    def get_json_c_s(self) -> str:
+        return self._listbox_to_json_s(self.lbox_c)
 
     def add_header_to_list(self) -> None:
         syntax_valid = True
@@ -1186,14 +1195,28 @@ class HeadersAndCookiesWindow(BaseWindow):
             self.entry_c.focus_set()
             self.entry_c.select_all()
 
-    def set_to_h(self, json_h: str) -> None:
+    def set_headers(self, json_h: dict) -> None:
+        if self.lbox_h.size() > 0:
+            self.lbox_h.delete(0, END)
+        newvals = json_h
+        for k, v in newvals.items():
+            self.lbox_h.insert(END, f'{k!s}:{v!s}')
+
+    def set_cookies(self, json_c: dict) -> None:
+        if self.lbox_c.size() > 0:
+            self.lbox_c.delete(0, END)
+        newvals = json_c
+        for k, v in newvals.items():
+            self.lbox_c.insert(END, f'{k!s}:{v!s}')
+
+    def set_headers_s(self, json_h: str) -> None:
         if self.lbox_h.size() > 0:
             self.lbox_h.delete(0, END)
         newvals = json.loads(json_h)
         for k, v in newvals.items():
             self.lbox_h.insert(END, f'{k!s}:{v!s}')
 
-    def set_to_c(self, json_c: str) -> None:
+    def set_cookies_s(self, json_c: str) -> None:
         if self.lbox_c.size() > 0:
             self.lbox_c.delete(0, END)
         newvals = json.loads(json_c)

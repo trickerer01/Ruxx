@@ -151,7 +151,7 @@ from app_gui_defines import (
 )
 from app_logger import Logger, trace
 from app_module import ProcModule
-from app_settings import Settings
+from app_settings import ConfigMgr
 from app_tags_parser import parse_tags, reset_last_tags
 from app_tagsdb import TagsDB
 from app_utils import confirm_yes_no, ensure_compatibility, garble_argument_values, normalize_path
@@ -592,12 +592,12 @@ def prepare_cmdline() -> list[str]:
             newstr.append(OPTION_CMD_APIKEY_CMD)
             newstr.append(f'{addstr},{addstr2}')
     # headers
-    addstr = window_hcookiesm().get_json_h()
+    addstr = window_hcookiesm().get_json_h_s()
     if len(addstr) > 2 and addstr != DEFAULT_HEADERS:  # != "'{}'"
         newstr.append(OPTION_CMD_HEADERS_CMD)
         newstr.append(addstr)
     # cookies
-    addstr = window_hcookiesm().get_json_c()
+    addstr = window_hcookiesm().get_json_c_s()
     if len(addstr) > 2:  # != "{}"
         newstr.append(OPTION_CMD_COOKIES_CMD)
         newstr.append(addstr)
@@ -979,10 +979,10 @@ def finalize_additional_windows() -> None:
 def init_menus() -> None:
     # 1) File
     register_menu('File', Menus.FILE)
-    register_menu_command('Save settings...', Settings.save_settings, Options.ISSAVESETTINGSOPEN, True, get_icon(Icons.SAVE))
-    register_menu_command('Load settings...', Settings.load_settings, Options.ISLOADSETTINGSOPEN, True, get_icon(Icons.OPEN))
+    register_menu_command('Save settings...', ConfigMgr.save_settings, Options.ISSAVESETTINGSOPEN, True, get_icon(Icons.SAVE))
+    register_menu_command('Load settings...', ConfigMgr.load_settings, Options.ISLOADSETTINGSOPEN, True, get_icon(Icons.OPEN))
     register_menu_separator()
-    register_menu_command('Reset all settings', Settings.reset_all_settings)
+    register_menu_command('Reset all settings', ConfigMgr.reset_all_settings)
     register_menu_separator()
     register_menu_command('Open download folder', open_download_folder, Options.ACTION_OPEN_DWN_FOLDER, IS_WIN)
     register_menu_separator()
@@ -1114,7 +1114,7 @@ def init_gui() -> None:
     rootm().option_add('*Dialog.msg.width', 0)
     rootm().option_add('*Dialog.msg.wrapLength', 0)
     # Init Settings system
-    Settings.initialize(tk=rootm(), on_proc_module_change_callback=set_proc_module, on_init_autocompletion_callback=init_autocompletion)
+    ConfigMgr.initialize(tk=rootm(), on_proc_module_change_callback=set_proc_module, on_init_autocompletion_callback=init_autocompletion)
     # Init autocompletion from current folder
     init_autocompletion(force=False)
     # Final widget states update
