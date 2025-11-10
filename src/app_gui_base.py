@@ -1802,6 +1802,7 @@ def load_batch_download_tag_list() -> list[str]:
 def ask_filename(ftypes: Iterable[tuple[str, str]]) -> str:
     if fullpath := filedialog.askopenfilename(filetypes=ftypes, initialdir=get_curdir()):
         setrootconf(Options.LASTPATH, fullpath[:normalize_path(fullpath, False).rfind(SLASH) + 1])  # not bound
+        return fullpath
     return ''
 
 
