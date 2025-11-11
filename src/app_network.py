@@ -20,9 +20,7 @@ from warnings import filterwarnings
 
 # requirements
 from bs4 import BeautifulSoup
-from requests import ConnectionError as RequestConnectionError
-from requests import HTTPError, Response, Session, adapters
-from requests.structures import CaseInsensitiveDict
+from requests import Response, Session, adapters, exceptions, structures
 
 # internal
 from app_debug import __RUXX_DEBUG__
@@ -44,6 +42,8 @@ from app_module import ProcModule
 __all__ = ('DownloadInterruptException', 'ThreadedHtmlWorker', 'thread_exit')
 
 filterwarnings('ignore', category=UserWarning)
+
+CLIENT_CONNECTOR_ERRORS = (exceptions.ProxyError, exceptions.SSLError)
 
 re_content_range_str = re.compile(r'bytes (\d+)-(\d+)?(?:/(\d+))?')
 
@@ -97,8 +97,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
         self.verbose: bool = False
         self.raw_html_cache: dict[str, BeautifulSoup | bytes] = {}
         self.cache_mode: HtmlCacheMode = HtmlCacheMode.CACHE_BYTES
-        self.add_headers: CaseInsensitiveDict[str, str] = CaseInsensitiveDict()
-        self.add_cookies: CaseInsensitiveDict[str, str] = CaseInsensitiveDict()
+        self.add_headers: structures.CaseInsensitiveDict[str, str] = structures.CaseInsensitiveDict()
+        self.add_cookies: structures.CaseInsensitiveDict[str, str] = structures.CaseInsensitiveDict()
         self.ignore_proxy: bool = False
         self.ignore_proxy_dwn: bool = False
         self.proxies: dict[str, str] | None = None
@@ -224,7 +224,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                 severe_err = errcode in range(1, 4 + 1)
                                 response = Response()
                                 response.status_code = 416 if severe_err else 417  # Expectation Failed
-                                raise HTTPError(response=response)
+                                raise exceptions.HTTPError(response=response)
                             ofile.write(temp)
 
                         sreq = s.request('HEAD', link, timeout=self.timeout, allow_redirects=False, headers={'Bytes': str(10**12)})
@@ -253,9 +253,9 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                 expected_chunk_size = (chunk_end - chunk_begin) + 1
                                 try:
                                     download_chunk(outf, chunk_begin, chunk_end, expected_chunk_size, i + 1)
-                                except (KeyboardInterrupt, ThreadInterruptException) as err:
-                                    raise err
-                                except (HTTPError, Exception):
+                                except Exception as err:
+                                    if isinstance(err, (KeyboardInterrupt, ThreadInterruptException)):
+                                        raise
                                     if chunk_tries >= CONNECT_RETRIES_CHUNK:
                                         if __RUXX_DEBUG__:
                                             trace(f'Warning (W2): at {item_id} chunk {i + 1:d} catched too many HTTPError 416s!', True)
@@ -286,8 +286,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                 result.file_size = 0
                         trace(f'{result.result_str}{("interrupted by user." if current_process() == self.my_root_thread else "")}', True)
                         raise DownloadInterruptException
-                    except (HTTPError, Exception) as err:
-                        if isinstance(err, HTTPError) and err.response.status_code == 404:  # RS cdn error
+                    except Exception as err:
+                        if isinstance(err, exceptions.HTTPError) and err.response.status_code == 404:  # RS cdn error
                             if ProcModule.is_rs():
                                 hostname: str = url_parse.urlparse(link).hostname or 'unk'
                                 if hostname.startswith('video') and '-cdn' in hostname:
@@ -301,7 +301,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                     trace(f'Warning (W3): {item_id} catched HTTPError 404 for normalized link. '
                                           f'Switching to slow link \'{oldlink}\'...', True)
                                     link = oldlink
-                        if isinstance(err, RequestConnectionError) and err.response is None:  # RS cdn error
+                        if isinstance(err, exceptions.ConnectionError) and err.response is None:  # RS cdn error
                             if ProcModule.is_rs():
                                 hostname: str = url_parse.urlparse(link).hostname or 'unk'
                                 if hostname.startswith('video') and '-cdn' in hostname:
@@ -310,13 +310,14 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                               f'Trying no-cdn source...', True)
                                     re_vhost_cdn = re.compile(r'-cdn\d')  # video-cdn1.rs
                                     link = re_vhost_cdn.sub('', link)
-                        if isinstance(err, HTTPError) and err.response.status_code == 416:  # Requested range is not satisfiable
+                        if isinstance(err, exceptions.HTTPError) and err.response.status_code == 416:  # Requested range is not satisfiable
                             if __RUXX_DEBUG__:
                                 trace(f'Warning (W3): {item_id} catched HTTPError 416!', True)
                             if os.path.isfile(dest):
                                 os.remove(dest)
                                 result.file_size = 0
-                        result.retries += 1
+                        if not isinstance(err, CLIENT_CONNECTOR_ERRORS):
+                            result.retries += 1
                         s_result = f'{result.result_str}{sys.exc_info()[0]!s}: {sys.exc_info()[1]!s} retry {result.retries:d}...'
                         trace(s_result, True)
                         time.sleep(2)
@@ -336,18 +337,19 @@ class ThreadedHtmlWorker(ThreadedWorker):
                 break
             except (KeyboardInterrupt, ThreadInterruptException):
                 thread_exit('interrupted by user.', code=1)
-            except (Exception, HTTPError) as err:
-                retries += 1
+            except Exception as err:
+                if not isinstance(err, CLIENT_CONNECTOR_ERRORS):
+                    retries += 1
                 sleep_time = 1.0
                 threadname = f'{current_process().name}: ' if current_process() != self.my_root_thread else ''
-                if isinstance(err, HTTPError) and err.response.status_code == 404:
+                if isinstance(err, exceptions.HTTPError) and err.response.status_code == 404:
                     if r is not None and r.content and len(r.content.decode()) > 2:
                         trace(f'{threadname}received code 404 but received html'
                               f'\n{sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}. Continuing...', True)
                         break
                     trace(f'{threadname}catched err 404 {sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}. Aborting...', True)
                     return None
-                elif isinstance(err, HTTPError) and err.response.status_code == 429:  # Too Many Requests
+                elif isinstance(err, exceptions.HTTPError) and err.response.status_code == 429:  # Too Many Requests
                     sleep_time += float(min(9, retries))
                     if __RUXX_DEBUG__:
                         trace(f'{threadname}catched {sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}.'
