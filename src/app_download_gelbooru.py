@@ -179,7 +179,7 @@ class DownloaderGelbooru(Downloader):
                 address, fmt = low_res_addr()
 
         if len(address) == 0:
-            trace('FATAL: GetPicAddr could not find anything!\n\nstring:\n\n{h}', True)
+            trace(f'FATAL: GetPicAddr could not find anything!\n\nstring:\n\n{h}', True)
             assert False
 
         return address, fmt
@@ -190,7 +190,7 @@ class DownloaderGelbooru(Downloader):
             addr, ext = self.extract_sample_url(h)
 
         if len(addr) == 0:
-            trace('FATAL: GetVidAddr could not find anything!\n\nstring:\n\n{h}', True)
+            trace(f'FATAL: GetVidAddr could not find anything!\n\nstring:\n\n{h}', True)
             assert False
 
         return addr, ext
@@ -208,7 +208,7 @@ class DownloaderGelbooru(Downloader):
                 if name in item_info.__slots__:
                     while name == 'id' and not value[0].isnumeric():  # id=p1234567
                         value = value[1:]
-                    item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
+                    setattr(item_info, name, value.replace('\n', ' ').replace('"', '').strip())
             return item_info
         except Exception:
             self._on_thread_exception(current_process().name)

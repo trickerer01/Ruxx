@@ -150,7 +150,7 @@ def valid_window_position(val: str, tk) -> str:
 
 def valid_api_key_key(key: str) -> str:
     try:
-        if key != '':
+        if key:
             assert len(key) == API_KEY_LEN_RX
             assert key.isalnum()
         return key
@@ -160,7 +160,7 @@ def valid_api_key_key(key: str) -> str:
 
 def valid_api_key_userid(user_id: str) -> str:
     try:
-        if user_id != '':
+        if user_id:
             assert user_id.isnumeric()
         return user_id
     except Exception:

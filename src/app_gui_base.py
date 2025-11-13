@@ -635,8 +635,8 @@ class AwaitableAskWindow(BaseWindow, ABC):
 
         BaseFrame(downframe, height=16).grid(row=next_row(), columnspan=2)
 
-        self.but_ok = Button(downframe, width=8, text='Ok', command=lambda: self.ok())
-        self.but_cancel = Button(downframe, width=8, text='Cancel', command=lambda: self.cancel())
+        self.but_ok = Button(downframe, width=8, text='Ok', command=self.ok)
+        self.but_cancel = Button(downframe, width=8, text='Cancel', command=self.cancel)
         self.but_ok.grid(row=next_row(), column=first_column(), columnspan=1)
         self.but_cancel.grid(row=cur_row(), column=next_column(), columnspan=1)
 
@@ -920,8 +920,8 @@ class ProxyWindow(BaseWindow):
 
         BaseFrame(downframe, height=16).grid(row=4, columnspan=15)
 
-        self.but_ok = Button(downframe, width=8, text='Ok', command=lambda: self.ok())
-        self.but_cancel = Button(downframe, width=8, text='Cancel', command=lambda: self.cancel())
+        self.but_ok = Button(downframe, width=8, text='Ok', command=self.ok)
+        self.but_cancel = Button(downframe, width=8, text='Cancel', command=self.cancel)
         self.but_ok.grid(row=5, column=3, columnspan=5)
         self.but_cancel.grid(row=5, column=8, columnspan=5)
 
@@ -1266,8 +1266,8 @@ class ConnectRequestIntWindow(BaseWindow):
 
         BaseFrame(downframe, height=16).grid(row=4, columnspan=15)
 
-        self.but_ok = Button(downframe, width=8, text='Ok', command=lambda: self.ok())
-        self.but_cancel = Button(downframe, width=8, text='Cancel', command=lambda: self.cancel())
+        self.but_ok = Button(downframe, width=8, text='Ok', command=self.ok)
+        self.but_cancel = Button(downframe, width=8, text='Cancel', command=self.cancel)
         self.but_ok.grid(row=5, column=3, columnspan=5)
         self.but_cancel.grid(row=5, column=8, columnspan=5)
 
@@ -1375,8 +1375,8 @@ class APIRequestStrIntWindow(BaseWindow):
 
         BaseFrame(downframe, height=16).grid(row=5, columnspan=15)
 
-        self.but_ok = Button(downframe, width=8, text='Ok', command=lambda: self.ok())
-        self.but_cancel = Button(downframe, width=8, text='Cancel', command=lambda: self.cancel())
+        self.but_ok = Button(downframe, width=8, text='Ok', command=self.ok)
+        self.but_cancel = Button(downframe, width=8, text='Cancel', command=self.cancel)
         self.but_ok.grid(row=6, column=3, columnspan=5)
         self.but_cancel.grid(row=6, column=8, columnspan=5)
 

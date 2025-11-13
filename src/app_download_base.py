@@ -175,7 +175,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         ...
 
     @abstractmethod
-    def _get_item_html(self, h: str) -> None | BeautifulSoup | str:
+    def _get_item_html(self, h: str) -> BeautifulSoup | str | None:
         ...
 
     @abstractmethod

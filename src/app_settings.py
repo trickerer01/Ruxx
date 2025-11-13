@@ -76,7 +76,7 @@ class ListConfigWorker:
     def read(source: TextIO | list[str], set_window_pos=True) -> None:
         for line in source:
             line = line.strip(' \n\ufeff')  # remove BOM too
-            if line.startswith('#') or line == '':  # comment or a newline
+            if line.startswith('#') or not line:  # comment or a newline
                 continue
             kv_k, kv_v = tuple(line.split('=', 1))
             if kv_k in ConfigMgr.settings:
@@ -258,8 +258,7 @@ class ConfigMgr(ABC):
     on_init_autocompletion_callback: Callable[[str], None] | None = None
 
     @abstractmethod
-    def ___do_not_instantiate_me___(self) -> ...:
-        ...
+    def ___do_not_instantiate_me___(self) -> ...: ...  # noqa: PLW3201
 
     settings = {
         'path': Setting(Options.PATH, DummyValidator(), ''),  # no validation, str

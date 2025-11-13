@@ -95,7 +95,7 @@ re_post_page_rx = re.compile(r'^(?:\?page=post&(?:amp;)?s=list|document\.locatio
 re_item_info_part_rn = re.compile(r'([\w\-]+=\"[^"]+\")[/> ]')
 re_shimmie_image_href = re.compile(r'/_images/[^/]+/\d+?')
 re_shimmie_thumb = re.compile(r'^thumb shm-thumb.+?$')
-re_shimmie_orig_source = re.compile('^overflow:.+?$')
+re_shimmie_orig_source = re.compile(r'^overflow:.+?$')
 re_shimmie_image_href_full = re.compile(r'/_images/[^/]+/(\d+)%20-%20([^">]+)')
 
 re_post_style_rs = re.compile(r'^border-radius: 3px;.+?$')

@@ -743,7 +743,7 @@ class Downloader(DownloaderBase):
                 item_info.source = SOURCE_DEFAULT
             if __RUXX_DEBUG__ and not self.favorites_search_user and not self.pool_search_str:
                 for key in (_ for _ in item_info.__slots__ if _ not in ItemInfo.optional_slots):
-                    if getattr(item_info, key) == '':
+                    if not getattr(item_info, key):
                         trace(f'Info: extract info {abbrp}{item_info.id}: uninitialized field \'{key}\'!')
 
         abbrp = self._get_module_abbr_p()

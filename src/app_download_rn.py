@@ -207,7 +207,7 @@ class DownloaderRn(Downloader):
                 if name == 'ext':  # special case: title -> ext -> extract ext
                     value = value[value.rfind(' ') + 1:]
                 if name in item_info.__slots__:
-                    item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
+                    setattr(item_info, name, value.replace('\n', ' ').replace('"', '').strip())
             return item_info
         except Exception:
             self._on_thread_exception(current_process().name)

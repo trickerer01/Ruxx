@@ -217,7 +217,7 @@ class DownloaderRp(Downloader):
                 if name in item_info.__slots__:
                     while name == 'id' and not value[0].isnumeric():  # id=p1234567
                         value = value[1:]
-                    item_info.__setattr__(name, value.replace('\n', ' ').replace('"', '').strip())
+                    setattr(item_info, name, value.replace('\n', ' ').replace('"', '').strip())
             return item_info
         except Exception:
             self._on_thread_exception(current_process().name)

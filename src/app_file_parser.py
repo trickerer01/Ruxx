@@ -95,7 +95,7 @@ def parse_ids_file(filepath: str) -> tuple[bool, list[str]]:
                         id_list.extend(id_list_from_string(line))
                     else:
                         raise OSError
-        return True, [f'id{get_idval_eq_sep()}{s}' for s in sorted(unique_everseen(id_list), key=lambda item: int(item))]
+        return True, [f'id{get_idval_eq_sep()}{s}' for s in sorted(unique_everseen(id_list), key=int)]
     except Exception:
         return False, id_list
 

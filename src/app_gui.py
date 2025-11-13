@@ -262,7 +262,7 @@ def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], Non
     rootm().wait_window(aw.window)
     depth = aw.value()
     if depth is None:
-        if aw.get_variable(1) != '':
+        if not aw.get_variable(1):
             trace(f'Invalid scan depth value \'{aw.get_variable(1)}\'')
         return
 
@@ -864,7 +864,7 @@ def do_process_batch() -> None:
     rootm().wait_window(aw.window)
     values = aw.value()
     if values is None:
-        if aw.get_variable(1) != '':
+        if not aw.get_variable(1):
             trace(f'Invalid checkbutton 1 value \'{aw.get_variable(1)}\'')
         return
 
