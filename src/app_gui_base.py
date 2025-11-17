@@ -5,7 +5,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #########################################
 #
 # circular imports caused by:
-# app_gui, app_cmdargs
+# app_gui
 
 import base64
 import ctypes
