@@ -38,6 +38,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         super().__init__()
 
         # config
+        self.hide_personal_info: bool = False
         self.add_filename_prefix: bool = False
         self.dump_tags: bool = False
         self.dump_sources: bool = False

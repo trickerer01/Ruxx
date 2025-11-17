@@ -57,6 +57,7 @@ OPTION_VALUES_DOWNLOAD_ORDER = ('Default', 'Reverse')
 OPTION_VALUES_PROXYTYPE = ('http', 'socks5')
 OPTION_CMD_VIDEOS = ('-skip_vid', '-mp4', '-webm', '')
 OPTION_CMD_IMAGES = ('-skip_img', '-lowres', '')
+OPTION_CMD_HIDE_PERSONAL_INFO = ('', '-hide_personal_info')
 OPTION_CMD_PARCHI = ('', '-include_parchi')
 OPTION_CMD_DOWNLOAD_ORDER = ('', '-reverse')
 OPTION_CMD_THREADING_CMD = '-threads'

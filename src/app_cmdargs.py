@@ -39,6 +39,7 @@ from app_help import (
     HELP_ARG_HEADER,
     HELP_ARG_HEADERS,
     HELP_ARG_HELP,
+    HELP_ARG_HIDE_PERSONAL_INFO,
     HELP_ARG_INCLUDE_PARCHI,
     HELP_ARG_MAXDATE,
     HELP_ARG_MERGE_LISTS,
@@ -94,6 +95,7 @@ def prepare_arglist(args: Sequence[str]) -> Namespace:
     ex2 = parser.add_mutually_exclusive_group(required=False)
     ex3 = parser.add_mutually_exclusive_group(required=False)
     ex1.add_argument('-get_maxid', action=ACTION_STORE_TRUE, help=HELP_ARG_GET_MAXID)
+    parser.add_argument('-hide_personal_info', action=ACTION_STORE_TRUE, help=HELP_ARG_HIDE_PERSONAL_INFO)
     parser.add_argument('-include_parchi', action=ACTION_STORE_TRUE, help=HELP_ARG_INCLUDE_PARCHI)
     parser.add_argument('-skip_img', action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_IMAGES)
     parser.add_argument('-skip_vid', action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_VIDEOS)

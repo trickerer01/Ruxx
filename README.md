@@ -42,11 +42,11 @@ to split your searches using id filter. Plus you may still get banned for abusin
   - **merge info lists** ‒ gather and parse existing info files, merge and save all infos together, one text file per info category will be stored. **Parsed old info files will be deleted**
 - **Edit -> Extend file names with extra info** ‒ all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
 - **Edit -> Warn if download folder is not empty** ‒ in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
-- **Edit -> Verbose log** ‒ Enable logging of technical messages not related to actual download process. Verbose log is one of the requirements for a proper issue report
+- **Edit -> Verbose log** ‒ enable logging of technical messages not related to actual download process. Verbose log is one of the requirements for a proper issue report
 - **View -> Log** ‒ open a log window, if you want some readable output
 - **View -> Reveal module names** ‒ toggles between module abbreviation and website real name shown in module icon tooltip
 - **View -> Hide personal info** ‒ removes all mentions of paths, API key, proxy, etc. from your logs and main window. Useful in case you want to post logs / screenshots (ex. for a bugreport). This option is ignored when checking tags and is not saved to config
-- **Connection -> Headers / Cookies** \<F3> ‒ For some websites (RN) and in some other cases you'll have to provide your `cf_clearance` cookie, and the `User-Agent` header has to match the one used in your web browser for target website ‒ to find it while browsing said website open `Web Developer tools -> Network` (or similar), reload the page and check `request headers`
+- **Connection -> Headers / Cookies** \<F3> ‒ for some websites (RN) and in some other cases you'll have to provide your `cf_clearance` cookie, and the `User-Agent` header has to match the one used in your web browser for target website ‒ to find it while browsing said website open `Web Developer tools -> Network` (or similar), reload the page and check `request headers`
 - **Connection -> Set proxy** \<F4> ‒ you can use proxy if you want or if target website is blocked in your country. SOCKS5 proxies are supported too
 - **Connection -> Set timeout** \<F5> ‒ override connection timeout if need be
 - **Connection -> Set retries count** \<F6> ‒ override connection retries count, may be useful when using a proxy

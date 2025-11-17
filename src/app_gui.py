@@ -109,6 +109,7 @@ from app_gui_defines import (
     OPTION_CMD_DOWNMODE_CMD,
     OPTION_CMD_FNAMEPREFIX,
     OPTION_CMD_HEADERS_CMD,
+    OPTION_CMD_HIDE_PERSONAL_INFO,
     OPTION_CMD_IGNORE_PROXY,
     OPTION_CMD_IMAGES,
     OPTION_CMD_INFO_SAVE_MODE,
@@ -538,6 +539,8 @@ def prepare_cmdline() -> list[str]:
     newstr.append(f'\'{pathstr}\'')
     # + options
     addstr: str
+    if addstr := OPTION_CMD_HIDE_PERSONAL_INFO[int(getrootconf(Options.HIDE_PERSONAL_INFO))]:
+        newstr.append(addstr)
     addstr = OPTION_CMD_VIDEOS[OPTION_VALUES_VIDEOS.index(str(getrootconf(Options.VIDSETTING)))]
     if len(addstr) > 0 and not is_global_disabled(Globals.COMBOBOX_VIDEOS):
         newstr.append(addstr)

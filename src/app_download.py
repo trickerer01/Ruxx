@@ -121,7 +121,7 @@ class Downloader(DownloaderBase):
 
     def _at_launch(self) -> None:
         if self.verbose:
-            if self.options.get(DownloaderOptions.OPTION_GARBLE_PERSONAL_INFO, False):
+            if self.hide_personal_info or self.options.get(DownloaderOptions.OPTION_GARBLE_PERSONAL_INFO, False):
                 api_key_default = self.get_module_specific_default_value(ModuleConfigType.CONFIG_API_KEY)
                 api_key_is_default = self.api_key.key == api_key_default
                 garble_argument_values(self.cmdline, *((OPTION_CMD_APIKEY_CMD,) if not api_key_is_default else ()))
@@ -641,6 +641,7 @@ class Downloader(DownloaderBase):
     def _parse_args(self, args: Namespace, enable_preprocessing=True) -> None:
         assert hasattr(args, 'tags') and type(args.tags) is list
         ThreadedHtmlWorker._parse_args(self, args)
+        self.hide_personal_info = args.hide_personal_info or self.hide_personal_info
         self.add_filename_prefix = args.prefix or self.add_filename_prefix
         self.dump_tags = args.dump_tags or self.dump_tags
         self.dump_sources = args.dump_sources or self.dump_sources
