@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import base64
 import re
-from typing import final
+from typing import NoReturn, final
 
 from app_defines import (
     API_KEY_DEFAULT_RX,
@@ -49,13 +49,10 @@ class DownloaderRx(DownloaderGelbooru):
     def __init__(self) -> None:
         super().__init__()
 
-    def _get_api_key(self) -> str:
-        return f'&api_key={self.api_key.key}&user_id={self.api_key.user_id}' if self.api_key else f'&api_key={API_KEY}&user_id={USER_ID}'
-
-    def _get_id_bounds(self) -> tuple[int, int]:
+    def _get_id_bounds(self) -> NoReturn:
         raise NotImplementedError
 
-    def _form_item_string_manually(self, *ignored) -> str:
+    def _form_item_string_manually(self, *ignored) -> NoReturn:
         raise NotImplementedError
 
     def _get_re_post_page(self) -> re.Pattern:
@@ -98,6 +95,9 @@ class DownloaderRx(DownloaderGelbooru):
                 self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
         else:
             trace(f'Warning (W3): ProcItem: unable to retreive comments for {item_id}!', True)
+
+    def _get_api_key(self) -> str:
+        return f'&api_key={self.api_key.key}&user_id={self.api_key.user_id}' if self.api_key else f'&api_key={API_KEY}&user_id={USER_ID}'
 
     @staticmethod
     def _get_default_api_key() -> str:

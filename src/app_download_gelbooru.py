@@ -33,8 +33,7 @@ class DownloaderGelbooru(Downloader):
         super().__init__()
 
     @abstractmethod
-    def _get_re_post_page(self) -> re.Pattern:
-        raise NotImplementedError
+    def _get_re_post_page(self) -> re.Pattern: ...
 
     def _get_module_specific_default_headers(self) -> dict[str, str]:
         return {}
@@ -269,8 +268,7 @@ class DownloaderGelbooru(Downloader):
             raise
 
     @abstractmethod
-    def _extract_comments(self, item_id: str) -> None:
-        raise NotImplementedError
+    def _extract_comments(self, item_id: str) -> None: ...
 
     @staticmethod
     def extract_file_url(h: str) -> tuple[str, str]:

@@ -10,7 +10,7 @@ import base64
 import datetime
 import re
 from multiprocessing.dummy import current_process
-from typing import final
+from typing import NoReturn, final
 
 from bs4 import BeautifulSoup
 
@@ -74,9 +74,6 @@ class DownloaderRp(Downloader):
         super().__init__()
         self._base_cookies = {'ui-tnc-agreed': 'true', 'ui-image-zoom': 'both'}
 
-    def _get_api_key(self) -> str:
-        return ''
-
     def _get_module_specific_default_headers(self) -> dict[str, str]:
         return {}
 
@@ -95,7 +92,7 @@ class DownloaderRp(Downloader):
     def _supports_native_id_filter(self) -> bool:
         return True
 
-    def _get_id_bounds(self) -> tuple[int, int]:
+    def _get_id_bounds(self) -> NoReturn:
         raise NotImplementedError
 
     def _get_sitename(self) -> str:
@@ -113,7 +110,7 @@ class DownloaderRp(Downloader):
     def _get_max_search_depth(self) -> int:
         return MAX_SEARCH_DEPTH
 
-    def _form_item_string_manually(self, *ignored) -> str:
+    def _form_item_string_manually(self, *ignored) -> NoReturn:
         raise NotImplementedError
 
     def _is_search_overload_page(self, *ignored) -> bool:

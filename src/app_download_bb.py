@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import base64
 import re
-from typing import final
+from typing import NoReturn, final
 
 from app_defines import (
     FILE_NAME_PREFIX_BB,
@@ -44,13 +44,10 @@ class DownloaderBb(DownloaderGelbooru):
     def __init__(self) -> None:
         super().__init__()
 
-    def _get_api_key(self) -> str:
-        return ''
-
-    def _get_id_bounds(self) -> tuple[int, int]:
+    def _get_id_bounds(self) -> NoReturn:
         raise NotImplementedError
 
-    def _form_item_string_manually(self, *ignored) -> str:
+    def _form_item_string_manually(self, *ignored) -> NoReturn:
         raise NotImplementedError
 
     def _get_re_post_page(self) -> re.Pattern:

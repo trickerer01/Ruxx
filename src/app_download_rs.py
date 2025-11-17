@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import base64
 import re
 from multiprocessing.dummy import current_process
-from typing import final
+from typing import NoReturn, final
 
 from bs4 import BeautifulSoup
 
@@ -56,9 +56,6 @@ class DownloaderRs(Downloader):
     def __init__(self) -> None:
         super().__init__()
 
-    def _get_api_key(self) -> str:
-        return ''
-
     def _get_module_specific_default_headers(self) -> dict[str, str]:
         return {}
 
@@ -77,7 +74,7 @@ class DownloaderRs(Downloader):
     def _supports_native_id_filter(self) -> bool:
         return True
 
-    def _get_id_bounds(self) -> tuple[int, int]:
+    def _get_id_bounds(self) -> NoReturn:
         raise NotImplementedError
 
     def _get_sitename(self) -> str:
@@ -95,7 +92,7 @@ class DownloaderRs(Downloader):
     def _get_max_search_depth(self) -> int:
         return MAX_SEARCH_DEPTH
 
-    def _form_item_string_manually(self, *ignored) -> str:
+    def _form_item_string_manually(self, *ignored) -> NoReturn:
         raise NotImplementedError
 
     def _is_search_overload_page(self, raw_html_page: BeautifulSoup) -> bool:
