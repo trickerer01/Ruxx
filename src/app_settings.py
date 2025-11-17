@@ -357,10 +357,9 @@ class ConfigMgr(ABC):
     @staticmethod
     def save_settings() -> None:
         try:
-            if fpath := filedialog.asksaveasfilename(initialdir=get_curdir(), filetypes=CONFIG_FILE_TYPES):
+            if fpath := filedialog.asksaveasfilename(initialdir=get_curdir(), filetypes=CONFIG_FILE_TYPES, confirmoverwrite=True,
+                                                     defaultextension='.json', initialfile='config'):
                 setrootconf(Options.LASTPATH, fpath[:normalize_path(fpath, False).rfind(SLASH) + 1])
-                if not any(fpath.endswith(ext) for ext in CONFIG_WORKERS if ext != '.default'):
-                    fpath += '.cfg'
                 trace(f'Saving setting to {fpath}...')
                 with open(fpath, 'wt', encoding=UTF8, newline='\n') as wfile:
                     get_config_worker(wfile.name).write(wfile)
