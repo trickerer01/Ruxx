@@ -6,10 +6,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import sys
 
-# internal
 from app_gui import run_ruxx_gui
 
 __all__ = ('run_gui',)

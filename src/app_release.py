@@ -6,14 +6,12 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import itertools
 import os
 import shutil
 import sys
 from subprocess import call as call_subprocess
 
-# internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import PLATFORM_LINUX, PLATFORM_WINDOWS
 from app_revision import APP_NAME, APP_VERSION

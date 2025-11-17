@@ -6,7 +6,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import itertools
 import json
 import os
@@ -15,7 +14,6 @@ from collections.abc import Callable
 from tkinter import Tk, filedialog
 from typing import Protocol, TextIO
 
-# internal
 from app_defines import DATE_MIN_DEFAULT, LAUCH_DATE, UTF8, Mem
 from app_gui_base import ask_filename, get_curdir, getrootconf, int_vars, rootm, setrootconf, window_hcookiesm
 from app_gui_defines import (

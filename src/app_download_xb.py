@@ -6,12 +6,10 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import base64
 import re
 from typing import final
 
-# internal
 from app_defines import (
     FILE_NAME_PREFIX_XB,
     ID_VALUE_SEPARATOR_CHAR_XB,

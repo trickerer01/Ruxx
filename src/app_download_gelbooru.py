@@ -6,16 +6,13 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import datetime
 import re
 from abc import abstractmethod
 from multiprocessing.dummy import current_process
 
-# requirements
 from bs4 import BeautifulSoup
 
-# internal
 from app_defines import FILE_NAME_FULL_MAX_LEN, FMT_DATE, DownloadModes, ItemInfo
 from app_download import Downloader
 from app_logger import trace

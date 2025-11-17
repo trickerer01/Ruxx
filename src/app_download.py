@@ -6,7 +6,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 from __future__ import annotations
 
 import itertools
@@ -21,10 +20,8 @@ from multiprocessing.dummy import Pool, current_process
 from multiprocessing.pool import ThreadPool
 from threading import Lock
 
-# requirements
 from iteration_utilities import unique_everseen
 
-# internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
     CONNECT_TIMEOUT_BASE,

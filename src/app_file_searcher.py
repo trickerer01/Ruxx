@@ -14,7 +14,7 @@ from typing import BinaryIO, Literal
 from app_defines import KNOWN_EXTENSIONS, Mem
 from app_utils import normalize_path
 
-READ_BUFFER_SIZE_BASE = 32 * Mem.KB
+READ_BUFFER_SIZE_BASE = 4 * Mem.KB
 READ_BUFFER_SIZE_MAX = 256 * Mem.KB
 EXTENSIONS_SET = set(KNOWN_EXTENSIONS)
 

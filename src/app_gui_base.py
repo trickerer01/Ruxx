@@ -7,7 +7,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 # circular imports caused by:
 # app_gui, app_cmdargs
 
-# native
 import base64
 import ctypes
 import json
@@ -51,8 +50,6 @@ from tkinter import (
     messagebox,
     ttk,
 )
-
-# internal
 from tkinter.ttk import Entry
 from typing import Literal, TypeAlias
 

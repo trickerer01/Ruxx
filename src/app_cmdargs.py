@@ -6,13 +6,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import os
 from argparse import ZERO_OR_MORE, ArgumentParser, Namespace
 from collections.abc import Sequence
 from inspect import stack
 
-# internal
 from app_defines import (
     ACTION_APPEND,
     ACTION_STORE_TRUE,

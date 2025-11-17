@@ -6,12 +6,10 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 from enum import IntEnum, auto
 
-# annotations
+# pure annotations
 if False is True:
-    # native
     from tkinter import Menu
 
 # Buttons

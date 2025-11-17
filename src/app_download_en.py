@@ -6,7 +6,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import base64
 import datetime
 import json
@@ -16,10 +15,8 @@ from collections.abc import MutableSet
 from multiprocessing.dummy import current_process
 from typing import Final, final
 
-# requirements
 from bs4 import BeautifulSoup
 
-# internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
     FILE_NAME_FULL_MAX_LEN,

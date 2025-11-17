@@ -6,11 +6,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import re
 from collections.abc import Iterable
 
-# internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
     TAGS_STRING_LENGTH_MAX_BB,

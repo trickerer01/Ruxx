@@ -6,11 +6,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import sys
 from multiprocessing.dummy import current_process
 
-# internal
 from app_cmdargs import prepare_arglist
 from app_downloaders import get_new_downloader
 from app_logger import Logger

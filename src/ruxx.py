@@ -6,10 +6,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import sys
 
-# internal
 from ruxx_cmd import run_cmd
 from ruxx_gui import run_gui
 

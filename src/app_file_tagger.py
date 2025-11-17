@@ -6,12 +6,10 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import os
 import re
 from collections.abc import Iterable, Sequence
 
-# internal
 from app_defines import FILE_NAME_FULL_MAX_LEN, UTF8
 from app_gui_defines import SLASH, UNDERSCORE
 from app_tagger import append_filtered_tags

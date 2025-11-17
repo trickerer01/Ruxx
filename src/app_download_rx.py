@@ -6,12 +6,10 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import base64
 import re
 from typing import final
 
-# internal
 from app_defines import (
     API_KEY_DEFAULT_RX,
     API_USER_ID_DEFAULT_RX,

@@ -6,7 +6,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import datetime
 import json
 import os
@@ -14,7 +13,6 @@ from abc import abstractmethod
 from argparse import ArgumentError
 from ipaddress import IPv4Address
 
-# internal
 from app_defines import API_KEY_LEN_RX, DMODE_CHOICES, FMT_DATE, THREADS_MAX_ITEMS
 from app_gui_defines import (
     OPTION_VALUES_IMAGES,

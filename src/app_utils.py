@@ -6,14 +6,12 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import datetime
 import math
 import sys
 from collections.abc import Iterable, MutableSequence
 from tkinter import messagebox
 
-# internal
 from app_defines import FMT_DATE, MIN_PYTHON_VERSION, MIN_PYTHON_VERSION_STR, SUBFOLDER_NAME_LEN_MAX, SUPPORTED_PLATFORMS
 from app_gui_defines import OPTION_CMD_PATH_CMD, OPTION_CMD_PROXY_CMD, SLASH, UNDERSCORE
 from app_re import re_replace_symbols_sub, re_uscore_mult

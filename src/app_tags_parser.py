@@ -6,14 +6,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import re
 from collections.abc import Sequence
 
-# requirements
 from iteration_utilities import unique_everseen
 
-# internal
 from app_module import ProcModule
 from app_re import re_favorited_by_tag, re_pool_tag, re_space_mult
 

@@ -6,17 +6,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import os
 import re
 from abc import abstractmethod
 from collections.abc import MutableSet
 from typing import final
 
-# requirements
 from bs4 import BeautifulSoup
 
-# internal
 from app_defines import (
     DATE_MAX_DEFAULT,
     DATE_MIN_DEFAULT,

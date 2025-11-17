@@ -6,7 +6,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import ctypes
 import datetime
 import os
@@ -17,7 +16,6 @@ from multiprocessing.dummy import current_process
 from threading import Thread
 from tkinter import END, messagebox
 
-# internal
 from app_cmdargs import prepare_arglist
 from app_debug import __RUXX_DEBUG__
 from app_defines import (

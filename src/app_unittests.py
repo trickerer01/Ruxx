@@ -6,7 +6,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import functools
 import os
 import sys
@@ -15,7 +14,6 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 from unittest import main as run_tests
 
-# internal
 from app_cmdargs import prepare_arglist
 from app_defines import DATE_MIN_DEFAULT, DEFAULT_HEADERS, MODULE_CHOICES, DownloadModes, ItemInfo, ThreadInterruptException
 from app_downloaders import DOWNLOADERS_BY_PROC_MODULE, make_downloader

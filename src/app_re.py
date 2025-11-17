@@ -6,10 +6,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import re
 
-# internal
 from app_defines import MODULE_CHOICES, TAG_LENGTH_MAX_RN, TAG_LENGTH_MAX_RX, TAG_LENGTH_MIN
 from app_re_1 import re_tags_exclude_rx_a_i
 from app_re_2 import re_tags_exclude_rx_j_r

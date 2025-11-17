@@ -6,11 +6,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import base64
 import os
 
-# internal
 from app_defines import UTF8
 from app_help import APP_ADDRESS, APP_AUTHOR_NICKNAME
 from app_revision import APP_IS_BETA_TEXT, APP_NAME, APP_REVISION, APP_VER_MAJOR, APP_VER_SUB

@@ -6,7 +6,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 from __future__ import annotations
 
 import time
@@ -14,14 +13,12 @@ from locale import getpreferredencoding
 from threading import Lock as ThreadLock
 from tkinter import END, INSERT
 
-# internal
 from app_defines import UTF8
 from app_gui_defines import STATE_DISABLED, STATE_NORMAL
 from app_utils import find_first_not_of
 
-# annotations
+# pure annotations
 if False is True:
-    # internal
     from app_gui_base import LogWindow
 
 __all__ = ('Logger', 'trace')

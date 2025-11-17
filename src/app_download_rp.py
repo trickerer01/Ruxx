@@ -6,17 +6,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import base64
 import datetime
 import re
 from multiprocessing.dummy import current_process
 from typing import final
 
-# requirements
 from bs4 import BeautifulSoup
 
-# internal
 from app_defines import (
     FILE_NAME_FULL_MAX_LEN,
     FILE_NAME_PREFIX_RP,

@@ -6,7 +6,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import os
 import re
 import sys
@@ -18,11 +17,9 @@ from threading import Lock, Thread
 from urllib import parse as url_parse
 from warnings import filterwarnings
 
-# requirements
 from bs4 import BeautifulSoup
 from requests import Response, Session, adapters, exceptions, structures
 
-# internal
 from app_debug import __RUXX_DEBUG__
 from app_defines import (
     CONNECT_RETRIES_BASE,

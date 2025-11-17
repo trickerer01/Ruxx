@@ -6,13 +6,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import os
 import re
 from collections.abc import Collection, Iterable, Sequence
 from enum import IntEnum, auto
 
-# internal
 from app_defines import Mem
 from app_gui_defines import SLASH
 from app_utils import normalize_path

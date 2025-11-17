@@ -6,10 +6,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import re
 
-# internal
 from app_gui_defines import UNDERSCORE
 from app_re import (
     re_meta_group,

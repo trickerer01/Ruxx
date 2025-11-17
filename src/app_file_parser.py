@@ -6,13 +6,10 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-# native
 import re
 
-# requirements
 from iteration_utilities import unique_everseen
 
-# internal
 from app_defines import (
     FILE_NAME_PREFIX_BB,
     FILE_NAME_PREFIX_EN,
