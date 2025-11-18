@@ -6,20 +6,13 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-from __future__ import annotations
-
 import time
+from collections.abc import Callable
 from locale import getpreferredencoding
 from threading import Lock as ThreadLock
-from tkinter import END, INSERT
 
 from app_defines import UTF8
-from app_gui_defines import STATE_DISABLED, STATE_NORMAL
 from app_utils import find_first_not_of
-
-# pure annotations
-if False is True:
-    from app_gui_base import LogWindow
 
 __all__ = ('Logger', 'trace')
 
@@ -30,29 +23,12 @@ class Logger:
     pending_strings: list[str] = []
     is_cmdline: bool = False
     is_disabled: bool = False
-    wnd: LogWindow | None = None
+    append_to_window_proc: Callable[[str], None] | None = None
 
     @staticmethod
     def init(is_cmd: bool, is_disabled=False) -> None:
         Logger.is_cmdline = is_cmd
         Logger.is_disabled = is_disabled
-
-    @staticmethod
-    def _append(text: str) -> None:
-        # current scrollbar position
-        Logger.wnd.scroll.update()  # required to get actual pos
-        old_pos = Logger.wnd.scroll.get()
-
-        # appending to text is impossible if text is disabled
-        Logger.wnd.text.config(state=STATE_NORMAL)
-        Logger.wnd.text.insert(END, text)
-        Logger.wnd.text.config(state=STATE_DISABLED)
-
-        # scroll to bottom if was at the bottom
-        if old_pos[1] >= 1.0:
-            Logger.wnd.text.mark_set(INSERT, END)
-            Logger.wnd.text.see(END)
-            Logger.wnd.text.yview_moveto(1.0)
 
     @staticmethod
     def _prepare(text: str) -> None:
@@ -67,7 +43,8 @@ class Logger:
                 except Exception:
                     print('<Message was not logged due to UnicodeError>')
         else:
-            Logger._append(f'{text}\n')
+            assert Logger.append_to_window_proc, 'Logger window is uninitialized!'
+            Logger.append_to_window_proc(f'{text}\n')
 
     @staticmethod
     def log(message: str, safe: bool, timestamp: bool) -> None:

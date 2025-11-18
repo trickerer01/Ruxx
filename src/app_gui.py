@@ -86,6 +86,7 @@ from app_gui_base import (
     update_lastpath,
     window_apikeym,
     window_hcookiesm,
+    window_logm,
     window_proxym,
     window_retriesm,
     window_timeoutm,
@@ -968,7 +969,7 @@ def start_download_thread(cmdline: list[str], **options: bool | int | str) -> No
 
 
 def finalize_additional_windows() -> None:
-    Logger.wnd.finalize()
+    window_logm().finalize()
     window_proxym().finalize()
     window_hcookiesm().finalize()
     window_timeoutm().finalize()
@@ -1007,7 +1008,7 @@ def init_menus() -> None:
     register_menu_checkbutton('Verbose log', CVARS[Options.VERBOSE])
     # 3) View
     register_menu('View')
-    register_menu_checkbutton('Log', CVARS[Options.ISLOGOPEN], Logger.wnd.toggle_visibility, hotkey_text(Options.ISLOGOPEN))
+    register_menu_checkbutton('Log', CVARS[Options.ISLOGOPEN], window_logm().toggle_visibility, hotkey_text(Options.ISLOGOPEN))
     if CAN_MANIPULATE_CONSOLE and __RUXX_DEBUG__:
         register_menu_checkbutton('Console', CVARS[Options.ISCONSOLELOGOPEN], toggle_console)
     register_menu_checkbutton('Reveal module names', CVARS[Options.REVEALNAMES])
@@ -1034,7 +1035,7 @@ def init_menus() -> None:
     register_menu_separator()
     register_menu_command('Batch download using tag list...', do_process_batch, Options.ACTION_DOWNLOAD_BATCH)
     register_menu_separator()
-    register_menu_command('Clear log', Logger.wnd.clear, Options.ACTION_CLEARLOG, True)
+    register_menu_command('Clear log', window_logm().clear, Options.ACTION_CLEARLOG, True)
     # 7) Tools
     register_menu('Tools', Menus.TOOLS)
     register_menu_command('Load from ID list...', load_id_list)
@@ -1070,15 +1071,16 @@ def init_gui() -> None:
     # Create all app windows
     create_base_window_widgets()
     init_additional_windows()
+    Logger.append_to_window_proc = window_logm().append
     # Window hotkeys in order
-    rootm().bind_all(hotkeys[Options.ISLOGOPEN], func=lambda _: Logger.wnd.toggle_visibility())
+    rootm().bind_all(hotkeys[Options.ISLOGOPEN], func=lambda _: window_logm().toggle_visibility())
     rootm().bind_all(hotkeys[Options.ISPROXYOPEN], func=lambda e: window_proxym().ask() if e.state != 0x20000 else None)
     rootm().bind_all(hotkeys[Options.ISHCOOKIESOPEN], func=lambda _: window_hcookiesm().toggle_visibility())
     rootm().bind_all(hotkeys[Options.ISTIMEOUTOPEN], func=lambda e: window_timeoutm().ask() if e.state != 0x20000 else None)
     rootm().bind_all(hotkeys[Options.ISRETRIESOPEN], func=lambda e: window_retriesm().ask() if e.state != 0x20000 else None)
     rootm().bind_all(hotkeys[Options.ISAPIKEYOPEN], func=lambda e: window_apikeym().ask() if e.state != 0x20000 else None)
     rootm().bind(BUT_ALT_F4, func=lambda _: rootm().destroy())
-    Logger.wnd.window.bind(BUT_ALT_F4, func=lambda _: Logger.wnd.hide() if Logger.wnd.visible else None)
+    window_logm().window.bind(BUT_ALT_F4, func=lambda _: window_logm().hide() if window_logm().visible else None)
     window_hcookiesm().window.bind(BUT_ALT_F4, func=lambda _: window_hcookiesm().hide() if window_hcookiesm().visible else None)
     window_proxym().window.bind(BUT_ALT_F4, func=lambda _: window_proxym().cancel() if window_proxym().visible else None)
     window_timeoutm().window.bind(BUT_ALT_F4, func=lambda _: window_timeoutm().cancel() if window_timeoutm().visible else None)

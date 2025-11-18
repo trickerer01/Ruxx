@@ -153,7 +153,6 @@ from app_help import (
     HELP_TAGS_MSG_RX,
     HELP_TAGS_MSG_XB,
 )
-from app_logger import Logger
 from app_module import ProcModule
 from app_re import re_ask_values, re_json_entry_value, re_space_mult
 from app_revision import APP_NAME, APP_VERSION
@@ -170,7 +169,6 @@ __all__ = (
     'AskFirstLastWindow',
     'AskIntWindow',
     'GetRoot',
-    'LogWindow',
     'ask_filename',
     'browse_path',
     'config_global',
@@ -212,6 +210,7 @@ __all__ = (
     'update_lastpath',
     'window_apikeym',
     'window_hcookiesm',
+    'window_logm',
     'window_proxym',
     'window_retriesm',
     'window_timeoutm',
@@ -819,6 +818,22 @@ class LogWindow(BaseWindow):
         self.scroll: Scrollbar | None = None
         self.firstshow = True
         super().__init__(parent)
+
+    def append(self, text: str) -> None:
+        # current scrollbar position
+        self.scroll.update()  # required to get actual pos
+        old_pos = self.scroll.get()
+
+        # appending to text is impossible if text is disabled
+        self.text.config(state=STATE_NORMAL)
+        self.text.insert(END, text)
+        self.text.config(state=STATE_DISABLED)
+
+        # scroll to bottom if was at the bottom
+        if old_pos[1] >= 1.0:
+            self.text.mark_set(INSERT, END)
+            self.text.see(END)
+            self.text.yview_moveto(1.0)
 
     def config(self) -> None:
         self.window.title('Log')
@@ -1429,11 +1444,14 @@ class ApiKeyWindow(APIRequestStrIntWindow):
 
 
 def init_additional_windows() -> None:
+    global window_log
     global window_proxy
     global window_hcookies
     global window_timeout
     global window_retries
     global window_apikey
+    window_log = LogWindow(root)
+    window_log.window.wm_protocol('WM_DELETE_WINDOW', window_log.on_destroy)
     window_proxy = ProxyWindow(root)
     window_proxy.window.wm_protocol('WM_DELETE_WINDOW', window_proxy.on_destroy)
     window_hcookies = HeadersAndCookiesWindow(root)
@@ -1444,8 +1462,6 @@ def init_additional_windows() -> None:
     window_retries.window.wm_protocol('WM_DELETE_WINDOW', window_retries.on_destroy)
     window_apikey = ApiKeyWindow(root)
     window_apikey.window.wm_protocol('WM_DELETE_WINDOW', window_apikey.on_destroy)
-    Logger.wnd = LogWindow(root)
-    Logger.wnd.window.wm_protocol('WM_DELETE_WINDOW', Logger.wnd.on_destroy)
 
 
 def register_menu(label: str, menu_id: Menus = None) -> Menu:
@@ -1498,6 +1514,11 @@ def c_menum() -> BaseMenu:
 def c_submenum() -> BaseMenu:
     assert c_submenu is not None
     return c_submenu
+
+
+def window_logm() -> LogWindow:
+    assert window_log is not None
+    return window_log
 
 
 def window_proxym() -> ProxyWindow:
@@ -1925,6 +1946,7 @@ rootFrame: BaseFrame | None = None
 rootMenu: Menu | None = None
 # windows
 IS_WIN = sys.platform == PLATFORM_WINDOWS
+window_log: LogWindow | None = None
 window_proxy: ProxyWindow | None = None
 window_hcookies: HeadersAndCookiesWindow | None = None
 window_timeout: ConnectionTimeoutWindow | None = None
