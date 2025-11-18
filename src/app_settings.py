@@ -9,7 +9,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import itertools
 import json
 import os
-from abc import ABC, abstractmethod
 from collections.abc import Callable
 from tkinter import Tk, filedialog
 from typing import Protocol, TextIO
@@ -244,10 +243,8 @@ class Setting:
         return result
 
 
-class ConfigMgr(ABC):
-    """
-    ConfigMgr !Static!
-    """
+class ConfigMgr:
+    """ConfigMgr !Static!"""
     INITIAL_SETTINGS: list[str] = []
     AUTOCONFIG_FILENAMES: tuple[str, str, str, str, str, str, str, str] = tuple(
         ''.join(tup) for tup in itertools.product(('ruxx', 'auto', 'settings', 'config'), ('.cfg', '.json'))
@@ -255,8 +252,8 @@ class ConfigMgr(ABC):
     on_proc_module_change_callback: Callable[[int], None] | None = None
     on_init_autocompletion_callback: Callable[[str], None] | None = None
 
-    @abstractmethod
-    def ___do_not_instantiate_me___(self) -> ...: ...  # noqa: PLW3201
+    def __init__(self) -> None:
+        raise RuntimeError(f'{self.__class__.__name__} class should never be instanced!')
 
     settings = {
         'path': Setting(Options.PATH, DummyValidator(), ''),  # no validation, str

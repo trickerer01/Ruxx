@@ -64,8 +64,7 @@ class ToolTipBase(ABC):
             tw.destroy()
 
     @abstractmethod
-    def _showcontents(self) -> None:
-        ...
+    def _showcontents(self) -> None: ...
 
 
 class WidgetToolTip(ToolTipBase):

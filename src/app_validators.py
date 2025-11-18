@@ -9,7 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import datetime
 import json
 import os
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from argparse import ArgumentError
 from ipaddress import IPv4Address
 
@@ -175,22 +175,19 @@ def valid_api_key(val: str) -> str:
         raise ArgumentError
 
 
-class Validator:
+class Validator(ABC):
     tk = None
 
     @abstractmethod
-    def __call__(self, val: int | str) -> bool:
-        ...
+    def __call__(self, val: int | str) -> bool: ...
 
     @abstractmethod
-    def get_value_type(self) -> type:
-        ...
+    def get_value_type(self) -> type: ...
 
 
 class IntValidator(Validator):
     @abstractmethod
-    def __call__(self, val: int) -> bool:
-        ...
+    def __call__(self, val: int) -> bool: ...
 
     def get_value_type(self) -> type:
         return int
@@ -198,8 +195,7 @@ class IntValidator(Validator):
 
 class StrValidator(Validator):
     @abstractmethod
-    def __call__(self, val: str) -> bool:
-        ...
+    def __call__(self, val: str) -> bool: ...
 
     def get_value_type(self) -> type:
         return str

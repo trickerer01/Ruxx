@@ -20,10 +20,14 @@ TAG_ALIASES: dict[str, str] = {}
 
 
 class TagsDB:
+    """TagsDB !Static!"""
     DB: dict[str, dict[str, int]] = {}
     DBFiles: dict[str, str] = {}
     AuxDB: dict[str, dict[str, str]] = {}
     AuxDBFiles: dict[str, str] = {}
+
+    def __init__(self) -> None:
+        raise RuntimeError(f'{self.__class__.__name__} class should never be instanced!')
 
     @staticmethod
     def try_locate_file_single(filename: str) -> None:
