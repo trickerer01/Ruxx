@@ -32,14 +32,13 @@ class Logger:
 
     @staticmethod
     def _prepare(text: str) -> None:
-        if Logger.is_cmdline is True:
+        if Logger.is_cmdline:
             # need to circumvent non-unicode console errors
             try:
                 print(text)
             except UnicodeError:
                 try:
-                    print(text.encode(UTF8, errors='backslashreplace')
-                          .decode(getpreferredencoding(), errors='backslashreplace'))
+                    print(text.encode(UTF8, errors='backslashreplace').decode(getpreferredencoding(), errors='backslashreplace'))
                 except Exception:
                     print('<Message was not logged due to UnicodeError>')
         else:
@@ -47,13 +46,13 @@ class Logger:
             Logger.append_to_window_proc(f'{text}\n')
 
     @staticmethod
-    def log(message: str, safe: bool, timestamp: bool) -> None:
-        if Logger.is_disabled is True:
+    def log(message: str, safe: bool, add_timestamp: bool) -> None:
+        if Logger.is_disabled:
             return
-        if len(message) == 0:
+        if not message:
             return
 
-        if timestamp is True:
+        if add_timestamp:
             non_n_idx = find_first_not_of(message, '\n')
             textparts = (message[:non_n_idx], message[non_n_idx:]) if non_n_idx != -1 else ('', message)
             message = f'{textparts[0]}[{time.strftime("%X", time.localtime())}] {textparts[1]}'

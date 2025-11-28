@@ -53,8 +53,8 @@ ITEMS_PER_PAGE = ITEMS_PER_PAGE_EN
 MAX_SEARCH_DEPTH_PAGES = 750
 MAX_SEARCH_DEPTH = MAX_SEARCH_DEPTH_PAGES * ITEMS_PER_PAGE  # set by site devs
 
-item_info_fields = {'file_url': 'ext', 'post_id': 'id'}
-tag_blacklisted_always = 'en_always_blacklisted'
+ITEM_INFO_FIELDS = {'file_url': 'ext', 'post_id': 'id'}
+TAG_BLACKLISTED_ALWAYS = 'en_always_blacklisted'
 
 
 @final
@@ -127,10 +127,10 @@ class DownloaderEn(Downloader):
                              str((next(filter(None, pfile['urls'])) or p['file']['url']) if 'urls' in pfile else None))
                 assert post_furl
             except (StopIteration, AssertionError):
-                post_tags_list.append(tag_blacklisted_always)
+                post_tags_list.append(TAG_BLACKLISTED_ALWAYS)
                 post_furl = f'{SITENAME}help/blacklist#default'
                 if __RUXX_DEBUG__:
-                    post_tags_list.remove(tag_blacklisted_always)
+                    post_tags_list.remove(TAG_BLACKLISTED_ALWAYS)
                     post_md5 = p['file']['md5']
                     post_ext_orig = p['file']['ext']
                     post_furl = f'{SITENAME.replace("//", "//static1.")}data/{post_md5[:2]}/{post_md5[2:4]}/{post_md5}.{post_ext_orig}'
@@ -246,7 +246,7 @@ class DownloaderEn(Downloader):
                 return item_info
             for part in re_item_info_part_xml.findall(item):
                 name, value = tuple(str(part).split('=', 1))
-                name = item_info_fields.get(name, name)
+                name = ITEM_INFO_FIELDS.get(name, name)
                 if name == 'ext':  # special case: file_url -> ext -> extract ext
                     value = value[value.rfind('.') + 1:]
                 if name in item_info.__slots__:
@@ -388,7 +388,7 @@ class DownloaderEn(Downloader):
             item_id = self._extract_id(h)
             idstring = f'{(abbrp if self.add_filename_prefix else "")}{item_id}'
             item_info = self.item_info_dict_per_task.get(idstring)
-            if tag_blacklisted_always in item_info.tags:
+            if TAG_BLACKLISTED_ALWAYS in item_info.tags:
                 removed_messages.append(f'{abbrp}{item_id} is \'young -rating:s\' and is always blacklisted unless you log in, skipped!')
                 if item_id in parents:
                     parents.remove(item_id)

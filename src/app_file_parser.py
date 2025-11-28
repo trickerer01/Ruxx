@@ -64,15 +64,15 @@ PREFIX_OPTIONAL_PATTERNS = {
 
 
 def get_idval_eq_sep() -> str:
-    return IDVAL_EQ_SEPARATORS.get(ProcModule.value())
+    return IDVAL_EQ_SEPARATORS[ProcModule.value()]
 
 
 def get_r_idstring() -> re.Pattern:
-    return IDSTRING_PATTERNS.get(ProcModule.value())
+    return IDSTRING_PATTERNS[ProcModule.value()]
 
 
 def get_r_prefix_optional() -> re.Pattern:
-    return PREFIX_OPTIONAL_PATTERNS.get(ProcModule.value())
+    return PREFIX_OPTIONAL_PATTERNS[ProcModule.value()]
 
 
 def id_list_from_string(id_str: str) -> list[str]:
@@ -88,13 +88,11 @@ def parse_ids_file(filepath: str) -> tuple[bool, list[str]]:
             for line in ifile:
                 line = line.strip(' \n\ufeff')
                 if line and not re_comments.fullmatch(line):
-                    if get_r_idstring().fullmatch(line):
-                        id_list.extend(id_list_from_string(line))
-                    else:
-                        raise OSError
+                    assert get_r_idstring().fullmatch(line)
+                    id_list.extend(id_list_from_string(line))
         return True, [f'id{get_idval_eq_sep()}{s}' for s in sorted(unique_everseen(id_list), key=int)]
     except Exception:
-        return False, id_list
+        return False, []
 
 
 def prepare_id_list(filepath: str) -> tuple[bool, str]:

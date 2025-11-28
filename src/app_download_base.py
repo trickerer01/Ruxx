@@ -220,7 +220,7 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _clean_favorite_user(self) -> None:
         self.favorites_search_user = ''
 
-    def _extract_pool_id(self, pool_tags: list[re.Match | None]) -> None:
+    def _extract_pool_id(self, pool_tags: list[re.Match]) -> None:
         self.pool_search_str = pool_tags[-1].group(1) if pool_tags else ''
 
     def _clean_pool_id(self) -> None:

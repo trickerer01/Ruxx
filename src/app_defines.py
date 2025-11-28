@@ -26,8 +26,7 @@ class Comment:
     def __str__(self) -> str:
         return f'{self.author}:\n{self.body}'
 
-    def __repr__(self) -> str:
-        return str(self)
+    __repr__ = __str__
 
 
 class ItemInfo:
@@ -99,7 +98,7 @@ PROGRESS_BAR_PCT = {
     DownloaderStates.FILTERING_ITEMS4: 0.005,
     DownloaderStates.DOWNLOADING: 0.965,
 }
-assert sum(v for v in PROGRESS_BAR_PCT.values()) == 1.000
+assert sum(PROGRESS_BAR_PCT.values()) == 1.000
 
 
 PROGRESS_BAR_MAX = 1000000000

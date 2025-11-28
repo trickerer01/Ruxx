@@ -23,16 +23,18 @@ from app_utils import trim_underscores
 __all__ = ('append_filtered_tags', 'no_validation_tag', 'normalize_wtag')
 
 
+# unused
 def no_validation_tag(tag: str) -> str:
     return tag[1:-1] if len(tag) > 2 and f'{tag[0]}{tag[-1]}' == '%%' else ''
 
 
+# unused
 def normalize_wtag(wtag: str) -> str:
     return wtag.replace('*', '.*').replace('?', '.')
 
 
 def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: re.Pattern, re_tags_to_exclude: re.Pattern) -> str:
-    if len(tags_str) == 0:
+    if not tags_str:
         return base_string
 
     tags_list = tags_str.split(' ')
@@ -40,13 +42,12 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: re
 
     for tag in tags_list:
         tag = tag.replace('-', '').replace('\'', '')
-        if TAG_ALIASES.get(tag) is None and re_tags_to_process.fullmatch(tag) is None:
+        if tag not in TAG_ALIASES and not re_tags_to_process.fullmatch(tag):
             continue
 
         # digital_media_(artwork)
-        aser_match = re_meta_group.fullmatch(tag)
         aser_valid = False
-        if aser_match:
+        if aser_match := re_meta_group.fullmatch(tag):
             major_skip_match1 = re_tags_exclude_major1.fullmatch(aser_match.group(1))
             major_skip_match2 = re_tags_exclude_major2.fullmatch(aser_match.group(2))
             if major_skip_match1 or major_skip_match2:
@@ -65,7 +66,7 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: re
             continue
 
         do_add = True
-        if len(tags_toadd_list) > 0:
+        if tags_toadd_list:
             nutag = re_not_a_letter.sub('', re_numbered_or_counted_tag.sub(r'\1', tag))
             # try and see
             # 1) if this tag can be consumed by existing tags
@@ -73,14 +74,14 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: re
             for i in reversed(range(len(tags_toadd_list))):
                 t = re_numbered_or_counted_tag.sub(r'\1', tags_toadd_list[i].lower())
                 nut = re_not_a_letter.sub('', t)
-                if len(nut) >= len(nutag) and (nutag in nut):
+                if len(nut) >= len(nutag) and nutag in nut:
                     do_add = False
                     break
             if do_add:
                 for i in reversed(range(len(tags_toadd_list))):
                     t = re_numbered_or_counted_tag.sub(r'\1', tags_toadd_list[i].lower())
                     nut = re_not_a_letter.sub('', t)
-                    if 1 < len(nut) <= len(nutag) and (nut in nutag):
+                    if 1 < len(nut) <= len(nutag) and nut in nutag:
                         if aser_valid is False and tags_toadd_list[i][0].isupper():
                             aser_valid = True
                         del tags_toadd_list[i]

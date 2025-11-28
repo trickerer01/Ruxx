@@ -22,7 +22,7 @@ from app_re import re_item_info_part_xml, re_orig_file_link, re_sample_file_link
 
 __all__ = ('DownloaderGelbooru',)
 
-item_info_fields = {'file_url': 'ext'}
+ITEM_INFO_FIELDS = {'file_url': 'ext'}
 
 
 class DownloaderGelbooru(Downloader):
@@ -198,7 +198,7 @@ class DownloaderGelbooru(Downloader):
                 return item_info
             for part in re_item_info_part_xml.findall(item):
                 name, value = tuple(str(part).split('=', 1))
-                name = item_info_fields.get(name, name)
+                name = ITEM_INFO_FIELDS.get(name, name)
                 if name == 'ext':  # special case: file_url -> ext -> extract ext
                     value = value[value.rfind('.') + 1:]
                 if name in item_info.__slots__:

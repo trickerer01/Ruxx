@@ -47,10 +47,10 @@ ITEMS_PER_PAGE = ITEMS_PER_PAGE_RP
 
 MAX_SEARCH_DEPTH = 0
 
-item_info_fields = {'file_name': 'ext', 'score': 'score_'}
+ITEM_INFO_FIELDS = {'file_name': 'ext', 'score': 'score_'}
 
-valid_extensions = ('jpg', 'jpeg', 'png', 'gif', 'mp4', 'webm')
-ext_pet_content_type = {
+VALID_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'mp4', 'webm'}
+EXT_PET_CONTENT_TYPE = {
     'application/mp4': 'mp4',
     'image/gif': 'gif',
     'image/jpeg': 'jpg',
@@ -205,7 +205,7 @@ class DownloaderRp(Downloader):
                 item = f'{item[:qidx]}"{item[qidx + 1:qend_idx].replace(dq, oq)}"{item[qend_idx + 1:]}'
             for part in re_item_info_part_xml.findall(item):
                 name, value = tuple(str(part).split('=', 1))
-                name = item_info_fields.get(name, name)
+                name = ITEM_INFO_FIELDS.get(name, name)
                 if name == 'ext':  # special case: file_url -> ext -> extract ext
                     value = self.extract_file_url(item)[1]
                 if name in item_info.__slots__:
@@ -319,9 +319,9 @@ class DownloaderRp(Downloader):
             value = filename
             if '.' in value:
                 value = value[value.rfind('.') + 1:].strip('."\'\n\\/')
-                value = value if value in valid_extensions else ''
+                value = value if value in VALID_EXTENSIONS else ''
             if not 3 <= len(value) <= 4:
-                for formatname in valid_extensions:
+                for formatname in VALID_EXTENSIONS:
                     if formatname in value:
                         value = formatname
                         break
@@ -330,7 +330,7 @@ class DownloaderRp(Downloader):
                 r = self.wrap_request(file_url, tries=self.retries, method='HEAD')
                 if r is not None:
                     content_type = r.headers.get('Content-Type', '')
-                    value = ext_pet_content_type.get(content_type, value)
+                    value = EXT_PET_CONTENT_TYPE.get(content_type, value)
                     if len(value) not in (3, 4) and '/' in content_type:
                         value = content_type[content_type.find('/') + 1:]
             if len(value) not in (3, 4):

@@ -47,7 +47,7 @@ ITEMS_PER_PAGE = ITEMS_PER_PAGE_RN
 
 MAX_SEARCH_DEPTH = 0
 
-item_info_fields = {'data-post-id': 'id', 'data-tags': 'tags', 'title': 'ext'}
+ITEM_INFO_FIELDS = {'data-post-id': 'id', 'data-tags': 'tags', 'title': 'ext'}
 
 
 @final
@@ -197,7 +197,7 @@ class DownloaderRn(Downloader):
                 name, value = tuple(str(part).split('=', 1))
                 if name == 'id':  # special case id (thumb_...): skip
                     continue
-                name = item_info_fields.get(name, name)
+                name = ITEM_INFO_FIELDS.get(name, name)
                 if name == 'ext':  # special case: title -> ext -> extract ext
                     value = value[value.rfind(' ') + 1:]
                 if name in item_info.__slots__:

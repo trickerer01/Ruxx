@@ -85,7 +85,8 @@ def move_exe() -> None:
         if not os.path.isfile(RELEASE_SRC):
             raise FileNotFoundError('2')
     except FileNotFoundError:
-        print(f'{sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}')
+        import traceback
+        print(traceback.format_exc())
         return
     if os.path.isfile(RELEASE_DEST):
         os.remove(RELEASE_DEST)
@@ -107,7 +108,8 @@ def build_exe() -> None:
 
 def cleanup() -> None:
     def report_exc(*_) -> None:
-        print(f'{sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}')
+        import traceback
+        print(traceback.format_exc())
     for clean_item in CLEANUP_FILES:
         if os.path.isfile(clean_item):
             os.remove(clean_item)
