@@ -425,9 +425,6 @@ class Downloader(DownloaderBase):
     def _process_tags(self, tag_str: str) -> None:
         self._fetch_task_items(self._consume_custom_module_tags(tag_str))
 
-        if self.total_count_all == 0:
-            return
-
         self._after_filter(0.025)
 
         self._apply_filter(DownloaderStates.FILTERING_ITEMS1, self._filter_last_items)
