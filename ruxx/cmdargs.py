@@ -109,7 +109,7 @@ from .vcs import APP_NAME, APP_VERSION
 
 __all__ = ('prepare_arglist',)
 
-DEFAULT_PATH = valid_folder_path(os.path.curdir)
+DEFAULT_PATH = valid_folder_path('.')
 
 
 def create_parser() -> ArgumentParser:

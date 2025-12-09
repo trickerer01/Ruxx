@@ -7,12 +7,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import datetime
-import os
 import pathlib
 
 __all__ = ()
 
-CWD = pathlib.Path(os.path.realpath(os.path.abspath(__file__))).parent.parent.parent.as_posix()
+CWD = pathlib.Path(__file__).resolve().parent.parent.parent.as_posix()
 APP_REV_FILE_PATH = f'{CWD}/ruxx/vcs/version.py'
 STR_APP_REVISION = 'APP_REVISION = \''
 STR_APP_DATE = 'APP_REV_DATE = \''

@@ -106,7 +106,6 @@ FONT_LUCIDA_MEDIUM = ('Lucida Grande', 10)
 FONT_SANS_SMALL = ('Microsoft Sans Serif', 8)
 FONT_SANS_MEDIUM = ('Microsoft Sans Serif', 10)
 # Formats & patterns
-SLASH = '/'
 UNDERSCORE = '_'
 NEWLINE = '\n'
 NEWLINE_X2 = '\n\n'

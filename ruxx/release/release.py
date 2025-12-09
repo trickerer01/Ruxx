@@ -23,16 +23,17 @@ __all__ = ()
 
 RUN_TESTS = not __RUXX_DEBUG__ and sys.platform == PLATFORM_LINUX
 
-ROOT_DIR = pathlib.Path(os.path.realpath(os.path.abspath(__file__))).parent.parent.parent.as_posix()
-RELEASE_SRC_DIR = f'{ROOT_DIR}/dist/'
-RELEASE_DEST_DIR = f'{ROOT_DIR}/release/'
+ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent.parent
+BUILD_DIR = ROOT_DIR / 'build'
+RELEASE_SRC_DIR = ROOT_DIR / 'dist'
+RELEASE_DEST_DIR = ROOT_DIR / 'release'
 RELEASE_FILENAME = f'{APP_NAME}{".exe" if sys.platform == PLATFORM_WINDOWS else ""}'
-RELEASE_SRC = f'{RELEASE_SRC_DIR}{RELEASE_FILENAME}'
-RELEASE_DEST = f'{RELEASE_DEST_DIR}{RELEASE_FILENAME}'
+RELEASE_SRC = RELEASE_SRC_DIR / RELEASE_FILENAME
+RELEASE_DEST = RELEASE_DEST_DIR / RELEASE_FILENAME
 RELEASE_ICON_SIZE = 256
 
-CLEANUP_FILES = (VERSIONINFO_FILE_PATH, f'{ROOT_DIR}/{APP_NAME}.spec')
-CLEANUP_DIRS = (f'{ROOT_DIR}/build/', f'{ROOT_DIR}/dist/')
+CLEANUP_FILES = (VERSIONINFO_FILE_PATH, ROOT_DIR / f'{APP_NAME}.spec')
+CLEANUP_DIRS = (BUILD_DIR, RELEASE_SRC_DIR)
 
 MODULES_EXCLUDED = (
     'lxml',
@@ -84,13 +85,13 @@ MODULES_EXCLUDED = (
 
 def move_exe() -> None:
     try:
-        if not os.path.isfile(RELEASE_SRC):
+        if not RELEASE_SRC.is_file():
             raise FileNotFoundError('2')
     except FileNotFoundError:
         import traceback
         print(traceback.format_exc())
         return
-    if os.path.isfile(RELEASE_DEST):
+    if RELEASE_DEST.is_file():
         os.remove(RELEASE_DEST)
 
     shutil.move(RELEASE_SRC, RELEASE_DEST_DIR)
@@ -113,10 +114,10 @@ def cleanup() -> None:
         import traceback
         print(traceback.format_exc())
     for clean_item in CLEANUP_FILES:
-        if os.path.isfile(clean_item):
+        if clean_item.is_file():
             os.remove(clean_item)
     for clean_item in CLEANUP_DIRS:
-        if os.path.isdir(clean_item):
+        if clean_item.is_file():
             shutil.rmtree(clean_item, onerror=report_exc)
 
 

@@ -8,11 +8,11 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import json
 import os
+import pathlib
 
 from .defines import FILE_NAME_ALIASES, MODULE_CHOICES, TAG_AUTOCOMPLETE_LENGTH_MIN, TAG_AUTOCOMPLETE_NUMBER_MAX, UTF8
 from .logger import trace
 from .rex import re_wtag
-from .utils import normalize_path
 
 __all__ = ('TAG_ALIASES', 'TagsDB', 'is_wtag', 'load_tag_aliases')
 
@@ -22,9 +22,9 @@ TAG_ALIASES: dict[str, str] = {}
 class TagsDB:
     """TagsDB !Static!"""
     DB: dict[str, dict[str, int]] = {}
-    DBFiles: dict[str, str] = {}
-    AuxDB: dict[str, dict[str, str]] = {}
-    AuxDBFiles: dict[str, str] = {}
+    DBFiles: dict[str, pathlib.Path] = {}
+    AuxDB: dict[str, pathlib.Path] = {}
+    AuxDBFiles: dict[str, pathlib.Path] = {}
 
     def __init__(self) -> None:
         raise RuntimeError(f'{self.__class__.__name__} class should never be instanced!')
@@ -33,21 +33,19 @@ class TagsDB:
     def try_locate_file_single(filename: str) -> None:
         if filename in TagsDB.AuxDBFiles:
             return
-        acwd = os.path.abspath(os.getcwd())
-        afld = os.path.abspath(os.path.dirname(__file__))
+        acwd = pathlib.Path(os.getcwd()).resolve()
+        afld = pathlib.Path(__file__).resolve().parent.parent
+        if acwd.name == 'ruxx':
+            acwd = acwd.parent
+        if afld.name == 'ruxx':
+            afld = afld.parent
         trace(f'cwd: \'{acwd}\'')
         trace(f'fld: \'{afld}\'')
-        if os.path.basename(acwd) == 'ruxx':
-            acwd = os.path.abspath(f'{acwd}/..')
-        if os.path.basename(afld) == 'ruxx':
-            afld = os.path.abspath(f'{afld}/..')
-        basepath1 = normalize_path(acwd, False)
-        basepath2 = normalize_path(afld, False)
-        for basepath in (basepath1, basepath2):
-            for folder_path in (f'{basepath}/', f'{basepath}/tags/', f'{basepath}/2tags/'):
-                pfilename = f'{folder_path}{filename}'
+        for basepath in (acwd, afld):
+            for folder_path in (basepath, basepath / 'tags', basepath / '2tags'):
+                pfilename = folder_path / filename
                 trace(f'looking for {pfilename}...')
-                if os.path.isfile(pfilename):
+                if pfilename.is_file():
                     TagsDB.AuxDBFiles[filename] = pfilename
                     trace('...found')
                     break
@@ -55,25 +53,25 @@ class TagsDB:
                 break
 
     @staticmethod
-    def try_set_basepath(basepath: str, *, traverse=True) -> int:
-        def collect_taglist_names(fpath: str, paths_dict: dict[str, str]) -> None:
+    def try_set_basepath(basepath: pathlib.Path, *, traverse=True) -> int:
+        def collect_taglist_names(fpath: pathlib.Path, paths_dict: dict[str, pathlib.Path]) -> None:
             for module in MODULE_CHOICES:
-                taglist_path = f'{fpath}{module}_tags.json'
-                if os.path.isfile(taglist_path):
+                taglist_path = fpath / f'{module}_tags.json'
+                if taglist_path.is_file():
                     paths_dict[module] = taglist_path
 
-        def collect_aux_file_names(fpath: str) -> None:
-            tag_aliases_path = f'{fpath}all_tag_aliases.json'
-            if os.path.isfile(tag_aliases_path):
+        def collect_aux_file_names(fpath: pathlib.Path) -> None:
+            tag_aliases_path = fpath / 'all_tag_aliases.json'
+            if tag_aliases_path.is_file():
                 TagsDB.AuxDBFiles[FILE_NAME_ALIASES] = tag_aliases_path
 
-        folder = normalize_path(basepath or os.path.abspath(f'{os.path.dirname(__file__)}/..'), False)
+        folder = pathlib.Path(__file__).resolve().parent.parent
         TagsDB.clear()
         while not TagsDB.DBFiles:
-            folder_up, tail = tuple(os.path.split(folder))
-            for folder_path in (f'{folder}/', f'{folder}/tags/', f'{folder}/2tags/'):
-                if os.path.isdir(folder_path):
-                    tlpaths: dict[str, str] = {}
+            folder_up, tail = folder.parent, folder.name
+            for folder_path in (basepath, basepath / 'tags', basepath / '2tags'):
+                if folder_path.is_dir():
+                    tlpaths: dict[str, pathlib.Path] = {}
                     collect_taglist_names(folder_path, tlpaths)
                     if tlpaths:
                         TagsDB.DBFiles.update(tlpaths)
@@ -138,7 +136,7 @@ class TagsDB:
     @staticmethod
     def load_aux_file(filename: str, dest: dict[str, str]) -> None:
         assert filename not in TagsDB.AuxDB
-        if filepath := TagsDB.AuxDBFiles.get(filename, ''):
+        if filepath := TagsDB.AuxDBFiles.get(filename, pathlib.Path()):
             with open(filepath, 'rt', encoding=UTF8) as auxfile:
                 dest.update(json.load(auxfile))
                 TagsDB.AuxDB[filename] = filepath
@@ -155,6 +153,8 @@ def load_tag_aliases() -> None:
             TagsDB.try_locate_file_single(FILE_NAME_ALIASES)
             TagsDB.load_aux_file(FILE_NAME_ALIASES, TAG_ALIASES)
         except Exception:
+            import traceback
+            trace(traceback.format_exc())
             trace(f'Error: Failed to load tag aliases from {TagsDB.AuxDBFiles.get(FILE_NAME_ALIASES, FILE_NAME_ALIASES)}')
             TAG_ALIASES.update({'': ''})
 

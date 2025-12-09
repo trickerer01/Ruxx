@@ -13,7 +13,7 @@ from collections.abc import Iterable, MutableSequence
 from tkinter import messagebox
 
 from .defines import FMT_DATE, MIN_PYTHON_VERSION, MIN_PYTHON_VERSION_STR, SUBFOLDER_NAME_LEN_MAX, SUPPORTED_PLATFORMS
-from .gui_defines import OPTION_CMD_PATH_CMD, OPTION_CMD_PROXY_CMD, SLASH, UNDERSCORE
+from .gui_defines import OPTION_CMD_PATH_CMD, OPTION_CMD_PROXY_CMD, UNDERSCORE
 from .rex import re_replace_symbols_sub, re_uscore_mult
 
 
@@ -51,13 +51,6 @@ def as_date(date_s: str) -> datetime.date:
 
 def confirm_yes_no(title: str, msg: str) -> bool:
     return messagebox.askyesno(title, msg)
-
-
-def normalize_path(basepath: str, append_slash=True) -> str:
-    normalized_path = basepath.replace('\\', SLASH)
-    if append_slash and len(normalized_path) != 0 and normalized_path[-1] != SLASH:
-        normalized_path += SLASH
-    return normalized_path
 
 
 def trim_underscores(base_str: str) -> str:

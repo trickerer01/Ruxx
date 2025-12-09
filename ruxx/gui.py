@@ -9,6 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import ctypes
 import datetime
 import os
+import pathlib
 import sys
 import time
 from collections.abc import Callable
@@ -133,7 +134,6 @@ from .gui_defines import (
     OPTION_VALUES_PARCHI,
     OPTION_VALUES_THREADING,
     OPTION_VALUES_VIDEOS,
-    SLASH,
     STATE_DISABLED,
     STATE_NORMAL,
     THREAD_CHECK_PERIOD_DEFAULT,
@@ -153,7 +153,7 @@ from .module import ProcModule
 from .settings import ConfigMgr
 from .tags_parser import parse_tags, reset_last_tags
 from .tagsdb import TagsDB
-from .utils import confirm_yes_no, ensure_compatibility, garble_argument_values, normalize_path
+from .utils import confirm_yes_no, ensure_compatibility, garble_argument_values
 from .validators import DateValidator
 from .vcs import __RUXX_DEBUG__
 
@@ -248,7 +248,7 @@ def sort_files_by_score_do() -> None:
             file_worker_report(result, len(filelist), 'sort')
 
 
-def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], None]) -> None:
+def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[pathlib.Path]]], None]) -> None:
     global duplicates_check_thread
 
     if is_menu_disabled(Menus.TOOLS, SubMenus.DUPLICATES):
@@ -280,7 +280,7 @@ def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], Non
     config_menu(Menus.TOOLS, SubMenus.DUPLICATES, state=STATE_DISABLED)
     unfocus_buttons_once()
 
-    ret_files: dict[str, list[str]] = {}
+    ret_files: dict[str, list[pathlib.Path]] = {}
     trace(f'Looking for duplicated files in \'{loc}\'...')
     duplicates_check_thread = Thread(target=lambda: find_duplicated_files(ret_files, loc, depth, keep))
     duplicates_check_threadm().killed = False
@@ -302,7 +302,7 @@ def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[str]]], Non
                 for base_file_fullpath in sorted(ret_files.keys(), reverse=True):
                     file_num += 1
                     dupe_paths = ret_files[base_file_fullpath]
-                    dupe_messages.append(f' {file_num:d}) {base_file_fullpath}:{n}{n.join(dupe_paths)}')
+                    dupe_messages.append(f' {file_num:d}) {base_file_fullpath}:{n}{n.join(_.as_posix() for _ in dupe_paths)}')
             else:
                 dupe_messages.append('No duplicates found!')
             trace('\n'.join(dupe_messages))
@@ -325,22 +325,21 @@ def find_duplicates_do() -> None:
 
 
 def find_duplicates_separate_do() -> None:
-    def callback_(dfiles: dict[str, list[str]]) -> None:
+    def callback_(dfiles: dict[str, list[pathlib.Path]]) -> None:
         if not dfiles:
             return
         moved_files = 0
-        filepaths: list[str] = []
+        filepaths: list[pathlib.Path] = []
         for _basefile, dupes in dfiles.items():
             filepaths.extend(dupes)
-        root_folder = normalize_path(os.path.commonpath([os.path.split(dfilepath)[0] for dfilepath in dfiles]))
-        move_folder = f'{root_folder}dupes/'
+        root_folder = pathlib.Path(os.path.commonpath([os.path.split(dfilepath)[0] for dfilepath in dfiles]))
+        move_folder = root_folder / 'dupes'
         try:
-            if not os.path.isdir(move_folder):
-                os.makedirs(move_folder)
+            move_folder.mkdir(parents=True, exist_ok=True)
             for dupe_file_path in filepaths:
-                dest_file_path = f'{move_folder}{os.path.split(dupe_file_path)[1]}'
-                if os.path.abspath(dupe_file_path) != os.path.abspath(dest_file_path):
-                    os.replace(dupe_file_path, dest_file_path)
+                dest_file_path = move_folder / dupe_file_path.name
+                if dupe_file_path.resolve() != dest_file_path.resolve():
+                    dupe_file_path.replace(dest_file_path)
                 moved_files += 1
         finally:
             file_worker_report(moved_files, sum(len(dfiles[_]) for _ in dfiles), 'mov', f' to \'{move_folder}\'')
@@ -349,7 +348,7 @@ def find_duplicates_separate_do() -> None:
 
 
 def find_duplicates_remove_do() -> None:
-    def callback_(dfiles: dict[str, list[str]]) -> None:
+    def callback_(dfiles: dict[str, list[pathlib.Path]]) -> None:
         if not dfiles:
             return
         removed_files = 0
@@ -365,23 +364,23 @@ def find_duplicates_remove_do() -> None:
 
 
 def open_download_folder() -> None:
-    cur_path = normalize_path(getrootconf(Options.PATH))
+    cur_path = pathlib.Path(getrootconf(Options.PATH)).resolve()
 
-    if not os.path.isdir(cur_path[:(cur_path.find(SLASH) + 1)]):
+    if not next(reversed(cur_path.parents)).is_dir():
         messagebox.showerror('Open download folder', f'Path \'{cur_path}\' is invalid.')
         return
 
-    if not os.path.isdir(cur_path):
+    if not cur_path.is_dir():
         if not confirm_yes_no('Open download folder', f'Path \'{cur_path}\' doesn\'t exist. Create it?'):
             return
         try:
-            os.makedirs(cur_path)
+            cur_path.mkdir(parents=True, exist_ok=True)
         except Exception:
             trace(f'Unable to create path \'{cur_path}\'.')
             return
 
     try:
-        if res := os.system(f'start "" "{os.path.abspath(cur_path)}"'):
+        if res := os.system(f'start "" "{cur_path.as_posix()}"'):
             trace(f'Couldn\'t open \'{cur_path}\', error: {res:d}.')
     except Exception:
         trace(f'Couldn\'t open \'{cur_path}\'.')
@@ -389,12 +388,12 @@ def open_download_folder() -> None:
 
 def report_autocompletion_db_size() -> None:
     n = '\n - '
-    trace(f'Found {len(TagsDB.DBFiles):d} tag lists:{n}{n.join(TagsDB.DBFiles.values())}')
+    trace(f'Found {len(TagsDB.DBFiles):d} tag lists:{n}{n.join(_.as_posix() for _ in TagsDB.DBFiles.values())}')
 
 
 def report_aux_db_size() -> None:
     n = '\n - '
-    trace(f'Found {len(TagsDB.AuxDBFiles):d} aux lists:{n}{n.join(TagsDB.AuxDBFiles.values())}')
+    trace(f'Found {len(TagsDB.AuxDBFiles):d} aux lists:{n}{n.join(_.as_posix() for _ in TagsDB.AuxDBFiles.values())}')
 
 
 def init_autocompletion(loc='', force=True) -> None:
@@ -535,7 +534,7 @@ def prepare_cmdline() -> list[str]:
     newstr.append(OPTION_CMD_MODULE_CMD)
     newstr.append(module_name)
     # + path (tags included)
-    pathstr = normalize_path(str(getrootconf(Options.PATH)))
+    pathstr = pathlib.Path(getrootconf(Options.PATH)).as_posix()
     newstr.append(OPTION_CMD_PATH_CMD)
     newstr.append(f'\'{pathstr}\'')
     # + options
@@ -750,10 +749,10 @@ def recheck_args() -> tuple[bool, str]:
     if not parse_result:
         return False, 'Invalid tags'
     # path
-    pathstr = normalize_path(os.path.expanduser(str(getrootconf(Options.PATH))))
-    if len(pathstr) <= 0:
+    dest_path = pathlib.Path(getrootconf(Options.PATH)).resolve()
+    if not dest_path:
         return False, 'No path specified'
-    if not os.path.isdir(pathstr[:(pathstr.find(SLASH) + 1)]):
+    if not dest_path.parent.is_dir():
         return False, 'Invalid path'
     # dates
     dateafter_str = '""'

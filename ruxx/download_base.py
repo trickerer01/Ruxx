@@ -7,6 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import os
+import pathlib
 import re
 from abc import abstractmethod
 from collections.abc import MutableSet
@@ -28,7 +29,7 @@ from .defines import (
 )
 from .logger import trace
 from .network import ThreadedHtmlWorker, thread_exit
-from .utils import as_date, normalize_path
+from .utils import as_date
 
 
 class DownloaderBase(ThreadedHtmlWorker):
@@ -58,7 +59,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.low_res: bool = False
         self.date_min: str = DATE_MIN_DEFAULT
         self.date_max: str = DATE_MAX_DEFAULT
-        self.dest_base: str = normalize_path(os.path.abspath(os.curdir))
+        self.dest_base: pathlib.Path = pathlib.Path(os.curdir).resolve().parent
         self.warn_nonempty: bool = False
         self.api_key: APIKey = APIKey()
         self.tags_str_arr: list[str] = []
@@ -95,8 +96,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.current_task_subfolder: str = ''
 
     @property
-    def dest_base_s(self) -> str:
-        return normalize_path(f'{self.dest_base}{self.current_task_subfolder}')
+    def dest_base_s(self) -> pathlib.Path:
+        return self.dest_base / self.current_task_subfolder
 
     @property
     def total_pages(self) -> int:
@@ -653,7 +654,7 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _filter_existing_items(self) -> None:
         trace('Filtering out existing items...')
 
-        if not os.path.isdir(self.dest_base_s):
+        if not self.dest_base_s.is_dir():
             return
 
         with os.scandir(self.dest_base_s) as listing:

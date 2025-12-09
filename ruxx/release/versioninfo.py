@@ -7,7 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import base64
-import os
+import pathlib
 
 from ruxx.defines import UTF8
 from ruxx.help import APP_ADDRESS, APP_AUTHOR_NICKNAME
@@ -18,7 +18,7 @@ APP_DOWNLOADER_TYPE = base64.b64decode('cnVsZTM0').decode()
 APP_EMBED_VERSION = f'{APP_VER_MAJOR}.{APP_VER_SUB} r{APP_REVISION}{APP_IS_BETA_TEXT}'
 
 APP_VERSION_INFO_FILENAME = 'version_info.txt'
-VERSIONINFO_FILE_PATH = f'{os.path.curdir}/{APP_VERSION_INFO_FILENAME}'
+VERSIONINFO_FILE_PATH = pathlib.Path('.').resolve() / APP_VERSION_INFO_FILENAME
 APP_VERSION_INFO_CONTENT = (
     f'VSVersionInfo(\n'
     f'  ffi=FixedFileInfo(\n'

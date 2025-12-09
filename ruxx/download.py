@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import itertools
 import os
+import pathlib
 import sys
 import time
 from abc import abstractmethod
@@ -41,7 +42,7 @@ from .defines import (
     ThreadInterruptException,
 )
 from .download_base import DownloaderBase
-from .gui_defines import NEWLINE, NEWLINE_X2, OPTION_CMD_APIKEY_CMD, SLASH, UNDERSCORE
+from .gui_defines import NEWLINE, NEWLINE_X2, OPTION_CMD_APIKEY_CMD, UNDERSCORE
 from .logger import trace
 from .module import ProcModule
 from .network import DownloadInterruptException, ThreadedHtmlWorker, thread_exit
@@ -50,7 +51,7 @@ from .tagger import append_filtered_tags
 from .tags_parser import convert_taglist
 from .tagsdb import load_tag_aliases
 from .task import extract_neg_and_groups, split_tags_into_tasks
-from .utils import confirm_yes_no, format_score, garble_argument_values, make_subfolder_name, normalize_path, trim_underscores
+from .utils import confirm_yes_no, format_score, garble_argument_values, make_subfolder_name, trim_underscores
 from .vcs import __RUXX_DEBUG__, APP_NAME, APP_VERSION
 
 __all__ = ('Downloader',)
@@ -124,7 +125,7 @@ class Downloader(DownloaderBase):
                 api_key_default = self.get_module_specific_default_value(ModuleConfigType.CONFIG_API_KEY)
                 api_key_is_default = self.api_key.key == api_key_default
                 garble_argument_values(self.cmdline, *((OPTION_CMD_APIKEY_CMD,) if not api_key_is_default else ()))
-            trace(f'Python {sys.version}\nBase args: {" ".join(_[_.rfind(SLASH) + 1:] for _ in sys.argv)}'
+            trace(f'Python {sys.version}\nBase args: {" ".join(_[_.rfind("/") + 1:] for _ in sys.argv)}'
                   f'\nMy args: {" ".join(self.cmdline)}')
 
     def get_tags_count(self, offset=0) -> int:
@@ -157,14 +158,13 @@ class Downloader(DownloaderBase):
         return f'{item_abbrname}{add_string}'
 
     # threaded
-    def _download(self, link: str, item_id: str, dest: str) -> None:
+    def _download(self, link: str, item_id: str, dest: pathlib.Path) -> None:
         if self.download_mode != DownloadModes.SKIP:
             with self.item_lock:
-                if not os.path.isdir(self.dest_base_s):
-                    try:
-                        os.makedirs(self.dest_base_s)
-                    except OSError:
-                        thread_exit('ERROR: Unable to create subfolder!')
+                try:
+                    self.dest_base_s.mkdir(parents=True, exist_ok=True)
+                except OSError:
+                    thread_exit('ERROR: Unable to create subfolder!')
 
         try:
             result = self.download_file(link, item_id, dest, self.download_mode)
@@ -535,7 +535,7 @@ class Downloader(DownloaderBase):
         self.orig_tasks_count = self._tasks_count()
 
     def _process_all_tags(self) -> None:
-        if self.warn_nonempty and os.path.isdir(self.dest_base):
+        if self.warn_nonempty and self.dest_base.is_dir():
             with os.scandir(self.dest_base) as listing:
                 if next(listing, None):
                     if not confirm_yes_no('Download', f'Destination folder \'{self.dest_base}\' is not empty. Continue anyway?'):
@@ -660,7 +660,7 @@ class Downloader(DownloaderBase):
         self.low_res = args.lowres or self.low_res
         self.date_min = args.mindate or self.date_min
         self.date_max = args.maxdate or self.date_max
-        self.dest_base = normalize_path(args.path) if args.path else self.dest_base
+        self.dest_base = args.path or self.dest_base
         self.warn_nonempty = args.warn_nonempty or self.warn_nonempty
         self.api_key = APIKey(args.api_key) or self.api_key
         self.tags_str_arr[:] = [] if self.get_max_id else convert_taglist(args.tags)
@@ -765,15 +765,14 @@ class Downloader(DownloaderBase):
         if len(self.item_info_dict_all) == 0 or not any((self.dump_tags, self.dump_sources, self.dump_comments)):
             return
 
-        if not os.path.isdir(self.dest_base_s):
-            try:
-                os.makedirs(self.dest_base_s)
-            except Exception:
-                thread_exit(f'ERROR: Unable to create folder {self.dest_base_s}!')
+        try:
+            self.dest_base_s.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            thread_exit(f'ERROR: Unable to create folder {self.dest_base_s}!')
 
         orig_ids: set[str] = {self.item_info_dict_all[k].id for k in self.item_info_dict_all}
         merged_files = self._try_merge_info_files()
-        saved_files = set[str]()
+        saved_files = set[pathlib.Path]()
         item_info_list = sorted(self.item_info_dict_all.values())
         id_begin = item_info_list[0].id
         id_end = item_info_list[-1].id
@@ -806,22 +805,22 @@ class Downloader(DownloaderBase):
             trace(f'\nSaving {name}...')
             if self.dump_per_item:
                 for iinfo in item_info_list:
-                    ifilename = f'{self.dest_base_s}{abbrp}!{name}{UNDERSCORE}{iinfo.id}.txt'
-                    saved_files.add(ifilename)
-                    if self._has_gui() and os.path.isfile(ifilename):
-                        if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{ifilename}\' already exists. Overwrite?'):
+                    ifilepath = self.dest_base_s / f'{abbrp}!{name}{UNDERSCORE}{iinfo.id}.txt'
+                    saved_files.add(ifilepath)
+                    if self._has_gui() and ifilepath.is_file():
+                        if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{ifilepath}\' already exists. Overwrite?'):
                             trace('Skipped.')
                             continue
-                    with open(ifilename, 'wt', encoding=UTF8) as idump:
+                    with open(ifilepath, 'wt', encoding=UTF8) as idump:
                         idump.write(proc(iinfo))
             else:
-                filename = f'{self.dest_base_s}{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
-                saved_files.add(filename)
-                if self._has_gui() and os.path.isfile(filename):
-                    if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{filename}\' already exists. Overwrite?'):
+                filepath = self.dest_base_s / f'{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
+                saved_files.add(filepath)
+                if self._has_gui() and filepath.is_file():
+                    if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{filepath}\' already exists. Overwrite?'):
                         trace('Skipped.')
                         continue
-                with open(filename, 'wt', encoding=UTF8) as dump:
+                with open(filepath, 'wt', encoding=UTF8) as dump:
                     for iteminfo in item_info_list:
                         dump_string = proc(iteminfo)
                         if dump_string or iteminfo.id in orig_ids:
@@ -830,15 +829,14 @@ class Downloader(DownloaderBase):
         [os.remove(merged_file) for merged_file in merged_files if merged_file not in saved_files]
         trace(BR)
 
-    def _try_merge_info_files(self) -> list[str]:
-        parsed_files: list[str] = []
+    def _try_merge_info_files(self) -> list[pathlib.Path]:
+        parsed_files: list[pathlib.Path] = []
         if not self.merge_lists:
             return parsed_files
-        dir_fullpath = normalize_path(f'{self.dest_base_s}')
-        if not os.path.isdir(dir_fullpath):
+        if not self.dest_base_s.is_dir():
             return parsed_files
         abbrp = self._get_module_abbr_p()
-        with os.scandir(dir_fullpath) as listing:
+        with os.scandir(self.dest_base_s) as listing:
             info_lists = sorted(filter(
                 None, (re_infolist_filename.fullmatch(f.name) for f in listing
                        if f.is_file() and f.name.startswith(f'{abbrp}!'))), key=lambda m: m.string)
@@ -846,7 +844,7 @@ class Downloader(DownloaderBase):
         for fmatch in info_lists:
             fmname = fmatch.string
             list_type = fmatch.group(1)
-            list_fullpath = f'{dir_fullpath}{fmname}'
+            list_fullpath = self.dest_base_s / fmname
             last_idstring = ''
             prev_line = ''
             try:

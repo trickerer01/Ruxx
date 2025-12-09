@@ -11,6 +11,7 @@ import base64
 import ctypes
 import json
 import os
+import pathlib
 import sys
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
@@ -114,7 +115,6 @@ from .gui_defines import (
     PADDING_DEFAULT,
     PADDING_ROOTFRAME_I,
     ROWSPAN_MAX,
-    SLASH,
     STATE_DISABLED,
     STATE_NORMAL,
     STATE_READONLY,
@@ -156,7 +156,7 @@ from .module import ProcModule
 from .rex import re_ask_values, re_json_entry_value, re_space_mult
 from .tagsdb import TagsDB
 from .tooltips import WidgetToolTip
-from .utils import garble_text, normalize_path
+from .utils import garble_text
 from .validators import valid_api_key, valid_positive_int, valid_proxy, valid_window_position
 from .vcs import __RUXX_DEBUG__, APP_NAME, APP_VERSION
 
@@ -1696,7 +1696,7 @@ def create_base_window_widgets() -> None:
     op_pathstr = BaseText(opframe_path, width=0, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.PATH_VISUAL]),
                           encodevariable=StringVar(rootm(), '', CVARS[Options.PATH]))
     register_global(Globals.FIELD_PATH, op_pathstr)
-    op_pathstr.insert(END, normalize_path(os.path.abspath(os.curdir), False))
+    op_pathstr.insert(END, pathlib.Path(os.curdir).resolve().as_posix())
     op_pathstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button open
     op_pathbut = Button(opframe_path, image=get_icon(Icons.OPEN))
@@ -1781,13 +1781,13 @@ def hotkey_text(option: Options) -> str:
             .replace('ALT', 'Alt').replace('SPACE', 'Space'))
 
 
-def get_curdir(prioritize_last_path=True) -> str:
-    lastloc = str(getrootconf(Options.LASTPATH))
-    curloc = str(getrootconf(Options.PATH))
+def get_curdir(prioritize_last_path=True) -> pathlib.Path:
+    lastloc = pathlib.Path(getrootconf(Options.LASTPATH))
+    curloc = pathlib.Path(getrootconf(Options.PATH))
     if prioritize_last_path:
-        return lastloc if len(lastloc) > 0 else curloc if os.path.isdir(curloc) else os.path.abspath(os.curdir)
+        return lastloc if lastloc else curloc if curloc.is_dir() else pathlib.Path(os.curdir).resolve()
     else:
-        return curloc if os.path.isdir(curloc) else lastloc if len(lastloc) > 0 else os.path.abspath(os.curdir)
+        return curloc if curloc.is_dir() else lastloc if lastloc else pathlib.Path(os.curdir).resolve()
 
 
 def get_cur_module_sitename() -> str:
@@ -1841,7 +1841,7 @@ def load_batch_download_tag_list() -> list[str]:
 
 def ask_filename(ftypes: Iterable[tuple[str, str]]) -> str:
     if fullpath := filedialog.askopenfilename(filetypes=ftypes, initialdir=get_curdir()):
-        setrootconf(Options.LASTPATH, fullpath[:normalize_path(fullpath, False).rfind(SLASH) + 1])  # not bound
+        setrootconf(Options.LASTPATH, pathlib.Path(fullpath).parent.as_posix())  # not bound
         return fullpath
     return ''
 
@@ -1849,7 +1849,7 @@ def ask_filename(ftypes: Iterable[tuple[str, str]]) -> str:
 def browse_path() -> None:
     if loc := filedialog.askdirectory(initialdir=get_curdir()):
         setrootconf(Options.PATH, loc)
-        setrootconf(Options.LASTPATH, loc[:normalize_path(loc, False).rfind(SLASH) + 1])  # not bound
+        setrootconf(Options.LASTPATH, pathlib.Path(loc).parent.as_posix())  # not bound
         update_garbled_text_states()
 
 
@@ -1904,29 +1904,32 @@ def register_menu_separator() -> None:
     c_menum().add_separator()
 
 
-def get_all_media_files_in_cur_dir() -> tuple[str]:
-    return filedialog.askopenfilenames(initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),))
+def get_all_media_files_in_cur_dir() -> tuple[pathlib.Path]:
+    files = filedialog.askopenfilenames(initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),))
+    return tuple(pathlib.Path(_) for _ in files)
 
 
-def get_media_files_dir() -> str:
-    return str(filedialog.askdirectory(initialdir=get_curdir(), mustexist=True))
+def get_media_files_dir() -> pathlib.Path:
+    return pathlib.Path(filedialog.askdirectory(initialdir=get_curdir(), mustexist=True))
 
 
-def update_lastpath(filefullpath: str) -> None:
-    setrootconf(Options.LASTPATH, filefullpath[:normalize_path(filefullpath, False).rfind(SLASH) + 1])
+def update_lastpath(filefullpath: pathlib.Path) -> None:
+    setrootconf(Options.LASTPATH, filefullpath.parent.as_posix())
 
 
 def toggle_autocompletion() -> None:
     # current state is AFTER being toggled
     if bool(int(getrootconf(Options.AUTOCOMPLETION_ENABLE))):
-        last_path = str(getrootconf(Options.TAGLISTS_PATH)) or get_curdir()
+        last_path = pathlib.Path(getrootconf(Options.TAGLISTS_PATH)) or get_curdir()
         if TagsDB.try_set_basepath(last_path):
-            setrootconf(Options.TAGLISTS_PATH, last_path)
+            setrootconf(Options.TAGLISTS_PATH, last_path.as_posix())
         else:
-            loc = str(filedialog.askdirectory(initialdir=last_path, mustexist=True,
-                                              title='Select a directory where tag lists are located (rx_tags.json, rn_tags.json, etc.)'))
-            if len(loc) > 0 and (not last_path or loc != last_path) and TagsDB.try_set_basepath(loc):
-                setrootconf(Options.TAGLISTS_PATH, loc)
+            loc = pathlib.Path(filedialog.askdirectory(
+                initialdir=last_path, mustexist=True,
+                title='Select a directory where tag lists are located (rx_tags.json, rn_tags.json, etc.)',
+            ))
+            if loc and (not last_path or loc != last_path) and TagsDB.try_set_basepath(loc):
+                setrootconf(Options.TAGLISTS_PATH, loc.as_posix())
             else:
                 setrootconf(Options.AUTOCOMPLETION_ENABLE, 0)
     else:

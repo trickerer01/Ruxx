@@ -9,6 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import itertools
 import json
 import os
+import pathlib
 from collections.abc import Callable
 from tkinter import Tk, filedialog
 from typing import Protocol, TextIO
@@ -21,12 +22,11 @@ from .gui_defines import (
     OPTION_VALUES_PARCHI,
     OPTION_VALUES_THREADING,
     OPTION_VALUES_VIDEOS,
-    SLASH,
     Options,
 )
 from .logger import trace
 from .module import ProcModule
-from .utils import as_date, normalize_path
+from .utils import as_date
 from .validators import (
     APIKeyKeyValidator,
     APIKeyUserIdValidator,
@@ -321,13 +321,13 @@ class ConfigMgr:
 
     @staticmethod
     def try_pick_autoconfig() -> None:
-        base_path = normalize_path(os.path.abspath(os.curdir))
+        base_path = pathlib.Path(os.curdir).resolve()
         try:
             for filename in ConfigMgr.AUTOCONFIG_FILENAMES:
-                full_path = f'{base_path}{filename}'
-                if not os.path.isfile(full_path):
+                full_path = base_path / filename
+                if not full_path.is_file():
                     continue
-                file_size = os.stat(full_path).st_size
+                file_size = full_path.stat().st_size
                 if file_size > SETTINGS_FILE_SIZE_LIMIT:
                     trace(f'Skipping \'{filename}\', file is too large ({file_size / Mem.KB:.2f})')
                     continue
@@ -356,7 +356,7 @@ class ConfigMgr:
         try:
             if fpath := filedialog.asksaveasfilename(initialdir=get_curdir(), filetypes=CONFIG_FILE_TYPES, confirmoverwrite=True,
                                                      defaultextension='.json', initialfile='config'):
-                setrootconf(Options.LASTPATH, fpath[:normalize_path(fpath, False).rfind(SLASH) + 1])
+                setrootconf(Options.LASTPATH, pathlib.Path(fpath).parent.as_posix())
                 trace(f'Saving setting to {fpath}...')
                 with open(fpath, 'wt', encoding=UTF8, newline='\n') as wfile:
                     get_config_worker(wfile.name).write(wfile)

@@ -7,31 +7,31 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import os
+import pathlib
 from contextlib import ExitStack, suppress
 from threading import current_thread
 from typing import BinaryIO, Literal
 
 from .defines import KNOWN_EXTENSIONS, Mem
-from .utils import normalize_path
 
 READ_BUFFER_SIZE_BASE = 4 * Mem.KB
 READ_BUFFER_SIZE_MAX = 256 * Mem.KB
 EXTENSIONS_SET = set(KNOWN_EXTENSIONS)
 
 
-def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_depth: int, keep: Literal['first', 'last']) -> None:
+def find_duplicated_files(dest_dict: dict[str, list[pathlib.Path]], basepath: pathlib.Path, scan_depth: int, keep: Literal['first', 'last'],
+                          ) -> None:
     try:
         found_files_dict: dict[int, list[os.DirEntry]] = {}
-        base_path = normalize_path(basepath)
 
-        def scan_folder(base_folder: str, level: int) -> None:
-            if os.path.isdir(base_folder):
+        def scan_folder(base_folder: pathlib.Path, level: int) -> None:
+            if base_folder.is_dir():
                 with os.scandir(base_folder) as listing:
                     for dentry in listing:
                         if dentry.is_dir():
                             if level < scan_depth:
                                 with suppress(PermissionError):
-                                    scan_folder(f'{base_folder}{dentry.name}', level + 1)
+                                    scan_folder(base_folder / dentry.name, level + 1)
                         elif dentry.is_file():
                             ext = os.path.splitext(dentry.name)[1]
                             if ext[1:] in EXTENSIONS_SET:
@@ -40,7 +40,7 @@ def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_d
                                         found_files_dict[fsize] = []
                                     found_files_dict[fsize].append(dentry)
 
-        scan_folder(base_path, 0)
+        scan_folder(basepath, 0)
         for fsz in list(found_files_dict.keys()):
             if len(found_files_dict[fsz]) < 2:
                 del found_files_dict[fsz]
@@ -71,7 +71,7 @@ def find_duplicated_files(dest_dict: dict[str, list[str]], basepath: str, scan_d
                         if keep == 'first':
                             exacts_fi.sort(key=lambda x: x.name)
                         dfinfos = [files_list[open_fnames.index(exacts_fi[fli].name)] for fli in range(len(exacts_fi))]
-                        dest_dict[dfinfos[0].path] = [normalize_path(dfinfos[_].path, False) for _ in range(1, len(dfinfos))]
+                        dest_dict[dfinfos[0].path] = [pathlib.Path(dfinfos[_].path) for _ in range(1, len(dfinfos))]
                     fidx += 1
     finally:
         if hasattr(current_thread(), 'killed'):

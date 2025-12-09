@@ -7,6 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import os
+import pathlib
 import re
 import sys
 import time
@@ -31,7 +32,6 @@ from .defines import (
     HtmlCacheMode,
     ThreadInterruptException,
 )
-from .gui_defines import SLASH
 from .logger import trace
 from .module import ProcModule
 from .vcs import __RUXX_DEBUG__
@@ -152,8 +152,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
         self.session = self.make_session()
 
     # threaded
-    def download_file(self, link: str, item_id: str, dest: str, mode=DownloadModes.FULL) -> FileDownloadResult:
-        fullname = dest[dest.rfind(SLASH) + 1:]
+    def download_file(self, link: str, item_id: str, dest: pathlib.Path, mode=DownloadModes.FULL) -> FileDownloadResult:
+        fullname = dest.name
         ext_full = fullname[fullname.rfind('.') + 1:]
         ext_char = ext_full[0]
         is_video_ext = ext_full in KNOWN_EXTENSIONS_VID
@@ -170,7 +170,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
         elif mode == DownloadModes.FULL:
             with self.make_session() as s:
                 s.stream = True
-                while (not (os.path.isfile(dest) and result.file_size == result.expected_size)) and result.retries < self.retries:
+                while (not (dest.is_file() and result.file_size == result.expected_size)) and result.retries < self.retries:
                     if self.is_killed():
                         trace(f'{result.result_str} interrupted', True)
                         raise DownloadInterruptException
@@ -267,17 +267,17 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                 chunk_tries = 0
                                 i += 1
 
-                        result.file_size = os.stat(dest).st_size
+                        result.file_size = dest.stat().st_size
                         if result.file_size != result.expected_size:
                             trace(f'Warning (W3): size mismatch for {item_id} ({result.file_size:d} / {result.expected_size:d}).'
                                   f' Retrying file.', True)
-                            if os.path.isfile(dest):
+                            if dest.is_file():
                                 os.remove(dest)
                                 result.file_size = 0
                             raise OSError
                     except (KeyboardInterrupt, ThreadInterruptException):
-                        if os.path.isfile(dest):
-                            result.file_size = os.stat(dest).st_size
+                        if dest.is_file():
+                            result.file_size = dest.stat().st_size
                             if result.file_size != result.expected_size:
                                 os.remove(dest)
                                 result.file_size = 0
@@ -310,7 +310,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                         if isinstance(err, exceptions.HTTPError) and err.response.status_code == 416:  # Requested range is not satisfiable
                             if __RUXX_DEBUG__:
                                 trace(f'Warning (W3): {item_id} catched HTTPError 416!', True)
-                            if os.path.isfile(dest):
+                            if dest.is_file():
                                 os.remove(dest)
                                 result.file_size = 0
                         if not isinstance(err, CLIENT_CONNECTOR_ERRORS):

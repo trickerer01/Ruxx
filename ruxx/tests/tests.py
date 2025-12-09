@@ -7,7 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import functools
-import os
+import pathlib
 import sys
 from collections.abc import Callable
 from tempfile import TemporaryDirectory
@@ -25,14 +25,13 @@ from ruxx.module import ProcModule
 from ruxx.tags_parser import RE_ANDGR_FULL, RE_FAVS, RE_METAS, RE_ORGRS_FULL, RE_ORGRS_FULL_S, RE_PLAINS, RE_POOLS, RE_SORTS, parse_tags
 from ruxx.tagsdb import TAG_ALIASES, TagsDB, load_tag_aliases
 from ruxx.task import MAX_NEGATIVE_TAGS, MAX_STRING_LENGTHS, MAX_WILDCARDS
-from ruxx.utils import normalize_path
 from ruxx.vcs.version import APP_NAME
 
 __all__ = ('run_all_tests',)
 
 
 RUN_CONN_TESTS = 0
-CUR_PATH = normalize_path(os.path.abspath(os.curdir))
+CUR_PATH = pathlib.Path(__file__).resolve().parent.as_posix()
 
 args_argparse_str01 = (
     'sfw asd ned -nds -proxr '
@@ -156,13 +155,13 @@ class FileCheckTests(TestCase):
 
     @test_prepare()
     def test_filecheck02_tags(self) -> None:
-        TagsDB.try_set_basepath('', traverse=False)
+        TagsDB.try_set_basepath(pathlib.Path(), traverse=False)
         self.assertEqual(len(MODULE_CHOICES), len(TagsDB.DBFiles))
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
     def test_filecheck03_tags_load(self) -> None:
-        TagsDB.try_set_basepath('', traverse=False)
+        TagsDB.try_set_basepath(pathlib.Path(), traverse=False)
         for module in MODULE_CHOICES:
             TagsDB._load(module)
             self.assertGreater(len(TagsDB.DB[module]), 0, msg=f'{self._testMethodName} for module \'{module}\' failed')
@@ -310,7 +309,7 @@ class DownloaderBaseTests(TestCase):
             self.assertEqual('31-12-1950', dwn.date_min)
             self.assertEqual('01-01-2038', dwn.date_max)
             self.assertEqual(8, dwn.maxthreads_items)
-            self.assertEqual(CUR_PATH, dwn.dest_base_s)
+            self.assertEqual(CUR_PATH, dwn.dest_base_s.as_posix())
             self.assertEqual('http://8.8.8.8:65333', dwn.proxies.get('http'))
             self.assertEqual('http://8.8.8.8:65333', dwn.proxies.get('https'))
             self.assertEqual('value1', dwn.add_headers.get('name1'))
@@ -516,16 +515,14 @@ class RealDownloadTests(TestCase):
         # this test actually performs a download
         tempfile_id = '6579460'
         tempfile_ext = 'png'
-        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
-        tempdir = normalize_path(tdir.name)
-        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        #                  tag               flag      v      flag            v           flag      v
-        argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
-        arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.RX) as dwn:
-            dwn.launch_download(arglist)
-            self.assertTrue(os.path.isfile(tempfile_path))
-        tdir.cleanup()
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #                  tag               flag      v      flag            v           flag      v
+            argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.RX) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
@@ -535,16 +532,14 @@ class RealDownloadTests(TestCase):
         # this test actually performs a download
         tempfile_id = '7939303'
         tempfile_ext = 'png'
-        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
-        tempdir = normalize_path(tdir.name)
-        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        #                  tag               flag      v      flag            v           flag      v
-        argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
-        arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.RS) as dwn:
-            dwn.launch_download(arglist)
-            self.assertTrue(os.path.isfile(tempfile_path))
-        tdir.cleanup()
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #                  tag               flag      v      flag            v           flag      v
+            argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.RS) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
@@ -555,16 +550,14 @@ class RealDownloadTests(TestCase):
         fav_user_id = '59309'
         tempfile_id = '6511644'
         tempfile_ext = 'jpeg'
-        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
-        tempdir = normalize_path(tdir.name)
-        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        #                  tag                        flag      v      flag            v           flag      v
-        argslist = (f'favorited_by:{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
-        arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.RS) as dwn:
-            dwn.launch_download(arglist)
-            self.assertTrue(os.path.isfile(tempfile_path))
-        tdir.cleanup()
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #                  tag                        flag      v      flag            v           flag      v
+            argslist = (f'favorited_by:{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.RS) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
@@ -574,16 +567,14 @@ class RealDownloadTests(TestCase):
         # this test actually performs a download
         tempfile_id = '5915464'
         tempfile_ext = 'jpg'
-        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
-        tempdir = normalize_path(tdir.name)
-        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        #                  tag              flag      v      flag            v           flag      v
-        argslist = (f'id={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
-        arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.RP) as dwn:
-            dwn.launch_download(arglist)
-            self.assertTrue(os.path.isfile(tempfile_path))
-        tdir.cleanup()
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #                  tag              flag      v      flag            v           flag      v
+            argslist = (f'id={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.RP) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
@@ -594,16 +585,14 @@ class RealDownloadTests(TestCase):
         fav_user = 'avoidthenoid'
         tempfile_id = '440995'
         tempfile_ext = 'jpg'
-        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
-        tempdir = normalize_path(tdir.name)
-        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        #                 tag                      flag      v      flag            v           flag      v
-        argslist = (f'favorited_by={fav_user}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
-        arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.RP) as dwn:
-            dwn.launch_download(arglist)
-            self.assertTrue(os.path.isfile(tempfile_path))
-        tdir.cleanup()
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #                 tag                      flag      v      flag            v           flag      v
+            argslist = (f'favorited_by={fav_user}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.RP) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
@@ -613,16 +602,14 @@ class RealDownloadTests(TestCase):
         # this test actually performs a download
         tempfile_id = '4322823'
         tempfile_ext = 'jpg'
-        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
-        tempdir = normalize_path(tdir.name)
-        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        #                  tag              flag      v      flag            v           flag      v
-        argslist = (f'id:{tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
-        arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.EN) as dwn:
-            dwn.launch_download(arglist)
-            self.assertTrue(os.path.isfile(tempfile_path))
-        tdir.cleanup()
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #                  tag              flag      v      flag            v           flag      v
+            argslist = (f'id:{tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.EN) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
@@ -633,16 +620,14 @@ class RealDownloadTests(TestCase):
         fav_user_id = '83917'
         tempfile_id = '272335'
         tempfile_ext = 'png'
-        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
-        tempdir = normalize_path(tdir.name)
-        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        #                 tag                          flag      v      flag            v           flag      v
-        argslist = (f'favorited_by:!{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
-        arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.EN) as dwn:
-            dwn.launch_download(arglist)
-            self.assertTrue(os.path.isfile(tempfile_path))
-        tdir.cleanup()
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #                 tag                          flag      v      flag            v           flag      v
+            argslist = (f'favorited_by:!{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.EN) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
@@ -653,16 +638,14 @@ class RealDownloadTests(TestCase):
         fav_user_name = 'lolwut535'
         tempfile_id = '272335'
         tempfile_ext = 'png'
-        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
-        tempdir = normalize_path(tdir.name)
-        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        #                 tag                          flag      v      flag            v           flag      v
-        argslist = (f'favoritedby:{fav_user_name}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
-        arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.EN) as dwn:
-            dwn.launch_download(arglist)
-            self.assertTrue(os.path.isfile(tempfile_path))
-        tdir.cleanup()
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #                 tag                          flag      v      flag            v           flag      v
+            argslist = (f'favoritedby:{fav_user_name}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.EN) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
@@ -686,16 +669,14 @@ class RealDownloadTests(TestCase):
         # this test actually performs a download
         tempfile_id = '789585'
         tempfile_ext = 'jpeg'
-        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
-        tempdir = normalize_path(tdir.name)
-        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        #                  tag               flag      v      flag            v           flag      v
-        argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
-        arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.XB) as dwn:
-            dwn.launch_download(arglist)
-            self.assertTrue(os.path.isfile(tempfile_path))
-        tdir.cleanup()
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #                  tag               flag      v      flag            v           flag      v
+            argslist = (f'id:={tempfile_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.XB) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
@@ -706,16 +687,14 @@ class RealDownloadTests(TestCase):
         fav_user_id = '87266'
         tempfile_id = '845348'
         tempfile_ext = 'jpeg'
-        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
-        tempdir = normalize_path(tdir.name)
-        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        #                 tag                          flag      v      flag            v           flag      v
-        argslist = (f'favorited_by:{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
-        arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.XB) as dwn:
-            dwn.launch_download(arglist)
-            self.assertTrue(os.path.isfile(tempfile_path))
-        tdir.cleanup()
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #                 tag                          flag      v      flag            v           flag      v
+            argslist = (f'favorited_by:{fav_user_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.XB) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
@@ -726,16 +705,14 @@ class RealDownloadTests(TestCase):
         pool_id = '689'
         tempfile_id = '733305'
         tempfile_ext = 'jpeg'
-        tdir = TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_')
-        tempdir = normalize_path(tdir.name)
-        tempfile_path = f'{normalize_path(tempdir)}{tempfile_id}.{tempfile_ext}'
-        #                 tag                          flag      v      flag            v           flag      v
-        argslist = (f'pool:{pool_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempdir)
-        arglist = prepare_arglist(argslist)
-        with make_downloader(ProcModule.XB) as dwn:
-            dwn.launch_download(arglist)
-            self.assertTrue(os.path.isfile(tempfile_path))
-        tdir.cleanup()
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #                 tag                          flag      v      flag            v           flag      v
+            argslist = (f'pool:{pool_id}', '-threads', '1', '-headers', DEFAULT_HEADERS, '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.XB) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
         print(f'{self._testMethodName} passed')
 
 

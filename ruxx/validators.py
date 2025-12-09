@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import datetime
 import json
-import os
+import pathlib
 from abc import ABC, abstractmethod
 from argparse import ArgumentError
 from ipaddress import IPv4Address
@@ -20,10 +20,8 @@ from .gui_defines import (
     OPTION_VALUES_PROXYTYPE,
     OPTION_VALUES_THREADING,
     OPTION_VALUES_VIDEOS,
-    SLASH,
 )
 from .module import ProcModule
-from .utils import normalize_path
 
 __all__ = (
     'APIKeyKeyValidator',
@@ -120,10 +118,10 @@ def valid_thread_count(val: str) -> int:
     return valid_positive_int(val, lb=1, ub=THREADS_MAX_ITEMS)
 
 
-def valid_folder_path(pathstr: str) -> str:
+def valid_folder_path(pathstr: str) -> pathlib.Path:
     try:
-        newpath = normalize_path(os.path.abspath(os.path.expanduser(pathstr.strip('\'"'))))
-        assert os.path.isdir(newpath[:(newpath.find(SLASH) + 1)])
+        newpath = pathlib.Path(pathstr.strip('\'"')).resolve()
+        assert newpath.parent.is_dir()
         return newpath
     except Exception:
         raise ArgumentError
