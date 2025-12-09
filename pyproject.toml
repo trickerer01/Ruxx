@@ -1,10 +1,10 @@
 [build-system]
-requires= ['setuptools', 'setuptools-scm']
+requires= ['setuptools']
 build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'Ruxx'
-version = '1.7.861'
+version = '1.7.862'
 authors = [
     {name = 'trickerer01'},
 ]
@@ -62,6 +62,9 @@ Tracker = 'https://github.com/trickerer01/Ruxx/issues'
 
 [project.scripts]
 Ruxx = 'ruxx:main'
+
+[tool.setuptools]
+py-modules = ['ruxx']
 
 [tool.ruff]
 line-length = 140
@@ -143,7 +146,7 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-'src/ruxx.py' = [
+'ruxx/ruxx.py' = [
 ]
 
 [tool.ruff.lint.isort]

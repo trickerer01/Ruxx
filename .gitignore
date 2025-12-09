@@ -1,13 +1,11 @@
 # Dev
-*venv/
+1venv/
 version_info.txt
 *.pyc
 *.cfg
 *.json
 *.lnk
 *.exe
-src/curr.py
-src/app_grab_tags.py
 !setup.cfg
 
 # IDE

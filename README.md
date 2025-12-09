@@ -295,17 +295,24 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 
 Invoke `Ruxx.exe --help` to list all possible arguments
 
-#### Using through python
+#### Using through python interpreter
 - `Python 3.10` or greater is required. See `requirements.txt` for additional dependencies. Install with:
   - `python -m pip install -r requirements.txt`
-- Run Ruxx by targeting `ruxx_cmd.py` or `ruxx_gui.py` respectively...
-  - `python src/ruxx_cmd.py <...args>` - launch Ruxx in cmdline mode
-  - `python src/ruxx_gui.py <no args>` - launch Ruxx GUI
-- ...or simply use universal root entry point in `ruxx.py`
-  - `python src/ruxx.py <...args>` - launch Ruxx in cmdline mode
-  - `python src/ruxx.py <no args>` - launch Ruxx GUI
+##### Install as a module
+- `cd Ruxx`
+- `python -m pip install .`
+- `python ruxx [options...]` OR simply
+- `ruxx [options...]`
+- Running Ruxx without arguments will launch GUI version
+##### Without install
+- `cd Ruxx`
+- Run either:
+  - `python ruxx/__main__.py [options...]` OR
+  - `ruxx.cmd [options...]` (Windows)
+  - `ruxx.sh [options...]` (Linux)
+- Running Ruxx without arguments will launch GUI version
 
-Invoke `python src/ruxx.py --help` to list all possible arguments
+Invoke `python ruxx --help` to list all possible arguments
 
 <BR>
 
@@ -323,10 +330,10 @@ Invoke `python src/ruxx.py --help` to list all possible arguments
   - `python -m pip install -r requirements.txt`
   - `python -m pip install pyinstaller`
 - Run the build script. It will do everything for you and clean up afterwards, your app will be placed into `release` folder:
-  - `python src/app_release.py`
+  - `python ruxx/release/release.py`
 
 #### Debug build
-To make a **Debug** build simply set `__RUXX_DEBUG__` variable to `True` in `app_debug.py`. Debug mode enables debug menu, console window display switch, additional logging and a few undocumented features. Some default settings are different in Debug mode
+To make a **Debug** build simply set `__RUXX_DEBUG__` variable to `True` in `debug.py`. Debug mode enables debug menu, console window display switch, additional logging and a few undocumented features. Some default settings are different in Debug mode
 
 ### Support
 For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/Ruxx/issues)

@@ -6,8 +6,8 @@ on:
       - 'main'
     paths:
       - .github/workflows/**
-      - 'src/*.py'
-      - '!src/app_revision.py'
+      - 'ruxx/*.py'
+      - '!ruxx/version.py'
   pull_request:
     types:
       - opened
@@ -15,8 +15,8 @@ on:
       - synchronize
     paths:
       - .github/workflows/**
-      - 'src/*.py'
-      - '!src/app_revision.py'
+      - 'ruxx/*.py'
+      - '!ruxx/version.py'
 
 permissions:
   contents: read
@@ -33,7 +33,7 @@ jobs:
       max-parallel: 6
       matrix:
         os: [windows-latest, ubuntu-latest]
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +49,6 @@ jobs:
       - name: Run tests
         continue-on-error: False
         run: |
-          cd src
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           flake8 . --count --exit-zero --max-line-length=140 --statistics
-          python -m unittest app_unittests.py
+          python -m unittest ruxx/tests/tests.py

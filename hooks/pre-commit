@@ -1,5 +1,5 @@
 #!/bin/sh
-python src/app_genrev.py
-git add src/app_revision.py
+python ruxx/genrev.py
+git add ruxx/version.py
 git add pyproject.toml
 ruff check --fix --unsafe-fixes --show-fixes
