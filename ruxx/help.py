@@ -6,8 +6,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-from .debug import __RUXX_DEBUG__
-from .version import APP_NAME, APP_REV_DATE, APP_VERSION
+from .vcs import __RUXX_DEBUG__, APP_NAME, APP_REV_DATE, APP_VERSION
 
 APP_AUTHOR_NICKNAME = 'trickerer'
 APP_AUTHOR = f'Dmitriy \'{APP_AUTHOR_NICKNAME}\' Komardin'

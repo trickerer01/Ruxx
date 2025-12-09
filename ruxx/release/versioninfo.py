@@ -11,7 +11,7 @@ import os
 
 from ruxx.defines import UTF8
 from ruxx.help import APP_ADDRESS, APP_AUTHOR_NICKNAME
-from ruxx.version import APP_IS_BETA_TEXT, APP_NAME, APP_REVISION, APP_VER_MAJOR, APP_VER_SUB
+from ruxx.vcs.version import APP_IS_BETA_TEXT, APP_NAME, APP_REVISION, APP_VER_MAJOR, APP_VER_SUB
 
 APP_DOWNLOADER_TYPE = base64.b64decode('cnVsZTM0').decode()
 

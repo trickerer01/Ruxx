@@ -9,7 +9,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import re
 from collections.abc import Iterable
 
-from .debug import __RUXX_DEBUG__
 from .defines import (
     TAGS_STRING_LENGTH_MAX_BB,
     TAGS_STRING_LENGTH_MAX_EN,
@@ -22,6 +21,7 @@ from .defines import (
 from .logger import trace
 from .module import ProcModule
 from .network import thread_exit
+from .vcs import __RUXX_DEBUG__
 
 __all__ = ('extract_neg_and_groups', 'split_tags_into_tasks')
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-python ruxx/genrev.py
-git add ruxx/version.py
+python ruxx/vcs/genrev.py
+git add ruxx/vcs/version.py
 git add pyproject.toml
 ruff check --fix --unsafe-fixes --show-fixes

@@ -1,3 +1,3 @@
 #!/bin/sh
 COMMIT_MSG_FILE=$1
-python ruxx/genmsg.py $COMMIT_MSG_FILE
+python ruxx/vcs/genmsg.py $COMMIT_MSG_FILE

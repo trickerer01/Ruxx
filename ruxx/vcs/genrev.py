@@ -8,11 +8,12 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import datetime
 import os
+import pathlib
 
 __all__ = ()
 
-CWD = os.path.realpath(os.path.abspath(os.path.curdir)).replace('\\', '/')
-APP_REV_FILE_PATH = f'{CWD}/ruxx/version.py'
+CWD = pathlib.Path(os.path.realpath(os.path.abspath(__file__))).parent.parent.parent.as_posix()
+APP_REV_FILE_PATH = f'{CWD}/ruxx/vcs/version.py'
 STR_APP_REVISION = 'APP_REVISION = \''
 STR_APP_DATE = 'APP_REV_DATE = \''
 PYPROJECT_TOML_FILE_PATH = f'{CWD}/pyproject.toml'

@@ -17,7 +17,9 @@ from typing import Final, NoReturn, final
 
 from bs4 import BeautifulSoup
 
-from .debug import __RUXX_DEBUG__
+from ruxx.vcs.debug import __RUXX_DEBUG__
+from ruxx.vcs.version import APP_VERSION
+
 from .defines import (
     FILE_NAME_FULL_MAX_LEN,
     FILE_NAME_PREFIX_EN,
@@ -44,7 +46,6 @@ from .rex import (
     re_tags_to_process_en,
 )
 from .utils import format_score
-from .version import APP_VERSION
 
 __all__ = ('DownloaderEn',)
 

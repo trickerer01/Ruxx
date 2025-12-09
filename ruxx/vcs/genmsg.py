@@ -14,7 +14,7 @@ UTF8 = 'utf-8'
 
 def write_commit_msg() -> None:
     msg_file_path = sys.argv[1]
-    rev = check_output(('grep', 'ruxx/version.py', '-Poe', r'(?<=APP_REVISION = .)([0-9]+)(?=.+)')).decode(errors='replace').strip()
+    rev = check_output(('grep', 'ruxx/vcs/version.py', '-Poe', r'(?<=APP_REVISION = .)([0-9]+)(?=.+)')).decode(errors='replace').strip()
     assert rev.isnumeric(), f'\'{rev}\''
     with open(msg_file_path, 'rt+', encoding=UTF8) as f:
         commit_msg = f.read()

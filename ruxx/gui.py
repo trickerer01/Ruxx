@@ -17,7 +17,6 @@ from threading import Thread
 from tkinter import END, messagebox
 
 from .cmdargs import prepare_arglist
-from .debug import __RUXX_DEBUG__
 from .defines import (
     DATE_MAX_DEFAULT,
     DATE_MIN_DEFAULT,
@@ -156,6 +155,7 @@ from .tags_parser import parse_tags, reset_last_tags
 from .tagsdb import TagsDB
 from .utils import confirm_yes_no, ensure_compatibility, garble_argument_values, normalize_path
 from .validators import DateValidator
+from .vcs import __RUXX_DEBUG__
 
 __all__ = ('run_ruxx_gui',)
 

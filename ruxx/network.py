@@ -20,7 +20,6 @@ from warnings import filterwarnings
 from bs4 import BeautifulSoup
 from requests import Response, Session, adapters, exceptions, structures
 
-from .debug import __RUXX_DEBUG__
 from .defines import (
     CONNECT_RETRIES_BASE,
     CONNECT_RETRIES_CHUNK,
@@ -35,6 +34,7 @@ from .defines import (
 from .gui_defines import SLASH
 from .logger import trace
 from .module import ProcModule
+from .vcs import __RUXX_DEBUG__
 
 __all__ = ('DownloadInterruptException', 'ThreadedHtmlWorker', 'thread_exit')
 

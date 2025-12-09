@@ -26,7 +26,7 @@ from ruxx.tags_parser import RE_ANDGR_FULL, RE_FAVS, RE_METAS, RE_ORGRS_FULL, RE
 from ruxx.tagsdb import TAG_ALIASES, TagsDB, load_tag_aliases
 from ruxx.task import MAX_NEGATIVE_TAGS, MAX_STRING_LENGTHS, MAX_WILDCARDS
 from ruxx.utils import normalize_path
-from ruxx.version import APP_NAME
+from ruxx.vcs.version import APP_NAME
 
 __all__ = ('run_all_tests',)
 

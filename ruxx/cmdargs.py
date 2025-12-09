@@ -105,7 +105,7 @@ from .validators import (
     valid_proxy,
     valid_thread_count,
 )
-from .version import APP_NAME, APP_VERSION
+from .vcs import APP_NAME, APP_VERSION
 
 __all__ = ('prepare_arglist',)
 

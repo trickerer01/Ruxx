@@ -13,11 +13,11 @@ import shutil
 import sys
 from subprocess import call as call_subprocess
 
-from ruxx.debug import __RUXX_DEBUG__
 from ruxx.defines import PLATFORM_LINUX, PLATFORM_WINDOWS
 from ruxx.release.versioninfo import VERSIONINFO_FILE_PATH, generate_versioninfo
 from ruxx.tests import run_all_tests
-from ruxx.version import APP_NAME, APP_VERSION
+from ruxx.vcs.debug import __RUXX_DEBUG__
+from ruxx.vcs.version import APP_NAME, APP_VERSION
 
 __all__ = ()
 

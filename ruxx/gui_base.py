@@ -53,7 +53,6 @@ from tkinter import (
 from tkinter.ttk import Entry
 from typing import Literal, TypeAlias
 
-from .debug import __RUXX_DEBUG__
 from .defines import (
     API_KEY_LEN_RX,
     CONNECT_RETRIES_BASE,
@@ -159,7 +158,7 @@ from .tagsdb import TagsDB
 from .tooltips import WidgetToolTip
 from .utils import garble_text, normalize_path
 from .validators import valid_api_key, valid_positive_int, valid_proxy, valid_window_position
-from .version import APP_NAME, APP_VERSION
+from .vcs import __RUXX_DEBUG__, APP_NAME, APP_VERSION
 
 __all__ = (
     'AskChecksWindow',

@@ -22,7 +22,6 @@ from threading import Lock
 
 from iteration_utilities import unique_everseen
 
-from .debug import __RUXX_DEBUG__
 from .defines import (
     CONNECT_TIMEOUT_BASE,
     DATE_MAX_DEFAULT,
@@ -52,7 +51,7 @@ from .tags_parser import convert_taglist
 from .tagsdb import load_tag_aliases
 from .task import extract_neg_and_groups, split_tags_into_tasks
 from .utils import confirm_yes_no, format_score, garble_argument_values, make_subfolder_name, normalize_path, trim_underscores
-from .version import APP_NAME, APP_VERSION
+from .vcs import __RUXX_DEBUG__, APP_NAME, APP_VERSION
 
 __all__ = ('Downloader',)
 
