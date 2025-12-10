@@ -1,10 +1,10 @@
 [build-system]
-requires= ['setuptools']
+requires= ['setuptools>=77.0.3']
 build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'Ruxx'
-version = '1.7.867'
+version = '1.7.868'
 authors = [
     {name = 'trickerer01'},
 ]
@@ -20,7 +20,8 @@ keywords = [
     'rule34-downloader',
 ]
 readme = 'README.md'
-license = {file = 'LICENSE'}
+license = 'MIT'
+license-files = ['LICENSE']
 classifiers = [
     'Topic :: Multimedia :: Video',
     'Topic :: Multimedia :: Graphics',
@@ -35,7 +36,6 @@ classifiers = [
     'Programming Language :: Python :: Implementation',
     'Programming Language :: Python :: Implementation :: CPython',
     'Typing :: Typed',
-    'License :: OSI Approved :: MIT License',
     'Operating System :: OS Independent',
 ]
 requires-python = '>=3.10'
