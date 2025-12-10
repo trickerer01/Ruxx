@@ -92,7 +92,7 @@ class ListConfigWorker:
                     if set_window_pos:
                         rootm().set_position(*(float(dim) for dim in str(val).split('x', 1)))
                 elif conf == Options.TAGLISTS_PATH:
-                    ConfigMgr.on_init_autocompletion_callback(val)
+                    ConfigMgr.on_init_autocompletion_callback(pathlib.Path(val))
                 elif conf in ConfigMgr.duplicating_settings:
                     [setrootconf(cnf, val) for cnf in (conf, ConfigMgr.duplicating_settings.get(conf))]
                 elif conf in ConfigMgr.combobox_setting_arrays:
@@ -168,7 +168,7 @@ class JSONConfigWorker:
                     if set_window_pos:
                         rootm().set_position(*(float(dim) for dim in str(val).split('x', 1)))
                 elif conf == Options.TAGLISTS_PATH:
-                    ConfigMgr.on_init_autocompletion_callback(val)
+                    ConfigMgr.on_init_autocompletion_callback(pathlib.Path(val))
                 elif conf in ConfigMgr.duplicating_settings:
                     [setrootconf(cnf, val) for cnf in (conf, ConfigMgr.duplicating_settings.get(conf))]
                 elif conf in ConfigMgr.combobox_setting_arrays:
@@ -250,7 +250,7 @@ class ConfigMgr:
         ''.join(tup) for tup in itertools.product(('ruxx', 'auto', 'settings', 'config'), ('.cfg', '.json'))
     )
     on_proc_module_change_callback: Callable[[int], None] | None = None
-    on_init_autocompletion_callback: Callable[[str], None] | None = None
+    on_init_autocompletion_callback: Callable[[pathlib.Path | None], None] | None = None
 
     def __init__(self) -> None:
         raise RuntimeError(f'{self.__class__.__name__} class should never be instanced!')
@@ -308,7 +308,7 @@ class ConfigMgr:
 
     @staticmethod
     def initialize(*, tk: Tk, on_proc_module_change_callback: Callable[[int], None],
-                   on_init_autocompletion_callback: Callable[[str], None]):
+                   on_init_autocompletion_callback: Callable[[pathlib.Path | None], None]):
         register_config_worker('.cfg', TextConfigWorker())
         register_config_worker('.txt', TextConfigWorker())
         register_config_worker('.json', JSONConfigWorker())

@@ -330,7 +330,7 @@ Invoke `python ruxx --help` to list all possible arguments
   - `python -m pip install -r requirements.txt`
   - `python -m pip install pyinstaller`
 - Run the build script. It will do everything for you and clean up afterwards, your app will be placed into `release` folder:
-  - `python ruxx/release/release.py`
+  - `python ruxx/release`
 
 #### Debug build
 To make a **Debug** build simply set `__RUXX_DEBUG__` variable to `True` in `debug.py`. Debug mode enables debug menu, console window display switch, additional logging and a few undocumented features. Some default settings are different in Debug mode

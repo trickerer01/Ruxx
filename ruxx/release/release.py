@@ -19,7 +19,7 @@ from ruxx.tests import run_all_tests
 from ruxx.vcs.debug import __RUXX_DEBUG__
 from ruxx.vcs.version import APP_NAME, APP_VERSION
 
-__all__ = ()
+__all__ = ('make_release',)
 
 RUN_TESTS = not __RUXX_DEBUG__ and sys.platform == PLATFORM_LINUX
 
@@ -99,7 +99,7 @@ def move_exe() -> None:
 
 def build_exe() -> None:
     call_subprocess((
-        sys.executable, '-m', 'PyInstaller', 'ruxx/ruxx.py',
+        sys.executable, '-m', 'PyInstaller', ROOT_DIR.joinpath('ruxx/__main__.py').as_posix(),
         '--clean', '--log-level', 'DEBUG',
         '-F', '--noupx', '-c', '-y',
         '-n', APP_NAME,

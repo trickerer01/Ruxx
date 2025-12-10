@@ -50,7 +50,7 @@ jobs:
       - name: Build
         continue-on-error: False
         run: |
-          python ruxx/release/release.py
+          python ruxx/release
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -82,7 +82,7 @@ jobs:
       - name: Build
         continue-on-error: False
         run: |
-          python ruxx/release/release.py
+          python ruxx/release
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:

@@ -396,14 +396,16 @@ def report_aux_db_size() -> None:
     trace(f'Found {len(TagsDB.AuxDBFiles):d} aux lists:{n}{n.join(_.as_posix() for _ in TagsDB.AuxDBFiles.values())}')
 
 
-def init_autocompletion(loc='', force=True) -> None:
+def init_autocompletion(loc: pathlib.Path | None = None, force=True) -> None:
     if int(getrootconf(Options.AUTOCOMPLETION_ENABLE)) == 1:
         if force is False:
             return
         elif not loc:
-            loc = os.getcwd()
+            loc = pathlib.Path(os.getcwd())
+    else:
+        loc = loc or pathlib.Path()
     if TagsDB.try_set_basepath(loc, traverse=False):
-        setrootconf(Options.TAGLISTS_PATH, loc)
+        setrootconf(Options.TAGLISTS_PATH, loc.as_posix())
         setrootconf(Options.AUTOCOMPLETION_ENABLE, 1)
         report_autocompletion_db_size()
         report_aux_db_size()
