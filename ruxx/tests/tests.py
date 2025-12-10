@@ -8,11 +8,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import functools
 import pathlib
-import sys
 from collections.abc import Callable
 from tempfile import TemporaryDirectory
 from unittest import TestCase
-from unittest import main as run_tests
 
 from ruxx.cmdargs import prepare_arglist
 from ruxx.defines import DATE_MIN_DEFAULT, DEFAULT_HEADERS, MODULE_CHOICES, DownloadModes, ItemInfo, ThreadInterruptException
@@ -27,7 +25,7 @@ from ruxx.tagsdb import TAG_ALIASES, TagsDB, load_tag_aliases
 from ruxx.task import MAX_NEGATIVE_TAGS, MAX_STRING_LENGTHS, MAX_WILDCARDS
 from ruxx.vcs.version import APP_NAME
 
-__all__ = ('run_all_tests',)
+__all__ = ()
 
 
 RUN_CONN_TESTS = 0
@@ -714,13 +712,6 @@ class RealDownloadTests(TestCase):
                 dwn.launch_download(arglist)
                 self.assertTrue(tempfile.is_file())
         print(f'{self._testMethodName} passed')
-
-
-def run_all_tests() -> None:
-    res = run_tests(module='tests', exit=False)
-    if not res.result.wasSuccessful():
-        print('Fail')
-        sys.exit(-1)
 
 #
 #

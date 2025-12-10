@@ -13,15 +13,14 @@ import shutil
 import sys
 from subprocess import call as call_subprocess
 
-from ruxx.defines import PLATFORM_LINUX, PLATFORM_WINDOWS
+from ruxx.defines import PLATFORM_WINDOWS
 from ruxx.release.versioninfo import VERSIONINFO_FILE_PATH, generate_versioninfo
-from ruxx.tests import run_all_tests
 from ruxx.vcs.debug import __RUXX_DEBUG__
 from ruxx.vcs.version import APP_NAME, APP_VERSION
 
 __all__ = ('make_release',)
 
-RUN_TESTS = not __RUXX_DEBUG__ and sys.platform == PLATFORM_LINUX
+RUN_TESTS = not __RUXX_DEBUG__
 
 ROOT_DIR = pathlib.Path(__file__).resolve().parent.parent.parent
 BUILD_DIR = ROOT_DIR / 'build'
@@ -117,13 +116,15 @@ def cleanup() -> None:
         if clean_item.is_file():
             os.remove(clean_item)
     for clean_item in CLEANUP_DIRS:
-        if clean_item.is_file():
+        if clean_item.is_dir():
             shutil.rmtree(clean_item, onerror=report_exc)
 
 
 def make_release() -> None:
     if RUN_TESTS is True:
-        run_all_tests()
+        call_subprocess((
+            sys.executable, '-m', 'unittest', ROOT_DIR.joinpath('ruxx/tests/tests.py').as_posix(),
+        ))
     generate_versioninfo()
     build_exe()
     move_exe()
