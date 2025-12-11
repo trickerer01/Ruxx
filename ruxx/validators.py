@@ -121,7 +121,7 @@ def valid_thread_count(val: str) -> int:
 def valid_folder_path(pathstr: str) -> pathlib.Path:
     try:
         newpath = pathlib.Path(pathstr.strip('\'"')).resolve()
-        assert newpath.parent.is_dir()
+        assert next(reversed(newpath.parents)).is_dir()
         return newpath
     except Exception:
         raise ArgumentError

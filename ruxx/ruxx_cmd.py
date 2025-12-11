@@ -7,7 +7,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import sys
-from collections.abc import Sequence
 from multiprocessing.dummy import current_process
 
 from .cmdargs import prepare_arglist
@@ -19,7 +18,7 @@ from .utils import ensure_compatibility
 __all__ = ('run_cmd',)
 
 
-def run_cmd(args: Sequence[str]) -> None:
+def run_cmd(args: list[str]) -> None:
     Logger.init(True)
     ensure_compatibility()
     current_process().killed = False
