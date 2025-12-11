@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - 'main'
-      - 'support_macos'
     paths:
       - .github/workflows/**
       - 'ruxx/*.py'
