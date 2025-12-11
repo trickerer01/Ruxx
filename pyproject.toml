@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'Ruxx'
-version = '1.7.870'
+version = '1.7.871'
 authors = [
     {name = 'trickerer01'},
 ]
@@ -65,6 +65,9 @@ Ruxx = 'ruxx:main'
 
 [tool.setuptools]
 py-modules = ['ruxx']
+
+[tool.setuptools.packages]
+find = {include = ['ruxx*'], exclude= ['ruxx.release', 'ruxx.tests', 'ruxx.un']}
 
 [tool.ruff]
 line-length = 140
