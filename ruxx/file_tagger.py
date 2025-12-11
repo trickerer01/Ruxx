@@ -42,7 +42,7 @@ def retag_files(files: Sequence[pathlib.Path], re_tags_to_process: re.Pattern, r
         re_tagsfile_name = re.compile(r'^[a-z]{2}_!tags_\d+?-\d+?\.txt$')
         base_path = files[0].parent
         tagdict: dict[str, str] = {}
-        with os.scandir(base_path) as listing:
+        with os.scandir(base_path.as_posix()) as listing:
             for dentry in listing:
                 if dentry.is_file():
                     if os.path.splitext(dentry.name)[1] == '.txt':

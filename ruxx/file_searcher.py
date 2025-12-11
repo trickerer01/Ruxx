@@ -26,7 +26,7 @@ def find_duplicated_files(dest_dict: dict[str, list[pathlib.Path]], basepath: pa
 
         def scan_folder(base_folder: pathlib.Path, level: int) -> None:
             if base_folder.is_dir():
-                with os.scandir(base_folder) as listing:
+                with os.scandir(base_folder.as_posix()) as listing:
                     for dentry in listing:
                         if dentry.is_dir():
                             if level < scan_depth:

@@ -536,7 +536,7 @@ class Downloader(DownloaderBase):
 
     def _process_all_tags(self) -> None:
         if self.warn_nonempty and self.dest_base.is_dir():
-            with os.scandir(self.dest_base) as listing:
+            with os.scandir(self.dest_base.as_posix()) as listing:
                 if next(listing, None):
                     if not confirm_yes_no('Download', f'Destination folder \'{self.dest_base}\' is not empty. Continue anyway?'):
                         return

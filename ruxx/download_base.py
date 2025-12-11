@@ -657,7 +657,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         if not self.dest_base_s.is_dir():
             return
 
-        with os.scandir(self.dest_base_s) as listing:
+        with os.scandir(self.dest_base_s.as_posix()) as listing:
             curdirfiles = [f.name for f in listing if f.is_file()]
 
         if len(curdirfiles) == 0:
