@@ -210,7 +210,7 @@ def prepare_arglist(args: list[str] | tuple[str, ...]) -> Namespace:
     pcmd.usage = f'{MODULE} [-module #module={ProcModule.PROC_MODULE_NAME_DEFAULT}] [options...] tags...'
 
     [add_common_args(_) for _ in parsers.values()]
-    [add_help(_, _ == parser_root) for _ in parsers.values()]
+    [add_help(_, _ in (parser_root, pcmd)) for _ in parsers.values()]
     return execute_parser(pcmd, args)
 
 
