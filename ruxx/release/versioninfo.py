@@ -18,7 +18,7 @@ APP_DOWNLOADER_TYPE = base64.b64decode('cnVsZTM0').decode()
 APP_EMBED_VERSION = f'{APP_VER_MAJOR}.{APP_VER_SUB} r{APP_REVISION}{APP_IS_BETA_TEXT}'
 
 APP_VERSION_INFO_FILENAME = 'version_info.txt'
-VERSIONINFO_FILE_PATH = pathlib.Path('.').resolve() / APP_VERSION_INFO_FILENAME
+VERSIONINFO_FILE_PATH = pathlib.Path().resolve() / APP_VERSION_INFO_FILENAME
 APP_VERSION_INFO_CONTENT = (
     f'VSVersionInfo(\n'
     f'  ffi=FixedFileInfo(\n'

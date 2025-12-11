@@ -6,10 +6,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-import os
 from argparse import ZERO_OR_MORE, ArgumentParser, Namespace
-from collections.abc import Sequence
-from inspect import stack
 
 from .defines import (
     ACTION_APPEND,
@@ -109,65 +106,129 @@ from .vcs import APP_NAME, APP_VERSION
 
 __all__ = ('prepare_arglist',)
 
+MODULE = APP_NAME.replace('-', '_')
+INDENT = ' ' * 7
+
+PARSER_TITLE_NONE = ''
+PARSER_TITLE_CMD = 'cmd'
+PARSER_PARAM_PARSER_TYPE = 'zzzparser_type'
+PARSER_PARAM_PARSER_TITLE = 'zzzparser_title'
+
+PARSER_TITLE_NAMES_REMAP: dict[str, str] = {
+}
+
 DEFAULT_PATH = valid_folder_path('.')
 
 
-def create_parser() -> ArgumentParser:
-    parser = ArgumentParser(add_help=False)
-    subs = parser.add_subparsers()
-    par_main = subs.add_parser('cmd', description='Run using normal cmdline', add_help=False)
-    par_main.add_argument('--help', action='help', help=HELP_ARG_HELP)
-    par_main.add_argument('--version', action='version', help=HELP_ARG_VERSION, version=f'{APP_NAME} {APP_VERSION}')
-    return par_main
+def create_parsers() -> dict[str, ArgumentParser]:
+    def create_parser(sub, name: str, description: str) -> ArgumentParser:
+        if sub:
+            parser: ArgumentParser = sub.add_parser(PARSER_TITLE_NAMES_REMAP.get(name, name), description=description, add_help=False)
+            parser.set_defaults(**{PARSER_PARAM_PARSER_TITLE: name})
+        else:
+            parser = ArgumentParser(add_help=False, prog=MODULE)
+        parser.set_defaults(**{PARSER_PARAM_PARSER_TYPE: parser})
+        assert name not in parsers
+        parsers[name] = parser
+        return parser
+
+    def create_subparser(parser: ArgumentParser, title: str, dest: str):
+        return parser.add_subparsers(required=True, title=title, dest=dest, prog=MODULE)
+
+    parsers: dict[str, ArgumentParser] = {}
+
+    parser_main = create_parser(None, PARSER_TITLE_NONE, '')
+    subs_main = create_subparser(parser_main, 'subcommands', 'subcommand_1')
+
+    _ = create_parser(subs_main, PARSER_TITLE_CMD, '')
+    return parsers
 
 
-def prepare_arglist(args: Sequence[str]) -> Namespace:
-    parser = create_parser()
-    parser.usage = f'{os.path.basename(stack()[2].filename)} [-module #module={ProcModule.PROC_MODULE_NAME_DEFAULT}] [options...] tags...'
-    parser.add_argument(OPTION_CMD_MODULE_CMD, default=MODULE_ABBR_RX, help=HELP_ARG_MODULE, choices=MODULE_CHOICES)
-    ex1 = parser.add_mutually_exclusive_group(required=False)
-    ex2 = parser.add_mutually_exclusive_group(required=False)
-    ex3 = parser.add_mutually_exclusive_group(required=False)
-    ex1.add_argument(OPTION_CMD_GET_MAXID_CMD, action=ACTION_STORE_TRUE, help=HELP_ARG_GET_MAXID)
-    parser.add_argument(OPTION_CMD_HIDE_PERSONAL_INFO[True], action=ACTION_STORE_TRUE, help=HELP_ARG_HIDE_PERSONAL_INFO)
-    parser.add_argument(OPTION_CMD_PARCHI[True], action=ACTION_STORE_TRUE, help=HELP_ARG_INCLUDE_PARCHI)
-    parser.add_argument(OPTION_CMD_IMAGES[0], action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_IMAGES)
-    parser.add_argument(OPTION_CMD_VIDEOS[0], action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_VIDEOS)
-    ex2.add_argument(OPTION_CMD_VIDEOS[1], action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_MP4)
-    ex2.add_argument(OPTION_CMD_VIDEOS[2], action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_WEBM)
-    parser.add_argument(OPTION_CMD_IMAGES[1], action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_LOWRES)
-    parser.add_argument(OPTION_CMD_DATEAFTER_CMD, metavar='#DD-MM-YYYY', help=HELP_ARG_MINDATE, type=valid_date)
-    parser.add_argument(OPTION_CMD_DATEBEFORE_CMD, metavar='#DD-MM-YYYY', help=HELP_ARG_MAXDATE, type=valid_date)
-    parser.add_argument(OPTION_CMD_THREADING_CMD, metavar=f'1..{THREADS_MAX_ITEMS:d}', help=HELP_ARG_THREADS, type=valid_thread_count)
-    parser.add_argument(OPTION_CMD_PATH_CMD, metavar='#PATH', default=DEFAULT_PATH, help=HELP_ARG_PATH, type=valid_folder_path)
-    parser.add_argument(OPTION_CMD_PROXY_CMD, metavar='#type://[user:pass@]a.d.d.r:port', help=HELP_ARG_PROXY, type=valid_proxy)
-    parser.add_argument(OPTION_CMD_IGNORE_PROXY[True], action=ACTION_STORE_TRUE, help=HELP_ARG_NOPROXY)
-    parser.add_argument(OPTION_CMD_PROXY_NO_DOWNLOAD[True], action=ACTION_STORE_TRUE, help=HELP_ARG_PROXYNODOWN)
-    parser.add_argument(OPTION_CMD_TIMEOUT_CMD, metavar='#NUMBER', help=HELP_ARG_CON_TIMEOUT, type=valid_positive_int)
-    parser.add_argument(OPTION_CMD_RETRIES_CMD, metavar='#NUMBER', help=HELP_ARG_CON_RETRIES, type=valid_positive_int)
-    parser.add_argument(OPTION_CMD_APIKEY_CMD, metavar='#KEY,USER_ID', help=HELP_ARG_API_KEY, type=valid_api_key)
-    parser.add_argument(OPTION_CMD_HEADERS_CMD, metavar='#JSON', help=HELP_ARG_HEADERS, type=valid_json, default=DEFAULT_HEADERS)
-    parser.add_argument(OPTION_CMD_COOKIES_CMD, metavar='#JSON', help=HELP_ARG_COOKIES, type=valid_json)
-    parser.add_argument(OPTION_CMD_HEADERS_CMD[:-1], metavar='#name=value', action=ACTION_APPEND, help=HELP_ARG_HEADER, type=valid_kwarg)
-    parser.add_argument(OPTION_CMD_COOKIES_CMD[:-1], metavar='#name=value', action=ACTION_APPEND, help=HELP_ARG_COOKIE, type=valid_kwarg)
-    parser.add_argument(OPTION_CMD_FNAMEPREFIX[True], action=ACTION_STORE_TRUE, help=HELP_ARG_PREFIX)
-    parser.add_argument(OPTION_CMD_SAVE_TAGS[True], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_TAGS)
-    parser.add_argument(OPTION_CMD_SAVE_SOURCES[True], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_SOURCES)
-    parser.add_argument(OPTION_CMD_SAVE_COMMENTS[True], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_COMMENTS)
-    ex3.add_argument(OPTION_CMD_INFO_SAVE_MODE[1], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_PER_ITEM)
-    ex3.add_argument(OPTION_CMD_INFO_SAVE_MODE[2], action=ACTION_STORE_TRUE, help=HELP_ARG_MERGE_LISTS)
-    parser.add_argument(OPTION_CMD_APPEND_SOURCE_AND_TAGS[True], action=ACTION_STORE_TRUE, help=HELP_ARG_APPEND_SOURCE_AND_TAGS)
-    parser.add_argument(OPTION_CMD_WARN_NONEMPTY_DEST[True], action=ACTION_STORE_TRUE, help=HELP_ARG_WARN_NON_EMPTY_FOLDER)
-    parser.add_argument(OPTION_CMD_VERBOSE[True], action=ACTION_STORE_TRUE, help=HELP_ARG_VERBOSE)
-    parser.add_argument(OPTION_CMD_CACHE_PROCCED_HTML[True], action=ACTION_STORE_TRUE, help=HELP_ARG_CACHE_HTML_BLOAT)
-    parser.add_argument(OPTION_CMD_DOWNMODE_CMD, default=DMODE_DEFAULT, help=HELP_ARG_DOWNLOAD_MODE, choices=DMODE_CHOICES)
-    parser.add_argument(OPTION_CMD_DOWNLIMIT_CMD, metavar='#NUMBER', default=0, help=HELP_ARG_DOWNLOAD_LIMIT, type=valid_positive_int)
-    parser.add_argument(OPTION_CMD_DOWNLOAD_ORDER[True], action=ACTION_STORE_TRUE, help=HELP_ARG_REVERSE_DOWNLOAD_ORDER)
-    parser.add_argument(dest='tags', nargs=ZERO_OR_MORE, help=HELP_ARG_TAGS)
+def add_common_args(par: ArgumentParser) -> None:
+    op = par.add_argument_group(title='options')
+    op.add_argument(OPTION_CMD_MODULE_CMD, default=MODULE_ABBR_RX, help=HELP_ARG_MODULE, choices=MODULE_CHOICES)
+    op.add_argument(dest='tags', nargs=ZERO_OR_MORE, action='extend', help=HELP_ARG_TAGS)
+    co = par.add_argument_group(title='connection options')
+    co.add_argument(OPTION_CMD_PROXY_CMD, metavar='#type://[user:pass@]a.d.d.r:port', help=HELP_ARG_PROXY, type=valid_proxy)
+    co.add_argument(OPTION_CMD_IGNORE_PROXY[True], action=ACTION_STORE_TRUE, help=HELP_ARG_NOPROXY)
+    co.add_argument(OPTION_CMD_PROXY_NO_DOWNLOAD[True], action=ACTION_STORE_TRUE, help=HELP_ARG_PROXYNODOWN)
+    co.add_argument(OPTION_CMD_TIMEOUT_CMD, metavar='#NUMBER', help=HELP_ARG_CON_TIMEOUT, type=valid_positive_int)
+    co.add_argument(OPTION_CMD_RETRIES_CMD, metavar='#NUMBER', help=HELP_ARG_CON_RETRIES, type=valid_positive_int)
+    co.add_argument(OPTION_CMD_HEADERS_CMD, metavar='#JSON', help=HELP_ARG_HEADERS, type=valid_json, default=DEFAULT_HEADERS)
+    co.add_argument(OPTION_CMD_COOKIES_CMD, metavar='#JSON', help=HELP_ARG_COOKIES, type=valid_json)
+    co.add_argument(OPTION_CMD_HEADERS_CMD[:-1], metavar='#name=value', action=ACTION_APPEND, help=HELP_ARG_HEADER, type=valid_kwarg)
+    co.add_argument(OPTION_CMD_COOKIES_CMD[:-1], metavar='#name=value', action=ACTION_APPEND, help=HELP_ARG_COOKIE, type=valid_kwarg)
+    co.add_argument(OPTION_CMD_CACHE_PROCCED_HTML[True], action=ACTION_STORE_TRUE, help=HELP_ARG_CACHE_HTML_BLOAT)
+    au = par.add_argument_group(title='authentication options')
+    au.add_argument(OPTION_CMD_APIKEY_CMD, metavar='#KEY,USER_ID', help=HELP_ARG_API_KEY, type=valid_api_key)
+    do = par.add_argument_group(title='download options')
+    do.add_argument(OPTION_CMD_PATH_CMD, metavar='#PATH', default=DEFAULT_PATH, help=HELP_ARG_PATH, type=valid_folder_path)
+    do.add_argument(OPTION_CMD_PARCHI[True], action=ACTION_STORE_TRUE, help=HELP_ARG_INCLUDE_PARCHI)
+    do.add_argument(OPTION_CMD_IMAGES[0], action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_IMAGES)
+    do.add_argument(OPTION_CMD_VIDEOS[0], action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_VIDEOS)
+    dom1 = do.add_mutually_exclusive_group(required=False)
+    dom1.add_argument(OPTION_CMD_VIDEOS[1], action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_MP4)
+    dom1.add_argument(OPTION_CMD_VIDEOS[2], action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_WEBM)
+    do.add_argument(OPTION_CMD_IMAGES[1], action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_LOWRES)
+    do.add_argument(OPTION_CMD_THREADING_CMD, metavar=f'1..{THREADS_MAX_ITEMS:d}', help=HELP_ARG_THREADS, type=valid_thread_count)
+    doex = par.add_argument_group(title='extra download options')
+    doex.add_argument(OPTION_CMD_SAVE_TAGS[True], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_TAGS)
+    doex.add_argument(OPTION_CMD_SAVE_SOURCES[True], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_SOURCES)
+    doex.add_argument(OPTION_CMD_SAVE_COMMENTS[True], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_COMMENTS)
+    doexm1 = doex.add_mutually_exclusive_group(required=False)
+    doexm1.add_argument(OPTION_CMD_INFO_SAVE_MODE[1], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_PER_ITEM)
+    doexm1.add_argument(OPTION_CMD_INFO_SAVE_MODE[2], action=ACTION_STORE_TRUE, help=HELP_ARG_MERGE_LISTS)
+    doex.add_argument(OPTION_CMD_DOWNLIMIT_CMD, metavar='#NUMBER', default=0, help=HELP_ARG_DOWNLOAD_LIMIT, type=valid_positive_int)
+    doex.add_argument(OPTION_CMD_DOWNLOAD_ORDER[True], action=ACTION_STORE_TRUE, help=HELP_ARG_REVERSE_DOWNLOAD_ORDER)
+    doex.add_argument(OPTION_CMD_DOWNMODE_CMD, default=DMODE_DEFAULT, help=HELP_ARG_DOWNLOAD_MODE, choices=DMODE_CHOICES)
+    dofi = par.add_argument_group(title='filtering options')
+    dofi.add_argument(OPTION_CMD_DATEAFTER_CMD, metavar='#DD-MM-YYYY', help=HELP_ARG_MINDATE, type=valid_date)
+    dofi.add_argument(OPTION_CMD_DATEBEFORE_CMD, metavar='#DD-MM-YYYY', help=HELP_ARG_MAXDATE, type=valid_date)
+    dona = par.add_argument_group(title='naming options')
+    dona.add_argument(OPTION_CMD_FNAMEPREFIX[True], action=ACTION_STORE_TRUE, help=HELP_ARG_PREFIX)
+    dona.add_argument(OPTION_CMD_APPEND_SOURCE_AND_TAGS[True], action=ACTION_STORE_TRUE, help=HELP_ARG_APPEND_SOURCE_AND_TAGS)
+    lo = par.add_argument_group(title='logging options')
+    lo.add_argument(OPTION_CMD_VERBOSE[True], action=ACTION_STORE_TRUE, help=HELP_ARG_VERBOSE)
+    mi = par.add_argument_group(title='misc options')
+    mi.add_argument(OPTION_CMD_WARN_NONEMPTY_DEST[True], action=ACTION_STORE_TRUE, help=HELP_ARG_WARN_NON_EMPTY_FOLDER)
+    mi.add_argument(OPTION_CMD_HIDE_PERSONAL_INFO[True], action=ACTION_STORE_TRUE, help=HELP_ARG_HIDE_PERSONAL_INFO)
+    ut = par.add_argument_group(title='utilities')
+    ut.add_argument(OPTION_CMD_GET_MAXID_CMD, action=ACTION_STORE_TRUE, help=HELP_ARG_GET_MAXID)
+
+
+def add_help(par: ArgumentParser, is_root: bool):
+    mi = par.add_argument_group(title='misc')
+    mi.add_argument('--help', action='help', help=HELP_ARG_HELP)
+    if is_root:
+        mi.add_argument('--version', action='version', help=HELP_ARG_VERSION, version=f'{APP_NAME} {APP_VERSION}')
+
+
+def prepare_arglist(args: list[str] | tuple[str, ...]) -> Namespace:
+    parsers = create_parsers()
+    parser_root = parsers[PARSER_TITLE_NONE]
+    pcmd = parsers[PARSER_TITLE_CMD]
+    pcmd.usage = f'{MODULE} [-module #module={ProcModule.PROC_MODULE_NAME_DEFAULT}] [options...] tags...'
+
+    [add_common_args(_) for _ in parsers.values()]
+    [add_help(_, _ == parser_root) for _ in parsers.values()]
+    return execute_parser(pcmd, args)
+
+
+def execute_parser(parser: ArgumentParser, args: list[str] | tuple[str, ...]) -> Namespace:
+    try:
+        assert args
+        parsed = validate_parsed(parser, args)
+        if not parsed.get_maxid and not parsed.tags:
+            parser.error('the following arguments are required: tags')
+        return parsed
+    except Exception:
+        from traceback import format_exc
+        parser.error(format_exc())
+
+
+def validate_parsed(parser: ArgumentParser, args: list[str] | tuple[str, ...]) -> Namespace:
     parsed, unks = parser.parse_known_args(args)
-    parsed.tags.extend(unks)  # -tags will be placed here; shove them into parsed tags
-    if not parsed.get_maxid and not parsed.tags:
-        parser.error('the following arguments are required: tags')
+    parsed.tags.extend(unks)
     return parsed
 
 #
