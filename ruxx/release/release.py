@@ -7,7 +7,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import itertools
-import os
 import pathlib
 import shutil
 import sys
@@ -90,8 +89,7 @@ def move_exe() -> None:
         import traceback
         print(traceback.format_exc())
         return
-    if RELEASE_DEST.is_file():
-        os.remove(RELEASE_DEST)
+    RELEASE_DEST.unlink(missing_ok=True)
 
     shutil.move(RELEASE_SRC, RELEASE_DEST_DIR)
 
@@ -113,8 +111,7 @@ def cleanup() -> None:
         import traceback
         print(traceback.format_exc())
     for clean_item in CLEANUP_FILES:
-        if clean_item.is_file():
-            os.remove(clean_item)
+        clean_item.unlink(missing_ok=True)
     for clean_item in CLEANUP_DIRS:
         if clean_item.is_dir():
             shutil.rmtree(clean_item, onerror=report_exc)

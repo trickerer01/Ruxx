@@ -826,7 +826,7 @@ class Downloader(DownloaderBase):
                         if dump_string or iteminfo.id in orig_ids:
                             dump.write(dump_string)
             trace('Done.')
-        [os.remove(merged_file) for merged_file in merged_files if merged_file not in saved_files]
+        [merged_file.unlink() for merged_file in merged_files if merged_file not in saved_files]
         trace(BR)
 
     def _try_merge_info_files(self) -> list[pathlib.Path]:
@@ -836,7 +836,7 @@ class Downloader(DownloaderBase):
         if not self.dest_base_s.is_dir():
             return parsed_files
         abbrp = self._get_module_abbr_p()
-        with os.scandir(self.dest_base_s) as listing:
+        with os.scandir(self.dest_base_s.as_posix()) as listing:
             info_lists = sorted(filter(
                 None, (re_infolist_filename.fullmatch(f.name) for f in listing
                        if f.is_file() and f.name.startswith(f'{abbrp}!'))), key=lambda m: m.string)

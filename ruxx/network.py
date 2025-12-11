@@ -6,7 +6,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-import os
 import pathlib
 import re
 import sys
@@ -271,15 +270,14 @@ class ThreadedHtmlWorker(ThreadedWorker):
                         if result.file_size != result.expected_size:
                             trace(f'Warning (W3): size mismatch for {item_id} ({result.file_size:d} / {result.expected_size:d}).'
                                   f' Retrying file.', True)
-                            if dest.is_file():
-                                os.remove(dest)
-                                result.file_size = 0
+                            dest.unlink(missing_ok=True)
+                            result.file_size = 0
                             raise OSError
                     except (KeyboardInterrupt, ThreadInterruptException):
                         if dest.is_file():
                             result.file_size = dest.stat().st_size
                             if result.file_size != result.expected_size:
-                                os.remove(dest)
+                                dest.unlink()
                                 result.file_size = 0
                         trace(f'{result.result_str}{("interrupted by user." if current_process() == self.my_root_thread else "")}', True)
                         raise DownloadInterruptException
@@ -310,9 +308,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
                         if isinstance(err, exceptions.HTTPError) and err.response.status_code == 416:  # Requested range is not satisfiable
                             if __RUXX_DEBUG__:
                                 trace(f'Warning (W3): {item_id} catched HTTPError 416!', True)
-                            if dest.is_file():
-                                os.remove(dest)
-                                result.file_size = 0
+                            dest.unlink(missing_ok=True)
+                            result.file_size = 0
                         if not isinstance(err, CLIENT_CONNECTOR_ERRORS):
                             result.retries += 1
                         s_result = f'{result.result_str}{sys.exc_info()[0]!s}: {sys.exc_info()[1]!s} retry {result.retries:d}...'

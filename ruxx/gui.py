@@ -355,7 +355,7 @@ def find_duplicates_remove_do() -> None:
         try:
             for _dfkey, dupes in dfiles.items():
                 for filepath in dupes:
-                    os.remove(filepath)
+                    filepath.unlink()
                     removed_files += 1
         finally:
             file_worker_report(removed_files, sum(len(dfiles[_]) for _ in dfiles), 'remov')
