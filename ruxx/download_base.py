@@ -59,7 +59,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.low_res: bool = False
         self.date_min: str = DATE_MIN_DEFAULT
         self.date_max: str = DATE_MAX_DEFAULT
-        self.dest_base: pathlib.Path = pathlib.Path(os.curdir).resolve().parent
+        self.dest_base: pathlib.Path = pathlib.Path().resolve().parent
         self.warn_nonempty: bool = False
         self.api_key: APIKey = APIKey()
         self.tags_str_arr: list[str] = []

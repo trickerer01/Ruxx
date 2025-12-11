@@ -4,13 +4,12 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 """
 #########################################
 #
-# circular imports caused by:
-# gui.py
+# circular imports caused by: gui.py
+#
 
 import base64
 import ctypes
 import json
-import os
 import pathlib
 import sys
 from abc import ABC, abstractmethod
@@ -1696,7 +1695,7 @@ def create_base_window_widgets() -> None:
     op_pathstr = BaseText(opframe_path, width=0, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.PATH_VISUAL]),
                           encodevariable=StringVar(rootm(), '', CVARS[Options.PATH]))
     register_global(Globals.FIELD_PATH, op_pathstr)
-    op_pathstr.insert(END, pathlib.Path(os.curdir).resolve().as_posix())
+    op_pathstr.insert(END, pathlib.Path().resolve().as_posix())
     op_pathstr.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
     #  Button open
     op_pathbut = Button(opframe_path, image=get_icon(Icons.OPEN))
@@ -1785,9 +1784,9 @@ def get_curdir(prioritize_last_path=True) -> pathlib.Path:
     lastloc = pathlib.Path(getrootconf(Options.LASTPATH))
     curloc = pathlib.Path(getrootconf(Options.PATH))
     if prioritize_last_path:
-        return lastloc if lastloc else curloc if curloc.is_dir() else pathlib.Path(os.curdir).resolve()
+        return lastloc if lastloc else curloc if curloc.is_dir() else pathlib.Path().resolve()
     else:
-        return curloc if curloc.is_dir() else lastloc if lastloc else pathlib.Path(os.curdir).resolve()
+        return curloc if curloc.is_dir() else lastloc if lastloc else pathlib.Path().resolve()
 
 
 def get_cur_module_sitename() -> str:

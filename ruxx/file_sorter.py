@@ -6,7 +6,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-import os
 import pathlib
 import re
 from collections.abc import Collection, Iterable, Sequence
@@ -41,8 +40,7 @@ def sort_files_by_type(files: Iterable[pathlib.Path], filter_type: FileTypeFilte
     moved_count = 0
     for full_path in files:
         try:
-            base_path, full_name = full_path.parent, full_path.name
-            ext = os.path.splitext(full_name)[1][1:]
+            base_path, full_name, ext = full_path.parent, full_path.name, full_path.suffix[1:]
             if filter_type == FileTypeFilter.BY_EXTENSION:
                 sub_name = 'jpg' if ext == 'jpeg' else ext
             else:

@@ -321,7 +321,7 @@ class ConfigMgr:
 
     @staticmethod
     def try_pick_autoconfig() -> None:
-        base_path = pathlib.Path(os.curdir).resolve()
+        base_path = pathlib.Path().resolve()
         try:
             for filename in ConfigMgr.AUTOCONFIG_FILENAMES:
                 full_path = base_path / filename
