@@ -9,10 +9,9 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import re
 from collections.abc import Sequence
 
-from iteration_utilities import unique_everseen
-
 from .module import ProcModule
 from .rex import re_favorited_by_tag, re_pool_tag, re_space_mult
+from .utils import unique_ordered
 
 __all__ = ('convert_taglist', 'parse_tags', 'reset_last_tags')
 
@@ -261,7 +260,7 @@ def parse_tags(tags: str) -> tuple[bool, Sequence[str]]:
     sort_tags_count = 0
     custom_tags_count = 0
     tag: str
-    for tag in unique_everseen(tags.split(' ')):
+    for tag in unique_ordered(tags.split(' ')):
         if tag.startswith('(') and re_orgr_full().fullmatch(tag):
             try:
                 tag = split_or_group(tag)

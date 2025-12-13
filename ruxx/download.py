@@ -21,8 +21,6 @@ from multiprocessing.dummy import Pool, current_process
 from multiprocessing.pool import ThreadPool
 from threading import Lock
 
-from iteration_utilities import unique_everseen
-
 from .defines import (
     CONNECT_TIMEOUT_BASE,
     DATE_MAX_DEFAULT,
@@ -51,7 +49,7 @@ from .tagger import append_filtered_tags
 from .tags_parser import convert_taglist
 from .tagsdb import load_tag_aliases
 from .task import extract_neg_and_groups, split_tags_into_tasks
-from .utils import confirm_yes_no, format_score, garble_argument_values, make_subfolder_name, trim_underscores
+from .utils import confirm_yes_no, format_score, garble_argument_values, make_subfolder_name, trim_underscores, unique_ordered
 from .vcs import __RUXX_DEBUG__, APP_NAME, APP_VERSION
 
 __all__ = ('Downloader',)
@@ -337,8 +335,8 @@ class Downloader(DownloaderBase):
                     self.catch_cancel_or_ctrl_c()
                     self._get_page_items(n, n - self.minpage + 1, self.maxpage)
 
-            self.items_raw_per_task[:] = list(unique_everseen(itertools.chain(
-                *(self.items_raw_per_page[n] for n in range(self.minpage, self.maxpage + 1)))))
+            self.items_raw_per_task[:] = unique_ordered(itertools.chain(
+                *(self.items_raw_per_page[n] for n in range(self.minpage, self.maxpage + 1))))
             self.items_raw_per_page.clear()
         else:
             # we have been redirected to a page with our single result! compose item string manually
@@ -442,7 +440,7 @@ class Downloader(DownloaderBase):
             self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_matching_negative_and_groups, task_parents)
             self._apply_filter(DownloaderStates.FILTERING_ITEMS4, self._filter_items_by_module_filters, task_parents)
 
-        self.items_raw_all: list[str] = list(unique_everseen(itertools.chain(self.items_raw_all, self.items_raw_per_task)))
+        self.items_raw_all: list[str] = unique_ordered(itertools.chain(self.items_raw_all, self.items_raw_per_task))
         self.item_info_dict_all.update(self.item_info_dict_per_task)
         if self.current_task_num > 1:
             trace(f'overall totalcount: {self.total_count_all:d}')

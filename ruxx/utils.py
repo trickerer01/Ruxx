@@ -11,10 +11,18 @@ import math
 import sys
 from collections.abc import Iterable, MutableSequence
 from tkinter import messagebox
+from typing import Protocol, TypeVar
 
 from .defines import FMT_DATE, MIN_PYTHON_VERSION, MIN_PYTHON_VERSION_STR, SUBFOLDER_NAME_LEN_MAX, SUPPORTED_PLATFORMS
 from .gui_defines import OPTION_CMD_PATH_CMD, OPTION_CMD_PROXY_CMD, UNDERSCORE
 from .rex import re_replace_symbols_sub, re_uscore_mult
+
+
+class Hashable(Protocol):
+    def __hash__(self) -> int: ...
+
+
+HT = TypeVar('HT', bound=Hashable)
 
 
 def ensure_compatibility() -> None:
@@ -32,6 +40,17 @@ def assert_nonempty(container: Iterable[str], message='') -> Iterable[str]:
 
 # def is_sorted(c: Iterable) -> bool:
 #     return all(a <= b for a, b in zip(c, c[1:]))
+
+
+def unique_ordered(inputs: Iterable[HT]) -> list[HT]:
+    hashes_set = set[int]()
+    elements: list[HT] = []
+    for elem in inputs:
+        ehash = hash(elem)
+        if ehash not in hashes_set:
+            hashes_set.add(ehash)
+            elements.append(elem)
+    return elements
 
 
 def find_first_not_of(s: str, chars: str) -> int:

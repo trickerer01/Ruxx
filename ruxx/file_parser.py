@@ -8,8 +8,6 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import re
 
-from iteration_utilities import unique_everseen
-
 from .defines import (
     FILE_NAME_PREFIX_BB,
     FILE_NAME_PREFIX_EN,
@@ -28,6 +26,7 @@ from .defines import (
     UTF8,
 )
 from .module import ProcModule
+from .utils import unique_ordered
 
 __all__ = ('prepare_id_list', 'prepare_tag_lists')
 
@@ -90,7 +89,7 @@ def parse_ids_file(filepath: str) -> tuple[bool, list[str]]:
                 if line and not re_comments.fullmatch(line):
                     assert get_r_idstring().fullmatch(line)
                     id_list.extend(id_list_from_string(line))
-        return True, [f'id{get_idval_eq_sep()}{s}' for s in sorted(unique_everseen(id_list), key=int)]
+        return True, [f'id{get_idval_eq_sep()}{s}' for s in sorted(unique_ordered(id_list), key=int)]
     except Exception:
         return False, []
 
@@ -108,7 +107,7 @@ def parse_tags_file(filepath: str) -> tuple[bool, list[str]]:
                 line = line.strip(' \n\ufeff')
                 if line and not re_comments.fullmatch(line):
                     tag_list.append(line)
-        return True, list(unique_everseen(tag_list))
+        return True, unique_ordered(tag_list)
     except Exception:
         return False, tag_list
 
