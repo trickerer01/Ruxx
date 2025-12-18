@@ -9,13 +9,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 import datetime
 import math
 import sys
+import traceback
 from collections.abc import Iterable, MutableSequence
 from tkinter import messagebox
-from typing import Protocol, TypeVar
+from typing import Literal, Protocol, TypeVar
 
 from .defines import FMT_DATE, MIN_PYTHON_VERSION, MIN_PYTHON_VERSION_STR, SUBFOLDER_NAME_LEN_MAX, SUPPORTED_PLATFORMS
 from .gui_defines import OPTION_CMD_PATH_CMD, OPTION_CMD_PROXY_CMD, UNDERSCORE
-from .rex import re_replace_symbols_sub, re_uscore_mult
+from .rex import re_api_key_user, re_replace_symbols_sub, re_uscore_mult
 
 
 class Hashable(Protocol):
@@ -28,6 +29,13 @@ HT = TypeVar('HT', bound=Hashable)
 def ensure_compatibility() -> None:
     assert sys.version_info >= MIN_PYTHON_VERSION, f'Minimum python version required is {MIN_PYTHON_VERSION_STR}!'
     assert sys.platform in SUPPORTED_PLATFORMS, f'Unsupported OS \'{sys.platform}\'!'
+
+
+def format_exception(mode: Literal['full', 'row', 'name']) -> str:
+    if mode == 'name':
+        return sys.exc_info()[0].__name__
+    exception_string = traceback.format_exc(1, False) if mode == 'row' else traceback.format_exc()
+    return re_api_key_user.sub('&api_key=<REDACTED>&user_id=<REDACTED>', exception_string)
 
 
 def assert_nonempty(container: Iterable[str], message='') -> Iterable[str]:

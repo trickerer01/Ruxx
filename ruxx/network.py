@@ -33,6 +33,7 @@ from .defines import (
 )
 from .logger import trace
 from .module import ProcModule
+from .utils import format_exception
 from .vcs import __RUXX_DEBUG__
 
 __all__ = ('DownloadInterruptException', 'ThreadedHtmlWorker', 'thread_exit')
@@ -312,7 +313,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                             result.file_size = 0
                         if not isinstance(err, CLIENT_CONNECTOR_ERRORS):
                             result.retries += 1
-                        s_result = f'{result.result_str}{sys.exc_info()[0]!s}: {sys.exc_info()[1]!s} retry {result.retries:d}...'
+                        s_result = f'{result.result_str}{format_exception("row")} retry {result.retries:d}...'
                         trace(s_result, True)
                         time.sleep(2)
                         continue
@@ -339,17 +340,17 @@ class ThreadedHtmlWorker(ThreadedWorker):
                 if isinstance(err, exceptions.HTTPError) and err.response.status_code == 404:
                     if r is not None and r.content and len(r.content.decode()) > 2:
                         trace(f'{threadname}received code 404 but received html'
-                              f'\n{sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}. Continuing...', True)
+                              f'\n{format_exception("row")}. Continuing...', True)
                         break
-                    trace(f'{threadname}catched err 404 {sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}. Aborting...', True)
+                    trace(f'{threadname}catched err 404 {format_exception("row")}. Aborting...', True)
                     return None
                 elif isinstance(err, exceptions.HTTPError) and err.response.status_code == 429:  # Too Many Requests
                     sleep_time += float(min(9, retries))
                     if __RUXX_DEBUG__:
-                        trace(f'{threadname}catched {sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}.'
+                        trace(f'{threadname}catched {format_exception("row")}.'
                               f'{f" Reconnecting in {sleep_time:.1f} sec... {retries:d}" if retries < tries else ""}', True)
                 else:
-                    trace(f'{threadname}catched {sys.exc_info()[0]!s}: {sys.exc_info()[1]!s}.'
+                    trace(f'{threadname}catched {format_exception("row")}.'
                           f'{f" Reconnecting in {sleep_time:.1f} sec... {retries:d}" if retries < tries else ""}', True)
                 time.sleep(sleep_time)
                 continue

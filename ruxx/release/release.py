@@ -14,6 +14,7 @@ from subprocess import call as call_subprocess
 
 from ruxx.defines import PLATFORM_WINDOWS
 from ruxx.release.versioninfo import VERSIONINFO_FILE_PATH, generate_versioninfo
+from ruxx.utils import format_exception
 from ruxx.vcs.debug import __RUXX_DEBUG__
 from ruxx.vcs.version import APP_NAME, APP_VERSION
 
@@ -86,8 +87,7 @@ def move_exe() -> None:
         if not RELEASE_SRC.is_file():
             raise FileNotFoundError('2')
     except FileNotFoundError:
-        import traceback
-        print(traceback.format_exc())
+        print(format_exception('full'))
         return
     RELEASE_DEST.unlink(missing_ok=True)
 
@@ -108,8 +108,7 @@ def build_exe() -> None:
 
 def cleanup() -> None:
     def report_exc(*_) -> None:
-        import traceback
-        print(traceback.format_exc())
+        print(format_exception('full'))
     for clean_item in CLEANUP_FILES:
         clean_item.unlink(missing_ok=True)
     for clean_item in CLEANUP_DIRS:

@@ -114,6 +114,8 @@ re_infolist_filename = re.compile(fr'(?:{"|".join(MODULE_CHOICES)})_!(tags|sourc
 re_ask_values = re.compile(r'[^, ]+')
 re_json_entry_value = re.compile(r'^([^: ,]+)[: ,](.+)$')
 
+re_api_key_user = re.compile(r'&api_key=\w+&user_id=\d+')
+
 re_meta_group = re.compile(r'^([^(]+)\(([^)]+)\).*?$')
 re_not_a_letter = re.compile(r'[^a-z]+')
 re_wtag = re.compile(r'^(?:[^?*]*[?*]).*?$')

@@ -49,7 +49,15 @@ from .tagger import append_filtered_tags
 from .tags_parser import convert_taglist
 from .tagsdb import load_tag_aliases
 from .task import extract_neg_and_groups, split_tags_into_tasks
-from .utils import confirm_yes_no, format_score, garble_argument_values, make_subfolder_name, trim_underscores, unique_ordered
+from .utils import (
+    confirm_yes_no,
+    format_exception,
+    format_score,
+    garble_argument_values,
+    make_subfolder_name,
+    trim_underscores,
+    unique_ordered,
+)
 from .vcs import __RUXX_DEBUG__, APP_NAME, APP_VERSION
 
 __all__ = ('Downloader',)
@@ -96,11 +104,10 @@ class Downloader(DownloaderBase):
 
     # threaded
     def _on_thread_exception(self, thread_name: str) -> None:
-        import traceback
         with self._thread_exception_lock:
             if thread_name not in self._thread_exceptions:
                 self._thread_exceptions[thread_name] = []
-            self._thread_exceptions[thread_name].append(traceback.format_exc())
+            self._thread_exceptions[thread_name].append(format_exception('full'))
             self.my_root_thread.killed = True
 
     # threaded
@@ -611,10 +618,9 @@ class Downloader(DownloaderBase):
             self._at_launch()
             thiscall()
         except (KeyboardInterrupt, ThreadInterruptException):
-            trace(f'\nInterrupted by \'{sys.exc_info()[0].__name__}\'!\n', True)
+            trace(f'\nInterrupted by \'{format_exception("name")}\'!\n', True)
         except Exception:
-            import traceback
-            trace(f'Unhandled exception: {sys.exc_info()[0]!s}!\n{traceback.format_exc()}', True)
+            trace(f'Unhandled exception: {format_exception("row")}', True)
         finally:
             self.current_state = DownloaderStates.IDLE
         if self._thread_exceptions and self.maxthreads_items > 1:

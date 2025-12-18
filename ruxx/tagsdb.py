@@ -13,6 +13,7 @@ import pathlib
 from .defines import FILE_NAME_ALIASES, MODULE_CHOICES, TAG_AUTOCOMPLETE_LENGTH_MIN, TAG_AUTOCOMPLETE_NUMBER_MAX, UTF8
 from .logger import trace
 from .rex import re_wtag
+from .utils import format_exception
 
 __all__ = ('TAG_ALIASES', 'TagsDB', 'is_wtag', 'load_tag_aliases')
 
@@ -153,8 +154,7 @@ def load_tag_aliases() -> None:
             TagsDB.try_locate_file_single(FILE_NAME_ALIASES)
             TagsDB.load_aux_file(FILE_NAME_ALIASES, TAG_ALIASES)
         except Exception:
-            import traceback
-            trace(traceback.format_exc())
+            trace(format_exception('full'))
             trace(f'Error: Failed to load tag aliases from {TagsDB.AuxDBFiles.get(FILE_NAME_ALIASES, FILE_NAME_ALIASES)}')
             TAG_ALIASES.update({'': ''})
 
