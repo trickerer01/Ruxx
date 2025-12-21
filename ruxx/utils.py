@@ -34,7 +34,7 @@ def ensure_compatibility() -> None:
 def format_exception(mode: Literal['full', 'row', 'name']) -> str:
     if mode == 'name':
         return sys.exc_info()[0].__name__
-    exception_string = traceback.format_exc(1, False) if mode == 'row' else traceback.format_exc()
+    exception_string = traceback.format_exc(0, False) if mode == 'row' else traceback.format_exc()
     return re_api_key_user.sub('&api_key=<REDACTED>&user_id=<REDACTED>', exception_string)
 
 
