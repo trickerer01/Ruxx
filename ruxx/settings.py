@@ -94,9 +94,9 @@ class ListConfigWorker:
                 elif conf == Options.TAGLISTS_PATH:
                     ConfigMgr.on_init_autocompletion_callback(pathlib.Path(val))
                 elif conf in ConfigMgr.duplicating_settings:
-                    [setrootconf(cnf, val) for cnf in (conf, ConfigMgr.duplicating_settings.get(conf))]
+                    [setrootconf(cnf, val) for cnf in (conf, ConfigMgr.duplicating_settings[conf])]
                 elif conf in ConfigMgr.combobox_setting_arrays:
-                    setrootconf(conf, ConfigMgr.combobox_setting_arrays.get(conf)[val])
+                    setrootconf(conf, ConfigMgr.combobox_setting_arrays[conf][val])
                 else:
                     setrootconf(conf, val)
             else:
@@ -170,9 +170,9 @@ class JSONConfigWorker:
                 elif conf == Options.TAGLISTS_PATH:
                     ConfigMgr.on_init_autocompletion_callback(pathlib.Path(val))
                 elif conf in ConfigMgr.duplicating_settings:
-                    [setrootconf(cnf, val) for cnf in (conf, ConfigMgr.duplicating_settings.get(conf))]
+                    [setrootconf(cnf, val) for cnf in (conf, ConfigMgr.duplicating_settings[conf])]
                 elif conf in ConfigMgr.combobox_setting_arrays:
-                    setrootconf(conf, ConfigMgr.combobox_setting_arrays.get(conf)[val])
+                    setrootconf(conf, ConfigMgr.combobox_setting_arrays[conf][val])
                 else:
                     setrootconf(conf, val)
             else:
@@ -298,6 +298,7 @@ class ConfigMgr:
     }
 
     duplicating_settings = {
+        Options.PATH: Options.PATH_VISUAL,
         Options.PROXYSTRING: Options.PROXYSTRING_TEMP,
         Options.PROXYTYPE: Options.PROXYTYPE_TEMP,
         Options.TIMEOUTSTRING: Options.TIMEOUTSTRING_TEMP,
