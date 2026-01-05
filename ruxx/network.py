@@ -262,7 +262,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                     if __RUXX_DEBUG__:
                                         exc_p1, exc_p2 = tuple(str(sys.exc_info()[k]) for k in range(2))
                                         trace(f'Warning (W2): at {item_id} chunk {i + 1:d} catched {exc_p1}: {exc_p2} retrying...', True)
-                                    time.sleep(sleep_time)
+                                    if not self.is_killed():
+                                        time.sleep(sleep_time)
                                     continue
                                 chunk_tries = 0
                                 i += 1
@@ -315,7 +316,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
                             result.retries += 1
                         s_result = f'{result.result_str}{format_exception("row")} retry {result.retries:d}...'
                         trace(s_result, True)
-                        time.sleep(2)
+                        if not self.is_killed():
+                            time.sleep(2)
                         continue
         return result
 
@@ -352,7 +354,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
                 else:
                     trace(f'{threadname}catched {format_exception("row")}.'
                           f'{f" Reconnecting in {sleep_time:.1f} sec... {retries:d}" if retries < tries else ""}', True)
-                time.sleep(sleep_time)
+                if not self.is_killed():
+                    time.sleep(sleep_time)
                 continue
 
         if retries >= tries:
