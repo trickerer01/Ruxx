@@ -524,6 +524,23 @@ class RealDownloadTests(TestCase):
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
+    def test_down_rx03_symbols(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        # this test actually performs a download
+        tempfile_id = '9324779'
+        tempfile_ext = 'jpeg'
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #            tag         tag            tag             tag           tag        flag       v
+            argslist = (':>=', 'score:>=1600', 'score:<=1700', 'width:=1200', '-animated', '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.RX) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
+        print(f'{self._testMethodName} passed')
+
+    @test_prepare()
     def test_down_rs01(self) -> None:
         if not RUN_CONN_TESTS:
             return

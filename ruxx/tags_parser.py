@@ -20,6 +20,8 @@ DEFAULT_TAGS = ('sfw',)
 # language=PythonRegExp
 TAG_CHAR = r'[a-zÀ-ʯА-яぁ-㋾･-ﾟ一-鿿\d_%+\-/!()*\'.]'
 # language=PythonRegExp
+SYMBOL_CHAR = r'[!@#$%^&*()\-_=+\[\]{}\\|\'";:,.<>/?]'
+# language=PythonRegExp
 META_CHAR = r'[a-z\d_\-.]'
 # language=PythonRegExp
 META_COUNT_RX = r':(?:(?:[<>]=?|=)?[a-z\d\-_]+?|[a-z\d_]+:[a-z\d_]+?)'
@@ -109,6 +111,15 @@ RE_PLAINS = {
     ProcModule.XB: re.compile(fr'^-?{TAG_CHAR}+?$'),
     ProcModule.BB: re.compile(fr'^-?{TAG_CHAR}+?$'),
 }
+RE_SYMBOLS = {
+    ProcModule.RX: re.compile(fr'^-?{SYMBOL_CHAR}+?$'),
+    ProcModule.RN: re.compile(fr'^-?{SYMBOL_CHAR}+?$'),
+    ProcModule.RS: re.compile(fr'^-?{SYMBOL_CHAR}+?$'),
+    ProcModule.RP: re.compile(fr'^-?{SYMBOL_CHAR}+?$'),
+    ProcModule.EN: re.compile(fr'^-?{SYMBOL_CHAR}+?$'),
+    ProcModule.XB: re.compile(fr'^-?{SYMBOL_CHAR}+?$'),
+    ProcModule.BB: re.compile(fr'^-?{SYMBOL_CHAR}+?$'),
+}
 RE_METAS = {
     ProcModule.RX: re.compile(fr'^{META_CHAR}+?{META_COUNT_RX}$'),
     ProcModule.RN: re.compile(fr'^{META_CHAR}+?{META_COUNT_RN}$'),
@@ -181,6 +192,10 @@ def re_by_type(re_dict: dict[int, re.Pattern[str]]) -> re.Pattern:
 
 def re_plain() -> re.Pattern:
     return re_by_type(RE_PLAINS)
+
+
+def re_symbols() -> re.Pattern:
+    return re_by_type(RE_SYMBOLS)
 
 
 def re_meta() -> re.Pattern:
@@ -278,7 +293,11 @@ def parse_tags(tags: str) -> tuple[bool, Sequence[str]]:
                 return fail()
         elif re_sort().fullmatch(tag):
             sort_tags_count += 1
-        if not (re_orgr_full_s().fullmatch(tag) or re_andgr().fullmatch(tag) or re_meta().fullmatch(tag) or re_plain().fullmatch(tag)):
+        if not (re_orgr_full_s().fullmatch(tag)
+                or re_andgr().fullmatch(tag)
+                or re_meta().fullmatch(tag)
+                or re_symbols().fullmatch(tag)
+                or re_plain().fullmatch(tag)):
             return fail()
         fulltags.append(tag)
 
