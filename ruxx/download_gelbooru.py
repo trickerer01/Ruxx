@@ -298,7 +298,7 @@ class DownloaderGelbooru(Downloader):
         return f'&limit={maxlim or self._get_items_per_page():d}'
 
     def _form_comments_search_address(self, post_id: str) -> str:
-        return f'{self._get_sitename()}index.php?page=dapi&s=comment&q=index&post_id={post_id}'
+        return f'{self._get_sitename()}index.php?page=dapi&s=comment&q=index{self._get_api_key()}&post_id={post_id}'
 
 #
 #

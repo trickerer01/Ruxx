@@ -541,6 +541,25 @@ class RealDownloadTests(TestCase):
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
+    def test_down_rx04_comments(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        # this test actually performs a download
+        tempfile_id = '12871672'
+        tempfile_ext = 'png'
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            commentsfile = tempfile.with_name(f'rx_!comments_{tempfile_id}-{tempfile_id}.txt')
+            #               tag              flag          flag                v                flag     flag
+            argslist = ('id:12871672', '-dump_comments', '-path', tempfile.parent.as_posix(), '-dmode', 'touch')
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.RX) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
+                self.assertTrue(commentsfile.is_file())
+        print(f'{self._testMethodName} passed')
+
+    @test_prepare()
     def test_down_rs01(self) -> None:
         if not RUN_CONN_TESTS:
             return
