@@ -44,6 +44,7 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.dump_tags: bool = False
         self.dump_sources: bool = False
         self.dump_comments: bool = False
+        self.dump_hashes: bool = False
         self.dump_per_item: bool = False
         self.merge_lists: bool = False
         self.append_info: bool = False

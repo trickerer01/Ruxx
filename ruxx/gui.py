@@ -121,6 +121,7 @@ from .gui_defines import (
     OPTION_CMD_PROXY_NO_DOWNLOAD,
     OPTION_CMD_RETRIES_CMD,
     OPTION_CMD_SAVE_COMMENTS,
+    OPTION_CMD_SAVE_HASHES,
     OPTION_CMD_SAVE_SOURCES,
     OPTION_CMD_SAVE_TAGS,
     OPTION_CMD_THREADING,
@@ -642,6 +643,9 @@ def prepare_cmdline() -> list[str]:
     # save comments (dump_comments)
     if addstr := OPTION_CMD_SAVE_COMMENTS[int(getrootconf(Options.SAVE_COMMENTS))]:
         newstr.append(addstr)
+    # save hashes (dump_hashes)
+    if addstr := OPTION_CMD_SAVE_HASHES[int(getrootconf(Options.SAVE_HASHES))]:
+        newstr.append(addstr)
     # info save mode: per file (dump_per_item) or merge lists (or normal)
     if addstr := OPTION_CMD_INFO_SAVE_MODE[int(getrootconf(Options.INFO_SAVE_MODE))]:
         newstr.append(addstr)
@@ -999,6 +1003,7 @@ def init_menus() -> None:
     register_menu_checkbutton('Save tags', CVARS[Options.SAVE_TAGS])
     register_menu_checkbutton('Save source links', CVARS[Options.SAVE_SOURCES])
     register_menu_checkbutton('Save comments', CVARS[Options.SAVE_COMMENTS])
+    register_menu_checkbutton('Save hashes', CVARS[Options.SAVE_HASHES])
     register_submenu('Save info mode...')
     register_submenu_radiobutton('per run', CVARS[Options.INFO_SAVE_MODE], InfoSaveModes.PER_RUN.value)
     register_submenu_radiobutton('per file', CVARS[Options.INFO_SAVE_MODE], InfoSaveModes.PER_FILE.value)
@@ -1102,6 +1107,7 @@ def init_gui() -> None:
     setrootconf(Options.SAVE_TAGS, not IS_IDE)
     setrootconf(Options.SAVE_SOURCES, not IS_IDE)
     setrootconf(Options.SAVE_COMMENTS, not IS_IDE)
+    setrootconf(Options.SAVE_HASHES, not IS_IDE)
     setrootconf(Options.WARN_NONEMPTY_DEST, not IS_IDE)
     # Background looping tasks
     update_frame_cmdline()

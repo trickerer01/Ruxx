@@ -649,6 +649,7 @@ class Downloader(DownloaderBase):
         self.dump_tags = args.dump_tags or self.dump_tags
         self.dump_sources = args.dump_sources or self.dump_sources
         self.dump_comments = args.dump_comments or self.dump_comments
+        self.dump_hashes = args.dump_hashes or self.dump_hashes
         self.dump_per_item = args.dump_per_item or self.dump_per_item
         self.merge_lists = args.merge_lists or self.merge_lists
         self.append_info = args.append_info or self.append_info
@@ -766,7 +767,9 @@ class Downloader(DownloaderBase):
                     time.sleep(0.2)
 
     def _dump_all_info(self) -> None:
-        if len(self.item_info_dict_all) == 0 or not any((self.dump_tags, self.dump_sources, self.dump_comments)):
+        if len(self.item_info_dict_all) == 0:
+            return
+        if not any((self.dump_tags, self.dump_sources, self.dump_comments, self.dump_hashes)):
             return
 
         try:
@@ -798,11 +801,16 @@ class Downloader(DownloaderBase):
             comments = f'\n{NEWLINE_X2.join(str(c) for c in item_info.comments)}\n' if item_info.comments else ''
             return f'{abbrp}{item_info.id}:{comments}\n'
 
+        def proc_hashes(item_info: ItemInfo) -> str:
+            if item_info.id not in orig_ids and not item_info.md5:
+                return ''
+            return f'{abbrp}{item_info.id}: {item_info.md5.strip()}\n'
+
         for name, proc, conf in zip(
-            ('tags', 'sources', 'comments'),
-            (proc_tags, proc_sources, proc_comments),
-            (self.dump_tags, self.dump_sources, self.dump_comments),
-            strict=False,
+            ('tags', 'sources', 'comments', 'hashes'),
+            (proc_tags, proc_sources, proc_comments, proc_hashes),
+            (self.dump_tags, self.dump_sources, self.dump_comments, self.dump_hashes),
+            strict=True,
         ):
             if conf is False:
                 continue

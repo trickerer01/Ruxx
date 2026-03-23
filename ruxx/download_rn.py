@@ -288,6 +288,8 @@ class DownloaderRn(Downloader):
                 if len(mp4_items) > 1 or len(webm_items) > 1:
                     trace(f'Warning (W1): ProcItem: more than 1 vid for {item_id}', True)
 
+                self._extract_md5(str((img_items or mp4_items or webm_items or swf_items)[0]), item_id)
+
                 if imgs:
                     self._process_image(str(img_items[0]), item_id)
                 else:
@@ -314,6 +316,12 @@ class DownloaderRn(Downloader):
             body = comment_div.text.strip()
             body = body[body.find(f'{author}: ') + len(f'{author}: '):]
             self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
+
+    def _extract_md5(self, raw: str, full_item_id: str) -> None:
+        img_idx = raw.find('images/') + len('images/')
+        end_idx = raw.find('/', img_idx)
+        md5 = raw[img_idx:end_idx]
+        self.item_info_dict_per_task[full_item_id].md5 = md5
 
     @staticmethod
     def extract_local_addr(raw: str) -> str:

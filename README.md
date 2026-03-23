@@ -36,6 +36,7 @@ to split your searches using id filter. Plus you may still get banned for abusin
 - **Edit -> Save tags** ‒ an additional (text) file will be created containing tags for every post
 - **Edit -> Save source links** ‒ an additional (text) file will be created containing source (if present) for every post
 - **Edit -> Save comments** ‒ an additional (text) file will be created containing comments (if present) for every post
+- **Edit -> Save hashes** ‒ an additional (text) file will be created containing md5 hashes for every post
 - **Edit -> Save info mode...** ‒ tags/sources/comments info file save mode
   - **per run** ‒ create a single file per checked info category for every (non-empty) downloader run, this is the default mode
   - **per file** ‒ create info files per each downloaded file (not recommended)

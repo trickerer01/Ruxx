@@ -114,7 +114,7 @@ def test_prepare(*, log_disable=True, log_cmd=True) -> Callable[[], Callable[[],
 class DataStructureIntegrityTests(TestCase):
     @test_prepare()
     def test_integrity01_iteminfo(self) -> None:
-        self.assertSetEqual({'source', 'comments', 'score', 'has_children', 'parent_id'}, ItemInfo.optional_slots)
+        self.assertSetEqual({'source', 'comments', 'score', 'has_children', 'parent_id', 'md5'}, ItemInfo.optional_slots)
         print(f'{self._testMethodName} passed')
 
     @test_prepare()

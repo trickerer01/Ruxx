@@ -188,6 +188,7 @@ class DownloaderRs(Downloader):
             orig_href = self._extract_orig_link(raw_html)
             ext = orig_href[orig_href.rfind('.'):] if orig_href else ''
             item_info.ext = ext[1:]
+            item_info.md5 = orig_href[orig_href.rfind('/') + 1:-len(ext)]
             lis = raw_html.find_all('li', class_='general-tag', style='display: block; padding: 5px;')
             for li in lis:
                 li_str: str = li.text

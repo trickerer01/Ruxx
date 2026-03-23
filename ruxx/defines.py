@@ -33,8 +33,8 @@ class ItemInfo:
     """
     Used to store universal info for processed item
     """
-    __slots__ = ('comments', 'ext', 'has_children', 'height', 'id', 'parent_id', 'score', 'source', 'tags', 'width')
-    optional_slots = frozenset(('source', 'comments', 'score', 'has_children', 'parent_id'))
+    __slots__ = ('comments', 'ext', 'has_children', 'height', 'id', 'md5', 'parent_id', 'score', 'source', 'tags', 'width')
+    optional_slots = frozenset(('source', 'comments', 'score', 'has_children', 'parent_id', 'md5'))
 
     def __init__(self) -> None:
         self.id: str = ''
@@ -45,6 +45,7 @@ class ItemInfo:
         self.source: str = ''
         self.comments: list[Comment] = []
         self.score: str = ''
+        self.md5 = ''
         self.has_children: str = ''
         self.parent_id: str = ''
 

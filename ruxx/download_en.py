@@ -123,6 +123,7 @@ class DownloaderEn(Downloader):
             post_id = str(p['id'])
             pfile = p['file'] or p['sample']['alternates'].get('original')
             assert pfile
+            post_md5 = pfile['md5']
             try:
                 post_furl = (pfile['url'] if 'url' in pfile else
                              str((next(filter(None, pfile['urls'])) or p['file']['url']) if 'urls' in pfile else None))
@@ -132,7 +133,6 @@ class DownloaderEn(Downloader):
                 post_furl = f'{SITENAME}help/blacklist#default'
                 if __RUXX_DEBUG__:
                     post_tags_list.remove(TAG_BLACKLISTED_ALWAYS)
-                    post_md5 = p['file']['md5']
                     post_ext_orig = p['file']['ext']
                     post_furl = f'{SITENAME.replace("//", "//static1.")}data/{post_md5[:2]}/{post_md5[2:4]}/{post_md5}.{post_ext_orig}'
             post_surl = str(p['sample']['url'] or post_furl)
@@ -147,9 +147,9 @@ class DownloaderEn(Downloader):
             post_fdate = str(p['created_at'] or '2024-01-01T09:28:22.753-04:00')
             post_comment_count = str(p['comment_count'] or 0)
             post_str = (
-                f'<post_id="{post_id}" height="{post_fheight}" width="{post_fwidth}" file_url="{post_furl}" sample_url="{post_surl}" '
-                f'created_at="{post_fdate}" score="{post_score}" has_children="{post_haschildren}" parent_id="{post_parent_id}" '
-                f'comment_count="{post_comment_count}" source="{post_source}" tags="{post_tags}">'
+                f'<post_id="{post_id}" height="{post_fheight}" width="{post_fwidth}" md5="{post_md5}" file_url="{post_furl}" '
+                f'sample_url="{post_surl}" created_at="{post_fdate}" score="{post_score}" has_children="{post_haschildren}" '
+                f'parent_id="{post_parent_id}" comment_count="{post_comment_count}" source="{post_source}" tags="{post_tags}">'
             )
             posts.append(post_str)
         return posts

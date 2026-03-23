@@ -284,6 +284,7 @@ class ConfigMgr:
         'savetags': Setting(Options.SAVE_TAGS, BoolStrValidator(), 'Invalid savetags bool value \'%s\'!'),
         'savesources': Setting(Options.SAVE_SOURCES, BoolStrValidator(), 'Invalid savesources bool value \'%s\'!'),
         'savecomments': Setting(Options.SAVE_COMMENTS, BoolStrValidator(), 'Invalid savecomments bool value \'%s\'!'),
+        'savehashes': Setting(Options.SAVE_HASHES, BoolStrValidator(), 'Invalid savehashes bool value \'%s\'!'),
         'infosavemode': Setting(Options.INFO_SAVE_MODE, InfoSaveModeValidator(), 'Invalid infosavemode value \'%s\'!'),
         'extendfilename': Setting(Options.APPEND_SOURCE_AND_TAGS, BoolStrValidator(), 'Invalid extendfilename bool value \'%s\'!'),
         'warndestnonempty': Setting(Options.WARN_NONEMPTY_DEST, BoolStrValidator(), 'Invalid warndestnonempty bool value \'%s\'!'),

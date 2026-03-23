@@ -42,6 +42,7 @@ from .gui_defines import (
     OPTION_CMD_PROXY_NO_DOWNLOAD,
     OPTION_CMD_RETRIES_CMD,
     OPTION_CMD_SAVE_COMMENTS,
+    OPTION_CMD_SAVE_HASHES,
     OPTION_CMD_SAVE_SOURCES,
     OPTION_CMD_SAVE_TAGS,
     OPTION_CMD_THREADING_CMD,
@@ -61,6 +62,7 @@ from .help import (
     HELP_ARG_DOWNLOAD_LIMIT,
     HELP_ARG_DOWNLOAD_MODE,
     HELP_ARG_DUMP_COMMENTS,
+    HELP_ARG_DUMP_HASHES,
     HELP_ARG_DUMP_PER_ITEM,
     HELP_ARG_DUMP_SOURCES,
     HELP_ARG_DUMP_TAGS,
@@ -175,6 +177,7 @@ def add_common_args(par: ArgumentParser) -> None:
     doex.add_argument(OPTION_CMD_SAVE_TAGS[True], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_TAGS)
     doex.add_argument(OPTION_CMD_SAVE_SOURCES[True], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_SOURCES)
     doex.add_argument(OPTION_CMD_SAVE_COMMENTS[True], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_COMMENTS)
+    doex.add_argument(OPTION_CMD_SAVE_HASHES[True], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_HASHES)
     doexm1 = doex.add_mutually_exclusive_group(required=False)
     doexm1.add_argument(OPTION_CMD_INFO_SAVE_MODE[1], action=ACTION_STORE_TRUE, help=HELP_ARG_DUMP_PER_ITEM)
     doexm1.add_argument(OPTION_CMD_INFO_SAVE_MODE[2], action=ACTION_STORE_TRUE, help=HELP_ARG_MERGE_LISTS)

@@ -78,6 +78,7 @@ OPTION_CMD_DOWNMODE = ('', 'skip', 'touch')
 OPTION_CMD_SAVE_TAGS = ('', '-dump_tags')
 OPTION_CMD_SAVE_SOURCES = ('', '-dump_sources')
 OPTION_CMD_SAVE_COMMENTS = ('', '-dump_comments')
+OPTION_CMD_SAVE_HASHES = ('', '-dump_hashes')
 OPTION_CMD_INFO_SAVE_MODE = ('', '-dump_per_item', '-merge_lists')
 OPTION_CMD_APPEND_SOURCE_AND_TAGS = ('', '-append_info')
 OPTION_CMD_WARN_NONEMPTY_DEST = ('', '-warn_nonempty')
@@ -183,6 +184,7 @@ class Options(IntEnum):
     SAVE_TAGS = auto()
     SAVE_SOURCES = auto()
     SAVE_COMMENTS = auto()
+    SAVE_HASHES = auto()
     INFO_SAVE_MODE = auto()
     ISCONSOLELOGOPEN = auto()
     APPEND_SOURCE_AND_TAGS = auto()
@@ -252,6 +254,7 @@ CVARS = {
     Options.SAVE_TAGS: 'saveTags',
     Options.SAVE_SOURCES: 'saveSources',
     Options.SAVE_COMMENTS: 'saveComments',
+    Options.SAVE_HASHES: 'saveHashes',
     Options.INFO_SAVE_MODE: 'infoSaveMode',
     Options.ISCONSOLELOGOPEN: 'isConsoleOpen',
     Options.APPEND_SOURCE_AND_TAGS: 'appendSourceAndTags',
@@ -364,7 +367,7 @@ class Menus(IntEnum):
 # submenus with changing states
 class SubMenus(IntEnum):
     SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
-    PREFIX, STAGS, SSOURCE, SCOMMENTS, SMODE, EXTEND, WNONEMPTY, VERBOSE = 0, 2, 3, 4, 5, 7, 8, 9
+    PREFIX, STAGS, SSOURCE, SCOMMENTS, SHASHES, SMODE, EXTEND, WNONEMPTY, VERBOSE = 0, 2, 3, 4, 5, 6, 8, 9, 10
     RX, RN, RS, RP, EN, XB, BB = 0, 1, 2, 3, 4, 5, 6
     HEADERS, PROXY, TIMEOUT, RETRIES, APIKEY, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6, 7
     DOWNLOAD, CHECKTAGS, DBATCH, CLEARLOG = 0, 1, 3, 5
@@ -386,8 +389,8 @@ class RuxxMenu:
 
 menu_items = {
     Menus.FILE: RuxxMenu(SubMenus.SAVE, SubMenus.LOAD, SubMenus.RESET),
-    Menus.EDIT: RuxxMenu(SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.SMODE, SubMenus.EXTEND,
-                         SubMenus.WNONEMPTY, SubMenus.VERBOSE),
+    Menus.EDIT: RuxxMenu(SubMenus.PREFIX, SubMenus.STAGS, SubMenus.SSOURCE, SubMenus.SCOMMENTS, SubMenus.SHASHES,
+                         SubMenus.SMODE, SubMenus.EXTEND, SubMenus.WNONEMPTY, SubMenus.VERBOSE),
     Menus.MODULE: RuxxMenu(SubMenus.RX, SubMenus.RN, SubMenus.RS, SubMenus.RP, SubMenus.EN, SubMenus.XB, SubMenus.BB),
     Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.APIKEY, SubMenus.DWPROXY,
                                SubMenus.IGNOREPROXY, SubMenus.CACHEMODE),
