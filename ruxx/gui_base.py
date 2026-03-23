@@ -1838,7 +1838,7 @@ def load_batch_download_tag_list() -> list[str]:
     return []
 
 
-def ask_filename(ftypes: Iterable[tuple[str, str]]) -> str:
+def ask_filename(ftypes: Iterable[tuple[str, str | Iterable[str]]]) -> str:
     if fullpath := filedialog.askopenfilename(filetypes=ftypes, initialdir=get_curdir()):
         setrootconf(Options.LASTPATH, pathlib.Path(fullpath).parent.as_posix())  # not bound
         return fullpath

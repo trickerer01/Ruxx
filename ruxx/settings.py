@@ -53,9 +53,13 @@ __all__ = ('ConfigMgr', 'register_config_worker')
 
 SETTINGS_FILE_SIZE_LIMIT = 16 * Mem.KB
 
-CONFIG_FILE_TYPES = (
-    ('Config files', '*.cfg'),
+CONFIG_FILE_TYPES_SAVE = (
+    ('Cfg files', '*.cfg'),
     ('JSON files', '*.json'),
+    ('All files', '*.*'),
+)
+CONFIG_FILE_TYPES_LOAD = (
+    ('Supported configs', ('*.cfg', '*.json')),
     ('All files', '*.*'),
 )
 
@@ -355,8 +359,8 @@ class ConfigMgr:
     @staticmethod
     def save_settings() -> None:
         try:
-            if fpath := filedialog.asksaveasfilename(initialdir=get_curdir(), filetypes=CONFIG_FILE_TYPES, confirmoverwrite=True,
-                                                     defaultextension='.json', initialfile='config'):
+            if fpath := filedialog.asksaveasfilename(initialdir=get_curdir(), filetypes=CONFIG_FILE_TYPES_SAVE,
+                                                     confirmoverwrite=True, defaultextension='.json', initialfile='config'):
                 setrootconf(Options.LASTPATH, pathlib.Path(fpath).parent.as_posix())
                 trace(f'Saving setting to {fpath}...')
                 with open(fpath, 'wt', encoding=UTF8, newline='\n') as wfile:
@@ -368,7 +372,7 @@ class ConfigMgr:
     @staticmethod
     def load_settings() -> None:
         try:
-            if fpath := ask_filename(CONFIG_FILE_TYPES):
+            if fpath := ask_filename(CONFIG_FILE_TYPES_LOAD):
                 trace(f'Loading setting from {fpath}...')
                 with open(fpath, 'rt', encoding=UTF8) as rfile:
                     get_config_worker(rfile.name).read(rfile)
