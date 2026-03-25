@@ -331,7 +331,6 @@ class Downloader(DownloaderBase):
                 active_pool: ThreadPool
                 with Pool(max(2, self.maxthreads_items // (4 if ProcModule.is_rp() else 2))) as active_pool:
                     ress = deque(active_pool.apply_async(self._get_page_items, args=larr) for larr in arr_temp)
-                    active_pool.close()
                     while len(ress) > 0:
                         self.catch_cancel_or_ctrl_c()
                         while len(ress) > 0 and ress[0].ready():
@@ -508,7 +507,6 @@ class Downloader(DownloaderBase):
             active_pool: ThreadPool
             with Pool(self.maxthreads_items) as active_pool:
                 ress = deque(active_pool.apply_async(self._process_item, args=(iarr,)) for iarr in self.items_raw_all)
-                active_pool.close()
                 while len(ress) > 0:
                     self.catch_cancel_or_ctrl_c()
                     while len(ress) > 0 and ress[0].ready():
@@ -758,7 +756,6 @@ class Downloader(DownloaderBase):
             active_pool: ThreadPool
             with Pool(self.maxthreads_items) as active_pool:
                 ress = deque(active_pool.apply_async(self._extract_item_info, args=(elem,)) for elem in self.items_raw_per_task)
-                active_pool.close()
                 while len(ress) > 0:
                     self.catch_cancel_or_ctrl_c()
                     while len(ress) > 0 and ress[0].ready():
