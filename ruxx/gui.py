@@ -62,7 +62,6 @@ from .gui_base import (
     hotkey_text,
     init_additional_windows,
     is_focusing,
-    is_global_disabled,
     is_menu_disabled,
     load_batch_download_tag_list,
     load_id_list,
@@ -545,50 +544,48 @@ def prepare_cmdline() -> list[str]:
     if addstr := OPTION_CMD_HIDE_PERSONAL_INFO[int(getrootconf(Options.HIDE_PERSONAL_INFO))]:
         newstr.append(addstr)
     addstr = OPTION_CMD_VIDEOS[OPTION_VALUES_VIDEOS.index(str(getrootconf(Options.VIDSETTING)))]
-    if len(addstr) > 0 and not is_global_disabled(Globals.COMBOBOX_VIDEOS):
+    if len(addstr) > 0:
         newstr.append(addstr)
     addstr = OPTION_CMD_IMAGES[OPTION_VALUES_IMAGES.index(str(getrootconf(Options.IMGSETTING)))]
-    if len(addstr) > 0 and not is_global_disabled(Globals.COMBOBOX_IMAGES):
+    if len(addstr) > 0:
         newstr.append(addstr)
     addstr = OPTION_CMD_THREADING[OPTION_VALUES_THREADING.index(str(getrootconf(Options.THREADSETTING)))]
-    if len(addstr) > 0 and not is_global_disabled(Globals.COMBOBOX_THREADING):
+    if len(addstr) > 0:
         newstr.append(OPTION_CMD_THREADING_CMD)
         newstr.append(addstr)
     addstr = OPTION_CMD_PARCHI[OPTION_VALUES_PARCHI.index(str(getrootconf(Options.PARCHISETTING)))]
-    if len(addstr) > 0 and not is_global_disabled(Globals.COMBOBOX_PARCHI):
+    if len(addstr) > 0:
         newstr.append(addstr)
     addstr = OPTION_CMD_DOWNLOAD_ORDER[OPTION_VALUES_DOWNLOAD_ORDER.index(str(getrootconf(Options.DOWNLOAD_ORDER)))]
-    if len(addstr) > 0 and not is_global_disabled(Globals.COMBOBOX_DOWNLOAD_ORDER):
+    if len(addstr) > 0:
         newstr.append(addstr)
     # download limit
-    if not is_global_disabled(Globals.FIELD_DOWNLOAD_LIMIT):
+    while True:
+        try:
+            val = int(getrootconf(Options.DOWNLOAD_LIMIT))
+            assert val >= 0
+            if val > 0:
+                newstr.append(OPTION_CMD_DOWNLIMIT_CMD)
+                newstr.append(str(val))
+            setrootconf(Options.DOWNLOAD_LIMIT, str(val))
+            break
+        except Exception:
+            setrootconf(Options.DOWNLOAD_LIMIT, 0)
+    # date min / max
+    for datestr in ((Options.DATEMIN, OPTION_CMD_DATEAFTER_CMD), (Options.DATEMAX, OPTION_CMD_DATEBEFORE_CMD)):
         while True:
             try:
-                val = int(getrootconf(Options.DOWNLOAD_LIMIT))
-                assert val >= 0
-                if val > 0:
-                    newstr.append(OPTION_CMD_DOWNLIMIT_CMD)
-                    newstr.append(str(val))
-                setrootconf(Options.DOWNLOAD_LIMIT, str(val))
+                addstr = str(getrootconf(datestr[0]))
+                assert DateValidator()(addstr)
+                if (
+                        (datestr[0] == Options.DATEMIN and addstr != DATE_MIN_DEFAULT) or
+                        (datestr[0] == Options.DATEMAX and addstr != DATE_MAX_DEFAULT)
+                ):
+                    newstr.append(datestr[1])
+                    newstr.append(addstr)
                 break
             except Exception:
-                setrootconf(Options.DOWNLOAD_LIMIT, 0)
-    # date min / max
-    if not is_global_disabled(Globals.FIELD_DATEMIN) and not is_global_disabled(Globals.FIELD_DATEMAX):
-        for datestr in ((Options.DATEMIN, OPTION_CMD_DATEAFTER_CMD), (Options.DATEMAX, OPTION_CMD_DATEBEFORE_CMD)):
-            while True:
-                try:
-                    addstr = str(getrootconf(datestr[0]))
-                    assert DateValidator()(addstr)
-                    if (
-                            (datestr[0] == Options.DATEMIN and addstr != DATE_MIN_DEFAULT) or
-                            (datestr[0] == Options.DATEMAX and addstr != DATE_MAX_DEFAULT)
-                    ):
-                        newstr.append(datestr[1])
-                        newstr.append(addstr)
-                    break
-                except Exception:
-                    setrootconf(datestr[0], DATE_MIN_DEFAULT if datestr[0] == Options.DATEMIN else DATE_MAX_DEFAULT)
+                setrootconf(datestr[0], DATE_MIN_DEFAULT if datestr[0] == Options.DATEMIN else DATE_MAX_DEFAULT)
     # API key
     if ProcModule.is_rx():
         if addstr := str(getrootconf(Options.APIKEY_KEY)):
