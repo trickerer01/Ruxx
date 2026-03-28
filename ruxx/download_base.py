@@ -404,7 +404,8 @@ class DownloaderBase(ThreadedHtmlWorker):
 
                 items_raw = self._get_all_post_tags(raw_html_page)
                 if len(items_raw) == 0:
-                    thread_exit(f'ERROR: ProcPage: cannot find picture or video on page {pnum + 1:d}', -17)
+                    reason = str((raw_html_page.find('response') or {}).get('reason', 'Unknown reason'))
+                    thread_exit(f'ERROR: ProcPage: cannot find picture or video on page {pnum + 1:d}! Reason: \'{reason}\'', -17)
 
                 # check first item if moving forward and last item if backwards
                 h = self._local_addr_from_string(str(items_raw[0 if step_dir == 1 else i_count - 1]))
