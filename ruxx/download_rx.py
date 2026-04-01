@@ -36,7 +36,7 @@ ITEMS_PER_PAGE = ITEMS_PER_PAGE_RX
 ITEMS_PER_PAGE_F = 50
 ITEMS_PER_PAGE_P = 45
 MAX_SEARCH_DEPTH_HTML = 200000 + 42 - 1  # set by site devs
-MAX_SEARCH_DEPTH_DAPI = 0
+MAX_SEARCH_DEPTH_DAPI = 200000  # in case of API abuse this limit is set and we cannot predict when this happens
 MAX_SEARCH_DEPTH = MAX_SEARCH_DEPTH_DAPI
 
 API_KEY = base64.b64decode(API_KEY_DEFAULT_RX).decode()
