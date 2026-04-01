@@ -104,7 +104,7 @@ def test_prepare(*, log_disable=True, log_cmd=True) -> Callable[[], Callable[[],
         @functools.wraps(test_func)
         def invoke_test(*args, **kwargs) -> None:
             def set_up_test() -> None:
-                Logger.init(log_cmd, log_disable)
+                Logger.init(log_cmd, log_disable and RUN_CONN_TESTS == 0)
             set_up_test()
             test_func(*args, **kwargs)
         return invoke_test
