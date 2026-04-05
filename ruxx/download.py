@@ -257,7 +257,7 @@ class Downloader(DownloaderBase):
             self._on_thread_exception(current_process().name)
             raise
 
-    def _fetch_task_items(self, tag_str: str) -> bool:
+    def _fetch_task_items(self, tag_str: str) -> None:
         self.current_state = DownloaderStates.SEARCHING
         self.url = self._form_tags_search_address(tag_str)
 
@@ -271,17 +271,17 @@ class Downloader(DownloaderBase):
 
             if self.total_count <= 0:
                 trace('Nothing to process: query result is empty')
-                return False
+                return
 
             trace(f'Total {self.total_count:d} item(s) found across {self._num_pages():d} page(s)')
 
             if 0 < self._get_max_search_depth() <= self.total_count:
                 if self._supports_native_id_filter():
                     trace('\nFATAL: too many results, won\'t be able to fetch html for all the pages!\nTry adding an ID filter.')
-                    return False
+                    return
                 elif self._get_max_search_depth() < self.total_count:
                     trace('\nFATAL: too many results, won\'t be able to fetch html for all the pages!\nTry to refine your search.')
-                    return False
+                    return
                 else:
                     pages_depth = (self._get_max_search_depth() + self._get_items_per_page() - 1) // self._get_items_per_page()
                     trace(f'\nWarning (W3): too many results, can only fetch html for {pages_depth:d} pages!\n')
@@ -352,8 +352,6 @@ class Downloader(DownloaderBase):
             self.items_raw_per_task[:] = [self._form_item_string_manually(total_count_or_html)]
             self.total_count = 1
 
-        return True
-
     def _extract_custom_argument_tags(self) -> None:
         fav_user_tags = list(filter(None, [re_favorited_by_tag.fullmatch(t) for t in self.tags_str_arr]))
         self._extract_favorite_user(fav_user_tags)
@@ -374,8 +372,7 @@ class Downloader(DownloaderBase):
                 if self._is_fav_search_single_step():
                     return
                 try:
-                    if not self._fetch_task_items(self.favorites_search_user):
-                        thread_exit('Fetch failed', -912)
+                    self._fetch_task_items(self.favorites_search_user)
                     self._extract_cur_task_infos(set())
                     ids_list = sorted(int(self.item_info_dict_per_task[full_id].id) for full_id in self.item_info_dict_per_task)
                     cc = self._get_tags_concat_char()
@@ -400,8 +397,7 @@ class Downloader(DownloaderBase):
             trace(f'Pool search detected ({self.pool_search_str}){convert_msg}')
             if self._is_pool_search_conversion_required():
                 try:
-                    if not self._fetch_task_items(self.pool_search_str):
-                        thread_exit('Fetch failed', -913)
+                    self._fetch_task_items(self.pool_search_str)
                     self._extract_cur_task_infos(set())
                     ids_list = sorted(int(self.item_info_dict_per_task[full_id].id) for full_id in self.item_info_dict_per_task)
                     cc = self._get_tags_concat_char()
@@ -431,8 +427,7 @@ class Downloader(DownloaderBase):
         self._after_filter(sleep_time)
 
     def _process_tags(self, tag_str: str) -> None:
-        if not self._fetch_task_items(self._consume_custom_module_tags(tag_str)):
-            thread_exit('Fetch failed', -911)
+        self._fetch_task_items(self._consume_custom_module_tags(tag_str))
 
         self._after_filter(0.025)
 
