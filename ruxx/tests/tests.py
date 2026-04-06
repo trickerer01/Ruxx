@@ -583,7 +583,7 @@ class RealDownloadTests(TestCase):
         tempfile_ext = 'png'
         with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
             tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
-            commentsfile = tempfile.with_name(f'rx_!comments_{tempfile_id}-{tempfile_id}.txt')
+            commentsfile = tempfile.with_name(f'rx_!info_{tempfile_id}-{tempfile_id}.json')
             #               tag              flag          flag                v                flag     flag
             argslist = ('id:12871672', '-dump_comments', '-path', tempfile.parent.as_posix(), '-dmode', 'touch')
             arglist = prepare_arglist(argslist)
