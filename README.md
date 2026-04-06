@@ -33,14 +33,14 @@ to split your searches using id filter. Plus you may still get banned for abusin
 - **File -> Reset all settings** ‒ resets all settings to initial ones. If autoconfigured this will reset to those parameters. Window position is unaffected by this action
 - **File -> Open download folder** \<Ctrl+L> ‒ open currently selected destination folder (**Path**), Windows only
 - **Edit -> Prefix file names with \<prefix>** ‒ all downloaded file names will be prefixed according to selected module (`rx_`, `rn_`, etc.) so they are not just numbers. This option is enabled by default
-- **Edit -> Save tags** ‒ an additional (text) file will be created containing tags for every post
-- **Edit -> Save source links** ‒ an additional (text) file will be created containing source (if present) for every post
-- **Edit -> Save comments** ‒ an additional (text) file will be created containing comments (if present) for every post
-- **Edit -> Save hashes** ‒ an additional (text) file will be created containing md5 hashes for every post
-- **Edit -> Save info mode...** ‒ tags/sources/comments info file save mode
-  - **per run** ‒ create a single file per checked info category for every (non-empty) downloader run, this is the default mode
-  - **per file** ‒ create info files per each downloaded file (not recommended)
-  - **merge info lists** ‒ gather and parse existing info files, merge and save all infos together, one text file per info category will be stored. **Parsed old info files will be deleted**
+- **Edit -> Save tags** ‒ save all parsed post tags to a post info JSON file
+- **Edit -> Save source links** ‒ collect and save post source links to a post info JSON file
+- **Edit -> Save comments** ‒ collect and save post comments to a post info JSON file
+- **Edit -> Save hashes** ‒ parse post hashes and include them in post info JSON
+- **Edit -> Save info mode...** ‒ post info file save mode
+  - **per run** ‒ create a separate info file per downloader run, this is the default mode
+  - **per file** ‒ create a separate info file for every post (not recommended)
+  - **merge info lists** ‒ gather and parse existing info files, merge and save all infos together, leaving a single file. **Parsed old info files will be deleted!**
 - **Edit -> Extend file names with extra info** ‒ all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
 - **Edit -> Warn if download folder is not empty** ‒ in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
 - **Edit -> Verbose log** ‒ enable logging of technical messages not related to actual download process. Verbose log is one of the requirements for a proper issue report

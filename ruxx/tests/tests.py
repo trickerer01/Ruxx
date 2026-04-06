@@ -7,19 +7,22 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import functools
+import json
 import pathlib
 from collections.abc import Callable
+from dataclasses import asdict
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 from ruxx.cmdargs import prepare_arglist
-from ruxx.defines import DATE_MIN_DEFAULT, DEFAULT_HEADERS, MODULE_CHOICES, DownloadModes, ItemInfo, ThreadInterruptException
+from ruxx.defines import DATE_MIN_DEFAULT, DEFAULT_HEADERS, MODULE_CHOICES, Comment, DownloadModes, ItemInfo, ThreadInterruptException
 from ruxx.downloaders import DOWNLOADERS_BY_PROC_MODULE, make_downloader
 from ruxx.file_parser import IDSTRING_PATTERNS, IDVAL_EQ_SEPARATORS, PREFIX_OPTIONAL_PATTERNS
 from ruxx.gui import ICON_TYPE_PER_PROC_MODULE
 from ruxx.gui_base import HELP_TAGS_PER_PROC_MODULE, SITENAMES_PER_PROC_MODULE
 from ruxx.logger import Logger
 from ruxx.module import ProcModule
+from ruxx.rex import re_infolist_filename
 from ruxx.tags_parser import RE_ANDGR_FULL, RE_FAVS, RE_METAS, RE_ORGRS_FULL, RE_ORGRS_FULL_S, RE_PLAINS, RE_POOLS, RE_SORTS, parse_tags
 from ruxx.tagsdb import TAG_ALIASES, TagsDB, load_tag_aliases
 from ruxx.task import MAX_NEGATIVE_TAGS, MAX_STRING_LENGTHS, MAX_WILDCARDS
@@ -118,7 +121,38 @@ class DataStructureIntegrityTests(TestCase):
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
-    def test_integrity02_procmodule_dicts(self) -> None:
+    def test_integrity02_dataclass_reconstruct(self) -> None:
+        cc1 = Comment(author='author1', body='body1')
+        cc2 = Comment(author='author2', body='bo2dy')
+        cjson_str = json.dumps([asdict(cc1), asdict(cc2)])
+        ccs = [Comment.from_dict(_) for _ in json.loads(cjson_str)]
+        self.assertEqual(ccs[0], cc1)
+        self.assertEqual(ccs[1], cc2)
+        ii = ItemInfo()
+        ii.id = '1235555'
+        ii.height = '1080'
+        ii.width = '720'
+        ii.tags = 'asd rs class good'
+        ii.ext = '.mp1'
+        ii.source = 'example.com/1234'
+        ii.comments = [cc1, cc2]
+        ii.score = '16'
+        ii.md5 = '9h7c124c8912047801979c461929471c929'
+        ii.has_children = 'false'
+        ii.parent_id = ''
+        ijson_str = json.dumps([asdict(ii)])
+        iis = [ItemInfo.from_dict(_) for _ in json.loads(ijson_str)]
+        self.assertEqual(iis[0], ii)
+        print(f'{self._testMethodName} passed')
+
+    @test_prepare()
+    def test_integrity03_rex_matches(self) -> None:
+        self.assertRegex('rx_!info_12345.json', re_infolist_filename)
+        self.assertRegex('en_!info_12345-67890.json', re_infolist_filename)
+        print(f'{self._testMethodName} passed')
+
+    @test_prepare()
+    def test_integrity04_procmodule_dicts(self) -> None:
         self.assertEqual(1, ProcModule.PROC_MODULE_MIN)
         self.assertEqual(7, ProcModule.PROC_MODULE_MAX)
         self.assertEqual(ProcModule.PROC_MODULE_MAX, len(ProcModule.PROC_MODULES_BY_NAME))

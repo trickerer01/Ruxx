@@ -6,6 +6,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+import json
+import pathlib
 import re
 
 from .defines import (
@@ -24,11 +26,13 @@ from .defines import (
     ID_VALUE_SEPARATOR_CHAR_RX,
     ID_VALUE_SEPARATOR_CHAR_XB,
     UTF8,
+    ItemInfo,
 )
+from .logger import trace
 from .module import ProcModule
 from .utils import unique_ordered
 
-__all__ = ('prepare_id_list', 'prepare_tag_lists')
+__all__ = ('prepare_id_list', 'prepare_item_infos_dict', 'prepare_tag_lists')
 
 re_comments = re.compile(r'^(?:--|//|#).*?$')
 re_separators = re.compile(r'(?:, *| +)')
@@ -62,44 +66,39 @@ PREFIX_OPTIONAL_PATTERNS = {
 }
 
 
-def get_idval_eq_sep() -> str:
+def _get_idval_eq_sep() -> str:
     return IDVAL_EQ_SEPARATORS[ProcModule.value()]
 
 
-def get_r_idstring() -> re.Pattern:
+def _get_r_idstring() -> re.Pattern:
     return IDSTRING_PATTERNS[ProcModule.value()]
 
 
-def get_r_prefix_optional() -> re.Pattern:
+def _get_r_prefix_optional() -> re.Pattern:
     return PREFIX_OPTIONAL_PATTERNS[ProcModule.value()]
 
 
-def id_list_from_string(id_str: str) -> list[str]:
+def _id_list_from_string(id_str: str) -> list[str]:
     id_str = re_separators.sub(' ', id_str.strip())  # separators
-    id_str = get_r_prefix_optional().sub('', id_str)  # prefix
+    id_str = _get_r_prefix_optional().sub('', id_str)  # prefix
     return id_str.strip().split(' ')
 
 
-def parse_ids_file(filepath: str) -> tuple[bool, list[str]]:
+def _parse_ids_file(filepath: pathlib.Path) -> tuple[bool, list[str]]:
     id_list: list[str] = []
     try:
         with open(filepath, 'rt', encoding=UTF8) as ifile:
             for line in ifile:
                 line = line.strip(' \n\ufeff')
                 if line and not re_comments.fullmatch(line):
-                    assert get_r_idstring().fullmatch(line)
-                    id_list.extend(id_list_from_string(line))
-        return True, [f'id{get_idval_eq_sep()}{s}' for s in sorted(unique_ordered(id_list), key=int)]
+                    assert _get_r_idstring().fullmatch(line)
+                    id_list.extend(_id_list_from_string(line))
+        return True, [f'id{_get_idval_eq_sep()}{s}' for s in sorted(unique_ordered(id_list), key=int)]
     except Exception:
         return False, []
 
 
-def prepare_id_list(filepath: str) -> tuple[bool, str]:
-    suc, id_list = parse_ids_file(filepath)
-    return suc, f'({"~".join(id_list)})'
-
-
-def parse_tags_file(filepath: str) -> tuple[bool, list[str]]:
+def _parse_tags_file(filepath: pathlib.Path) -> tuple[bool, list[str]]:
     tag_list: list[str] = []
     try:
         with open(filepath, 'rt', encoding=UTF8) as tfile:
@@ -112,9 +111,37 @@ def parse_tags_file(filepath: str) -> tuple[bool, list[str]]:
         return False, tag_list
 
 
-def prepare_tag_lists(filepath: str) -> tuple[bool, list[str]]:
-    suc, tag_lists = parse_tags_file(filepath)
+def _parse_item_infos_file(filepath: pathlib.Path, prefix: str) -> tuple[bool, dict[str, ItemInfo]]:
+    item_infos: dict[str, ItemInfo] = {}
+    try:
+        with open(filepath, 'rt', encoding=UTF8, errors='backslashreplace') as listfile:
+            fjson: list[dict] = json.load(listfile)
+            for jdic in fjson:
+                try:
+                    ii = ItemInfo.from_dict(jdic)
+                except KeyError:
+                    trace(f'Unable to parse item info from \'{jdic!s}\'!')
+                    raise
+                last_idstring = f'{prefix}{ii.id}'
+                item_infos[last_idstring] = ii
+        return True, item_infos
+    except Exception:
+        return False, item_infos
+
+
+def prepare_id_list(filepath: pathlib.Path) -> tuple[bool, str]:
+    suc, id_list = _parse_ids_file(filepath)
+    return suc, f'({"~".join(id_list)})'
+
+
+def prepare_tag_lists(filepath: pathlib.Path) -> tuple[bool, list[str]]:
+    suc, tag_lists = _parse_tags_file(filepath)
     return suc, tag_lists
+
+
+def prepare_item_infos_dict(filepath: pathlib.Path, prefix: str) -> tuple[bool, dict[str, ItemInfo]]:
+    suc, item_infos_dict = _parse_item_infos_file(filepath, prefix)
+    return suc, item_infos_dict
 
 #
 #

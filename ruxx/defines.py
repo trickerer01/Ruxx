@@ -6,22 +6,35 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+from __future__ import annotations
+
 import datetime
+from dataclasses import dataclass
 from enum import IntEnum, auto
 
 MIN_PYTHON_VERSION = (3, 10)
 MIN_PYTHON_VERSION_STR = f'{MIN_PYTHON_VERSION[0]:d}.{MIN_PYTHON_VERSION[1]:d}'
 
 
+@dataclass
 class Comment:
-    """
-    Comment structure (not saving all the info of course)
-    """
+    """Comment structure (not saving all the info of course)"""
     __slots__ = ('author', 'body')
+
+    author: str
+    body: str
 
     def __init__(self, author: str, body: str) -> None:
         self.author: str = author
         self.body: str = body
+
+    @classmethod
+    def from_dict(cls, fields: dict[str, str | list[dict[str, str]]]) -> Comment:
+        cc = Comment(fields['author'], fields['body'])
+        return cc
+
+    def __eq__(self, other: Comment) -> bool:
+        return all(hasattr(other, _) and getattr(other, _) == getattr(self, _) for _ in self.__slots__)
 
     def __str__(self) -> str:
         return f'{self.author}:\n{self.body}'
@@ -29,12 +42,23 @@ class Comment:
     __repr__ = __str__
 
 
+@dataclass
 class ItemInfo:
-    """
-    Used to store universal info for processed item
-    """
+    """Universal info container for processed item"""
     __slots__ = ('comments', 'ext', 'has_children', 'height', 'id', 'md5', 'parent_id', 'score', 'source', 'tags', 'width')
     optional_slots = frozenset(('source', 'comments', 'score', 'has_children', 'parent_id', 'md5'))
+
+    id: str
+    height: str
+    width: str
+    tags: str
+    ext: str
+    source: str
+    comments: list[Comment]
+    score: str
+    md5: str
+    has_children: str
+    parent_id: str
 
     def __init__(self) -> None:
         self.id: str = ''
@@ -45,9 +69,28 @@ class ItemInfo:
         self.source: str = ''
         self.comments: list[Comment] = []
         self.score: str = ''
-        self.md5 = ''
+        self.md5: str = ''
         self.has_children: str = ''
         self.parent_id: str = ''
+
+    @classmethod
+    def from_dict(cls, fields: dict[str, str | list[dict[str, str]]]) -> ItemInfo:
+        ii = ItemInfo()
+        ii.id = fields['id']
+        ii.height = fields['height']
+        ii.width = fields['width']
+        ii.tags = fields['tags']
+        ii.ext = fields['ext']
+        ii.source = fields['source']
+        ii.comments = [Comment.from_dict(_) for _ in fields['comments']]
+        ii.score = fields['score']
+        ii.md5 = fields['md5']
+        ii.has_children = fields['has_children']
+        ii.parent_id = fields['parent_id']
+        return ii
+
+    def __eq__(self, other: ItemInfo) -> bool:
+        return all(hasattr(other, _) and getattr(other, _) == getattr(self, _) for _ in self.__slots__)
 
     def __lt__(self, other) -> bool:
         return int(self.id or 0) < int(other.id or 0)

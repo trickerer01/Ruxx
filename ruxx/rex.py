@@ -109,7 +109,7 @@ re_post_page_bb = re_post_page_xb
 re_favorited_by_tag = re.compile(r'^favorited_by[:=]!?([^:=]+)$')
 re_pool_tag = re.compile(r'^pool[:=]([^:=]+)$')
 
-re_infolist_filename = re.compile(fr'(?:{"|".join(MODULE_CHOICES)})_!(tags|sources|comments)_\d+-\d+\.txt')
+re_infolist_filename = re.compile(fr'(?:{"|".join(MODULE_CHOICES)})_!info_\d+(?:-\d+)?\.json')
 
 re_ask_values = re.compile(r'[^, ]+')
 re_json_entry_value = re.compile(r'^([^: ,]+)[: ,](.+)$')

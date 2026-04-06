@@ -9,6 +9,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 from __future__ import annotations
 
 import itertools
+import json
 import os
 import pathlib
 import sys
@@ -17,6 +18,7 @@ from abc import abstractmethod
 from argparse import Namespace
 from collections import deque
 from collections.abc import Callable, Iterable, MutableSet
+from dataclasses import asdict
 from multiprocessing.dummy import Pool, current_process
 from multiprocessing.pool import ThreadPool
 from threading import Lock
@@ -30,7 +32,6 @@ from .defines import (
     SOURCE_DEFAULT,
     UTF8,
     APIKey,
-    Comment,
     DownloaderOptions,
     DownloaderStates,
     DownloadModes,
@@ -40,7 +41,8 @@ from .defines import (
     ThreadInterruptException,
 )
 from .download_base import DownloaderBase
-from .gui_defines import NEWLINE, NEWLINE_X2, OPTION_CMD_APIKEY_CMD, UNDERSCORE
+from .file_parser import prepare_item_infos_dict
+from .gui_defines import NEWLINE, OPTION_CMD_APIKEY_CMD, UNDERSCORE
 from .logger import trace
 from .module import ProcModule
 from .network import DownloadInterruptException, ThreadedHtmlWorker, thread_exit
@@ -745,9 +747,12 @@ class Downloader(DownloaderBase):
             if len(item_info.source) < 2:
                 item_info.source = SOURCE_DEFAULT
             if __RUXX_DEBUG__ and not self.favorites_search_user and not self.pool_search_str:
-                for key in (_ for _ in item_info.__slots__ if _ not in ItemInfo.optional_slots):
-                    if not getattr(item_info, key):
+                for key in item_info.__slots__:
+                    val = getattr(item_info, key)
+                    if key not in ItemInfo.optional_slots and not val:
                         trace(f'Info: extract info {abbrp}{item_info.id}: uninitialized field \'{key}\'!')
+                    if isinstance(val, str) and val and val[-1] == ' ':
+                        trace(f'Info: extract info {abbrp}{item_info.id}: trailing space in field \'{key}\': {val}!')
 
         abbrp = self._get_module_abbr_p()
         if self._can_extract_item_info_without_fetch() or self.maxthreads_items < 2 or len(self.items_raw_per_task) < 2:
@@ -777,133 +782,65 @@ class Downloader(DownloaderBase):
         except Exception:
             thread_exit(f'ERROR: Unable to create folder {self.dest_base_s}!')
 
-        orig_ids: set[str] = {self.item_info_dict_all[k].id for k in self.item_info_dict_all}
-        merged_files = self._try_merge_info_files()
-        saved_files = set[pathlib.Path]()
+        abbrp = self._get_module_abbr_p()
+        merged_files = self._try_merge_info_files(
+            self.dest_base_s, self.item_info_dict_all, abbrp, self.add_filename_prefix,
+        ) if self.merge_lists and self.dest_base_s.is_dir() else []
         item_info_list = sorted(self.item_info_dict_all.values())
         id_begin = item_info_list[0].id
         id_end = item_info_list[-1].id
-        abbrp = self._get_module_abbr_p()
+        saved_files = set[pathlib.Path]()
 
-        def proc_tags(item_info: ItemInfo) -> str:
-            if item_info.id not in orig_ids and not item_info.tags:
-                return ''
-            return f'{abbrp}{item_info.id}: {format_score(item_info.score)} {item_info.tags.strip()}\n'
+        trace('\nSaving post infos...')
 
-        def proc_sources(item_info: ItemInfo) -> str:
-            if item_info.id not in orig_ids and not item_info.source:
-                return ''
-            return f'{abbrp}{item_info.id}: {item_info.source.strip()}\n'
-
-        def proc_comments(item_info: ItemInfo) -> str:
-            if item_info.id not in orig_ids and not item_info.comments:
-                return ''
-            comments = f'\n{NEWLINE_X2.join(str(c) for c in item_info.comments)}\n' if item_info.comments else ''
-            return f'{abbrp}{item_info.id}:{comments}\n'
-
-        def proc_hashes(item_info: ItemInfo) -> str:
-            if item_info.id not in orig_ids and not item_info.md5:
-                return ''
-            return f'{abbrp}{item_info.id}: {item_info.md5.strip()}\n'
-
-        for name, proc, conf in zip(
-            ('tags', 'sources', 'comments', 'hashes'),
-            (proc_tags, proc_sources, proc_comments, proc_hashes),
-            (self.dump_tags, self.dump_sources, self.dump_comments, self.dump_hashes),
-            strict=True,
-        ):
-            if conf is False:
-                continue
-            trace(f'\nSaving {name}...')
-            if self.dump_per_item:
-                for iinfo in item_info_list:
-                    ifilepath = self.dest_base_s / f'{abbrp}!{name}{UNDERSCORE}{iinfo.id}.txt'
-                    saved_files.add(ifilepath)
-                    if self._has_gui() and ifilepath.is_file():
-                        if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{ifilepath}\' already exists. Overwrite?'):
-                            trace('Skipped.')
-                            continue
-                    with open(ifilepath, 'wt', encoding=UTF8) as idump:
-                        idump.write(proc(iinfo))
-            else:
-                filepath = self.dest_base_s / f'{abbrp}!{name}{UNDERSCORE}{id_begin}-{id_end}.txt'
-                saved_files.add(filepath)
-                if self._has_gui() and filepath.is_file():
-                    if not confirm_yes_no(title=f'Save {name}', msg=f'File \'{filepath}\' already exists. Overwrite?'):
+        if self.dump_per_item:
+            for iinfo in item_info_list:
+                ifilepath = self.dest_base_s / f'{abbrp}!info_{iinfo.id}.json'
+                saved_files.add(ifilepath)
+                if self._has_gui() and ifilepath.is_file():
+                    if not confirm_yes_no(title='Save info', msg=f'File \'{ifilepath.as_posix()}\' already exists. Overwrite?'):
                         trace('Skipped.')
                         continue
-                with open(filepath, 'wt', encoding=UTF8) as dump:
-                    for iteminfo in item_info_list:
-                        dump_string = proc(iteminfo)
-                        if dump_string or iteminfo.id in orig_ids:
-                            dump.write(dump_string)
-            trace('Done.')
+                with open(ifilepath, 'wt', encoding=UTF8, errors='backslashreplace') as idump:
+                    json.dump([asdict(iinfo)], idump, indent=1, sort_keys=False, ensure_ascii=False)
+        else:
+            filepath = self.dest_base_s / f'{abbrp}!info_{id_begin}-{id_end}.json'
+            saved_files.add(filepath)
+            can_write = True
+            if self._has_gui() and filepath.is_file():
+                if not confirm_yes_no(title='Save info', msg=f'File \'{filepath.as_posix()}\' already exists. Overwrite?'):
+                    trace('Skipped.')
+                    can_write = False
+            if can_write:
+                with open(filepath, 'wt', encoding=UTF8, errors='backslashreplace') as dump:
+                    json.dump([asdict(_) for _ in item_info_list], dump, indent=1, sort_keys=False, ensure_ascii=False)
+
+        trace('Done.')
         [merged_file.unlink() for merged_file in merged_files if merged_file not in saved_files]
         trace(BR)
 
-    def _try_merge_info_files(self) -> list[pathlib.Path]:
+    @staticmethod
+    def _try_merge_info_files(dest: pathlib.Path, items_dict: dict[str, ItemInfo], prefix: str, add_prefix: bool) -> list[pathlib.Path]:
         parsed_files: list[pathlib.Path] = []
-        if not self.merge_lists:
-            return parsed_files
-        if not self.dest_base_s.is_dir():
-            return parsed_files
-        abbrp = self._get_module_abbr_p()
-        with os.scandir(self.dest_base_s.as_posix()) as listing:
+        with os.scandir(dest.as_posix()) as listing:
             info_lists = sorted(filter(
                 None, (re_infolist_filename.fullmatch(f.name) for f in listing
-                       if f.is_file() and f.name.startswith(f'{abbrp}!'))), key=lambda m: m.string)
+                       if f.is_file() and f.name.startswith(f'{prefix}!'))), key=lambda m: m.string)
         parsed_dict: dict[str, ItemInfo] = {}
         for fmatch in info_lists:
             fmname = fmatch.string
-            list_type = fmatch.group(1)
-            list_fullpath = self.dest_base_s / fmname
-            last_idstring = ''
-            prev_line = ''
+            list_fullpath = dest / fmname
             try:
-                with open(list_fullpath, 'rt', encoding=UTF8) as listfile:
-                    for line in listfile:
-                        line = line.strip('\ufeff')
-                        if line not in ('', '\n'):
-                            if line.startswith(abbrp):
-                                delim_idx = line.find(':')
-                                idi = line[len(abbrp):delim_idx]
-                                last_idstring = f'{(abbrp if self.add_filename_prefix else "")}{idi}'
-                                if last_idstring not in parsed_dict:
-                                    ii = ItemInfo()
-                                    ii.id = idi
-                                    parsed_dict[last_idstring] = ii
-                                ii = parsed_dict[last_idstring]
-                                if len(line) > delim_idx + 2:
-                                    if list_type == 'tags':
-                                        tags_idx = line.find(' ', delim_idx + 2) + 1
-                                        score_str = line[delim_idx + 2:tags_idx - 1][1:-1]
-                                        tags_str = line[tags_idx:]
-                                        ii.score = score_str
-                                        ii.tags = tags_str.strip()
-                                    else:
-                                        source_str = line[delim_idx + 2:]
-                                        ii.source = source_str.strip()
-                                    last_idstring = ''
-                            else:
-                                assert last_idstring
-                                lii = parsed_dict[last_idstring]
-                                new_comment = line.strip().endswith(':') and (prev_line.startswith(abbrp) or prev_line in ('', '\n'))
-                                if not lii.comments or new_comment:
-                                    lii.comments.append(Comment('', ''))
-                                comment = lii.comments[-1]
-                                if new_comment:
-                                    comment_author = line.strip()[:-1]
-                                    comment.author = comment_author
-                                else:
-                                    comment.body += line
-                        prev_line = line
-                    parsed_files.append(list_fullpath)
-            except Exception:
+                suc, file_item_infos = prepare_item_infos_dict(list_fullpath, prefix if add_prefix else '')
+                assert suc
+                parsed_dict.update(file_item_infos)
+                parsed_files.append(list_fullpath)
+            except AssertionError:
                 trace(f'Error reading from {fmname}. Skipped')
                 continue
         for k, v in parsed_dict.items():
-            if k not in self.item_info_dict_all:
-                self.item_info_dict_all[k] = v
+            if k not in items_dict:
+                items_dict[k] = v
         return parsed_files
 
     def _has_gui(self) -> bool:

@@ -1817,7 +1817,7 @@ def help_about(title=f'About {APP_NAME}', message=ABOUT_MSG, icon='info') -> Non
 
 
 def load_id_list() -> None:
-    if filepath := ask_filename((('Text files', '*.txt'), ('All files', '*.*'))):
+    if filepath := pathlib.Path(ask_filename((('Text files', '*.txt'), ('All files', '*.*')))):
         success, file_tags = prepare_id_list(filepath)
         if success:
             setrootconf(Options.TAGS, file_tags)
@@ -1825,16 +1825,16 @@ def load_id_list() -> None:
             setrootconf(Options.DATEMIN, DATE_MIN_DEFAULT)
             setrootconf(Options.DATEMAX, DATE_MAX_DEFAULT)
         else:
-            messagebox.showwarning(message=f'Unable to load ids from {filepath[filepath.rfind("/") + 1:]}!')
+            messagebox.showwarning(message=f'Unable to load ids from {filepath.name}!')
 
 
 def load_batch_download_tag_list() -> list[str]:
-    if filepath := ask_filename((('Text files', '*.txt'), ('All files', '*.*'))):
+    if filepath := pathlib.Path(ask_filename((('Text files', '*.txt'), ('All files', '*.*')))):
         success, file_tag_lists = prepare_tag_lists(filepath)
         if success:
             return file_tag_lists
         else:
-            messagebox.showwarning(message=f'Unable to load tags from {filepath[filepath.rfind("/") + 1:]}!')
+            messagebox.showwarning(message=f'Unable to load tags from {filepath.name}!')
     return []
 
 
