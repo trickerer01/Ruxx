@@ -6,12 +6,14 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+import datetime
+
 from .vcs import __RUXX_DEBUG__, APP_NAME, APP_REV_DATE, APP_VERSION
 
 APP_AUTHOR_NICKNAME = 'trickerer'
 APP_AUTHOR = f'Dmitriy \'{APP_AUTHOR_NICKNAME}\' Komardin'
 APP_ADDRESS = f'github.com/{APP_AUTHOR_NICKNAME}01/{APP_NAME}'
-APP_YEARS = '2020-2025'
+APP_YEARS = f'2020-{datetime.date.today().year}'
 APP_BUILD_TYPE_STR = 'Debug' if __RUXX_DEBUG__ else 'Release'
 
 # cmdline args help messages
