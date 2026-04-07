@@ -803,6 +803,7 @@ class Downloader(DownloaderBase):
                         continue
                 with open(ifilepath, 'wt', encoding=UTF8, errors='backslashreplace') as idump:
                     json.dump([asdict(iinfo)], idump, indent=1, sort_keys=False, ensure_ascii=False)
+                    idump.write('\n')
         else:
             filepath = self.dest_base_s / f'{abbrp}!info_{id_begin}-{id_end}.json'
             saved_files.add(filepath)
@@ -814,6 +815,7 @@ class Downloader(DownloaderBase):
             if can_write:
                 with open(filepath, 'wt', encoding=UTF8, errors='backslashreplace') as dump:
                     json.dump([asdict(_) for _ in item_info_list], dump, indent=1, sort_keys=False, ensure_ascii=False)
+                    dump.write('\n')
 
         trace('Done.')
         [merged_file.unlink() for merged_file in merged_files if merged_file not in saved_files]
