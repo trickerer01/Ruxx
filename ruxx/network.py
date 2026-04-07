@@ -342,7 +342,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                 if isinstance(err, exceptions.HTTPError) and err.response.status_code == 404:
                     if r is not None and r.content and len(r.content.decode()) > 2:
                         trace(f'{threadname}received code 404 but received html'
-                              f'\n{format_exception("row")}. Continuing...', True)
+                              f'\n{format_exception("row").strip()}.\nContinuing...', True)
                         break
                     trace(f'{threadname}catched err 404 {format_exception("row")}. Aborting...', True)
                     return None
