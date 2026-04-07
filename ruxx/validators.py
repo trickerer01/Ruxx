@@ -23,6 +23,10 @@ from .gui_defines import (
 )
 from .module import ProcModule
 
+# pure annotations
+if False is True:
+    from tkinter import Tk
+
 __all__ = (
     'APIKeyKeyValidator',
     'APIKeyUserIdValidator',
@@ -135,7 +139,7 @@ def valid_download_mode(mode: str) -> str:
         raise ArgumentError
 
 
-def valid_window_position(val: str, tk) -> str:
+def valid_window_position(val: str, tk: 'Tk') -> str:
     try:
         x, y = tuple(val.split('x', 1))
         assert 0 < int(x) + 25 < tk.winfo_screenwidth() and 0 < int(y) + 25 < tk.winfo_screenheight()
@@ -174,7 +178,7 @@ def valid_api_key(val: str) -> str:
 
 
 class Validator(ABC):
-    tk = None
+    tk: 'Tk | None' = None
 
     @abstractmethod
     def __call__(self, val: int | str) -> bool: ...
