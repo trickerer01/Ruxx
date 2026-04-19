@@ -18,9 +18,11 @@ __all__ = ('convert_taglist', 'parse_tags', 'reset_last_tags')
 DEFAULT_TAGS = ('sfw',)
 
 # language=PythonRegExp
-TAG_CHAR = r'[a-zÀ-ʯА-яぁ-㋾･-ﾟ一-鿿\d_%+\-/!()*\'.]'
+TAG_CHAR = r'[a-zÀ-ʯА-яぁ-㋾･-ﾟ一-鿿\d_%+\-/!()*\'.`~:]'
 # language=PythonRegExp
-SYMBOL_CHAR = r'[!@#$%^&*()\-_=+\[\]{}\\|\'";:,.<>/?]'
+ANDGR_CHAR = r'[a-zÀ-ʯА-яぁ-㋾･-ﾟ一-鿿\d_%+\-/!()*\'.`~:|?]'
+# language=PythonRegExp
+SYMBOL_CHAR = r'[!@#$%^&*()\-_=+\[\]{}\\|\'";:,.<>/?`~]'
 # language=PythonRegExp
 META_CHAR = r'[a-z\d_\-.]'
 # language=PythonRegExp
@@ -96,9 +98,6 @@ RE_ORGR_PART_EN = fr'{TAG_CHAR}+?(?:{META_COUNT_EN})?'
 RE_ORGR_PART_XB = fr'{TAG_CHAR}+?(?:{META_COUNT_XB})?'
 # language=PythonRegExp
 RE_ORGR_PART_BB = fr'{TAG_CHAR}+?(?:{META_COUNT_XB})?'
-
-# language=PythonRegExp
-ANDGR_CHAR = r'[a-zÀ-ʯА-яぁ-㋾･-ﾟ一-鿿\d_+\-/!()*\'.|?]'
 # language=PythonRegExp
 RE_ANDGR_PART_U = fr'{ANDGR_CHAR}+?'
 
