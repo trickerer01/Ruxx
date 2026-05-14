@@ -412,12 +412,10 @@ def init_autocompletion(loc: pathlib.Path | None = None, force=True) -> None:
 
 
 def toggle_autocompletion_wrapper() -> None:
-    init_state = int(getrootconf(Options.AUTOCOMPLETION_ENABLE))
-    toggle_autocompletion()
-    new_state = int(getrootconf(Options.AUTOCOMPLETION_ENABLE))
-    if new_state == 1:
+    success = toggle_autocompletion()
+    if int(getrootconf(Options.AUTOCOMPLETION_ENABLE)) == 1:
         report_autocompletion_db_size()
-    elif init_state != new_state:
+    elif not success:
         messagebox.showerror('Nope', 'No tag lists found!')
     update_widget_enabled_states()
 
@@ -752,9 +750,10 @@ def recheck_args() -> tuple[bool, str]:
     if not parse_result:
         return False, 'Invalid tags'
     # path
-    dest_path = pathlib.Path(getrootconf(Options.PATH)).resolve()
-    if not dest_path:
+    dest_path_base = getrootconf(Options.PATH)
+    if not dest_path_base:
         return False, 'No path specified'
+    dest_path = pathlib.Path(dest_path_base).resolve()
     if not dest_path.parent.is_dir():
         return False, 'Invalid path'
     # dates

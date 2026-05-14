@@ -1784,9 +1784,12 @@ def get_curdir(prioritize_last_path=True) -> pathlib.Path:
     lastloc = pathlib.Path(getrootconf(Options.LASTPATH))
     curloc = pathlib.Path(getrootconf(Options.PATH))
     if prioritize_last_path:
-        return lastloc if lastloc else curloc if curloc.is_dir() else pathlib.Path().resolve()
+        myloc = (lastloc if (lastloc != pathlib.Path() and lastloc.is_dir()) else curloc).resolve()
     else:
-        return curloc if curloc.is_dir() else lastloc if lastloc else pathlib.Path().resolve()
+        myloc = (curloc if (curloc != pathlib.Path() and curloc.is_dir()) else lastloc).resolve()
+    while not myloc.is_dir():
+        myloc = myloc.parent
+    return myloc
 
 
 def get_cur_module_sitename() -> str:
@@ -1816,8 +1819,31 @@ def help_about(title=f'About {APP_NAME}', message=ABOUT_MSG, icon='info') -> Non
     messagebox.showinfo(title=title, message=message, icon=icon)
 
 
+def ask_directory_path(*, initialdir: str | pathlib.Path, **kwargs) -> pathlib.Path | None:
+    if dirpath_base := filedialog.askdirectory(initialdir=initialdir, **kwargs):
+        return pathlib.Path(dirpath_base)
+    return None
+
+
+def ask_filename(ftypes: Iterable[tuple[str, str | Iterable[str]]]) -> str:
+    if fullpath := filedialog.askopenfilename(filetypes=ftypes, initialdir=get_curdir()):
+        setrootconf(Options.LASTPATH, pathlib.Path(fullpath).parent.as_posix())  # not bound
+        return fullpath
+    return ''
+
+
+def ask_filename_path(ftypes: Iterable[tuple[str, str | Iterable[str]]]) -> pathlib.Path | None:
+    if filepath_base := ask_filename(ftypes):
+        return pathlib.Path(filepath_base)
+    return None
+
+
+def ask_filename_path_text() -> pathlib.Path | None:
+    return ask_filename_path((('Text files', '*.txt'), ('All files', '*.*')))
+
+
 def load_id_list() -> None:
-    if filepath := pathlib.Path(ask_filename((('Text files', '*.txt'), ('All files', '*.*')))):
+    if filepath := ask_filename_path_text():
         success, file_tags = prepare_id_list(filepath)
         if success:
             setrootconf(Options.TAGS, file_tags)
@@ -1829,7 +1855,7 @@ def load_id_list() -> None:
 
 
 def load_batch_download_tag_list() -> list[str]:
-    if filepath := pathlib.Path(ask_filename((('Text files', '*.txt'), ('All files', '*.*')))):
+    if filepath := ask_filename_path_text():
         success, file_tag_lists = prepare_tag_lists(filepath)
         if success:
             return file_tag_lists
@@ -1838,17 +1864,10 @@ def load_batch_download_tag_list() -> list[str]:
     return []
 
 
-def ask_filename(ftypes: Iterable[tuple[str, str | Iterable[str]]]) -> str:
-    if fullpath := filedialog.askopenfilename(filetypes=ftypes, initialdir=get_curdir()):
-        setrootconf(Options.LASTPATH, pathlib.Path(fullpath).parent.as_posix())  # not bound
-        return fullpath
-    return ''
-
-
 def browse_path() -> None:
-    if loc := filedialog.askdirectory(initialdir=get_curdir()):
-        setrootconf(Options.PATH, loc)
-        setrootconf(Options.LASTPATH, pathlib.Path(loc).parent.as_posix())  # not bound
+    if loc := ask_directory_path(initialdir=get_curdir()):
+        setrootconf(Options.PATH, loc.as_posix())
+        setrootconf(Options.LASTPATH, loc.parent.as_posix())  # not bound
         update_garbled_text_states()
 
 
@@ -1908,32 +1927,40 @@ def get_all_media_files_in_cur_dir() -> tuple[pathlib.Path]:
     return tuple(pathlib.Path(_) for _ in files)
 
 
-def get_media_files_dir() -> pathlib.Path:
-    return pathlib.Path(filedialog.askdirectory(initialdir=get_curdir(), mustexist=True))
+def get_media_files_dir() -> pathlib.Path | None:
+    return ask_directory_path(initialdir=get_curdir(), mustexist=True)
 
 
 def update_lastpath(filefullpath: pathlib.Path) -> None:
     setrootconf(Options.LASTPATH, filefullpath.parent.as_posix())
 
 
-def toggle_autocompletion() -> None:
+def toggle_autocompletion() -> bool:
     # current state is AFTER being toggled
     if bool(int(getrootconf(Options.AUTOCOMPLETION_ENABLE))):
-        last_path = pathlib.Path(getrootconf(Options.TAGLISTS_PATH)) or get_curdir()
+        taglists_path_base = str(getrootconf(Options.TAGLISTS_PATH))
+        last_path = pathlib.Path(taglists_path_base) if taglists_path_base else get_curdir()
         if TagsDB.try_set_basepath(last_path):
             setrootconf(Options.TAGLISTS_PATH, last_path.as_posix())
+            return True
         else:
-            loc = pathlib.Path(filedialog.askdirectory(
+            loc = ask_directory_path(
                 initialdir=last_path, mustexist=True,
                 title='Select a directory where tag lists are located (rx_tags.json, rn_tags.json, etc.)',
-            ))
-            if loc and (not last_path or loc != last_path) and TagsDB.try_set_basepath(loc):
+            )
+            if not loc:
+                setrootconf(Options.AUTOCOMPLETION_ENABLE, 0)
+                return True
+            elif (not last_path or loc != last_path) and TagsDB.try_set_basepath(loc):
                 setrootconf(Options.TAGLISTS_PATH, loc.as_posix())
+                return True
             else:
                 setrootconf(Options.AUTOCOMPLETION_ENABLE, 0)
+                return False
     else:
         TagsDB.clear()
         setrootconf(Options.TAGLISTS_PATH, '')
+        return True
 
 
 def trigger_autocomplete_tag() -> None:
