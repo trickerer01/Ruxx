@@ -56,6 +56,14 @@ args_argparse_str08 = args_argparse_str01 + ' -merge_lists'
 args_argparse_str09 = args_argparse_str08 + ' -merge_lists -dump_per_item'
 args_argparse_str10 = args_argparse_str01 + ' pool:33600'
 args_argparse_str11 = args_argparse_str10 + ' favorited_by:25000'
+args_argparse_str12_base = (
+    'sfw -das '
+    '-timeout 13 -retries 56 -dmode full -skip_img -skip_vid -lowres -noproxy -proxynodown -prefix -dump_tags -dump_sources -append_info'
+)
+args_argparse_str12_1 = args_argparse_str12_base + ' order=id_desc'
+args_argparse_str12_2 = args_argparse_str12_base + ' order=id_asc'
+args_argparse_str13_1 = args_argparse_str12_base + ' order:id'
+args_argparse_str13_2 = args_argparse_str12_base + ' order:score'
 args_tagparse_str1 = (
     'sfw asd ned -nds -proxr sort:id sord:score:asc -rating:explicit score:90 '
     '(t1~t2~t3) (t4~t5) -(t6,t7) -(t8,t9,t10) -(t?1,t*2|t?3|t11,t12*,*t13)'
@@ -329,6 +337,7 @@ class DownloaderBaseTests(TestCase):
             self.assertTrue(dwn.dump_tags)
             self.assertTrue(dwn.dump_sources)
             self.assertTrue(dwn.append_info)
+            self.assertTrue(dwn.default_sort)
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
@@ -426,6 +435,46 @@ class DownloaderBaseTests(TestCase):
         arglist = prepare_arglist(args.split())
         with make_downloader(ProcModule.RX) as dwn:
             self.assertRaises(AssertionError, dwn._parse_args, arglist, False)
+        print(f'{self._testMethodName} passed')
+
+    @test_prepare()
+    def test_cmdline12_1(self) -> None:
+        args = args_argparse_str12_1
+        arglist = prepare_arglist(args.split())
+        with make_downloader(ProcModule.RN) as dwn1:
+            dwn1._parse_args(arglist, False)
+            self.assertTrue(dwn1.default_sort)
+        with make_downloader(ProcModule.RP) as dwn2:
+            dwn2._parse_args(arglist, False)
+            self.assertTrue(dwn2.default_sort)
+
+    @test_prepare()
+    def test_cmdline12_2(self) -> None:
+        args = args_argparse_str12_2
+        arglist = prepare_arglist(args.split())
+        with make_downloader(ProcModule.RN) as dwn1:
+            dwn1._parse_args(arglist, False)
+            self.assertFalse(dwn1.default_sort)
+        with make_downloader(ProcModule.RP) as dwn2:
+            dwn2._parse_args(arglist, False)
+            self.assertFalse(dwn2.default_sort)
+        print(f'{self._testMethodName} passed')
+
+    @test_prepare()
+    def test_cmdline13_1(self) -> None:
+        args = args_argparse_str13_1
+        arglist = prepare_arglist(args.split())
+        with make_downloader(ProcModule.EN) as dwn:
+            dwn._parse_args(arglist, False)
+            self.assertTrue(dwn.default_sort)
+
+    @test_prepare()
+    def test_cmdline13_2(self) -> None:
+        args = args_argparse_str13_2
+        arglist = prepare_arglist(args.split())
+        with make_downloader(ProcModule.EN) as dwn:
+            dwn._parse_args(arglist, False)
+            self.assertFalse(dwn.default_sort)
         print(f'{self._testMethodName} passed')
 
 

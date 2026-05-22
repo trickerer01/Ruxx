@@ -288,6 +288,9 @@ class DownloaderEn(Downloader):
                 taglist[tidx] = tag.replace('favorited_by', 'favoritedby')
         return TAGS_CONCAT_CHAR_EN.join(taglist)
 
+    def _is_custom_sort_tag(self, tag_str: str) -> bool:
+        return tag_str.startswith('order:') and tag_str not in ('order:id', 'order:id_desc')
+
     def _send_to_download(self, raw: str, item_id: str, is_video: bool) -> None:
         address, fmt = self._get_video_address(raw) if is_video else self._get_image_address(raw)
         hint_maxlen = FILE_NAME_FULL_MAX_LEN - (len(self.dest_base_s.as_posix()) + len(item_id) + 1 + len(fmt))

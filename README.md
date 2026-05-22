@@ -149,7 +149,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
     - md5: `md5:X`, `X` = `<MD5 hash>`
     - source:
     - updated:
-    - sort: `sort:X[_asc|_desc]`. `X` = `<sort type>`, ex. `score`, `id` (default `id_desc`)
+    - order: `order:X[_asc|_desc]`. `X` = `<sort type>`, ex. `score`, `id` (default `id_desc`)
   - EN tags with range also support following range syntax:
     - `<type>:X..` (ex. `score:5000..` is equal to `score:>=5000`)
     - `<type>:..X` (ex. `score:..-500` <=> `score:<=-500`)
