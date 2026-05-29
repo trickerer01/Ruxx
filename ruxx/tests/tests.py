@@ -646,7 +646,7 @@ class RealDownloadTests(TestCase):
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
-    def test_down_rx05_comments(self) -> None:
+    def test_down_rx05_mdate(self) -> None:
         if not RUN_CONN_TESTS:
             return
         # this test actually performs a download
