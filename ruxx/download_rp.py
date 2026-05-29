@@ -47,7 +47,7 @@ ITEMS_PER_PAGE = ITEMS_PER_PAGE_RP
 
 MAX_SEARCH_DEPTH = 0
 
-ITEM_INFO_FIELDS = {'file_name': 'ext', 'score': 'score_'}
+ITEM_INFO_FIELDS = {'file_name': 'ext'}
 
 VALID_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'mp4', 'webm'}
 EXT_PET_CONTENT_TYPE = {
