@@ -47,7 +47,7 @@ ITEMS_PER_PAGE = ITEMS_PER_PAGE_RN
 
 MAX_SEARCH_DEPTH = 0
 
-ITEM_INFO_FIELDS = {'data-post-id': 'id', 'data-tags': 'tags', 'title': 'ext'}
+ITEM_INFO_FIELDS = {'data-post-id': 'id', 'data-tags': 'tags', 'data-height': 'height', 'data-width': 'width', 'title': 'ext'}
 
 
 @final
