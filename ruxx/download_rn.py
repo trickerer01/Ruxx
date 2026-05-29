@@ -132,7 +132,7 @@ class DownloaderRn(Downloader):
         return any(_ in h for _ in ('mp4', 'webm', 'swf'))
 
     def _get_item_html(self, h: str) -> BeautifulSoup | None:
-        return self.fetch_html(f'{self._get_sitename()}{h}')
+        return self.fetch_html(f'{self._get_sitename()}{h}', do_cache=True)
 
     def _extract_post_date(self, raw_html: BeautifulSoup) -> str:
         try:
@@ -195,7 +195,7 @@ class DownloaderRn(Downloader):
                 return item_info
             for part in re_item_info_part_rn.findall(item):
                 name, value = tuple(str(part).split('=', 1))
-                if name == 'id':  # special case id (thumb_...): skip
+                if name in ('id', 'width', 'height'):  # special case id, height, width (thumb_..., data_...): skip
                     continue
                 name = ITEM_INFO_FIELDS.get(name, name)
                 if name == 'ext':  # special case: title -> ext -> extract ext
@@ -246,8 +246,8 @@ class DownloaderRn(Downloader):
             item_id = self._extract_id(h)
 
             raw_html = BeautifulSoup()
-            if self.download_mode != DownloadModes.SKIP or self.dump_sources is True or self.dump_comments is True:
-                raw_html = self.fetch_html(f'{self._get_sitename()}{h}')
+            if self.download_mode != DownloadModes.SKIP or self.dump_sources or self.dump_comments:
+                raw_html = self.fetch_html(f'{self._get_sitename()}{h}', True)
                 if raw_html is None:
                     trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
                     self._inc_proc_count()
@@ -255,12 +255,12 @@ class DownloaderRn(Downloader):
                 else:
                     self._extract_comments(raw_html, item_id)
                     full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
-                    orig_source_div = raw_html.find('div', style=re_shimmie_orig_source)
-                    if orig_source_div:
+                    if orig_source_div := raw_html.find('div', style=re_shimmie_orig_source):
                         self.item_info_dict_per_task[full_item_id].source = orig_source_div.text
+                    if post_date := self._extract_post_date(raw_html):
+                        self.item_info_dict_per_task[full_item_id].date = post_date
                     # we can't extract actual score without account credentials AND cf_clearance, but favorites will do just fine
-                    favorited_by_div = raw_html.find('h3', string='Favorited By')
-                    if favorited_by_div:
+                    if favorited_by_div := raw_html.find('h3', string='Favorited By'):
                         fav_sib = favorited_by_div.findNextSibling()
                         score_text = fav_sib.text[:max(fav_sib.text.find(' '), 0)]
                         self.item_info_dict_per_task[full_item_id].score = score_text

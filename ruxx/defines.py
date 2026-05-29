@@ -45,8 +45,10 @@ class Comment:
 @dataclass
 class ItemInfo:
     """Universal info container for processed item"""
-    __slots__ = ('comments', 'ext', 'has_children', 'height', 'id', 'md5', 'parent_id', 'score', 'source', 'tags', 'width')
-    optional_slots = frozenset(('source', 'comments', 'score', 'has_children', 'parent_id', 'md5'))
+    __slots__ = (
+        'comments', 'date', 'ext', 'has_children', 'height', 'id', 'md5', 'modified', 'parent_id', 'score', 'source', 'tags', 'width',
+    )
+    optional_slots = frozenset(('source', 'comments', 'score', 'has_children', 'parent_id', 'md5', 'date', 'modified'))
 
     id: str
     height: str
@@ -59,6 +61,8 @@ class ItemInfo:
     md5: str
     has_children: str
     parent_id: str
+    date: str
+    modified: str
 
     def __init__(self) -> None:
         self.id: str = ''
@@ -72,6 +76,8 @@ class ItemInfo:
         self.md5: str = ''
         self.has_children: str = ''
         self.parent_id: str = ''
+        self.date: str = ''
+        self.modified: str = ''
 
     @classmethod
     def from_dict(cls, fields: dict[str, str | list[dict[str, str]]]) -> ItemInfo:
@@ -87,6 +93,8 @@ class ItemInfo:
         ii.md5 = fields['md5']
         ii.has_children = fields['has_children']
         ii.parent_id = fields['parent_id']
+        ii.date = fields['date']
+        ii.modified = fields['modified']
         return ii
 
     def __eq__(self, other: ItemInfo) -> bool:

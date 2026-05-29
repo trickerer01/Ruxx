@@ -22,7 +22,7 @@ from .rex import re_item_info_part_xml, re_orig_file_link, re_sample_file_link
 
 __all__ = ('DownloaderGelbooru',)
 
-ITEM_INFO_FIELDS = {'file_url': 'ext'}
+ITEM_INFO_FIELDS = {'file_url': 'ext', 'created_at': 'date', 'change': 'modified'}
 
 
 class DownloaderGelbooru(Downloader):
@@ -88,6 +88,9 @@ class DownloaderGelbooru(Downloader):
 
     def _extract_post_date(self, raw: str) -> str:
         try:
+            if raw[0] == raw[-1] == '"' and raw[1:-1].isnumeric():
+                t = datetime.datetime.fromtimestamp(int(raw[1:-1]))
+                return t.strftime(FMT_DATE)
             # 'Mon Jan 06 21:51:58 +0000 2020' -> '06-01-2020'
             date_idx = raw.find('created_at="') + len('created_at="')
             d = datetime.datetime.strptime(raw[date_idx:raw.find('"', date_idx + 1)], '%a %b %d %X %z %Y')
@@ -201,6 +204,10 @@ class DownloaderGelbooru(Downloader):
                 name = ITEM_INFO_FIELDS.get(name, name)
                 if name == 'ext':  # special case: file_url -> ext -> extract ext
                     value = value[value.rfind('.') + 1:]
+                elif name == 'date':
+                    value = self._extract_post_date(item)
+                elif name == 'modified':
+                    value = self._extract_post_date(value)
                 if name in item_info.__slots__:
                     while name == 'id' and not value[0].isnumeric():  # id=p1234567
                         value = value[1:]

@@ -125,7 +125,8 @@ def test_prepare(*, log_disable=True, log_cmd=True) -> Callable[[], Callable[[],
 class DataStructureIntegrityTests(TestCase):
     @test_prepare()
     def test_integrity01_iteminfo(self) -> None:
-        self.assertSetEqual({'source', 'comments', 'score', 'has_children', 'parent_id', 'md5'}, ItemInfo.optional_slots)
+        self.assertSetEqual({'source', 'comments', 'score', 'has_children', 'parent_id', 'md5', 'date', 'modified'},
+                            ItemInfo.optional_slots)
         print(f'{self._testMethodName} passed')
 
     @test_prepare()
@@ -148,6 +149,8 @@ class DataStructureIntegrityTests(TestCase):
         ii.md5 = '9h7c124c8912047801979c461929471c929'
         ii.has_children = 'false'
         ii.parent_id = ''
+        ii.date = '26-03-2022'
+        ii.modified = '02-11-2024'
         ijson_str = json.dumps([asdict(ii)])
         iis = [ItemInfo.from_dict(_) for _ in json.loads(ijson_str)]
         self.assertEqual(iis[0], ii)

@@ -208,6 +208,8 @@ class DownloaderRp(Downloader):
                 name = ITEM_INFO_FIELDS.get(name, name)
                 if name == 'ext':  # special case: file_url -> ext -> extract ext
                     value = self.extract_file_url(item)[1]
+                elif name == 'date':
+                    value = self._extract_post_date(item)
                 if name in item_info.__slots__:
                     while name == 'id' and not value[0].isnumeric():  # id=p1234567
                         value = value[1:]

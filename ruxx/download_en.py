@@ -54,7 +54,7 @@ ITEMS_PER_PAGE = ITEMS_PER_PAGE_EN
 MAX_SEARCH_DEPTH_PAGES = 750
 MAX_SEARCH_DEPTH = MAX_SEARCH_DEPTH_PAGES * ITEMS_PER_PAGE  # set by site devs
 
-ITEM_INFO_FIELDS = {'file_url': 'ext', 'post_id': 'id'}
+ITEM_INFO_FIELDS = {'file_url': 'ext', 'post_id': 'id', 'created_at': 'date'}
 TAG_BLACKLISTED_ALWAYS = 'en_always_blacklisted'
 
 
@@ -250,6 +250,8 @@ class DownloaderEn(Downloader):
                 name = ITEM_INFO_FIELDS.get(name, name)
                 if name == 'ext':  # special case: file_url -> ext -> extract ext
                     value = value[value.rfind('.') + 1:]
+                elif name == 'date':
+                    value = self._extract_post_date(item)
                 if name in item_info.__slots__:
                     while name == 'id' and not value[0].isnumeric():  # id=p1234567
                         value = value[1:]
