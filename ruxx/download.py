@@ -174,7 +174,7 @@ class Downloader(DownloaderBase):
                     thread_exit('ERROR: Unable to create subfolder!')
 
         try:
-            result = self.download_file(link, item_id, dest, self.download_mode)
+            result = self.download_file(link, item_id, dest, self.download_mode, self.preserve_date)
         except DownloadInterruptException:
             return
 
@@ -672,6 +672,7 @@ class Downloader(DownloaderBase):
         self.low_res = args.lowres or self.low_res
         self.date_min = args.mindate or self.date_min
         self.date_max = args.maxdate or self.date_max
+        self.preserve_date = args.preserve_date or self.preserve_date
         self.dest_base = args.path or self.dest_base
         self.warn_nonempty = args.warn_nonempty or self.warn_nonempty
         self.api_key = APIKey(args.api_key) or self.api_key

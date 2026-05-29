@@ -42,6 +42,7 @@ to split your searches using id filter. Plus you may still get banned for abusin
   - **per file** ‒ create a separate info file for every post (not recommended)
   - **merge info lists** ‒ gather and parse existing info files, merge and save all infos together, leaving a single file. **Parsed old info files will be deleted!**
 - **Edit -> Extend file names with extra info** ‒ all file names will include short representation of their major tags if any. This may extend resulting full path up to 240 symbols total
+- **Edit -> Preserve original modification date** ‒ preserve original file modification date (as read from response header)
 - **Edit -> Warn if download folder is not empty** ‒ in GUI mode you will be warned if destination folder is not empty and there is a potential risk of mixing up different search results
 - **Edit -> Verbose log** ‒ enable logging of technical messages not related to actual download process. Verbose log is one of the requirements for a proper issue report
 - **View -> Log** ‒ open a log window, if you want some readable output

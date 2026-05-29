@@ -38,6 +38,7 @@ from .gui_defines import (
     OPTION_CMD_MODULE_CMD,
     OPTION_CMD_PARCHI,
     OPTION_CMD_PATH_CMD,
+    OPTION_CMD_PRESERVE_DATE,
     OPTION_CMD_PROXY_CMD,
     OPTION_CMD_PROXY_NO_DOWNLOAD,
     OPTION_CMD_RETRIES_CMD,
@@ -82,6 +83,7 @@ from .help import (
     HELP_ARG_PREFER_MP4,
     HELP_ARG_PREFER_WEBM,
     HELP_ARG_PREFIX,
+    HELP_ARG_PRESERVE_DATE,
     HELP_ARG_PROXY,
     HELP_ARG_PROXYNODOWN,
     HELP_ARG_REVERSE_DOWNLOAD_ORDER,
@@ -184,6 +186,7 @@ def add_common_args(par: ArgumentParser) -> None:
     doex.add_argument(OPTION_CMD_DOWNLIMIT_CMD, metavar='#NUMBER', default=0, help=HELP_ARG_DOWNLOAD_LIMIT, type=valid_positive_int)
     doex.add_argument(OPTION_CMD_DOWNLOAD_ORDER[True], action=ACTION_STORE_TRUE, help=HELP_ARG_REVERSE_DOWNLOAD_ORDER)
     doex.add_argument(OPTION_CMD_DOWNMODE_CMD, default=DMODE_DEFAULT, help=HELP_ARG_DOWNLOAD_MODE, choices=DMODE_CHOICES)
+    doex.add_argument(OPTION_CMD_PRESERVE_DATE[True], action=ACTION_STORE_TRUE, help=HELP_ARG_PRESERVE_DATE)
     dofi = par.add_argument_group(title='filtering options')
     dofi.add_argument(OPTION_CMD_DATEAFTER_CMD, metavar='#DD-MM-YYYY', help=HELP_ARG_MINDATE, type=valid_date)
     dofi.add_argument(OPTION_CMD_DATEBEFORE_CMD, metavar='#DD-MM-YYYY', help=HELP_ARG_MAXDATE, type=valid_date)

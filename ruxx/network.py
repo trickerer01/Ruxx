@@ -6,6 +6,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+import datetime
+import os
 import pathlib
 import re
 import sys
@@ -152,7 +154,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
         self.session = self.make_session()
 
     # threaded
-    def download_file(self, link: str, item_id: str, dest: pathlib.Path, mode=DownloadModes.FULL) -> FileDownloadResult:
+    def download_file(self, link: str, item_id: str, dest: pathlib.Path, mode: DownloadModes, orig_date: bool) -> FileDownloadResult:
         fullname = dest.name
         ext_full = fullname[fullname.rfind('.') + 1:]
         ext_char = ext_full[0]
@@ -226,6 +228,11 @@ class ThreadedHtmlWorker(ThreadedWorker):
 
                         sreq = s.request('HEAD', link, timeout=self.timeout, allow_redirects=False, headers={'Bytes': str(10**12)})
                         sreq.raise_for_status()
+                        last_modified = sreq.headers.get('last-modified', '') if orig_date else ''
+                        modification_time_ns = (
+                            int(datetime.datetime.strptime(last_modified, '%a, %d %b %Y %H:%M:%S %Z').timestamp() * 10 ** 9)
+                            if last_modified else 0
+                        )
                         result.expected_size = int(sreq.headers.get('content-length', '0'))
                         self.etags[item_id] = sreq.headers.get('etag', item_id)
                         # this code was left here after link replacements had been removed. DO NOT MOVE
@@ -240,6 +247,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                         chunks = list(range(0, result.expected_size, DOWNLOAD_CHUNK_SIZE if use_chunked else result.expected_size))
                         single_chunk = len(chunks) == 1
                         with open(dest, 'wb') as outf:
+                            creation_time_ns = int(dest.stat().st_ctime_ns) if modification_time_ns else 0
                             i = 0
                             chunk_tries = 0
                             while i < len(chunks):
@@ -275,6 +283,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
                             dest.unlink(missing_ok=True)
                             result.file_size = 0
                             raise OSError
+                        if creation_time_ns and modification_time_ns:
+                            os.utime(dest, ns=(creation_time_ns, modification_time_ns))
                     except (KeyboardInterrupt, ThreadInterruptException):
                         if dest.is_file():
                             result.file_size = dest.stat().st_size

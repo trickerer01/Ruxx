@@ -636,13 +636,32 @@ class RealDownloadTests(TestCase):
         with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
             tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
             commentsfile = tempfile.with_name(f'rx_!info_{tempfile_id}-{tempfile_id}.json')
-            #               tag              flag          flag                v                flag     flag
-            argslist = ('id:12871672', '-dump_comments', '-path', tempfile.parent.as_posix(), '-dmode', 'touch')
+            #                  tag                 flag          flag                v                flag     flag
+            argslist = (f'id:{tempfile_id}', '-dump_comments', '-path', tempfile.parent.as_posix(), '-dmode', 'touch')
             arglist = prepare_arglist(argslist)
             with make_downloader(ProcModule.RX) as dwn:
                 dwn.launch_download(arglist)
                 self.assertTrue(tempfile.is_file())
                 self.assertTrue(commentsfile.is_file())
+        print(f'{self._testMethodName} passed')
+
+    @test_prepare()
+    def test_down_rx05_comments(self) -> None:
+        if not RUN_CONN_TESTS:
+            return
+        # this test actually performs a download
+        tempfile_id = '17263071'
+        tempfile_ext = 'jpeg'
+        with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
+            tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
+            #                  tag                 flag          flag                v
+            argslist = (f'id:{tempfile_id}', '-preserve_date', '-path', tempfile.parent.as_posix())
+            arglist = prepare_arglist(argslist)
+            with make_downloader(ProcModule.RX) as dwn:
+                dwn.launch_download(arglist)
+                self.assertTrue(tempfile.is_file())
+                modification_date_ns = tempfile.lstat().st_mtime_ns
+                self.assertEqual(1776763100 * 10**9, modification_date_ns)
         print(f'{self._testMethodName} passed')
 
     @test_prepare()

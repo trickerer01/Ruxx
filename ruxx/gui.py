@@ -116,6 +116,7 @@ from .gui_defines import (
     OPTION_CMD_MODULE_CMD,
     OPTION_CMD_PARCHI,
     OPTION_CMD_PATH_CMD,
+    OPTION_CMD_PRESERVE_DATE,
     OPTION_CMD_PROXY_CMD,
     OPTION_CMD_PROXY_NO_DOWNLOAD,
     OPTION_CMD_RETRIES_CMD,
@@ -628,6 +629,8 @@ def prepare_cmdline() -> list[str]:
         if addstr := OPTION_CMD_DOWNMODE[int(getrootconf(Options.DOWNLOAD_MODE))]:
             newstr.append(OPTION_CMD_DOWNMODE_CMD)
             newstr.append(addstr)
+    if addstr := OPTION_CMD_PRESERVE_DATE[int(getrootconf(Options.PRESERVE_DATE))]:
+        newstr.append(addstr)
     # save tags (dump_tags)
     if addstr := OPTION_CMD_SAVE_TAGS[int(getrootconf(Options.SAVE_TAGS))]:
         newstr.append(addstr)
@@ -1006,6 +1009,7 @@ def init_menus() -> None:
     register_submenu_radiobutton('merge info lists', CVARS[Options.INFO_SAVE_MODE], InfoSaveModes.MERGE_LISTS.value)
     register_menu_separator()
     register_menu_checkbutton('Extend file names with extra info', CVARS[Options.APPEND_SOURCE_AND_TAGS])
+    register_menu_checkbutton('Preserve original modification date', CVARS[Options.PRESERVE_DATE])
     register_menu_checkbutton('Warn if download folder is not empty', CVARS[Options.WARN_NONEMPTY_DEST])
     register_menu_checkbutton('Verbose log', CVARS[Options.VERBOSE])
     # 3) View
