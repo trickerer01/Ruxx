@@ -16,7 +16,7 @@ from typing import Literal, Protocol, TypeVar
 
 from .defines import FMT_DATE, MIN_PYTHON_VERSION, MIN_PYTHON_VERSION_STR, SUBFOLDER_NAME_LEN_MAX, SUPPORTED_PLATFORMS
 from .gui_defines import OPTION_CMD_PATH_CMD, OPTION_CMD_PROXY_CMD, UNDERSCORE
-from .rex import re_api_key_user, re_replace_symbols_sub, re_uscore_mult
+from .rex import re_replace_symbols_sub, re_uscore_mult
 
 
 class Hashable(Protocol):
@@ -35,7 +35,7 @@ def format_exception(mode: Literal['full', 'row', 'name']) -> str:
     if mode == 'name':
         return sys.exc_info()[0].__name__
     exception_string = traceback.format_exc(0, False) if mode == 'row' else traceback.format_exc()
-    return re_api_key_user.sub('&api_key=<REDACTED>&user_id=<REDACTED>', exception_string)
+    return exception_string
 
 
 def assert_nonempty(container: Iterable[str], message='') -> Iterable[str]:
