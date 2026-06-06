@@ -36,7 +36,6 @@ from .defines import (
 from .logger import trace
 from .module import ProcModule
 from .utils import format_exception
-from .vcs import __RUXX_DEBUG__
 
 __all__ = ('DownloadInterruptException', 'ThreadedHtmlWorker', 'thread_exit')
 
@@ -217,8 +216,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                 valid_chunk = False
                                 errcode = 5
                             if valid_chunk is False:
-                                if __RUXX_DEBUG__:
-                                    trace(f'Warning (W2): {item_id} invalid chunk {chunk_num:d} err {errcode:d}', True)
+                                trace(f'Warning (W2): {item_id} invalid chunk {chunk_num:d} err {errcode:d}', True)
                                 # website may send not an HTTP error but instead just a mismatched chunk and call it good
                                 severe_err = errcode in range(1, 4 + 1)
                                 response = Response()
@@ -262,14 +260,12 @@ class ThreadedHtmlWorker(ThreadedWorker):
                                     if isinstance(err, (KeyboardInterrupt, ThreadInterruptException)):
                                         raise
                                     if chunk_tries >= CONNECT_RETRIES_CHUNK:
-                                        if __RUXX_DEBUG__:
-                                            trace(f'Warning (W2): at {item_id} chunk {i + 1:d} catched too many HTTPError 416s!', True)
+                                        trace(f'Warning (W2): at {item_id} chunk {i + 1:d} catched too many HTTPError 416s!', True)
                                         break
                                     chunk_tries += 1
                                     sleep_time = 2
-                                    if __RUXX_DEBUG__:
-                                        exc_p1, exc_p2 = tuple(str(sys.exc_info()[k]) for k in range(2))
-                                        trace(f'Warning (W2): at {item_id} chunk {i + 1:d} catched {exc_p1}: {exc_p2} retrying...', True)
+                                    exc_p1, exc_p2 = tuple(str(sys.exc_info()[k]) for k in range(2))
+                                    trace(f'Warning (W2): at {item_id} chunk {i + 1:d} catched {exc_p1}: {exc_p2} retrying...', True)
                                     if not self.is_killed():
                                         time.sleep(sleep_time)
                                     continue
@@ -298,9 +294,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
                             if ProcModule.is_rs():
                                 hostname: str = url_parse.urlparse(link).hostname or 'unk'
                                 if hostname.startswith('video') and '-cdn' in hostname:
-                                    if __RUXX_DEBUG__:
-                                        trace(f'Warning (W3): {item_id} catched HTTPError 404 (host: {hostname})! '
-                                              f'Trying no-cdn source...', True)
+                                    trace(f'Warning (W3): {item_id} catched HTTPError 404 (host: {hostname})! '
+                                          f'Trying no-cdn source...', True)
                                     re_vhost_cdn = re.compile(r'-cdn\d')  # video-cdn1.rs
                                     link = re_vhost_cdn.sub('', link)
                             elif ProcModule.is_rx():
@@ -312,20 +307,17 @@ class ThreadedHtmlWorker(ThreadedWorker):
                             if ProcModule.is_rs():
                                 hostname: str = url_parse.urlparse(link).hostname or 'unk'
                                 if hostname.startswith('video') and '-cdn' in hostname:
-                                    if __RUXX_DEBUG__:
-                                        trace(f'Warning (W3): {item_id} catched ConnectionError (host: {hostname})! '
-                                              f'Trying no-cdn source...', True)
+                                    trace(f'Warning (W3): {item_id} catched ConnectionError (host: {hostname})! '
+                                          f'Trying no-cdn source...', True)
                                     re_vhost_cdn = re.compile(r'-cdn\d')  # video-cdn1.rs
                                     link = re_vhost_cdn.sub('', link)
                         if isinstance(err, exceptions.HTTPError) and err.response.status_code == 416:  # Requested range is not satisfiable
-                            if __RUXX_DEBUG__:
-                                trace(f'Warning (W3): {item_id} catched HTTPError 416!', True)
+                            trace(f'Warning (W3): {item_id} catched HTTPError 416!', True)
                             dest.unlink(missing_ok=True)
                             result.file_size = 0
                         if not isinstance(err, CLIENT_CONNECTOR_ERRORS):
                             result.retries += 1
-                        s_result = f'{result.result_str}{format_exception("row")} retry {result.retries:d}...'
-                        trace(s_result, True)
+                        trace(f'{result.result_str}{format_exception("row")} retry {result.retries:d}...', True)
                         if not self.is_killed():
                             time.sleep(2)
                         continue
@@ -358,9 +350,8 @@ class ThreadedHtmlWorker(ThreadedWorker):
                     return None
                 elif isinstance(err, exceptions.HTTPError) and err.response.status_code == 429:  # Too Many Requests
                     sleep_time += float(min(9, retries))
-                    if __RUXX_DEBUG__:
-                        trace(f'{threadname}catched {format_exception("row")}.'
-                              f'{f" Reconnecting in {sleep_time:.1f} sec... {retries:d}" if retries < tries else ""}', True)
+                    trace(f'{threadname}catched {format_exception("row")}.'
+                          f'{f" Reconnecting in {sleep_time:.1f} sec... {retries:d}" if retries < tries else ""}', True)
                 else:
                     trace(f'{threadname}catched {format_exception("row")}.'
                           f'{f" Reconnecting in {sleep_time:.1f} sec... {retries:d}" if retries < tries else ""}', True)
