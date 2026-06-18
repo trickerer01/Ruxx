@@ -50,6 +50,13 @@ class DownloaderRx(DownloaderGelbooru):
     """
     def __init__(self) -> None:
         super().__init__()
+        self._base_cookies = {'gdpr-consent': '1', 'gdpr': '1'}
+
+    def _get_module_specific_default_headers(self) -> dict[str, str]:
+        return {}
+
+    def _get_module_specific_default_cookies(self) -> dict[str, str]:
+        return self._base_cookies
 
     def _get_id_bounds(self) -> NoReturn:
         raise NotImplementedError
