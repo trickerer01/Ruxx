@@ -622,7 +622,7 @@ class RealDownloadTests(TestCase):
         with TemporaryDirectory(prefix=f'{APP_NAME}_{self._testMethodName}_') as tdirname:
             tempfile = pathlib.Path(tdirname) / f'{tempfile_id}.{tempfile_ext}'
             #            tag         tag            tag             tag           tag        flag       v
-            argslist = (':>=', 'score:>=1600', 'score:<=1700', 'width:=1200', '-animated', '-path', tempfile.parent.as_posix())
+            argslist = (':>=', 'score:>=1700', 'score:<=1750', 'width:=1200', '-animated', '-path', tempfile.parent.as_posix())
             arglist = prepare_arglist(argslist)
             with make_downloader(ProcModule.RX) as dwn:
                 dwn.launch_download(arglist)
