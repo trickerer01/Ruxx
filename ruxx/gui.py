@@ -21,7 +21,6 @@ from .cmdargs import prepare_arglist
 from .defines import (
     DATE_MAX_DEFAULT,
     DATE_MIN_DEFAULT,
-    DEFAULT_HEADERS,
     DMODE_CHOICES,
     FMT_DATE,
     MODULE_CHOICES,
@@ -154,6 +153,7 @@ from .module import ProcModule
 from .settings import ConfigMgr
 from .tags_parser import parse_tags, reset_last_tags
 from .tagsdb import TagsDB
+from .useragent import UAManager
 from .utils import confirm_yes_no, ensure_compatibility, garble_argument_values
 from .validators import DateValidator
 from .vcs import __RUXX_DEBUG__
@@ -593,7 +593,7 @@ def prepare_cmdline() -> list[str]:
             newstr.append(f'{addstr},{addstr2}')
     # headers
     addstr = window_hcookiesm().get_json_h_s()
-    if len(addstr) > 2 and addstr != DEFAULT_HEADERS:  # != "'{}'"
+    if len(addstr) > 2 and addstr != UAManager.orig_user_agent_as_header_json_str():  # != "'{}'"
         newstr.append(OPTION_CMD_HEADERS_CMD)
         newstr.append(addstr)
     # cookies

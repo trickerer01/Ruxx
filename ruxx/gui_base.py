@@ -62,7 +62,6 @@ from .defines import (
     KNOWN_EXTENSIONS_STR,
     PLATFORM_WINDOWS,
     PROGRESS_BAR_MAX,
-    PROXY_DEFAULT_STR,
     SITENAME_B_BB,
     SITENAME_B_EN,
     SITENAME_B_RN,
@@ -70,7 +69,6 @@ from .defines import (
     SITENAME_B_RS,
     SITENAME_B_RX,
     SITENAME_B_XB,
-    USER_AGENT,
 )
 from .file_parser import prepare_id_list, prepare_tag_lists
 from .file_sorter import FileTypeFilter
@@ -155,6 +153,7 @@ from .module import ProcModule
 from .rex import re_ask_values, re_json_entry_value, re_space_mult
 from .tagsdb import TagsDB
 from .tooltips import WidgetToolTip
+from .useragent import UAManager
 from .utils import garble_text
 from .validators import valid_api_key, valid_positive_int, valid_proxy, valid_window_position
 from .vcs import __RUXX_DEBUG__, APP_NAME, APP_VERSION
@@ -213,6 +212,8 @@ __all__ = (
     'window_retriesm',
     'window_timeoutm',
 )
+
+PROXY_DEFAULT_STR = '127.0.0.1:222'
 
 LITERAL_TYPE_FIRST_LAST: TypeAlias = Literal['first', 'last', None]
 
@@ -1075,7 +1076,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.window.transient(self.parent)
 
         # initial values just for convenience
-        self.lbox_h.insert(0, f'User-Agent:{USER_AGENT}')
+        self.lbox_h.insert(0, f'User-Agent:{UAManager.orig_user_agent()}')
         self.entry_h.settext('User-Agent:')
         self.entry_c.settext('cf_clearance:')
 

@@ -11,7 +11,6 @@ from argparse import ZERO_OR_MORE, ArgumentParser, Namespace
 from .defines import (
     ACTION_APPEND,
     ACTION_STORE_TRUE,
-    DEFAULT_HEADERS,
     DMODE_CHOICES,
     DMODE_DEFAULT,
     MODULE_ABBR_RX,
@@ -158,7 +157,7 @@ def add_common_args(par: ArgumentParser) -> None:
     co.add_argument(OPTION_CMD_PROXY_NO_DOWNLOAD[True], action=ACTION_STORE_TRUE, help=HELP_ARG_PROXYNODOWN)
     co.add_argument(OPTION_CMD_TIMEOUT_CMD, metavar='#NUMBER', help=HELP_ARG_CON_TIMEOUT, type=valid_positive_int)
     co.add_argument(OPTION_CMD_RETRIES_CMD, metavar='#NUMBER', help=HELP_ARG_CON_RETRIES, type=valid_positive_int)
-    co.add_argument(OPTION_CMD_HEADERS_CMD, metavar='#JSON', help=HELP_ARG_HEADERS, type=valid_json, default=DEFAULT_HEADERS)
+    co.add_argument(OPTION_CMD_HEADERS_CMD, metavar='#JSON', help=HELP_ARG_HEADERS, type=valid_json)
     co.add_argument(OPTION_CMD_COOKIES_CMD, metavar='#JSON', help=HELP_ARG_COOKIES, type=valid_json)
     co.add_argument(OPTION_CMD_HEADERS_CMD[:-1], metavar='#name=value', action=ACTION_APPEND, help=HELP_ARG_HEADER, type=valid_kwarg)
     co.add_argument(OPTION_CMD_COOKIES_CMD[:-1], metavar='#name=value', action=ACTION_APPEND, help=HELP_ARG_COOKIE, type=valid_kwarg)

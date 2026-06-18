@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'Ruxx'
-version = '1.7.922'
+version = '1.7.923'
 authors = [
     {name = 'trickerer01'},
 ]
@@ -41,6 +41,7 @@ classifiers = [
 requires-python = '>=3.10'
 dependencies = [
     'beautifulsoup4>=4.9.3',
+    'fake-useragent>=2.0.3',
     'PySocks>=1.7.1',
     'requests>=2.31',
 ]

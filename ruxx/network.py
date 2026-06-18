@@ -35,6 +35,7 @@ from .defines import (
 )
 from .logger import trace
 from .module import ProcModule
+from .useragent import UAManager
 from .utils import format_exception
 
 __all__ = ('DownloadInterruptException', 'ThreadedHtmlWorker', 'thread_exit')
@@ -123,8 +124,9 @@ class ThreadedHtmlWorker(ThreadedWorker):
         s.mount('http://', adapters.HTTPAdapter(pool_maxsize=1, max_retries=0))
         s.mount('https://', adapters.HTTPAdapter(pool_maxsize=1, max_retries=0))
         s.keep_alive = True
-        s.headers.update(self.add_headers.copy())
         s.headers['Referer'] = self._get_sitename()
+        s.headers['User-Agent'] = UAManager.orig_user_agent()
+        s.headers.update(self.add_headers.copy())
         s.cookies.update(self.add_cookies.copy())
         if self.proxies and not self.ignore_proxy:
             s.proxies.update(self.proxies.copy())

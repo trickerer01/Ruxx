@@ -15,7 +15,7 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 from ruxx.cmdargs import prepare_arglist
-from ruxx.defines import DATE_MIN_DEFAULT, DEFAULT_HEADERS, MODULE_CHOICES, Comment, DownloadModes, ItemInfo, ThreadInterruptException
+from ruxx.defines import DATE_MIN_DEFAULT, MODULE_CHOICES, Comment, DownloadModes, ItemInfo, ThreadInterruptException
 from ruxx.downloaders import DOWNLOADERS_BY_PROC_MODULE, make_downloader
 from ruxx.file_parser import IDSTRING_PATTERNS, IDVAL_EQ_SEPARATORS, PREFIX_OPTIONAL_PATTERNS
 from ruxx.gui import ICON_TYPE_PER_PROC_MODULE
@@ -26,6 +26,7 @@ from ruxx.rex import re_infolist_filename
 from ruxx.tags_parser import RE_ANDGR_FULL, RE_FAVS, RE_METAS, RE_ORGRS_FULL, RE_ORGRS_FULL_S, RE_PLAINS, RE_POOLS, RE_SORTS, parse_tags
 from ruxx.tagsdb import TAG_ALIASES, TagsDB, load_tag_aliases
 from ruxx.task import MAX_NEGATIVE_TAGS, MAX_STRING_LENGTHS, MAX_WILDCARDS
+from ruxx.useragent import UAManager
 from ruxx.vcs.version import APP_NAME
 
 __all__ = ()
@@ -33,6 +34,8 @@ __all__ = ()
 
 RUN_CONN_TESTS = 0
 CUR_PATH = pathlib.Path(__file__).resolve().parent.as_posix()
+
+DEFAULT_HEADERS = UAManager.orig_user_agent_as_header_json_str()
 
 args_argparse_str01 = (
     'sfw asd ned -nds -proxr '
