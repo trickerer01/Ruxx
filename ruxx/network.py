@@ -159,8 +159,6 @@ class ThreadedHtmlWorker(ThreadedWorker):
         ext_char = ext_full[0]
         is_video_ext = ext_full in KNOWN_EXTENSIONS_VID
         oldlink = link
-        if ProcModule.is_rx():
-            link = link.replace('api-cdn-mp4.', 'ws-cdn-video.')
 
         result = FileDownloadResult()
         result.result_str = f'[{current_process().name}]{" <touch>" if mode == DownloadModes.TOUCH else ""} {item_id}({ext_char})... '
