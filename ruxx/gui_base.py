@@ -302,7 +302,7 @@ class AppRoot(Tk):
         rootFrame = BaseFrame(self)
         rootFrame.pack(fill=BOTH, expand=YES, anchor=S, padx=PADDING_ROOTFRAME_I)
         rootMenu = Menu(self)
-        self.config(menu=rootMenu)
+        self.configure(menu=rootMenu)
         first_row()
         first_column()
 
@@ -322,14 +322,14 @@ class AppRoot(Tk):
 
     def finalize(self) -> None:
         self.bind(BUT_ESCAPE, func=lambda _: self.focus_set())  # release focus from any element on `Esc`
-        self.config(bg=self.default_bg_color)
+        self.configure(bg=self.default_bg_color)
         self.mainloop()
 
 
 class BaseMenu(Menu):
     def __init__(self, parent, *args, **kw) -> None:
         super().__init__(parent, *args, **kw)
-        self.config(tearoff=False)
+        self.configure(tearoff=False)
 
 
 class BaseFrame(ttk.Frame):
@@ -635,7 +635,7 @@ class AwaitableAskWindow(BaseWindow, ABC):
         self.but_ok.grid(row=next_row(), column=first_column(), columnspan=1)
         self.but_cancel.grid(row=cur_row(), column=next_column(), columnspan=1)
 
-        self.window.config(bg=self.parent.default_bg_color)
+        self.window.configure(bg=self.parent.default_bg_color)
 
     def finalize(self) -> None:
         x = self.parent.winfo_x() + (self.parent.winfo_width() - self.window.winfo_reqwidth()) / 2
@@ -824,9 +824,9 @@ class LogWindow(BaseWindow):
         old_pos = self.scroll.get()
 
         # appending to text is impossible if text is disabled
-        self.text.config(state=STATE_NORMAL)
+        self.text.configure(state=STATE_NORMAL)
         self.text.insert(END, text)
-        self.text.config(state=STATE_DISABLED)
+        self.text.configure(state=STATE_DISABLED)
 
         # scroll to bottom if was at the bottom
         if old_pos[1] >= 1.0:
@@ -846,15 +846,15 @@ class LogWindow(BaseWindow):
 
         self.text = Text(self.window, font=FONT_SANS_SMALL, relief=SUNKEN, bd=1, bg=COLOR_LIGHTGRAY, height=1)
         self.text.pack(padx=1, pady=1, fill=BOTH, side=LEFT, expand=YES)
-        self.text.config(state=STATE_DISABLED)
+        self.text.configure(state=STATE_DISABLED)
 
         self.scroll = Scrollbar(self.window)
         self.scroll.pack(fill=Y, side=RIGHT, expand=NO)
         self.scroll['command'] = self.text.yview
 
-        self.text.config(yscrollcommand=self.scroll.set)
+        self.text.configure(yscrollcommand=self.scroll.set)
 
-        self.window.config(bg=self.parent.default_bg_color)
+        self.window.configure(bg=self.parent.default_bg_color)
 
     def finalize(self) -> None:
         self.window.transient(self.parent)  # remove minimize and maximize buttons
@@ -881,9 +881,9 @@ class LogWindow(BaseWindow):
         setrootconf(Options.ISLOGOPEN, self.visible)
 
     def clear(self) -> None:
-        self.text.config(state=STATE_NORMAL)
+        self.text.configure(state=STATE_NORMAL)
         self.text.delete(1.0, END)
-        self.text.config(state=STATE_DISABLED)
+        self.text.configure(state=STATE_DISABLED)
 
     def on_destroy(self) -> None:
         # just hide
@@ -910,7 +910,7 @@ class ProxyWindow(BaseWindow):
         downframe.grid(padx=12, pady=12, row=1)
 
         proxyhint = Label(downframe, font=FONT_SANS_SMALL, text='for example: 101.100.100.10:65335')
-        proxyhint.config(state=STATE_DISABLED)
+        proxyhint.configure(state=STATE_DISABLED)
         proxyhint.grid(row=0, column=0, columnspan=15)
 
         ptype_index = len(OPTION_VALUES_PROXYTYPE) - 1 if __RUXX_DEBUG__ else 0
@@ -919,7 +919,7 @@ class ProxyWindow(BaseWindow):
                               textvariable=StringVar(rootm(), '', CVARS[Options.PROXYTYPE_TEMP]))
         cbtype.current(ptype_index)
         cbtype.grid(row=1, column=0, columnspan=5)
-        cbtype.config(state=STATE_READONLY)
+        cbtype.configure(state=STATE_READONLY)
         _ = BaseText(textvariable=StringVar(rootm(), PROXY_DEFAULT_STR if __RUXX_DEBUG__ else '', CVARS[Options.PROXYSTRING]))
         self.entry_addr = BaseText(downframe, font=FONT_SANS_MEDIUM, width=21,
                                    textvariable=StringVar(rootm(), '', CVARS[Options.PROXYSTRING_TEMP]),
@@ -936,7 +936,7 @@ class ProxyWindow(BaseWindow):
         self.but_ok.grid(row=5, column=3, columnspan=5)
         self.but_cancel.grid(row=5, column=8, columnspan=5)
 
-        self.window.config(bg=self.parent.default_bg_color)
+        self.window.configure(bg=self.parent.default_bg_color)
 
     def finalize(self) -> None:
         x = self.parent.winfo_x() + (self.parent.winfo_width() - self.window.winfo_reqwidth()) / 2
@@ -1066,7 +1066,7 @@ class HeadersAndCookiesWindow(BaseWindow):
         self.err_message_syntax_c = attach_tooltip(self.entry_c, TOOLTIP_INVALID_SYNTAX, 5000, timed=True)
         self.err_message_count_c = attach_tooltip(self.entry_c, ['Too many cookies!'], 5000, timed=True)
 
-        self.window.config(bg=self.parent.default_bg_color)
+        self.window.configure(bg=self.parent.default_bg_color)
 
     def finalize(self) -> None:
         x = self.parent.winfo_x() + (self.parent.winfo_width() - self.window.winfo_reqwidth()) / 4
@@ -1264,7 +1264,7 @@ class ConnectRequestIntWindow(BaseWindow):
         downframe.grid(padx=12, pady=12, row=1)
 
         hint = Label(downframe, font=FONT_SANS_SMALL, text=self.hint)
-        hint.config(state=STATE_DISABLED)
+        hint.configure(state=STATE_DISABLED)
         hint.grid(row=0, column=0, columnspan=15)
 
         _ = BaseText(textvariable=StringVar(rootm(), str(self.baseval), CVARS[self.conf_str]))
@@ -1282,7 +1282,7 @@ class ConnectRequestIntWindow(BaseWindow):
         self.but_ok.grid(row=5, column=3, columnspan=5)
         self.but_cancel.grid(row=5, column=8, columnspan=5)
 
-        self.window.config(bg=self.parent.default_bg_color)
+        self.window.configure(bg=self.parent.default_bg_color)
 
     def finalize(self) -> None:
         x = self.parent.winfo_x() + (self.parent.winfo_width() - self.window.winfo_reqwidth()) / 2
@@ -1363,7 +1363,7 @@ class APIRequestStrIntWindow(BaseWindow):
         downframe.grid(padx=12, pady=12, row=1)
 
         hint1 = Label(downframe, font=FONT_SANS_SMALL, text=self.hint1)
-        hint1.config(state=STATE_DISABLED)
+        hint1.configure(state=STATE_DISABLED)
         hint1.grid(row=0, column=0, columnspan=15)
         _ = BaseText(textvariable=StringVar(rootm(), str(self.baseval[0]), CVARS[self.conf_str1]))
         self.entry1 = BaseText(downframe, font=FONT_SANS_MEDIUM, width=38,
@@ -1374,7 +1374,7 @@ class APIRequestStrIntWindow(BaseWindow):
         self.entry1.grid(row=1, column=3, columnspan=10)
 
         hint2 = Label(downframe, font=FONT_SANS_SMALL, text=self.hint2)
-        hint2.config(state=STATE_DISABLED)
+        hint2.configure(state=STATE_DISABLED)
         hint2.grid(row=3, column=0, columnspan=15)
         _ = BaseText(textvariable=StringVar(rootm(), str(self.baseval[1]), CVARS[self.conf_str2]))
         self.entry2 = BaseText(downframe, font=FONT_SANS_MEDIUM, width=19,
@@ -1391,7 +1391,7 @@ class APIRequestStrIntWindow(BaseWindow):
         self.but_ok.grid(row=6, column=3, columnspan=5)
         self.but_cancel.grid(row=6, column=8, columnspan=5)
 
-        self.window.config(bg=self.parent.default_bg_color)
+        self.window.configure(bg=self.parent.default_bg_color)
 
     def finalize(self) -> None:
         x = self.parent.winfo_x() + (self.parent.winfo_width() - self.window.winfo_reqwidth()) / 2
@@ -1743,7 +1743,7 @@ def get_global(index: Globals) -> Text | BaseText | Button:
 
 
 def config_global(index: Globals, **kwargs) -> None:
-    get_global(index).config(kwargs)
+    get_global(index).configure(kwargs)
 
 
 def is_global_disabled(index: Globals) -> bool:

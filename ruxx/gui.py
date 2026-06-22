@@ -674,10 +674,10 @@ def update_frame_cmdline() -> None:
         newstr = ' '.join(args_list)
         oldstr = text_cmdm().get(1.0, END)
         if oldstr != f'{newstr}\n':
-            text_cmdm().config(state=STATE_NORMAL)
+            text_cmdm().configure(state=STATE_NORMAL)
             text_cmdm().delete(1.0, END)
             text_cmdm().insert(1.0, newstr)
-            text_cmdm().config(state=STATE_DISABLED)
+            text_cmdm().configure(state=STATE_DISABLED)
 
     rootm().after(int(GUI2_UPDATE_DELAY_DEFAULT * 3), update_frame_cmdline)
 
@@ -829,9 +829,9 @@ def update_download_state() -> None:
         # special case 1: _download button: turn into cancel button
         dw_button = get_global(Globals.BUTTON_DOWNLOAD)
         if batching_or_downloading:
-            dw_button.config(text='Cancel', command=cancel_download)
+            dw_button.configure(text='Cancel', command=cancel_download)
         else:
-            dw_button.config(text='Download', command=do_download)
+            dw_button.configure(text='Download', command=do_download)
 
     if not batching_or_downloading:
         if batch_download_thread is not None:
@@ -1094,9 +1094,9 @@ def init_gui() -> None:
     # Main menu
     init_menus()
     # Menu hotkeys
-    get_global(Globals.BUTTON_CHECKTAGS).config(command=check_tags_direct)
-    get_global(Globals.BUTTON_OPENFOLDER).config(command=browse_path)
-    get_global(Globals.BUTTON_DOWNLOAD).config(command=do_download)
+    get_global(Globals.BUTTON_CHECKTAGS).configure(command=check_tags_direct)
+    get_global(Globals.BUTTON_OPENFOLDER).configure(command=browse_path)
+    get_global(Globals.BUTTON_DOWNLOAD).configure(command=do_download)
     # Init settings if needed
     setrootconf(Options.TAGS, 'sfw')
     setrootconf(Options.DOWNLOAD_LIMIT, 0)
