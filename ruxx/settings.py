@@ -54,8 +54,8 @@ __all__ = ('ConfigMgr', 'register_config_worker')
 SETTINGS_FILE_SIZE_LIMIT = 16 * Mem.KB
 
 CONFIG_FILE_TYPES_SAVE = (
-    ('Cfg files', '*.cfg'),
     ('JSON files', '*.json'),
+    ('Cfg files', '*.cfg'),
     ('All files', '*.*'),
 )
 CONFIG_FILE_TYPES_LOAD = (
