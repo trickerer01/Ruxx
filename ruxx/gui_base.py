@@ -51,7 +51,7 @@ from tkinter import (
     ttk,
 )
 from tkinter.ttk import Entry
-from typing import Literal, TypeAlias
+from typing import Literal, TypeAlias, TypedDict
 
 from .defines import (
     API_KEY_LEN_RX,
@@ -81,7 +81,6 @@ from .gui_defines import (
     BUT_DELETE,
     BUT_ESCAPE,
     BUT_RETURN,
-    BUTTONS_TO_UNFOCUS,
     COLOR_DARKGRAY,
     COLOR_LIGHTGRAY,
     COLUMNSPAN_MAX,
@@ -92,6 +91,7 @@ from .gui_defines import (
     GLOBAL_COLUMNCOUNT,
     IMG_ADD_DATA,
     IMG_DELETE_DATA,
+    IMG_LEFT_DATA,
     IMG_OPEN_DATA,
     IMG_PROC_BB_DATA,
     IMG_PROC_EN_DATA,
@@ -101,6 +101,7 @@ from .gui_defines import (
     IMG_PROC_RUXX_DATA,
     IMG_PROC_RX_DATA,
     IMG_PROC_XB_DATA,
+    IMG_RIGHT_DATA,
     IMG_SAVE_DATA,
     IMG_TEXT_DATA,
     OPTION_VALUES_DOWNLOAD_ORDER,
@@ -135,6 +136,7 @@ from .gui_defines import (
     Menus,
     Options,
     SubMenus,
+    global_unfocus,
     gobjects,
     hotkeys,
     menu_items,
@@ -177,6 +179,7 @@ __all__ = (
     'get_icon',
     'get_media_files_dir',
     'getrootconf',
+    'grid_params',
     'help_about',
     'help_tags',
     'hotkey_text',
@@ -235,6 +238,18 @@ HELP_TAGS_PER_PROC_MODULE = {
     ProcModule.XB: HELP_TAGS_MSG_XB,
     ProcModule.BB: HELP_TAGS_MSG_BB,
 }
+
+
+class GridInfo(TypedDict):
+    column: int
+    columnspan: int
+    row: int
+    rowspan: int
+    ipadx: int
+    ipady: int
+    padx: int | tuple[int, int]
+    pady: int | tuple[int, int]
+    sticky: str
 
 
 def set_console_shown(shown: bool) -> None:
@@ -1580,6 +1595,8 @@ def create_base_window_widgets() -> None:
     icons[Icons.SAVE] = PhotoImage(data=base64.b64decode(IMG_SAVE_DATA))
     icons[Icons.DELETE] = PhotoImage(data=base64.b64decode(IMG_DELETE_DATA))
     icons[Icons.ADD] = PhotoImage(data=base64.b64decode(IMG_ADD_DATA))
+    icons[Icons.LEFT] = PhotoImage(data=base64.b64decode(IMG_LEFT_DATA))
+    icons[Icons.RIGHT] = PhotoImage(data=base64.b64decode(IMG_RIGHT_DATA))
     icons[Icons.TEXT] = PhotoImage(data=base64.b64decode(IMG_TEXT_DATA))  # unused
 
     rootm().iconphoto(True, get_icon(Icons.RUXX))
@@ -1690,8 +1707,10 @@ def create_base_window_widgets() -> None:
 
     # Path #
     opframe_path = ttk.LabelFrame(root_framem(), text='Path')
+    register_global(Globals.FRAME_PATH, opframe_path)
     opframe_path.grid(row=next_row(), column=first_column(), columnspan=COLUMNSPAN_MAX,
                       sticky=STICKY_HORIZONTAL, padx=PADDING_DEFAULT, pady=0)
+    grid_params[Globals.FRAME_PATH] = GridInfo(**opframe_path.grid_info())
     #  Text
     op_pathstr = BaseText(opframe_path, width=0, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.PATH_VISUAL]),
                           encodevariable=StringVar(rootm(), '', CVARS[Options.PATH]))
@@ -1701,7 +1720,25 @@ def create_base_window_widgets() -> None:
     #  Button open
     op_pathbut = Button(opframe_path, image=get_icon(Icons.OPEN))
     register_global(Globals.BUTTON_OPENFOLDER, op_pathbut)
-    op_pathbut.pack(padx=2, pady=3, expand=NO, side=RIGHT)
+    op_pathbut.pack(padx=2, pady=3, expand=NO, side=LEFT)
+    # Button expand
+    op_pathoptbut = Button(opframe_path, image=get_icon(Icons.LEFT))
+    register_global(Globals.BUTTON_PATHOPTIONS, op_pathoptbut)
+    op_pathoptbut.pack(padx=2, pady=3, expand=NO, side=LEFT)
+    # Path options #
+    opframe_pathopts = ttk.LabelFrame(root_framem(), text='Videos / Images subfolders')
+    register_global(Globals.FRAME_PATHOPTS, opframe_pathopts)
+    grid_params[Globals.FRAME_PATHOPTS] = GridInfo(
+        row=cur_row(), rowspan=1, column=COLUMNSPAN_MAX - COLUMNSPAN_MAX // 8, columnspan=COLUMNSPAN_MAX // 8, sticky=STICKY_HORIZONTAL,
+        padx=PADDING_DEFAULT, pady=0, ipadx=0, ipady=0)
+    #  Text vid
+    op_vidpath = BaseText(opframe_pathopts, width=0, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.VIDSUB]))
+    register_global(Globals.FIELD_VIDSUB, op_vidpath)
+    op_vidpath.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
+    #  Text img
+    op_imgpath = BaseText(opframe_pathopts, width=0, font=FONT_LUCIDA_MEDIUM, textvariable=StringVar(rootm(), '', CVARS[Options.IMGSUB]))
+    register_global(Globals.FIELD_IMGSUB, op_imgpath)
+    op_imgpath.pack(padx=2, pady=3, expand=YES, side=LEFT, fill=X)
 
     # Cmdline and _download button #
     #  Cmdline  #
@@ -1734,7 +1771,7 @@ def create_base_window_widgets() -> None:
     sb1.pack(fill=X, expand=NO)
 
     # Safety precautions
-    if len(gobjects) < int(Globals.MAX_GOBJECTS):
+    if len(gobjects) < len(Globals):
         messagebox.showinfo('', 'Not all GOBJECTS were registered')
 
 
@@ -1806,7 +1843,7 @@ def get_cur_module_sitename() -> str:
 
 
 def unfocus_buttons_once() -> None:
-    for g in BUTTONS_TO_UNFOCUS:
+    for g in global_unfocus:
         if is_focusing(g):
             rootm().focus_set()
             break
@@ -1988,6 +2025,7 @@ c_submenu: BaseMenu | None = None
 bool_vars: dict[str, BooleanVar] = {}
 int_vars: dict[str, IntVar] = {}
 string_vars: dict[str, StringVar] = {}
+grid_params: dict[Globals, GridInfo] = {}
 # end globals
 
 # loaded

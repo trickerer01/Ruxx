@@ -169,7 +169,7 @@ class Downloader(DownloaderBase):
         if self.download_mode != DownloadModes.SKIP:
             with self.item_lock:
                 try:
-                    self.dest_base_s.mkdir(parents=True, exist_ok=True)
+                    dest.parent.mkdir(parents=True, exist_ok=True)
                 except OSError:
                     thread_exit('ERROR: Unable to create subfolder!')
 
@@ -674,6 +674,8 @@ class Downloader(DownloaderBase):
         self.date_max = args.maxdate or self.date_max
         self.preserve_date = args.preserve_date or self.preserve_date
         self.dest_base = args.path or self.dest_base
+        self.subfolder_vid = args.vidsub or self.subfolder_vid
+        self.subfolder_img = args.imgsub or self.subfolder_img
         self.warn_nonempty = args.warn_nonempty or self.warn_nonempty
         self.api_key = APIKey(args.api_key) or self.api_key
         self.tags_str_arr[:] = [] if self.get_max_id else convert_taglist(args.tags)

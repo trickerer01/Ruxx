@@ -62,6 +62,8 @@ class DownloaderBase(ThreadedHtmlWorker):
         self.date_max: str = DATE_MAX_DEFAULT
         self.preserve_date: bool = False
         self.dest_base: pathlib.Path = pathlib.Path().resolve().parent
+        self.subfolder_vid: str = ''
+        self.subfolder_img: str = ''
         self.warn_nonempty: bool = False
         self.api_key: APIKey = APIKey()
         self.tags_str_arr: list[str] = []

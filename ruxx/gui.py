@@ -56,6 +56,7 @@ from .gui_base import (
     get_icon,
     get_media_files_dir,
     getrootconf,
+    grid_params,
     help_about,
     help_tags,
     hotkey_text,
@@ -115,6 +116,8 @@ from .gui_defines import (
     OPTION_CMD_MODULE_CMD,
     OPTION_CMD_PARCHI,
     OPTION_CMD_PATH_CMD,
+    OPTION_CMD_PATH_SUB_IMG,
+    OPTION_CMD_PATH_SUB_VID,
     OPTION_CMD_PRESERVE_DATE,
     OPTION_CMD_PROXY_CMD,
     OPTION_CMD_PROXY_NO_DOWNLOAD,
@@ -472,7 +475,7 @@ def update_widget_enabled_states() -> None:
                     newstate = STATE_DISABLED if batching_or_downloading else menu_item_orig_states[i][j]
                 config_menu(i, j, state=newstate)
     gi: Globals
-    for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:
+    for gi in Globals.__members__.values():
         if gi == Globals.COMBOBOX_PARCHI:
             no_parchi = not ProcModule.is_rx() and not ProcModule.is_en() and not ProcModule.is_xb() and not ProcModule.is_bb()
             newstate = STATE_DISABLED if no_parchi else gobject_orig_states[gi]
@@ -534,12 +537,17 @@ def prepare_cmdline() -> list[str]:
     module_name = ProcModule.name()
     newstr.append(OPTION_CMD_MODULE_CMD)
     newstr.append(module_name)
-    # + path (tags included)
+    # + path
     pathstr = pathlib.Path(getrootconf(Options.PATH)).as_posix()
     newstr.append(OPTION_CMD_PATH_CMD)
     newstr.append(f'\'{pathstr}\'')
     # + options
     addstr: str
+    # subfolders
+    for opt, cmd in zip((Options.VIDSUB, Options.IMGSUB), (OPTION_CMD_PATH_SUB_VID, OPTION_CMD_PATH_SUB_IMG), strict=True):
+        if addstr := str(getrootconf(opt)):
+            newstr.append(cmd.lstrip('/'))
+            newstr.append(addstr)
     if addstr := OPTION_CMD_HIDE_PERSONAL_INFO[int(getrootconf(Options.HIDE_PERSONAL_INFO))]:
         newstr.append(addstr)
     addstr = OPTION_CMD_VIDEOS[OPTION_VALUES_VIDEOS.index(str(getrootconf(Options.VIDSETTING)))]
@@ -815,8 +823,8 @@ def update_download_state() -> None:
     if prev_download_state != batching_or_downloading:
         update_widget_enabled_states()
         gi: Globals
-        for gi in [g for g in Globals.__members__.values() if g < Globals.MAX_GOBJECTS]:
-            if gi in (Globals.MODULE_ICON,):
+        for gi in Globals.__members__.values():
+            if gi in (Globals.MODULE_ICON, Globals.FRAME_PATH, Globals.FRAME_PATHOPTS):
                 pass  # config_global(i, state=gobject_orig_states[i])
             elif gi == Globals.BUTTON_DOWNLOAD:
                 if not batching_or_downloading:
@@ -965,6 +973,24 @@ def start_download_thread(cmdline: list[str], **options: bool | int | str) -> No
         dwn.set_options(**options)
         dwn.launch_download(arg_list)
 
+
+def toggle_path_options_frame() -> None:
+    but_pathopts = get_global(Globals.BUTTON_PATHOPTIONS)
+    frame_path = get_global(Globals.FRAME_PATH)
+    frame_pathopts = get_global(Globals.FRAME_PATHOPTS)
+    gparams_path = grid_params[Globals.FRAME_PATH]
+    gparams_pathopts = grid_params[Globals.FRAME_PATHOPTS]
+    if frame_pathopts.grid_info():
+        frame_pathopts.grid_forget()
+        frame_path.grid(gparams_path)
+        but_pathopts.configure(image=get_icon(Icons.LEFT))
+    else:
+        gparams_path_reduce = gparams_path.copy()
+        gparams_path_reduce['columnspan'] -= gparams_pathopts['columnspan']
+        frame_path.grid(**gparams_path_reduce)
+        frame_pathopts.grid(**gparams_pathopts)
+        but_pathopts.configure(image=get_icon(Icons.RIGHT))
+
 # end static methods
 
 #########################################
@@ -1093,10 +1119,11 @@ def init_gui() -> None:
     window_retriesm().window.bind(BUT_ALT_F4, func=lambda _: window_retriesm().cancel() if window_retriesm().visible else None)
     # Main menu
     init_menus()
-    # Menu hotkeys
+    # Button commands
     get_global(Globals.BUTTON_CHECKTAGS).configure(command=check_tags_direct)
     get_global(Globals.BUTTON_OPENFOLDER).configure(command=browse_path)
     get_global(Globals.BUTTON_DOWNLOAD).configure(command=do_download)
+    get_global(Globals.BUTTON_PATHOPTIONS).configure(command=toggle_path_options_frame)
     # Init settings if needed
     setrootconf(Options.TAGS, 'sfw')
     setrootconf(Options.DOWNLOAD_LIMIT, 0)

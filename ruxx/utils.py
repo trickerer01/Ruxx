@@ -120,6 +120,20 @@ def make_subfolder_name(tags_str: str, task_num: int, tasks_count: int) -> str:
         name = f'{name[:(SUBFOLDER_NAME_LEN_MAX - 2) // 2]}..{name[-(SUBFOLDER_NAME_LEN_MAX - 2) // 2:]}'
     return name
 
+
+def sanitize_path_name(filename_base: str) -> str:
+    def char_replace(char: str) -> str:
+        if char in '\n\r\t"*:<>?|/\\':
+            return {'/': '\u29f8', '\\': '\u29f9', '\n': '', '\r': '', '\t': ''}.get(char, chr(ord(char) + 0xfee0))
+        elif ord(char) < 32 or ord(char) == 127:
+            char = ''
+        return char
+
+    filename = ''.join(map(char_replace, filename_base)).replace('\0', '_')
+    while '__' in filename:
+        filename = filename.replace('__', '_')
+    return filename.strip('_')
+
 #
 #
 #########################################

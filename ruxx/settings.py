@@ -261,6 +261,8 @@ class ConfigMgr:
 
     settings = {
         'path': Setting(Options.PATH, DummyValidator(), ''),  # no validation, str
+        'sub_vid': Setting(Options.VIDSUB, DummyValidator(), ''),  # no validation, str
+        'sub_img': Setting(Options.IMGSUB, DummyValidator(), ''),  # no validation, str
         'tags': Setting(Options.TAGS, DummyValidator(), ''),  # no validation, str
         'module': Setting(Options.MODULE, ModuleValidator(), 'Invalid module \'%s\'!'),
         'videos': Setting(Options.VIDSETTING, VideosCBValidator(), 'Invalid videos option \'%s\'!'),

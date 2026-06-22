@@ -37,6 +37,8 @@ from .gui_defines import (
     OPTION_CMD_MODULE_CMD,
     OPTION_CMD_PARCHI,
     OPTION_CMD_PATH_CMD,
+    OPTION_CMD_PATH_SUB_IMG,
+    OPTION_CMD_PATH_SUB_VID,
     OPTION_CMD_PRESERVE_DATE,
     OPTION_CMD_PROXY_CMD,
     OPTION_CMD_PROXY_NO_DOWNLOAD,
@@ -88,6 +90,8 @@ from .help import (
     HELP_ARG_REVERSE_DOWNLOAD_ORDER,
     HELP_ARG_SKIP_IMAGES,
     HELP_ARG_SKIP_VIDEOS,
+    HELP_ARG_SUBFOLDER_IMAGES,
+    HELP_ARG_SUBFOLDER_VIDEOS,
     HELP_ARG_TAGS,
     HELP_ARG_THREADS,
     HELP_ARG_VERBOSE,
@@ -98,6 +102,7 @@ from .module import ProcModule
 from .validators import (
     valid_api_key,
     valid_date,
+    valid_folder_name,
     valid_folder_path,
     valid_json,
     valid_kwarg,
@@ -169,6 +174,8 @@ def add_common_args(par: ArgumentParser) -> None:
     do.add_argument(OPTION_CMD_PARCHI[True], action=ACTION_STORE_TRUE, help=HELP_ARG_INCLUDE_PARCHI)
     do.add_argument(OPTION_CMD_IMAGES[0], action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_IMAGES)
     do.add_argument(OPTION_CMD_VIDEOS[0], action=ACTION_STORE_TRUE, help=HELP_ARG_SKIP_VIDEOS)
+    do.add_argument(OPTION_CMD_PATH_SUB_VID, metavar='#NAME', help=HELP_ARG_SUBFOLDER_VIDEOS, type=valid_folder_name)
+    do.add_argument(OPTION_CMD_PATH_SUB_IMG, metavar='#NAME', help=HELP_ARG_SUBFOLDER_IMAGES, type=valid_folder_name)
     dom1 = do.add_mutually_exclusive_group(required=False)
     dom1.add_argument(OPTION_CMD_VIDEOS[1], action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_MP4)
     dom1.add_argument(OPTION_CMD_VIDEOS[2], action=ACTION_STORE_TRUE, help=HELP_ARG_PREFER_WEBM)

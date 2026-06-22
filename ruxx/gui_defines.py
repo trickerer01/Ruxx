@@ -87,6 +87,8 @@ OPTION_CMD_VERBOSE = ('', '-verbose')
 OPTION_CMD_DATEAFTER_CMD = '-mindate'
 OPTION_CMD_DATEBEFORE_CMD = '-maxdate'
 OPTION_CMD_PATH_CMD = '-path'
+OPTION_CMD_PATH_SUB_VID = '-vidsub'
+OPTION_CMD_PATH_SUB_IMG = '-imgsub'
 OPTION_CMD_MODULE_CMD = '-module'
 # non-gui
 OPTION_CMD_GET_MAXID_CMD = '-get_maxid'
@@ -130,6 +132,8 @@ class Icons(IntEnum):
     SAVE = auto()
     DELETE = auto()
     ADD = auto()
+    LEFT = auto()
+    RIGHT = auto()
     TEXT = auto()
 
     def __str__(self) -> str:
@@ -157,6 +161,8 @@ class Options(IntEnum):
     PATH_VISUAL = auto()
     PATH = auto()
     LASTPATH = auto()  # unbound, internal
+    VIDSUB = auto()
+    IMGSUB = auto()
     PROGRESS = auto()
     STATUS = auto()
     FNAMEPREFIX = auto()
@@ -209,66 +215,7 @@ class Options(IntEnum):
         return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
-# config vars
-CVARS = {
-    Options.ISLOGOPEN: 'isLogOpen',
-    Options.REVEALNAMES: 'revealNames',
-    Options.HIDE_PERSONAL_INFO: 'hidepersonalinfo',
-    Options.VIDSETTING: 'vidsetting',
-    Options.IMGSETTING: 'imgsetting',
-    Options.PARCHISETTING: 'parchisetting',
-    Options.THREADSETTING: 'threadsetting',
-    Options.DOWNLOAD_MODE: 'downloadmode',
-    Options.DOWNLOAD_LIMIT: 'downloadlimit',
-    Options.DOWNLOAD_ORDER: 'downloadorder',
-    Options.DATEMIN: 'dateafter',
-    Options.DATEMAX: 'datebefore',
-    Options.PRESERVE_DATE: 'preservedate',
-    Options.TAGS: 'tags',
-    Options.PATH_VISUAL: 'pathvisual',
-    Options.PATH: 'path',
-    Options.LASTPATH: 'curpath',
-    Options.PROGRESS: 'progress',
-    Options.STATUS: 'status',
-    Options.FNAMEPREFIX: 'fnameprefix',
-    Options.ISPROXYOPEN: 'isProxyOpen',
-    Options.PROXYSTRING: 'proxyString',
-    Options.PROXYSTRING_TEMP: 'proxyStringTemp',
-    Options.PROXYTYPE: 'proxyType',
-    Options.PROXYTYPE_TEMP: 'proxyTypeTemp',
-    Options.ISTIMEOUTOPEN: 'isTimeoutOpen',
-    Options.TIMEOUTSTRING: 'timeoutString',
-    Options.TIMEOUTSTRING_TEMP: 'timeoutStringTemp',
-    Options.ISRETRIESOPEN: 'isRetriesOpen',
-    Options.RETRIESSTRING: 'retriesString',
-    Options.RETRIESSTRING_TEMP: 'retriesStringTemp',
-    Options.ISAPIKEYOPEN: 'isApiKeyOpen',
-    Options.APIKEY_KEY: 'apiKeyKey',
-    Options.APIKEY_USERID: 'apiKeyUserid',
-    Options.APIKEY_KEY_TEMP: 'apiKeyKeyTemp',
-    Options.APIKEY_USERID_TEMP: 'apiKeyUseridTemp',
-    Options.MODULE: 'module',
-    Options.IGNORE_PROXY: 'ingoreProxy',
-    Options.PROXY_NO_DOWNLOAD: 'proxyDownload',
-    Options.CACHE_PROCCED_HTML: 'cacheProcessedHtml',
-    Options.ISHCOOKIESOPEN: 'isCookiesOpen',
-    Options.COOKIE_ADD_STR: 'cookieAddStr',
-    Options.HEADER_ADD_STR: 'headerAddStr',
-    Options.SAVE_TAGS: 'saveTags',
-    Options.SAVE_SOURCES: 'saveSources',
-    Options.SAVE_COMMENTS: 'saveComments',
-    Options.SAVE_HASHES: 'saveHashes',
-    Options.INFO_SAVE_MODE: 'infoSaveMode',
-    Options.ISCONSOLELOGOPEN: 'isConsoleOpen',
-    Options.APPEND_SOURCE_AND_TAGS: 'appendSourceAndTags',
-    Options.ISABOUTOPEN: 'isAboutOpen',
-    Options.WARN_NONEMPTY_DEST: 'warnNonEmptyFolder',
-    Options.VERBOSE: 'verbose',
-    Options.AUTOCOMPLETION_ENABLE: 'autocompletionEnable',
-    Options.TAGLISTS_PATH: 'taglistsPath',
-    Options.WINDOW_POSITION: 'windowPosition',
-}
-# end config vars
+CVARS = {k: k.name.lower().replace('_', '') for k in Options}
 
 
 # global static objects for manipulation
@@ -289,57 +236,43 @@ class Globals(IntEnum):
     BUTTON_CHECKTAGS = auto()
     FIELD_PATH = auto()
     BUTTON_OPENFOLDER = auto()
+    BUTTON_PATHOPTIONS = auto()
+    FRAME_PATH = auto()
+    FRAME_PATHOPTS = auto()
+    FIELD_VIDSUB = auto()
+    FIELD_IMGSUB = auto()
     BUTTON_DOWNLOAD = auto()
     MODULE_ICON = auto()
-    MAX_GOBJECTS = auto()
 
     def __str__(self) -> str:
         return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
-# widget quick lookup table
-gobjects = {
-    Globals.COMBOBOX_VIDEOS: None,
-    Globals.COMBOBOX_IMAGES: None,
-    Globals.COMBOBOX_THREADING: None,
-    Globals.COMBOBOX_PARCHI: None,
-    Globals.COMBOBOX_DOWNLOAD_ORDER: None,
-    Globals.FIELD_DOWNLOAD_LIMIT: None,
-    Globals.FIELD_DATEMIN: None,
-    Globals.FIELD_DATEMAX: None,
-    Globals.FIELD_TAGS: None,
-    Globals.BUTTON_CLEARTAGS: None,
-    Globals.BUTTON_CHECKTAGS: None,
-    Globals.FIELD_PATH: None,
-    Globals.BUTTON_OPENFOLDER: None,
-    Globals.BUTTON_DOWNLOAD: None,
-    Globals.MODULE_ICON: None,
+global_comboboxes = {
+    Globals.COMBOBOX_VIDEOS,
+    Globals.COMBOBOX_IMAGES,
+    Globals.COMBOBOX_THREADING,
+    Globals.COMBOBOX_PARCHI,
+    Globals.COMBOBOX_DOWNLOAD_ORDER,
 }
-
-gobject_orig_states = {
-    Globals.COMBOBOX_VIDEOS: STATE_READONLY,
-    Globals.COMBOBOX_IMAGES: STATE_READONLY,
-    Globals.COMBOBOX_THREADING: STATE_READONLY,
-    Globals.COMBOBOX_PARCHI: STATE_READONLY,
-    Globals.COMBOBOX_DOWNLOAD_ORDER: STATE_READONLY,
-    Globals.FIELD_DOWNLOAD_LIMIT: STATE_NORMAL,
-    Globals.FIELD_DATEMIN: STATE_NORMAL,
-    Globals.FIELD_DATEMAX: STATE_NORMAL,
-    Globals.FIELD_TAGS: STATE_NORMAL,
-    Globals.BUTTON_CLEARTAGS: STATE_NORMAL,
-    Globals.BUTTON_CHECKTAGS: STATE_NORMAL,
-    Globals.FIELD_PATH: STATE_NORMAL,
-    Globals.BUTTON_OPENFOLDER: STATE_NORMAL,
-    Globals.BUTTON_DOWNLOAD: STATE_NORMAL,
-    Globals.MODULE_ICON: STATE_NORMAL,
+global_buttons = {
+    Globals.BUTTON_CLEARTAGS,
+    Globals.BUTTON_CHECKTAGS,
+    Globals.BUTTON_OPENFOLDER,
+    Globals.BUTTON_PATHOPTIONS,
+    Globals.BUTTON_DOWNLOAD,
 }
+global_readonly = set().union(global_comboboxes)
 
-
-# buttons to unfocus
-BUTTONS_TO_UNFOCUS = (
+global_unfocus = (
     Globals.BUTTON_DOWNLOAD,
 )
-# end buttons to unfocus
+
+# widget quick lookup table
+gobjects = dict.fromkeys(Globals, None)
+gobject_orig_states = dict.fromkeys(Globals, STATE_NORMAL)
+for _ in global_readonly:
+    gobject_orig_states[_] = STATE_READONLY
 
 
 # PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
@@ -461,6 +394,16 @@ IMG_SAVE_DATA = (
 IMG_DELETE_DATA = 'R0lGODlhDwAPAIIAMcDAwJ0AAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAAALAAAAAAPAA8AAgMUCLrc/jDKSWm4OOvNu/9aJY5kmQAAOw=='
 #  gif
 IMG_ADD_DATA = 'R0lGODlhDwAPAIIAMcDAwAC7AAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAAALAAAAAAPAA8AAgMeCLrRsRC6F+Os1mGpt7rcJI5kaZ5mBXrr1mKv2i0JADs='
+#  gif
+IMG_LEFT_DATA = (
+    'R0lGODlhEAAQAIIAMQbCBqzyrATiBDnCOUn+Sfz+/Az6DCH6JywAAAAAEAAQAAIDQli63BXENSiMkQoaAcSR2sYNHxMKKAeUD2GlKUC2LxwPVm3HHbfbss8A0PvJLo9hEXY0KY'
+    'E4R+CJaoKUxCgmSdxKEgA7'
+)
+#  gif
+IMG_RIGHT_DATA = (
+    'R0lGODlhEAAQAIIAMQbCBqzyrATiBDnCOUn+Sfz+/Az6DCH6JywAAAAAEAAQAAIDQ1i63CUkuBaBMHEqY+zFknMInvBlzDGU5hkWB8C2LrzS+MfdOe3JPZNsYJsJAYOQgdcavg'
+    'rLktMRlSGfjGpSsyFyHQkAOw=='
+)
 #  gif
 IMG_TEXT_DATA = (
     'R0lGODlhEAAQAIIAMQcHB42MjczLzPf390RCRLGxsXt9ezAwMCwAAAAAEAAQAAIDUSi23BxFjUnrEEAUY/vI0rAFpFFMmBBelFABxTbFZBG4F8hdav+qu54qgsrIRDYa7hPZeY'

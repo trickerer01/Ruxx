@@ -22,6 +22,7 @@ from .gui_defines import (
     OPTION_VALUES_VIDEOS,
 )
 from .module import ProcModule
+from .utils import sanitize_path_name
 
 # pure annotations
 if False is True:
@@ -50,6 +51,7 @@ __all__ = (
     'valid_api_key',
     'valid_date',
     'valid_download_mode',
+    'valid_folder_name',
     'valid_folder_path',
     'valid_json',
     'valid_kwarg',
@@ -127,6 +129,14 @@ def valid_folder_path(pathstr: str) -> pathlib.Path:
         newpath = pathlib.Path(pathstr.strip('\'"')).resolve()
         assert next(reversed(newpath.parents)).is_dir()
         return newpath
+    except Exception:
+        raise ArgumentError
+
+
+def valid_folder_name(folder_name: str) -> str:
+    try:
+        assert sanitize_path_name(folder_name) == folder_name
+        return folder_name
     except Exception:
         raise ArgumentError
 
