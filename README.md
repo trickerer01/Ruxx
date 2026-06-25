@@ -281,7 +281,7 @@ EN module also allows creating post sets. Essentially they are no different from
   - download process suffers no speed penalty
 
 ### Technical info
-Ruxx is written in `Python 3.10`. Lines of code: 13600+. Compiled with `PyInstaller 6.17`
+Ruxx is written in `Python 3.10`. Lines of code: 14000+. Releases built with `PyInstaller 6.21`
 
 #### Logging
 Ruxx will log most of its actions, which you can see in **Log** window.  
