@@ -339,3 +339,8 @@ To make a **Debug** build simply set `__RUXX_DEBUG__` variable to `True` in `deb
 
 ### Support
 For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/Ruxx/issues)
+
+#### Donate
+Support the author by donating or subscribing:
+- Boosty: https://boosty.to/bad3dart/donate
+- USDT (TRC20): TVx8ufSm7DeoEnGPDiJu3aVb2sgqMfZuD7 
