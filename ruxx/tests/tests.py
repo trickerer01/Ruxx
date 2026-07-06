@@ -113,12 +113,12 @@ item_str01_xb = (
 )
 
 
-def test_prepare(*, log_disable=True, log_cmd=True) -> Callable[[], Callable[[], None]]:
+def test_prepare(log=False, log_cmd=True) -> Callable[[], Callable[[], None]]:
     def invoke1(test_func) -> Callable[[], None]:
         @functools.wraps(test_func)
         def invoke_test(*args, **kwargs) -> None:
             def set_up_test() -> None:
-                Logger.init(log_cmd, log_disable and RUN_CONN_TESTS == 0)
+                Logger.init(log_cmd, not log and not RUN_CONN_TESTS)
             set_up_test()
             test_func(*args, **kwargs)
         return invoke_test
@@ -257,7 +257,7 @@ class TagParseTests(TestCase):
 
 
 class LoggerTests(TestCase):
-    @test_prepare(log_disable=False)
+    @test_prepare(True)
     def test_log01(self) -> None:
         Logger.log('‴﴾₽ὁﻼé₼☼ἦ﴿‴', True, True)
         print(f'{self._testMethodName} passed')
