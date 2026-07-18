@@ -128,7 +128,7 @@ PARSER_TITLE_NAMES_REMAP: dict[str, str] = {
 DEFAULT_PATH = valid_folder_path('.')
 
 
-def create_parsers() -> dict[str, ArgumentParser]:
+def _create_parsers() -> dict[str, ArgumentParser]:
     def create_parser(sub, name: str, description: str) -> ArgumentParser:
         if sub:
             parser: ArgumentParser = sub.add_parser(PARSER_TITLE_NAMES_REMAP.get(name, name), description=description, add_help=False)
@@ -152,7 +152,7 @@ def create_parsers() -> dict[str, ArgumentParser]:
     return parsers
 
 
-def add_common_args(par: ArgumentParser) -> None:
+def _add_common_args(par: ArgumentParser) -> None:
     op = par.add_argument_group(title='options')
     op.add_argument(OPTION_CMD_MODULE_CMD, default=MODULE_ABBR_RX, help=HELP_ARG_MODULE, choices=MODULE_CHOICES)
     op.add_argument(dest='tags', nargs=ZERO_OR_MORE, action='extend', help=HELP_ARG_TAGS)
@@ -208,28 +208,17 @@ def add_common_args(par: ArgumentParser) -> None:
     ut.add_argument(OPTION_CMD_GET_MAXID_CMD, action=ACTION_STORE_TRUE, help=HELP_ARG_GET_MAXID)
 
 
-def add_help(par: ArgumentParser, is_root: bool):
+def _add_help(par: ArgumentParser, is_root: bool):
     mi = par.add_argument_group(title='misc')
     mi.add_argument('--help', action='help', help=HELP_ARG_HELP)
     if is_root:
         mi.add_argument('--version', action='version', help=HELP_ARG_VERSION, version=f'{APP_NAME} {APP_VERSION}')
 
 
-def prepare_arglist(args: list[str] | tuple[str, ...]) -> Namespace:
-    parsers = create_parsers()
-    parser_root = parsers[PARSER_TITLE_NONE]
-    pcmd = parsers[PARSER_TITLE_CMD]
-    pcmd.usage = f'{MODULE} [-module #module={ProcModule.PROC_MODULE_NAME_DEFAULT}] [options...] tags...'
-
-    [add_common_args(_) for _ in parsers.values()]
-    [add_help(_, _ in (parser_root, pcmd)) for _ in parsers.values()]
-    return execute_parser(pcmd, args)
-
-
-def execute_parser(parser: ArgumentParser, args: list[str] | tuple[str, ...]) -> Namespace:
+def _execute_parser(parser: ArgumentParser, args: list[str] | tuple[str, ...]) -> Namespace:
     try:
         assert args
-        parsed = validate_parsed(parser, args)
+        parsed = _validate_parsed(parser, args)
         if not parsed.get_maxid and not parsed.tags:
             parser.error('the following arguments are required: tags')
         return parsed
@@ -238,10 +227,21 @@ def execute_parser(parser: ArgumentParser, args: list[str] | tuple[str, ...]) ->
         parser.error(format_exc())
 
 
-def validate_parsed(parser: ArgumentParser, args: list[str] | tuple[str, ...]) -> Namespace:
+def _validate_parsed(parser: ArgumentParser, args: list[str] | tuple[str, ...]) -> Namespace:
     parsed, unks = parser.parse_known_args(args)
     parsed.tags.extend(unks)
     return parsed
+
+
+def prepare_arglist(args: list[str] | tuple[str, ...]) -> Namespace:
+    parsers = _create_parsers()
+    parser_root = parsers[PARSER_TITLE_NONE]
+    pcmd = parsers[PARSER_TITLE_CMD]
+    pcmd.usage = f'{MODULE} [-module #module={ProcModule.PROC_MODULE_NAME_DEFAULT}] [options...] tags...'
+
+    [_add_common_args(_) for _ in parsers.values()]
+    [_add_help(_, _ in (parser_root, pcmd)) for _ in parsers.values()]
+    return _execute_parser(pcmd, args)
 
 #
 #

@@ -32,13 +32,13 @@ DOWNLOADERS_BY_PROC_MODULE = {
 }
 
 
-def make_downloader(proc_module: int) -> Downloader:
+def _make_downloader(proc_module: int) -> Downloader:
     ProcModule.set(proc_module)
     return DOWNLOADERS_BY_PROC_MODULE[proc_module]()
 
 
 def get_new_downloader() -> Downloader:
-    return make_downloader(ProcModule.CUR_PROC_MODULE)
+    return _make_downloader(ProcModule.CUR_PROC_MODULE)
 
 #
 #

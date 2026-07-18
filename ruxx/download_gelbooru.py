@@ -80,7 +80,7 @@ class DownloaderGelbooru(Downloader):
 
     def _is_video(self, h: str) -> bool:
         # tags are not 100% accurate so use a more direct approach
-        _, file_ext = self.extract_file_url(h)
+        _, file_ext = self._extract_file_url(h)
         return file_ext in {'mp4', 'webm'}
 
     def _get_item_html(self, h: str) -> str:
@@ -159,11 +159,11 @@ class DownloaderGelbooru(Downloader):
 
     def _get_image_address(self, h: str) -> tuple[str, str]:
         def hi_res_addr() -> tuple[str, str]:
-            addr, ext = self.extract_file_url(h)
+            addr, ext = self._extract_file_url(h)
             return addr, ext
 
         def low_res_addr() -> tuple[str, str]:
-            addr, ext = self.extract_sample_url(h)
+            addr, ext = self._extract_sample_url(h)
             return addr, ext
 
         if self.low_res:
@@ -184,9 +184,9 @@ class DownloaderGelbooru(Downloader):
         return address, fmt
 
     def _get_video_address(self, h: str) -> tuple[str, str]:
-        addr, ext = self.extract_file_url(h)
+        addr, ext = self._extract_file_url(h)
         if len(addr) == 0:
-            addr, ext = self.extract_sample_url(h)
+            addr, ext = self._extract_sample_url(h)
 
         if len(addr) == 0:
             trace(f'FATAL: GetVidAddr could not find anything!\n\nstring:\n\n{h}', True)
@@ -246,7 +246,7 @@ class DownloaderGelbooru(Downloader):
             h = raw
             item_id = self._extract_id(h)
 
-            if self.dump_comments is True and self.has_comments(h):
+            if self.dump_comments is True and self._has_comments(h):
                 self._extract_comments(item_id)
 
             if self.download_mode == DownloadModes.SKIP:
@@ -279,7 +279,7 @@ class DownloaderGelbooru(Downloader):
     def _extract_comments(self, item_id: str) -> None: ...
 
     @staticmethod
-    def extract_file_url(h: str) -> tuple[str, str]:
+    def _extract_file_url(h: str) -> tuple[str, str]:
         if file_re_res := re_sample_file_link.search(h):
             file_url = file_re_res.group(1)
             file_ext = file_url[file_url.rfind('.') + 1:]
@@ -288,13 +288,13 @@ class DownloaderGelbooru(Downloader):
         return file_url, file_ext
 
     @staticmethod
-    def has_comments(h: str) -> bool:
+    def _has_comments(h: str) -> bool:
         id_idx = h.find(' has_comments="') + len(' has_comments="')
         value = h[id_idx:h.find('"', id_idx + 1)]
         return value == 'true'
 
     @staticmethod
-    def extract_sample_url(h: str) -> tuple[str, str]:
+    def _extract_sample_url(h: str) -> tuple[str, str]:
         if sample_re_res := re_sample_file_link.search(h):
             file_url = sample_re_res.group(1)
             file_ext = file_url[file_url.rfind('.') + 1:]

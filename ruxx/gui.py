@@ -194,7 +194,7 @@ dwn: Downloader | None = None
 
 
 # static methods
-def file_worker_report(succ_count: int, total_count: int, word1: str, word2='') -> None:
+def _file_worker_report(succ_count: int, total_count: int, word1: str, word2='') -> None:
     if succ_count == total_count:
         trace(f'Successfully {word1}ed {total_count:d} file(s){word2}.')
     elif succ_count > 0:
@@ -203,22 +203,22 @@ def file_worker_report(succ_count: int, total_count: int, word1: str, word2='') 
         trace(f'An error occured while {word1}ing {total_count:d} files{word2}.')
 
 
-def untag_files_do() -> None:
+def _untag_files_do() -> None:
     if filelist := get_all_media_files_in_cur_dir():
         update_lastpath(filelist[0])
         untagged_count = untag_files(filelist)
-        file_worker_report(untagged_count, len(filelist), 'un-tagg')
+        _file_worker_report(untagged_count, len(filelist), 'un-tagg')
 
 
-def retag_files_do() -> None:
+def _retag_files_do() -> None:
     if filelist := get_all_media_files_in_cur_dir():
         update_lastpath(filelist[0])
         module = get_new_downloader()
         retagged_count = retag_files(filelist, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
-        file_worker_report(retagged_count, len(filelist), 're-tagg')
+        _file_worker_report(retagged_count, len(filelist), 're-tagg')
 
 
-def sort_files_by_type_do() -> None:
+def _sort_files_by_type_do() -> None:
     if filelist := get_all_media_files_in_cur_dir():
         aw = AskFileTypeFilterWindow(rootm())
         aw.finalize()
@@ -227,10 +227,10 @@ def sort_files_by_type_do() -> None:
         if filter_type != FileTypeFilter.INVALID:
             update_lastpath(filelist[0])
             result = sort_files_by_type(filelist, filter_type)
-            file_worker_report(result, len(filelist), 'sort')
+            _file_worker_report(result, len(filelist), 'sort')
 
 
-def sort_files_by_size_do() -> None:
+def _sort_files_by_size_do() -> None:
     if filelist := get_all_media_files_in_cur_dir():
         aw = AskFileSizeFilterWindow(rootm())
         aw.finalize()
@@ -238,10 +238,10 @@ def sort_files_by_size_do() -> None:
         if thresholds_mb := aw.value():
             update_lastpath(filelist[0])
             result = sort_files_by_size(filelist, thresholds_mb)
-            file_worker_report(result, len(filelist), 'sort')
+            _file_worker_report(result, len(filelist), 'sort')
 
 
-def sort_files_by_score_do() -> None:
+def _sort_files_by_score_do() -> None:
     if filelist := get_all_media_files_in_cur_dir():
         aw = AskFileScoreFilterWindow(rootm())
         aw.finalize()
@@ -249,10 +249,10 @@ def sort_files_by_score_do() -> None:
         if thresholds := aw.value():
             update_lastpath(filelist[0])
             result = sort_files_by_score(filelist, thresholds)
-            file_worker_report(result, len(filelist), 'sort')
+            _file_worker_report(result, len(filelist), 'sort')
 
 
-def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[pathlib.Path]]], None]) -> None:
+def _find_duplicated_files_wrapper(callback: Callable[[dict[str, list[pathlib.Path]]], None]) -> None:
     global duplicates_check_thread
 
     if is_menu_disabled(Menus.TOOLS, SubMenus.DUPLICATES):
@@ -287,17 +287,17 @@ def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[pathlib.Pat
     ret_files: dict[str, list[pathlib.Path]] = {}
     trace(f'Looking for duplicated files in \'{loc}\'...')
     duplicates_check_thread = Thread(target=lambda: find_duplicated_files(ret_files, loc, depth, keep))
-    duplicates_check_threadm().killed = False
-    duplicates_check_threadm().start()
+    _duplicates_check_threadm().killed = False
+    _duplicates_check_threadm().start()
 
     def check_dupes_checker_thread() -> None:
         global duplicates_check_thread
-        if getattr(duplicates_check_threadm(), 'killed', True) is False:
+        if getattr(_duplicates_check_threadm(), 'killed', True) is False:
             rootm().after(int(THREAD_CHECK_PERIOD_DEFAULT), check_dupes_checker_thread)
             return
 
         try:
-            duplicates_check_threadm().join()
+            _duplicates_check_threadm().join()
             dupe_messages: list[str] = []
             if ret_files:
                 dupe_messages.append('Duplicates found:')
@@ -324,11 +324,11 @@ def find_duplicated_files_wrapper(callback: Callable[[dict[str, list[pathlib.Pat
     rootm().after(int(THREAD_CHECK_PERIOD_DEFAULT), check_dupes_checker_thread)
 
 
-def find_duplicates_do() -> None:
-    find_duplicated_files_wrapper(lambda *_: None)
+def _find_duplicates_do() -> None:
+    _find_duplicated_files_wrapper(lambda *_: None)
 
 
-def find_duplicates_separate_do() -> None:
+def _find_duplicates_separate_do() -> None:
     def callback_(dfiles: dict[str, list[pathlib.Path]]) -> None:
         if not dfiles:
             return
@@ -346,12 +346,12 @@ def find_duplicates_separate_do() -> None:
                     dupe_file_path.replace(dest_file_path)
                 moved_files += 1
         finally:
-            file_worker_report(moved_files, sum(len(dfiles[_]) for _ in dfiles), 'mov', f' to \'{move_folder}\'')
+            _file_worker_report(moved_files, sum(len(dfiles[_]) for _ in dfiles), 'mov', f' to \'{move_folder}\'')
 
-    find_duplicated_files_wrapper(callback_)
+    _find_duplicated_files_wrapper(callback_)
 
 
-def find_duplicates_remove_do() -> None:
+def _find_duplicates_remove_do() -> None:
     def callback_(dfiles: dict[str, list[pathlib.Path]]) -> None:
         if not dfiles:
             return
@@ -362,12 +362,12 @@ def find_duplicates_remove_do() -> None:
                     filepath.unlink()
                     removed_files += 1
         finally:
-            file_worker_report(removed_files, sum(len(dfiles[_]) for _ in dfiles), 'remov')
+            _file_worker_report(removed_files, sum(len(dfiles[_]) for _ in dfiles), 'remov')
 
-    find_duplicated_files_wrapper(callback_)
+    _find_duplicated_files_wrapper(callback_)
 
 
-def open_download_folder() -> None:
+def _open_download_folder() -> None:
     cur_path = pathlib.Path(getrootconf(Options.PATH)).resolve()
 
     if not next(reversed(cur_path.parents)).is_dir():
@@ -390,17 +390,17 @@ def open_download_folder() -> None:
         trace(f'Couldn\'t open \'{cur_path}\'.')
 
 
-def report_autocompletion_db_size() -> None:
+def _report_autocompletion_db_size() -> None:
     n = '\n - '
     trace(f'Found {len(TagsDB.DBFiles):d} tag lists:{n}{n.join(_.as_posix() for _ in TagsDB.DBFiles.values())}')
 
 
-def report_aux_db_size() -> None:
+def _report_aux_db_size() -> None:
     n = '\n - '
     trace(f'Found {len(TagsDB.AuxDBFiles):d} aux lists:{n}{n.join(_.as_posix() for _ in TagsDB.AuxDBFiles.values())}')
 
 
-def init_autocompletion(loc: pathlib.Path | None = None, force=True) -> None:
+def _init_autocompletion(loc: pathlib.Path | None = None, force=True) -> None:
     if int(getrootconf(Options.AUTOCOMPLETION_ENABLE)) == 1:
         if force is False:
             return
@@ -411,20 +411,20 @@ def init_autocompletion(loc: pathlib.Path | None = None, force=True) -> None:
     if TagsDB.try_set_basepath(loc, traverse=False):
         setrootconf(Options.TAGLISTS_PATH, loc.as_posix())
         setrootconf(Options.AUTOCOMPLETION_ENABLE, 1)
-        report_autocompletion_db_size()
-        report_aux_db_size()
+        _report_autocompletion_db_size()
+        _report_aux_db_size()
 
 
-def toggle_autocompletion_wrapper() -> None:
+def _toggle_autocompletion_wrapper() -> None:
     success = toggle_autocompletion()
     if int(getrootconf(Options.AUTOCOMPLETION_ENABLE)) == 1:
-        report_autocompletion_db_size()
+        _report_autocompletion_db_size()
     elif not success:
         messagebox.showerror('Nope', 'No tag lists found!')
-    update_widget_enabled_states()
+    _update_widget_enabled_states()
 
 
-def set_proc_module(dwnmodule: int) -> None:
+def _set_proc_module(dwnmodule: int) -> None:
     global dwn
 
     ProcModule.set(dwnmodule)
@@ -437,18 +437,18 @@ def set_proc_module(dwnmodule: int) -> None:
         config_menu(Menus.EDIT, SubMenus.PREFIX, label=prefix_opt_text)
         config_global(Globals.MODULE_ICON, image=get_icon(ICON_TYPE_PER_PROC_MODULE[ProcModule.value()]))
         # enable/disable features specific to the module
-        update_widget_enabled_states()
+        _update_widget_enabled_states()
 
     # reset tags parser
     reset_last_tags()
 
 
-def update_widget_enabled_states() -> None:
-    batching = is_processing_batch()
-    downloading = is_downloading()
+def _update_widget_enabled_states() -> None:
+    batching = _is_processing_batch()
+    downloading = _is_downloading()
     batching_or_downloading = batching or downloading
-    checkingtags = is_cheking_tags()
-    checkingdupes = is_checking_duplicates()
+    checkingtags = _is_cheking_tags()
+    checkingdupes = _is_checking_duplicates()
     i: Menus
     for i in [m for m in Menus.__members__.values() if m < Menus.MAX_MENUS]:
         if menu := menu_items.get(i):
@@ -486,19 +486,19 @@ def update_widget_enabled_states() -> None:
             config_global(gi, state=newstate)
 
 
-def update_progressbar() -> None:
+def _update_progressbar() -> None:
     try:
         progress_value: int | None = None
-        if is_downloading():
-            if dwnm().current_state == DownloaderStates.DOWNLOADING:
+        if _is_downloading():
+            if _dwnm().current_state == DownloaderStates.DOWNLOADING:
                 progress_value = PROGRESS_VALUE_NO_DOWNLOAD
-                if dwnm().total_count_all > 0 and dwnm().processed_count > 0:
-                    progress_value += int((PROGRESS_VALUE_DOWNLOAD / dwnm().total_count_all) * dwnm().processed_count)
+                if _dwnm().total_count_all > 0 and _dwnm().processed_count > 0:
+                    progress_value += int((PROGRESS_VALUE_DOWNLOAD / _dwnm().total_count_all) * _dwnm().processed_count)
             else:
                 progress_value = 0
                 state = STATE_WORK_START
                 num_states_no_download = DownloaderStates.DOWNLOADING - STATE_WORK_START
-                while state <= num_states_no_download and state < dwnm().current_state:
+                while state <= num_states_no_download and state < _dwnm().current_state:
                     base_value = max_progress_value_for_state(state)
                     progress_value += base_value
                     state = DownloaderStates(state + 1)
@@ -507,26 +507,26 @@ def update_progressbar() -> None:
     except Exception:
         pass
 
-    rootm().after(GUI2_UPDATE_DELAY_DEFAULT // 6, update_progressbar)
+    rootm().after(GUI2_UPDATE_DELAY_DEFAULT // 6, _update_progressbar)
 
 
-def update_statusbar() -> None:
+def _update_statusbar() -> None:
     try:
-        state_texts = STATUSBAR_INFO_MAP[dwnm().current_state]
+        state_texts = STATUSBAR_INFO_MAP[_dwnm().current_state]
         status_str = state_texts[0]
         if state_texts[1]:
-            status_str += str(getattr(dwnm(), state_texts[1], 0))
-        if state_texts[2] and state_texts[3] and getattr(dwnm(), state_texts[3], 0) > 0:
-            status_str += f'{state_texts[2]}{getattr(dwnm(), state_texts[3])!s}'
+            status_str += str(getattr(_dwnm(), state_texts[1], 0))
+        if state_texts[2] and state_texts[3] and getattr(_dwnm(), state_texts[3], 0) > 0:
+            status_str += f'{state_texts[2]}{getattr(_dwnm(), state_texts[3])!s}'
 
         setrootconf(Options.STATUS, status_str)
     except Exception:
         pass
 
-    rootm().after(GUI2_UPDATE_DELAY_DEFAULT // 6, update_statusbar)
+    rootm().after(GUI2_UPDATE_DELAY_DEFAULT // 6, _update_statusbar)
 
 
-def prepare_cmdline() -> list[str]:
+def _prepare_cmdline() -> list[str]:
     # base
     newstr = ['Cmd:']
     # + tags
@@ -668,13 +668,13 @@ def prepare_cmdline() -> list[str]:
     return newstr
 
 
-def update_frame_cmdline() -> None:
+def _update_frame_cmdline() -> None:
     can_update = True
     for gidx in {Globals.FIELD_DATEMIN, Globals.FIELD_DATEMAX}:
         can_update = can_update and not is_focusing(gidx)
 
     if can_update:
-        args_list = prepare_cmdline()
+        args_list = _prepare_cmdline()
         if bool(int(getrootconf(Options.HIDE_PERSONAL_INFO))):
             api_key_default = Downloader.get_module_specific_default_value(ModuleConfigType.CONFIG_API_KEY)
             api_key_is_default = str(getrootconf(Options.APIKEY_KEY)) == api_key_default
@@ -687,10 +687,10 @@ def update_frame_cmdline() -> None:
             text_cmdm().insert(1.0, newstr)
             text_cmdm().configure(state=STATE_DISABLED)
 
-    rootm().after(int(GUI2_UPDATE_DELAY_DEFAULT * 3), update_frame_cmdline)
+    rootm().after(int(GUI2_UPDATE_DELAY_DEFAULT * 3), _update_frame_cmdline)
 
 
-def start_check_tags_thread(cmdline: list[str]) -> None:
+def _start_check_tags_thread(cmdline: list[str]) -> None:
     global dwn
     arg_list = prepare_arglist(cmdline[1:])
     with get_new_downloader() as dwn:
@@ -698,18 +698,18 @@ def start_check_tags_thread(cmdline: list[str]) -> None:
         dwn.launch_check_tags(arg_list)
 
 
-def check_tags_direct_do() -> None:
+def _check_tags_direct_do() -> None:
     global tags_check_thread
     unfocus_buttons_once()
     if is_menu_disabled(Menus.ACTIONS, SubMenus.CHECKTAGS):
         return
 
-    suc, msg = recheck_args()
+    suc, msg = _recheck_args()
     if not suc:
         Thread(target=lambda: messagebox.showwarning('Nope', msg)).start()
         return
 
-    update_frame_cmdline()
+    _update_frame_cmdline()
     # hide modifyable windows
     window_proxym().hide()
     window_hcookiesm().hide()
@@ -720,21 +720,21 @@ def check_tags_direct_do() -> None:
     config_menu(Menus.ACTIONS, SubMenus.CHECKTAGS, state=STATE_DISABLED)
 
     # launch
-    cmdline = prepare_cmdline()
+    cmdline = _prepare_cmdline()
     unfocus_buttons_once()
     try:
-        tags_check_thread = Thread(target=start_check_tags_thread, args=(cmdline,))
-        tags_check_threadm().killed = False
-        tags_check_threadm().gui = True
-        tags_check_threadm().start()
-        tags_check_threadm().join()
+        tags_check_thread = Thread(target=_start_check_tags_thread, args=(cmdline,))
+        _tags_check_threadm().killed = False
+        _tags_check_threadm().gui = True
+        _tags_check_threadm().start()
+        _tags_check_threadm().join()
     except Exception:
         return
     finally:
         tags_check_thread = None
 
-    count = dwnm().total_count
-    downloading = is_downloading()
+    count = _dwnm().total_count
+    downloading = _is_downloading()
     if downloading is False:
         config_global(Globals.FIELD_TAGS, bg=COLOR_PALEGREEN if count > 0 else COLOR_BROWN1)
         if count > 0:
@@ -748,11 +748,11 @@ def check_tags_direct_do() -> None:
         config_menu(Menus.ACTIONS, SubMenus.CHECKTAGS, state=menu_item_orig_states[Menus.ACTIONS][SubMenus.CHECKTAGS])
 
 
-def check_tags_direct() -> None:
-    Thread(target=check_tags_direct_do).start()
+def _check_tags_direct() -> None:
+    Thread(target=_check_tags_direct_do).start()
 
 
-def recheck_args() -> tuple[bool, str]:
+def _recheck_args() -> tuple[bool, str]:
     # tags
     tags_conf = str(getrootconf(Options.TAGS))
     if not tags_conf:
@@ -794,34 +794,34 @@ def recheck_args() -> tuple[bool, str]:
     return True, ''
 
 
-def is_processing_batch() -> bool:
-    return (batch_download_thread is not None) and batch_download_threadm().is_alive()
+def _is_processing_batch() -> bool:
+    return (batch_download_thread is not None) and _batch_download_threadm().is_alive()
 
 
-def is_downloading() -> bool:
-    return (download_thread is not None) and download_threadm().is_alive()
+def _is_downloading() -> bool:
+    return (download_thread is not None) and _download_threadm().is_alive()
 
 
-def is_cheking_tags() -> bool:
+def _is_cheking_tags() -> bool:
     return tags_check_thread is not None
 
 
-def is_checking_duplicates() -> bool:
+def _is_checking_duplicates() -> bool:
     return tags_check_thread is not None
 
 
-def update_download_state() -> None:
+def _update_download_state() -> None:
     global batch_download_thread
     global download_thread
     global prev_download_state
 
-    batching = is_processing_batch()
-    downloading = is_downloading()
+    batching = _is_processing_batch()
+    downloading = _is_downloading()
     batching_or_downloading = batching or downloading
-    checkingtags = is_cheking_tags()
-    checkingdupes = is_checking_duplicates()
+    checkingtags = _is_cheking_tags()
+    checkingdupes = _is_checking_duplicates()
     if prev_download_state != batching_or_downloading:
-        update_widget_enabled_states()
+        _update_widget_enabled_states()
         gi: Globals
         for gi in Globals.__members__.values():
             if gi in (Globals.MODULE_ICON, Globals.FRAME_PATH, Globals.FRAME_PATHOPTS):
@@ -837,36 +837,36 @@ def update_download_state() -> None:
         # special case 1: _download button: turn into cancel button
         dw_button = get_global(Globals.BUTTON_DOWNLOAD)
         if batching_or_downloading:
-            dw_button.configure(text='Cancel', command=cancel_download)
+            dw_button.configure(text='Cancel', command=_cancel_download)
         else:
-            dw_button.configure(text='Download', command=do_download)
+            dw_button.configure(text='Download', command=_do_download)
 
     if not batching_or_downloading:
         if batch_download_thread is not None:
-            batch_download_threadm().join()  # make thread terminate
+            _batch_download_threadm().join()  # make thread terminate
             del batch_download_thread
             batch_download_thread = None
         if download_thread is not None:
-            download_threadm().join()  # make thread terminate
+            _download_threadm().join()  # make thread terminate
             del download_thread
             download_thread = None
 
     prev_download_state = batching_or_downloading
 
-    rootm().after(int(THREAD_CHECK_PERIOD_DEFAULT), update_download_state)
+    rootm().after(int(THREAD_CHECK_PERIOD_DEFAULT), _update_download_state)
 
 
-def cancel_download() -> None:
-    if is_processing_batch():
-        batch_download_threadm().killed = True
-    if is_downloading():
-        download_threadm().killed = True
+def _cancel_download() -> None:
+    if _is_processing_batch():
+        _batch_download_threadm().killed = True
+    if _is_downloading():
+        _download_threadm().killed = True
 
 
-def do_process_batch() -> None:
+def _do_process_batch() -> None:
     global batch_download_thread
 
-    if is_processing_batch():
+    if _is_processing_batch():
         return
 
     cmdlines = load_batch_download_tag_list()
@@ -886,12 +886,12 @@ def do_process_batch() -> None:
         DownloaderOptions.OPTION_CREATE_SUBFOLDERS: values[0],
         DownloaderOptions.OPTION_SUBFOLDER_TASKS_COUNT: len(cmdlines),
     }
-    batch_download_thread = Thread(target=start_batch_download_thread, args=(cmdlines,), kwargs=options)
-    batch_download_threadm().killed = False
-    batch_download_threadm().start()
+    batch_download_thread = Thread(target=_start_batch_download_thread, args=(cmdlines,), kwargs=options)
+    _batch_download_threadm().killed = False
+    _batch_download_threadm().start()
 
 
-def start_batch_download_thread(cmdlines: list[str], **options: bool | int | str) -> None:
+def _start_batch_download_thread(cmdlines: list[str], **options: bool | int | str) -> None:
     cmdline_errors: list[str] = []
     for cmdline1 in cmdlines:
         parse_result, _ = parse_tags(cmdline1)
@@ -913,11 +913,11 @@ def start_batch_download_thread(cmdlines: list[str], **options: bool | int | str
         setrootconf(Options.TAGS, cmdline2)
         config_global(Globals.FIELD_TAGS, state=STATE_DISABLED)
         options[DownloaderOptions.OPTION_SUBFOLDER_TASK_NUM] = idx + 1
-        do_download(**options)
-        if download_thread is None or not download_threadm().is_alive():
+        _do_download(**options)
+        if download_thread is None or not _download_threadm().is_alive():
             messagebox.showerror('Nope', f'Error processing tag string {idx + 1:d}: \'{cmdline2}\'!')
             break
-        download_threadm().join()
+        _download_threadm().join()
         if getattr(current_process(), 'killed', False) is True:
             break
         processed_count += 1
@@ -925,18 +925,18 @@ def start_batch_download_thread(cmdlines: list[str], **options: bool | int | str
     trace(f'\n[batcher] Successfully processed {processed_count:d} / {len(cmdlines):d} {ProcModule.name().upper()} tag strings')
 
 
-def do_download(**options: bool | int | str) -> None:
+def _do_download(**options: bool | int | str) -> None:
     global download_thread
 
-    if is_downloading():
+    if _is_downloading():
         return
 
-    suc, msg = recheck_args()
+    suc, msg = _recheck_args()
     if not suc:
         messagebox.showwarning('Nope', msg)
         return
 
-    if not is_processing_batch():
+    if not _is_processing_batch():
         get_global(Globals.BUTTON_DOWNLOAD).focus_force()
 
     # update options with active conditionals
@@ -944,9 +944,9 @@ def do_download(**options: bool | int | str) -> None:
         options[DownloaderOptions.OPTION_GARBLE_PERSONAL_INFO] = True
 
     # force cmd line update
-    update_frame_cmdline()
+    _update_frame_cmdline()
     # prepare arg list
-    cmdline = prepare_cmdline()
+    cmdline = _prepare_cmdline()
 
     # hide modifyable windows
     window_proxym().hide()
@@ -956,16 +956,16 @@ def do_download(**options: bool | int | str) -> None:
     config_global(Globals.FIELD_TAGS, bg=COLOR_WHITE)
 
     # launch
-    download_thread = Thread(target=start_download_thread, args=(cmdline,), kwargs=options)
-    download_threadm().killed = False
-    download_threadm().gui = True
-    download_threadm().start()
+    download_thread = Thread(target=_start_download_thread, args=(cmdline,), kwargs=options)
+    _download_threadm().killed = False
+    _download_threadm().gui = True
+    _download_threadm().start()
 
-    if not is_processing_batch():
+    if not _is_processing_batch():
         unfocus_buttons_once()
 
 
-def start_download_thread(cmdline: list[str], **options: bool | int | str) -> None:
+def _start_download_thread(cmdline: list[str], **options: bool | int | str) -> None:
     global dwn
     arg_list = prepare_arglist(cmdline[1:])
     with get_new_downloader() as dwn:
@@ -974,7 +974,7 @@ def start_download_thread(cmdline: list[str], **options: bool | int | str) -> No
         dwn.launch_download(arg_list)
 
 
-def toggle_path_options_frame() -> None:
+def _toggle_path_options_frame() -> None:
     but_pathopts = get_global(Globals.BUTTON_PATHOPTIONS)
     frame_path = get_global(Globals.FRAME_PATH)
     frame_pathopts = get_global(Globals.FRAME_PATHOPTS)
@@ -998,7 +998,7 @@ def toggle_path_options_frame() -> None:
 #########################################
 
 
-def finalize_additional_windows() -> None:
+def _finalize_additional_windows() -> None:
     window_logm().finalize()
     window_proxym().finalize()
     window_hcookiesm().finalize()
@@ -1008,7 +1008,7 @@ def finalize_additional_windows() -> None:
     Logger.print_pending_strings()
 
 
-def init_menus() -> None:
+def _init_menus() -> None:
     # 1) File
     register_menu('File', Menus.FILE)
     register_menu_command('Save settings...', ConfigMgr.save_settings, Options.ISSAVESETTINGSOPEN, True, get_icon(Icons.SAVE))
@@ -1016,7 +1016,7 @@ def init_menus() -> None:
     register_menu_separator()
     register_menu_command('Reset all settings', ConfigMgr.reset_all_settings)
     register_menu_separator()
-    register_menu_command('Open download folder', open_download_folder, Options.ACTION_OPEN_DWN_FOLDER, IS_WIN)
+    register_menu_command('Open download folder', _open_download_folder, Options.ACTION_OPEN_DWN_FOLDER, IS_WIN)
     register_menu_separator()
     register_menu_command('Exit', sys.exit)
     if not IS_WIN:
@@ -1049,7 +1049,7 @@ def init_menus() -> None:
     register_menu('Module', Menus.MODULE)
     for abbr in MODULE_CHOICES:
         module = ProcModule.PROC_MODULES_BY_NAME[abbr]
-        register_menu_radiobutton(abbr.upper(), CVARS[Options.MODULE], module, lambda x=module: set_proc_module(x))
+        register_menu_radiobutton(abbr.upper(), CVARS[Options.MODULE], module, lambda x=module: _set_proc_module(x))
     # 5) Connection
     register_menu('Connection', Menus.CONNECTION)
     register_menu_command('Headers / Cookies...', window_hcookiesm().toggle_visibility, Options.ISHCOOKIESOPEN)
@@ -1062,30 +1062,30 @@ def init_menus() -> None:
     register_menu_checkbutton('Cache processed HTML', CVARS[Options.CACHE_PROCCED_HTML])
     # 6) Actions
     register_menu('Actions', Menus.ACTIONS)
-    register_menu_command('Download', do_download, Options.ACTION_DOWNLOAD, True)
-    register_menu_command('Check tags', check_tags_direct, Options.ACTION_CHECKTAGS, True)
+    register_menu_command('Download', _do_download, Options.ACTION_DOWNLOAD, True)
+    register_menu_command('Check tags', _check_tags_direct, Options.ACTION_CHECKTAGS, True)
     register_menu_separator()
-    register_menu_command('Batch download using tag list...', do_process_batch, Options.ACTION_DOWNLOAD_BATCH)
+    register_menu_command('Batch download using tag list...', _do_process_batch, Options.ACTION_DOWNLOAD_BATCH)
     register_menu_separator()
     register_menu_command('Clear log', window_logm().clear, Options.ACTION_CLEARLOG, True)
     # 7) Tools
     register_menu('Tools', Menus.TOOLS)
     register_menu_command('Load from ID list...', load_id_list)
     register_menu_separator()
-    register_menu_command('Un-tag files...', untag_files_do)
-    register_menu_command('Re-tag files...', retag_files_do)
+    register_menu_command('Un-tag files...', _untag_files_do)
+    register_menu_command('Re-tag files...', _retag_files_do)
     register_menu_separator()
     register_submenu('Sort files into subfolders...')
-    register_submenu_command('by type', sort_files_by_type_do)
-    register_submenu_command('by size', sort_files_by_size_do)
-    register_submenu_command('by score', sort_files_by_score_do)
+    register_submenu_command('by type', _sort_files_by_type_do)
+    register_submenu_command('by size', _sort_files_by_size_do)
+    register_submenu_command('by score', _sort_files_by_score_do)
     register_menu_separator()
     register_submenu('Scan for duplicates...')
-    register_submenu_command('and report', find_duplicates_do)
-    register_submenu_command('and separate', find_duplicates_separate_do)
-    register_submenu_command('and remove', find_duplicates_remove_do)
+    register_submenu_command('and report', _find_duplicates_do)
+    register_submenu_command('and separate', _find_duplicates_separate_do)
+    register_submenu_command('and remove', _find_duplicates_remove_do)
     register_menu_separator()
-    register_menu_checkbutton('Enable autocompletion', CVARS[Options.AUTOCOMPLETION_ENABLE], toggle_autocompletion_wrapper)
+    register_menu_checkbutton('Enable autocompletion', CVARS[Options.AUTOCOMPLETION_ENABLE], _toggle_autocompletion_wrapper)
     register_menu_command('Autocomplete tag...', trigger_autocomplete_tag, Options.ACTION_AUTOCOMPLETE_TAG)
     # 8) Help
     register_menu('Help')
@@ -1099,7 +1099,7 @@ def init_menus() -> None:
             register_menu_radiobutton(f'Download: {dmode}', CVARS[Options.DOWNLOAD_MODE], didx)
 
 
-def init_gui() -> None:
+def _init_gui() -> None:
     # Create all app windows
     create_base_window_widgets()
     init_additional_windows()
@@ -1118,12 +1118,12 @@ def init_gui() -> None:
     window_timeoutm().window.bind(BUT_ALT_F4, func=lambda _: window_timeoutm().cancel() if window_timeoutm().visible else None)
     window_retriesm().window.bind(BUT_ALT_F4, func=lambda _: window_retriesm().cancel() if window_retriesm().visible else None)
     # Main menu
-    init_menus()
+    _init_menus()
     # Button commands
-    get_global(Globals.BUTTON_CHECKTAGS).configure(command=check_tags_direct)
+    get_global(Globals.BUTTON_CHECKTAGS).configure(command=_check_tags_direct)
     get_global(Globals.BUTTON_OPENFOLDER).configure(command=browse_path)
-    get_global(Globals.BUTTON_DOWNLOAD).configure(command=do_download)
-    get_global(Globals.BUTTON_PATHOPTIONS).configure(command=toggle_path_options_frame)
+    get_global(Globals.BUTTON_DOWNLOAD).configure(command=_do_download)
+    get_global(Globals.BUTTON_PATHOPTIONS).configure(command=_toggle_path_options_frame)
     # Init settings if needed
     setrootconf(Options.TAGS, 'sfw')
     setrootconf(Options.DOWNLOAD_LIMIT, 0)
@@ -1137,51 +1137,51 @@ def init_gui() -> None:
     setrootconf(Options.SAVE_HASHES, not IS_IDE)
     setrootconf(Options.WARN_NONEMPTY_DEST, not IS_IDE)
     # Background looping tasks
-    update_frame_cmdline()
-    update_progressbar()
-    update_statusbar()
-    update_download_state()
+    _update_frame_cmdline()
+    _update_progressbar()
+    _update_statusbar()
+    _update_download_state()
     # Clamp main window and make non-resizable
     rootm().adjust_position()
     # Update window geometry and set own widget bindings
-    finalize_additional_windows()
+    _finalize_additional_windows()
     # OS-specific
     #  Linux
     #   Allow os to automatically adjust the size of message windows
     rootm().option_add('*Dialog.msg.width', 0)
     rootm().option_add('*Dialog.msg.wrapLength', 0)
     # Init Settings system
-    ConfigMgr.initialize(tk=rootm(), on_proc_module_change_callback=set_proc_module, on_init_autocompletion_callback=init_autocompletion)
+    ConfigMgr.initialize(tk=rootm(), on_proc_module_change_callback=_set_proc_module, on_init_autocompletion_callback=_init_autocompletion)
     # Init autocompletion from current folder
-    init_autocompletion(force=False)
+    _init_autocompletion(force=False)
     # Final widget states update
-    update_widget_enabled_states()
+    _update_widget_enabled_states()
     # Main window binding, BG fix-ups and main loop
     rootm().finalize()
 
 
 # Helper wrappers: solve unnecessary NoneType warnings
-def batch_download_threadm() -> Thread:
+def _batch_download_threadm() -> Thread:
     assert batch_download_thread
     return batch_download_thread
 
 
-def download_threadm() -> Thread:
+def _download_threadm() -> Thread:
     assert download_thread
     return download_thread
 
 
-def tags_check_threadm() -> Thread:
+def _tags_check_threadm() -> Thread:
     assert tags_check_thread
     return tags_check_thread
 
 
-def duplicates_check_threadm() -> Thread:
+def _duplicates_check_threadm() -> Thread:
     assert duplicates_check_thread
     return duplicates_check_thread
 
 
-def dwnm() -> Downloader:
+def _dwnm() -> Downloader:
     global dwn
     dwn = dwn or get_new_downloader()
     return dwn
@@ -1207,9 +1207,9 @@ def run_ruxx_gui() -> None:
             ctypes.windll.user32.GetSystemMenu(ctypes.windll.kernel32.GetConsoleWindow(), 0), 0xF060, ctypes.c_ulong(0),
         )
         set_console_shown(False)
-    init_gui()
+    _init_gui()
     Logger.init(True)
-    cancel_download()
+    _cancel_download()
 
 #########################################
 #             PROGRAM END               #

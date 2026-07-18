@@ -163,7 +163,7 @@ class DownloaderEn(Downloader):
 
     def _is_video(self, h: str) -> bool:
         # tags are not 100% accurate so use a more direct approach
-        _, file_ext = self.extract_file_url(h)
+        _, file_ext = self._extract_file_url(h)
         return file_ext in {'mp4', 'webm'}
 
     def _get_item_html(self, h: str) -> str:
@@ -203,11 +203,11 @@ class DownloaderEn(Downloader):
 
     def _get_image_address(self, h: str) -> tuple[str, str]:
         def hi_res_addr() -> tuple[str, str]:
-            addr, ext = self.extract_file_url(h)
+            addr, ext = self._extract_file_url(h)
             return addr, ext
 
         def low_res_addr() -> tuple[str, str]:
-            addr, ext = self.extract_sample_url(h)
+            addr, ext = self._extract_sample_url(h)
             return addr, ext
 
         if self.low_res:
@@ -229,9 +229,9 @@ class DownloaderEn(Downloader):
         return address, fmt
 
     def _get_video_address(self, h: str) -> tuple[str, str]:
-        addr, ext = self.extract_file_url(h)
+        addr, ext = self._extract_file_url(h)
         if len(addr) == 0:
-            addr, ext = self.extract_sample_url(h)
+            addr, ext = self._extract_sample_url(h)
 
         if len(addr) == 0:
             trace('FATAL: GetVidAddr could not find anything!', True)
@@ -308,7 +308,7 @@ class DownloaderEn(Downloader):
             h = raw
             item_id = self._extract_id(h)
 
-            if self.dump_comments is True and self.extract_comment_count(h) > 0:
+            if self.dump_comments is True and self._extract_comment_count(h) > 0:
                 raw_html = self.fetch_html(self._form_comments_search_address(item_id))
                 if raw_html is None:
                     trace(f'Warning (W3): ProcItem: unable to retreive comments for {item_id}!', True)
@@ -352,7 +352,7 @@ class DownloaderEn(Downloader):
                 item_info.comments.append(Comment(comment['creator_name'], f'{comment["body"]}\n{format_score(str(comment["score"]))}'))
 
     @staticmethod
-    def extract_comment_count(h: str) -> int:
+    def _extract_comment_count(h: str) -> int:
         text_to_find: Final = ' comment_count="'
         c_idx = h.find(text_to_find) + len(text_to_find)
         count_str = h[c_idx:h.find('"', c_idx + 1)]
@@ -360,7 +360,7 @@ class DownloaderEn(Downloader):
         return int(count_str)
 
     @staticmethod
-    def extract_file_url(h: str) -> tuple[str, str]:
+    def _extract_file_url(h: str) -> tuple[str, str]:
         if file_re_res := re_orig_file_link.search(h):
             file_url = file_re_res.group(1)
             file_ext = file_url[file_url.rfind('.') + 1:]
@@ -369,7 +369,7 @@ class DownloaderEn(Downloader):
         return file_url, file_ext
 
     @staticmethod
-    def extract_sample_url(h: str) -> tuple[str, str]:
+    def _extract_sample_url(h: str) -> tuple[str, str]:
         if sample_re_res := re_sample_file_link.search(h):
             file_url = sample_re_res.group(1)
             file_ext = file_url[file_url.rfind('.') + 1:]

@@ -120,7 +120,7 @@ class DownloaderRn(Downloader):
         return raw_html_page.find_all('a', class_=re_shimmie_thumb)
 
     def _local_addr_from_string(self, h: str) -> str:
-        return self.extract_local_addr(h)
+        return self._extract_local_addr(h)
 
     def _extract_id(self, addr: str) -> str:
         idx1 = addr.find('view/') + len('view/')
@@ -243,7 +243,7 @@ class DownloaderRn(Downloader):
             return
 
         try:
-            h = self.extract_local_addr(raw)
+            h = self._extract_local_addr(raw)
             item_id = self._extract_id(h)
 
             raw_html = BeautifulSoup()
@@ -325,7 +325,7 @@ class DownloaderRn(Downloader):
         self.item_info_dict_per_task[full_item_id].md5 = md5
 
     @staticmethod
-    def extract_local_addr(raw: str) -> str:
+    def _extract_local_addr(raw: str) -> str:
         h = raw[raw.find('href="') + len('href="') + 1:]
         return h[:h.find('"')]
 

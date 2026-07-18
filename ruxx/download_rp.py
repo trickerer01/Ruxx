@@ -158,7 +158,7 @@ class DownloaderRp(Downloader):
             return addr, ext
 
         def low_res_addr() -> tuple[str, str]:
-            addr, ext = self.extract_sample_url(h)
+            addr, ext = self._extract_sample_url(h)
             return addr, ext
 
         if self.low_res:
@@ -182,7 +182,7 @@ class DownloaderRp(Downloader):
     def _get_video_address(self, h: str) -> tuple[str, str]:
         addr, ext = self.extract_file_url(h)
         if len(addr) == 0:
-            addr, ext = self.extract_sample_url(h)
+            addr, ext = self._extract_sample_url(h)
 
         if len(addr) == 0:
             trace('FATAL: GetVidAddr could not find anything!', True)
@@ -349,7 +349,7 @@ class DownloaderRp(Downloader):
         return file_url, file_ext
 
     @staticmethod
-    def extract_sample_url(h: str) -> tuple[str, str]:
+    def _extract_sample_url(h: str) -> tuple[str, str]:
         if sample_re_res := re_sample_file_link.search(h):
             file_url = sample_re_res.group(1)
             filename_re_res = re_item_filename.search(h)

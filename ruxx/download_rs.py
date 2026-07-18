@@ -114,7 +114,7 @@ class DownloaderRs(Downloader):
             return raw_html_page.find_all('div', style=re_post_style_rs)
 
     def _local_addr_from_string(self, h: str) -> str:
-        return self.extract_local_addr(h)
+        return self._extract_local_addr(h)
 
     def _extract_id(self, addr: str) -> str:
         idx1 = addr.find('id=') + len('id=')
@@ -175,7 +175,7 @@ class DownloaderRs(Downloader):
             item_info = ItemInfo()
             if self.is_killed():
                 return item_info
-            addr = self.extract_local_addr(item)
+            addr = self._extract_local_addr(item)
             item_id = self._extract_id(addr)
             item_info.id = item_id
             raw_html = self.fetch_html(addr, do_cache=True)
@@ -238,7 +238,7 @@ class DownloaderRs(Downloader):
             return
 
         try:
-            h = self.extract_local_addr(raw)
+            h = self._extract_local_addr(raw)
             item_id = self._extract_id(h)
 
             raw_html = BeautifulSoup()
@@ -296,7 +296,7 @@ class DownloaderRs(Downloader):
                 self.item_info_dict_per_task[full_item_id].comments.append(Comment(author, body))
 
     @staticmethod
-    def extract_local_addr(raw: str) -> str:
+    def _extract_local_addr(raw: str) -> str:
         idx1 = raw.find('href="') + len('href="')
         h = raw[idx1:raw.find('"', idx1 + 1)]
         return h.replace('&amp;', '&')

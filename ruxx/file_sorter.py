@@ -23,14 +23,14 @@ class FileTypeFilter(IntEnum):
     INVALID = auto()
 
 
-def get_threshold_index(thresholds: Collection[int | float], val: int | float) -> int:
+def _get_threshold_index(thresholds: Collection[int | float], val: int | float) -> int:
     for i, threshold in enumerate(thresholds):
         if val < threshold:
             return i
     return len(thresholds)  # folder names array size is len(thresholds) + 1
 
 
-def move_file(old_fullpath: pathlib.Path, new_folder: pathlib.Path, file_name: str) -> None:
+def _move_file(old_fullpath: pathlib.Path, new_folder: pathlib.Path, file_name: str) -> None:
     new_folder.mkdir(parents=True, exist_ok=True)
     old_fullpath.rename(new_folder / file_name)
 
@@ -45,7 +45,7 @@ def sort_files_by_type(files: Iterable[pathlib.Path], filter_type: FileTypeFilte
                 sub_name = 'jpg' if ext == 'jpeg' else ext
             else:
                 sub_name = 'video' if ext in ('mp4', 'webm') else 'flash' if ext in ('swf',) else 'image'
-            move_file(full_path, base_path / sub_name, full_name)
+            _move_file(full_path, base_path / sub_name, full_name)
             moved_count += 1
         except Exception:
             continue
@@ -63,8 +63,8 @@ def sort_files_by_size(files: Sequence[pathlib.Path], thresholds_mb: Collection[
         for full_path in files:
             try:
                 file_size = full_path.stat().st_size
-                my_folder = folder_names[get_threshold_index(thresholds_mb, file_size / Mem.MB)]
-                move_file(full_path, base_path / my_folder, full_path.name)
+                my_folder = folder_names[_get_threshold_index(thresholds_mb, file_size / Mem.MB)]
+                _move_file(full_path, base_path / my_folder, full_path.name)
                 moved_count += 1
             except Exception:
                 continue
@@ -84,8 +84,8 @@ def sort_files_by_score(files: Sequence[pathlib.Path], thresholds: Collection[in
         for full_path in files:
             try:
                 score = re_media_scored_name.fullmatch(full_path.name).group(1)
-                my_folder = folder_names[get_threshold_index(thresholds, int(score))]
-                move_file(full_path, base_path / my_folder, full_path.name)
+                my_folder = folder_names[_get_threshold_index(thresholds, int(score))]
+                _move_file(full_path, base_path / my_folder, full_path.name)
                 moved_count += 1
             except Exception:
                 continue

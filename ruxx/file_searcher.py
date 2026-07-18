@@ -14,6 +14,8 @@ from typing import BinaryIO, Literal
 
 from .defines import KNOWN_EXTENSIONS, Mem
 
+__all__ = ('find_duplicated_files',)
+
 READ_BUFFER_SIZE_BASE = 4 * Mem.KB
 READ_BUFFER_SIZE_MAX = 256 * Mem.KB
 EXTENSIONS_SET = set(KNOWN_EXTENSIONS)
