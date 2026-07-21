@@ -215,7 +215,7 @@ class Options(IntEnum):
         return f'{self.__class__.__name__}.{self.name} ({self.value:d})'
 
 
-CVARS = {k: k.name.lower().replace('_', '') for k in Options}
+CVARS: dict[Options, str] = {k: k.name.lower().replace('_', '') for k in Options}
 
 
 # global static objects for manipulation

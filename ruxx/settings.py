@@ -15,9 +15,8 @@ from tkinter import Tk, filedialog
 from typing import Protocol, TextIO
 
 from .defines import DATE_MIN_DEFAULT, LAUCH_DATE, UTF8, Mem
-from .gui_base import ask_filename, get_curdir, getrootconf, int_vars, rootm, setrootconf, window_hcookiesm
+from .gui_base import ask_filename, get_curdir, getrootconf, rootm, set_int_var, setrootconf, window_hcookiesm
 from .gui_defines import (
-    CVARS,
     OPTION_VALUES_IMAGES,
     OPTION_VALUES_PARCHI,
     OPTION_VALUES_THREADING,
@@ -91,7 +90,7 @@ class ListConfigWorker:
                 elif conf == Options.MODULE:
                     ConfigMgr.on_proc_module_change_callback(val + 1)
                     setrootconf(conf, ProcModule.name())
-                    int_vars[CVARS[conf]].set(val + 1)
+                    set_int_var(conf, val + 1)
                 elif conf == Options.WINDOW_POSITION:
                     if set_window_pos:
                         rootm().set_position(*(float(dim) for dim in str(val).split('x', 1)))
@@ -167,7 +166,7 @@ class JSONConfigWorker:
                 elif conf == Options.MODULE:
                     ConfigMgr.on_proc_module_change_callback(val + 1)
                     setrootconf(conf, ProcModule.name())
-                    int_vars[CVARS[conf]].set(val + 1)
+                    set_int_var(conf, val + 1)
                 elif conf == Options.WINDOW_POSITION:
                     if set_window_pos:
                         rootm().set_position(*(float(dim) for dim in str(val).split('x', 1)))

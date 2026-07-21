@@ -53,10 +53,10 @@ from .gui_base import (
     create_base_window_widgets,
     get_all_media_files_in_cur_dir,
     get_global,
+    get_grid_info,
     get_icon,
     get_media_files_dir,
     getrootconf,
-    grid_params,
     help_about,
     help_tags,
     hotkey_text,
@@ -978,8 +978,8 @@ def _toggle_path_options_frame() -> None:
     but_pathopts = get_global(Globals.BUTTON_PATHOPTIONS)
     frame_path = get_global(Globals.FRAME_PATH)
     frame_pathopts = get_global(Globals.FRAME_PATHOPTS)
-    gparams_path = grid_params[Globals.FRAME_PATH]
-    gparams_pathopts = grid_params[Globals.FRAME_PATHOPTS]
+    gparams_path = get_grid_info(Globals.FRAME_PATH)
+    gparams_pathopts = get_grid_info(Globals.FRAME_PATHOPTS)
     if frame_pathopts.grid_info():
         frame_pathopts.grid_forget()
         frame_path.grid(gparams_path)
