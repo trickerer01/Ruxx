@@ -271,7 +271,6 @@ def parse_tags(tags: str) -> tuple[bool, Sequence[str]]:
         return fail()
 
     fulltags: list[str] = []
-    sort_tags_count = 0
     custom_tags_count = 0
     tag: str
     for tag in unique_ordered(tags.split(' ')):
@@ -290,8 +289,6 @@ def parse_tags(tags: str) -> tuple[bool, Sequence[str]]:
                 custom_tags_count += 1
             else:
                 return fail()
-        elif re_sort().fullmatch(tag):
-            sort_tags_count += 1
         if not (re_orgr_full_s().fullmatch(tag)
                 or re_andgr().fullmatch(tag)
                 or re_meta().fullmatch(tag)
@@ -300,7 +297,7 @@ def parse_tags(tags: str) -> tuple[bool, Sequence[str]]:
             return fail()
         fulltags.append(tag)
 
-    if len(fulltags) <= sort_tags_count > 0 or custom_tags_count > 1:
+    if custom_tags_count > 1:
         return fail()
 
     parse_tags.last_fulltags = tuple(fulltags)
