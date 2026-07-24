@@ -469,7 +469,7 @@ def _update_widget_enabled_states() -> None:
                     newstate = STATE_DISABLED
                 elif i == Menus.TOOLS and j == SubMenus.AUTOCOMPLETER and TagsDB.empty():
                     newstate = STATE_DISABLED
-                elif i == Menus.CONNECTION and j == SubMenus.APIKEY and not ProcModule.is_rx():
+                elif i == Menus.CONNECTION and j == SubMenus.APIKEY and not ProcModule.is_rx() and not ProcModule.is_en():
                     newstate = STATE_DISABLED
                 else:
                     newstate = STATE_DISABLED if batching_or_downloading else menu_item_orig_states[i][j]
@@ -594,7 +594,7 @@ def _prepare_cmdline() -> list[str]:
             except Exception:
                 setrootconf(datestr[0], DATE_MIN_DEFAULT if datestr[0] == Options.DATEMIN else DATE_MAX_DEFAULT)
     # API key
-    if ProcModule.is_rx():
+    if ProcModule.is_rx() or ProcModule.is_en():
         if addstr := str(getrootconf(Options.APIKEY_KEY)):
             addstr2 = str(getrootconf(Options.APIKEY_USERID))
             newstr.append(OPTION_CMD_APIKEY_CMD)

@@ -161,8 +161,10 @@ def valid_window_position(val: str, tk: 'Tk') -> str:
 def valid_api_key_key(key: str) -> str:
     try:
         if key:
-            assert len(key) == API_KEY_LEN_RX
-            assert key.isalnum()
+            if ProcModule.is_rx():  # fixed-length alphanumeric key
+                assert len(key) == API_KEY_LEN_RX and key.isalnum()
+            else:  # EN: url-safe api key
+                assert 1 <= len(key) <= API_KEY_LEN_RX and all(c.isalnum() or c in '_-' for c in key)
         return key
     except Exception:
         raise ArgumentError
@@ -171,7 +173,10 @@ def valid_api_key_key(key: str) -> str:
 def valid_api_key_userid(user_id: str) -> str:
     try:
         if user_id:
-            assert user_id.isnumeric()
+            if ProcModule.is_rx():  # numeric user id
+                assert user_id.isnumeric()
+            else:  # EN: username (login)
+                assert all(c.isalnum() or c in '_-' for c in user_id)
         return user_id
     except Exception:
         raise ArgumentError

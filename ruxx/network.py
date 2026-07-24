@@ -348,6 +348,16 @@ class ThreadedHtmlWorker(ThreadedWorker):
                         break
                     trace(f'{threadname}catched err 404 {format_exception("row")}. Aborting...', True)
                     return None
+                elif isinstance(err, exceptions.HTTPError) and err.response.status_code in (401, 403):  # bad/missing creds: retrying won't help
+                    code = err.response.status_code
+                    reason = 'authentication failed - the site rejected your credentials' if code == 401 else \
+                             'access forbidden - the site refused the request'
+                    hint = ('For EN (e621) provide -api_key as \'<api_key>,<username>\' (API key first, then your '
+                            'login), enable API access on your account, and use those exact values.') if ProcModule.is_en() else \
+                           ('Verify your -api_key value (and User-Agent). ' if code == 403 else 'Verify your -api_key value.')
+                    trace(f'{threadname}catched {format_exception("row")}.\n'
+                          f'ERROR: {reason} ({code:d}). {hint} Aborting...', True)
+                    return None
                 elif isinstance(err, exceptions.HTTPError) and err.response.status_code == 429:  # Too Many Requests
                     sleep_time += float(min(9, retries))
                     trace(f'{threadname}catched {format_exception("row")}.'

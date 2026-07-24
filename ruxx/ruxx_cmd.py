@@ -11,6 +11,7 @@ from multiprocessing.dummy import current_process
 
 from .cmdargs import prepare_arglist
 from .downloaders import get_new_downloader
+from .gui_defines import OPTION_CMD_MODULE_CMD
 from .logger import Logger
 from .module import ProcModule
 from .utils import ensure_compatibility
@@ -22,6 +23,8 @@ def run_cmd(args: list[str]) -> None:
     Logger.init(True)
     ensure_compatibility()
     current_process().killed = False
+    if OPTION_CMD_MODULE_CMD in args and args.index(OPTION_CMD_MODULE_CMD) + 1 < len(args):
+        ProcModule.set_cur_module_by_name(args[args.index(OPTION_CMD_MODULE_CMD) + 1])  # so api_key is validated per module
     arglist = prepare_arglist(args)
     ProcModule.set_cur_module_by_name(arglist.module)
     with get_new_downloader() as cdwn:

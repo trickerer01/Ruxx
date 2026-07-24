@@ -69,7 +69,13 @@ class DownloaderEn(Downloader):
         self._base_cookies = {}
 
     def _get_module_specific_default_headers(self) -> dict[str, str]:
-        return self._base_headers
+        headers = dict(self._base_headers)
+        if self.api_key:  # e621 Basic auth: base64(login:api_key), plus a UA identifying the login
+            login, apikey = self.api_key.user_id, self.api_key.key
+            token = base64.b64encode(f'{login}:{apikey}'.encode()).decode()
+            headers['Authorization'] = f'Basic {token}'
+            headers['User-Agent'] = f'Ruxx/{APP_VERSION} (by {login} on e621) <{APP_ADDRESS}>'
+        return headers
 
     def _get_module_specific_default_cookies(self) -> dict[str, str]:
         return self._base_cookies

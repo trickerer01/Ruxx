@@ -650,6 +650,7 @@ class Downloader(DownloaderBase):
 
     def _parse_args(self, args: Namespace, enable_preprocessing=True) -> None:
         assert hasattr(args, 'tags') and type(args.tags) is list
+        self.api_key = APIKey(args.api_key) or self.api_key  # before session build so EN auth headers apply
         ThreadedHtmlWorker._parse_args(self, args)
         self.hide_personal_info = args.hide_personal_info or self.hide_personal_info
         self.add_filename_prefix = args.prefix or self.add_filename_prefix
@@ -677,7 +678,6 @@ class Downloader(DownloaderBase):
         self.subfolder_vid = args.vidsub or self.subfolder_vid
         self.subfolder_img = args.imgsub or self.subfolder_img
         self.warn_nonempty = args.warn_nonempty or self.warn_nonempty
-        self.api_key = APIKey(args.api_key) or self.api_key
         self.tags_str_arr[:] = [] if self.get_max_id else convert_taglist(args.tags)
         self._extract_negative_and_groups()
         self._extract_custom_argument_tags()
@@ -705,7 +705,7 @@ class Downloader(DownloaderBase):
             if not self.api_key:
                 trace(f'Warning (W3): NO \'{ProcModule.name().upper()}\' API KEY PROVIDED! DEFAULT API KEY MAY STOP WORKING AT ANY MOMENT!')
                 ret = True
-        if not ProcModule.is_rx():
+        if not ProcModule.is_rx() and not ProcModule.is_en():
             if self.api_key:
                 trace(f'Warning (W1): \'-api_key\' option is not available for \'{ProcModule.name().upper()}\' module. Ignored!')
                 ret = True
