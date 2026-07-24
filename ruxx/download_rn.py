@@ -305,7 +305,8 @@ class DownloaderRn(Downloader):
             raise
 
     def _form_tags_search_address(self, tags: str, *ignored) -> str:
-        return f'{self._get_sitename()}post/list/{tags}{self._get_tags_concat_char()}order%253Did_desc/'
+        default_order = f'{self._get_tags_concat_char()}order%253Did_desc' if self.default_sort else ''
+        return f'{self._get_sitename()}post/list/{tags}{default_order}/'
 
     def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
         # no pagination
