@@ -277,6 +277,14 @@ class Downloader(DownloaderBase):
 
             trace(f'Total {self.total_count:d} item(s) found across {self._num_pages():d} page(s)')
 
+            # with a custom sort and a download limit results arrive pre-ordered, so fetch only the first pages needed
+            if self.download_limit > 0 and not self.default_sort and not self.reverse_download_order:
+                needed_pages = (self.download_limit + page_size - 1) // page_size
+                if needed_pages - 1 < self.maxpage:
+                    self.maxpage = needed_pages - 1
+                    self.total_count = min(self.total_count, self._num_pages() * page_size)
+                    trace(f'Download limit {self.download_limit:d} with sort tag: limiting search to first {self._num_pages():d} page(s)')
+
             has_native_id_filter = self._supports_native_id_filter()
             if 0 < self._get_max_search_depth() <= self.total_count:
                 max_depth_exceeded = self._get_max_search_depth() < self.total_count
