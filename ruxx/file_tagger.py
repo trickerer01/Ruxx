@@ -39,7 +39,7 @@ def untag_files(files: Iterable[pathlib.Path]) -> int:
 def retag_files(files: Sequence[pathlib.Path], re_tags_to_process: re.Pattern, re_tags_to_exclude: re.Pattern) -> int:
     retagged_count = 0
     try:
-        re_media_untagged_name = re.compile(r'^([a-z]{2}_)?(\d+).+?$')
+        re_media_untagged_name = re.compile(r'^([a-z]{2}_)?(\d+).*?$')
         base_path = files[0].parent
         item_infos_all: dict[str, ItemInfo] = {}
         with os.scandir(base_path.as_posix()) as listing:
