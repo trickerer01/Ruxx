@@ -50,7 +50,6 @@ from tkinter import (
     messagebox,
     ttk,
 )
-from tkinter.ttk import Entry
 from typing import Literal, TypeAlias, TypedDict
 
 from .defines import (
@@ -118,6 +117,7 @@ from .gui_defines import (
     STATE_READONLY,
     STICKY_ALLDIRECTIONS,
     STICKY_HORIZONTAL,
+    STICKY_LEFT,
     TOOLTIP_DATE,
     TOOLTIP_DELAY_DEFAULT,
     TOOLTIP_DOWNLOAD_LIMIT,
@@ -153,6 +153,7 @@ from .help import (
 )
 from .module import ProcModule
 from .rex import re_ask_values, re_json_entry_value, re_space_mult
+from .tags import TAG_CATEGORY_NAMES_BY_TYPE, TagCategories
 from .tagsdb import TagsDB
 from .tooltips import WidgetToolTip
 from .useragent import UAManager
@@ -167,13 +168,14 @@ __all__ = (
     'AskFileTypeFilterWindow',
     'AskFirstLastWindow',
     'AskIntWindow',
+    'AskRetagParamsWindow',
     'GetRoot',
     'ask_filename',
+    'ask_select_media_files_in_dir',
     'browse_path',
     'config_global',
     'config_menu',
     'create_base_window_widgets',
-    'get_all_media_files_in_cur_dir',
     'get_curdir',
     'get_global',
     'get_grid_info',
@@ -189,6 +191,7 @@ __all__ = (
     'is_menu_disabled',
     'load_batch_download_tag_list',
     'load_id_list',
+    'load_tags_db',
     'register_menu',
     'register_menu_checkbutton',
     'register_menu_command',
@@ -576,8 +579,8 @@ class _BaseText(Text):
                 self._handle_paste_text(autocompletions[0][0], True)
             return
         om = _BaseMenu(self)
-        for mtag, count in autocompletions:
-            om.add_command(label=f'{atext}{mtag} ({count:d})', command=lambda t=mtag: self._handle_paste_text(t, True))
+        for mtag, taginfo in autocompletions:
+            om.add_command(label=f'{atext}{mtag} ({taginfo.posts_count:d})', command=lambda t=mtag: self._handle_paste_text(t, True))
         om.tk_popup(self.winfo_rootx() + self.bbox(INSERT)[0], self.winfo_rooty() + self.bbox(INSERT)[1] + 18)
 
 
@@ -624,20 +627,29 @@ class _BaseWindow:
 
 
 class _AwaitableAskWindow(_BaseWindow, ABC):
-    def __init__(self, parent, title: str, variables_count=1) -> None:
+    VALUE_ON = '1'
+    VALUE_OFF = '0'
+
+    def __init__(self, parent, title: str, *, variables_count=1) -> None:
         self._title = title or ''
         self._but_ok: Button | None = None
         self._but_cancel: Button | None = None
-        self._variables = [StringVar(parent) for _ in range(variables_count)]
+        self._variables = [StringVar(parent, _AwaitableAskWindow.VALUE_OFF) for _ in range(variables_count)]
         super().__init__(parent, False)
 
+    def _reset_index(self, idx: int) -> None:
+        self._set_variable(idx, _AwaitableAskWindow.VALUE_OFF)
+
+    def _reset_indexes(self, except_idx: int) -> None:
+        [self._set_variable(_, _AwaitableAskWindow.VALUE_OFF) for _ in range(len(self._variables)) if _ != except_idx]
+
     def _set_variable(self, num: int, value: str) -> None:
-        assert len(self._variables) <= num
-        self._variables[num - 1].set(value)
+        assert 0 <= num < len(self._variables)
+        self._variables[num].set(value)
 
     def get_variable(self, num: int) -> str:
-        assert len(self._variables) <= num
-        return self._variables[num - 1].get()
+        assert 0 <= num < len(self._variables)
+        return self._variables[num].get()
 
     def config(self) -> None:
         self.window.title(self._title)
@@ -664,7 +676,7 @@ class _AwaitableAskWindow(_BaseWindow, ABC):
         y = self._parent.winfo_y() + 50
         self.window.geometry(f'+{x:.0f}+{y:.0f}')
         self.window.wait_visibility()
-        self.window.grab_set()
+        # self.window.grab_set()
         self.window.update()
         self.window.transient(self._parent)  # remove minimize and maximize buttons
         self.window.minsize(self.window.winfo_reqwidth(), self.window.winfo_reqheight())
@@ -679,7 +691,7 @@ class _AwaitableAskWindow(_BaseWindow, ABC):
         self.window.destroy()
 
     def _cancel(self) -> None:
-        self._set_variable(1, '')
+        self._set_variable(0, '')
         self.window.grab_release()
         self.window.destroy()
 
@@ -689,29 +701,47 @@ class _AwaitableAskWindow(_BaseWindow, ABC):
 
 
 class AskChecksWindow(_AwaitableAskWindow):
-    def __init__(self, parent, texts: Iterable[str]) -> None:
-        self._texts = list(texts)
-        self._checkbuttons: list[Checkbutton | None] = [None for _ in texts]
+    def __init__(self, parent, texts: Iterable[str], *, unique_index: int | None = None) -> None:
+        self._texts = tuple(texts)
+        self._checkbuttons: list[Checkbutton | None] = [None for _ in self._texts]
+        self._unique_index = unique_index
         super().__init__(parent, 'Options', variables_count=len(self._checkbuttons))
 
     def finalize(self) -> None:
-        [self._set_variable(i + 1, '0') for i in range(len(self._checkbuttons))]
+        [self._set_variable(i, '0') for i in range(len(self._checkbuttons))]
         _AwaitableAskWindow.finalize(self)
         self._checkbuttons[0].focus_set()
 
     def _put_widgets(self, frame: _BaseFrame) -> None:
-        self._checkbuttons[0] = Checkbutton(frame, variable=self._variables[0], text=self._texts[0])
-        self._checkbuttons[0].grid(row=_first_row(), column=_first_column(), padx=12, columnspan=2)
-        for i in range(len(self._checkbuttons) - 1):
-            n = i + 1
-            self._checkbuttons[n] = Checkbutton(frame, variable=self._variables[n], text=self._texts[n])
-            self._checkbuttons[n].grid(row=_next_row(), column=_first_column(), padx=12, columnspan=2)
+        uidx = self._unique_index
+        for i in range(len(self._checkbuttons)):
+            row = _next_row() if i > 0 else _first_row()
+            if self._unique_index is not None:
+                command = (lambda: self._reset_indexes(uidx)) if i == uidx else (lambda: self._reset_index(uidx))
+            else:
+                command = None
+            self._checkbuttons[i] = Checkbutton(frame, variable=self._variables[i], text=self._texts[i], command=command)
+            self._checkbuttons[i].grid(row=row, column=_first_column(), padx=12, columnspan=5, sticky=STICKY_LEFT)
 
     def value(self) -> list[bool] | None:
         try:
-            return [bool(int(self.get_variable(_ + 1))) for _ in range(len(self._checkbuttons))]
+            return [bool(int(self.get_variable(_))) for _ in range(len(self._checkbuttons))]
         except Exception:
             return None
+
+
+class AskRetagParamsWindow(AskChecksWindow):
+    def __init__(self, parent) -> None:
+        container = TAG_CATEGORY_NAMES_BY_TYPE
+        super().__init__(parent, (_.value for i, _ in enumerate(container.values()) if i < TagCategories.MAX_CATEGORIES), unique_index=0)
+
+    def value(self) -> list[TagCategories]:
+        try:
+            ask_values = AskChecksWindow.value(self)
+            assert any(bool(_) for _ in ask_values)
+            return [_ for _ in TagCategories if _ < TagCategories.MAX_CATEGORIES and ask_values[_]]
+        except Exception:
+            return [TagCategories.INVALID]
 
 
 class AskFileTypeFilterWindow(_AwaitableAskWindow):
@@ -722,7 +752,7 @@ class AskFileTypeFilterWindow(_AwaitableAskWindow):
         super().__init__(parent, 'File types')
 
     def finalize(self) -> None:
-        self._set_variable(1, AskFileTypeFilterWindow.VALUES[0])
+        self._set_variable(0, AskFileTypeFilterWindow.VALUES[0])
         _AwaitableAskWindow.finalize(self)
 
     def _put_widgets(self, frame: _BaseFrame) -> None:
@@ -733,7 +763,7 @@ class AskFileTypeFilterWindow(_AwaitableAskWindow):
     def value(self) -> FileTypeFilter:
         try:
             # noinspection PyArgumentList
-            return FileTypeFilter(AskFileTypeFilterWindow.VALUES.index(self.get_variable(1)) + 1)
+            return FileTypeFilter(AskFileTypeFilterWindow.VALUES.index(self.get_variable(0)) + 1)
         except Exception:
             return FileTypeFilter.INVALID
 
@@ -744,7 +774,7 @@ class AskFileSizeFilterWindow(_AwaitableAskWindow):
         super().__init__(parent, 'Size thresholds MB')
 
     def finalize(self) -> None:
-        self._set_variable(1, '')
+        self._set_variable(0, '')
         _AwaitableAskWindow.finalize(self)
         self.entry.focus_set()
 
@@ -754,7 +784,7 @@ class AskFileSizeFilterWindow(_AwaitableAskWindow):
 
     def value(self) -> list[float] | None:
         try:
-            return [float(val) for val in re_ask_values.findall(self.get_variable(1))]
+            return [float(val) for val in re_ask_values.findall(self.get_variable(0))]
         except Exception:
             return None
 
@@ -767,7 +797,7 @@ class AskIntWindow(_AwaitableAskWindow):
         super().__init__(parent, title)
 
     def finalize(self) -> None:
-        self._set_variable(1, self.default)
+        self._set_variable(0, self.default)
         _AwaitableAskWindow.finalize(self)
         self.entry.select_all()
         self.entry.focus_set()
@@ -778,7 +808,7 @@ class AskIntWindow(_AwaitableAskWindow):
 
     def value(self) -> int | None:
         try:
-            val = int(self.get_variable(1))
+            val = int(self.get_variable(0))
             assert self.validator(val)
             return val
         except Exception:
@@ -791,7 +821,7 @@ class AskFileScoreFilterWindow(_AwaitableAskWindow):
         super().__init__(parent, 'Score thresholds')
 
     def finalize(self) -> None:
-        self._set_variable(1, '')
+        self._set_variable(0, '')
         _AwaitableAskWindow.finalize(self)
         self.entry.focus_set()
 
@@ -801,7 +831,7 @@ class AskFileScoreFilterWindow(_AwaitableAskWindow):
 
     def value(self) -> list[int] | None:
         try:
-            return [int(val) for val in re_ask_values.findall(self.get_variable(1))]
+            return [int(val) for val in re_ask_values.findall(self.get_variable(0))]
         except Exception:
             return None
 
@@ -815,7 +845,7 @@ class AskFirstLastWindow(_AwaitableAskWindow):
         super().__init__(parent, title)
 
     def finalize(self) -> None:
-        self._set_variable(1, AskFirstLastWindow.VALUES[0])
+        self._set_variable(0, AskFirstLastWindow.VALUES[0])
         _AwaitableAskWindow.finalize(self)
 
     def _put_widgets(self, frame: _BaseFrame) -> None:
@@ -824,7 +854,7 @@ class AskFirstLastWindow(_AwaitableAskWindow):
 
     def value(self) -> LITERAL_TYPE_FIRST_LAST:
         try:
-            if AskFirstLastWindow.VALUES.index(self.get_variable(1)) == 0:
+            if AskFirstLastWindow.VALUES.index(self.get_variable(0)) == 0:
                 return 'first'
             return 'last'
         except Exception:
@@ -1688,7 +1718,7 @@ def create_base_window_widgets() -> None:
     opframe_dlimit = ttk.LabelFrame(opframe_main, text='Posts limit')
     opframe_dlimit.grid(row=_cur_row(), column=_next_column(), rowspan=1, columnspan=COLUMNSPAN_MAX - 7,
                         sticky=STICKY_HORIZONTAL, padx=1, pady=0, ipadx=0)
-    op_dlimit = Entry(opframe_dlimit, width=0, textvariable=StringVar(rootm(), '', CVARS[Options.DOWNLOAD_LIMIT]), justify='center')
+    op_dlimit = ttk.Entry(opframe_dlimit, width=0, textvariable=StringVar(rootm(), '', CVARS[Options.DOWNLOAD_LIMIT]), justify='center')
     _register_global(Globals.FIELD_DOWNLOAD_LIMIT, op_dlimit)
     op_dlimit.pack(expand=NO, fill=X, padx=1, pady=3)
     _attach_tooltip(op_dlimit, TOOLTIP_DOWNLOAD_LIMIT)
@@ -1967,7 +1997,7 @@ def register_menu_separator() -> None:
     c_menum().add_separator()
 
 
-def get_all_media_files_in_cur_dir() -> tuple[pathlib.Path]:
+def ask_select_media_files_in_dir() -> tuple[pathlib.Path]:
     files = filedialog.askopenfilenames(initialdir=get_curdir(), filetypes=(('All supported', KNOWN_EXTENSIONS_STR),))
     return tuple(pathlib.Path(_) for _ in files)
 
@@ -1980,26 +2010,29 @@ def update_lastpath(filefullpath: pathlib.Path) -> None:
     setrootconf(Options.LASTPATH, filefullpath.parent.as_posix())
 
 
+def load_tags_db() -> bool:
+    taglists_path_base = str(getrootconf(Options.TAGLISTS_PATH))
+    last_path = pathlib.Path(taglists_path_base) if taglists_path_base else get_curdir()
+    if TagsDB.try_set_basepath(last_path):
+        setrootconf(Options.TAGLISTS_PATH, last_path.as_posix())
+        return True
+    else:
+        loc = _ask_directory_path(initialdir=last_path, mustexist=True,
+                                  title='Select a directory where tag lists are located (rx_tags.json, rn_tags.json, etc.)')
+        if loc and (not last_path or loc != last_path) and TagsDB.try_set_basepath(loc):
+            setrootconf(Options.TAGLISTS_PATH, loc.as_posix())
+            return True
+    return False
+
+
 def toggle_autocompletion() -> bool:
     # current state is AFTER being toggled
     if bool(int(getrootconf(Options.AUTOCOMPLETION_ENABLE))):
-        taglists_path_base = str(getrootconf(Options.TAGLISTS_PATH))
-        last_path = pathlib.Path(taglists_path_base) if taglists_path_base else get_curdir()
-        if TagsDB.try_set_basepath(last_path):
-            setrootconf(Options.TAGLISTS_PATH, last_path.as_posix())
+        if load_tags_db():
             return True
         else:
-            loc = _ask_directory_path(initialdir=last_path, mustexist=True,
-                                      title='Select a directory where tag lists are located (rx_tags.json, rn_tags.json, etc.)')
-            if not loc:
-                setrootconf(Options.AUTOCOMPLETION_ENABLE, 0)
-                return True
-            elif (not last_path or loc != last_path) and TagsDB.try_set_basepath(loc):
-                setrootconf(Options.TAGLISTS_PATH, loc.as_posix())
-                return True
-            else:
-                setrootconf(Options.AUTOCOMPLETION_ENABLE, 0)
-                return False
+            setrootconf(Options.AUTOCOMPLETION_ENABLE, 0)
+            return False
     else:
         TagsDB.clear()
         setrootconf(Options.TAGLISTS_PATH, '')

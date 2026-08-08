@@ -7,6 +7,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import json
+import os
 import pathlib
 import re
 
@@ -30,9 +31,10 @@ from .defines import (
 )
 from .logger import trace
 from .module import ProcModule
+from .rex import re_infolist_filename
 from .utils import unique_ordered
 
-__all__ = ('prepare_id_list', 'prepare_item_infos_dict', 'prepare_tag_lists')
+__all__ = ('gather_item_infos_in_dir', 'prepare_id_list', 'prepare_item_infos_dict', 'prepare_tag_lists')
 
 re_comments = re.compile(r'^(?:--|//|#).*?$')
 re_separators = re.compile(r'(?:, *| +)')
@@ -142,6 +144,17 @@ def prepare_tag_lists(filepath: pathlib.Path) -> tuple[bool, list[str]]:
 def prepare_item_infos_dict(filepath: pathlib.Path, prefix: str) -> tuple[bool, dict[str, ItemInfo]]:
     suc, item_infos_dict = _parse_item_infos_file(filepath, prefix)
     return suc, item_infos_dict
+
+
+def gather_item_infos_in_dir(base_path: pathlib.Path) -> dict[str, ItemInfo]:
+    item_infos_all: dict[str, ItemInfo] = {}
+    with os.scandir(base_path.as_posix()) as listing:
+        for dentry in listing:
+            if dentry.is_file() and re_infolist_filename.fullmatch(dentry.name):
+                suc, item_infos = prepare_item_infos_dict(pathlib.Path(dentry.path), '')
+                if suc:
+                    item_infos_all.update(item_infos)
+    return item_infos_all
 
 #
 #

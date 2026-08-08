@@ -46,6 +46,8 @@ COLOR_BROWN1 = 'brown1'  # red-ish (for warnings)
 COLOR_PALEGREEN = 'palegreen'
 # Abbrev
 STICKY_ALLDIRECTIONS = 'wens'
+STICKY_LEFT = 'w'
+STICKY_RIGHT = 'e'
 STICKY_HORIZONTAL = 'we'
 STICKY_VERTICAL_W = 'wns'
 # Combobox

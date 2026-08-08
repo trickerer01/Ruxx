@@ -31,14 +31,16 @@ from .defines import (
     STATUSBAR_INFO_MAP,
     DownloaderOptions,
     DownloaderStates,
+    ItemInfo,
     ModuleConfigType,
     max_progress_value_for_state,
 )
 from .download import Downloader
 from .downloaders import get_new_downloader
+from .file_parser import gather_item_infos_in_dir
 from .file_searcher import find_duplicated_files
 from .file_sorter import FileTypeFilter, sort_files_by_score, sort_files_by_size, sort_files_by_type
-from .file_tagger import retag_files, untag_files
+from .file_tagger import retag_files_any, retag_files_tagtype, untag_files
 from .gui_base import (
     AskChecksWindow,
     AskFileScoreFilterWindow,
@@ -46,12 +48,13 @@ from .gui_base import (
     AskFileTypeFilterWindow,
     AskFirstLastWindow,
     AskIntWindow,
+    AskRetagParamsWindow,
     GetRoot,
+    ask_select_media_files_in_dir,
     browse_path,
     config_global,
     config_menu,
     create_base_window_widgets,
-    get_all_media_files_in_cur_dir,
     get_global,
     get_grid_info,
     get_icon,
@@ -65,6 +68,7 @@ from .gui_base import (
     is_menu_disabled,
     load_batch_download_tag_list,
     load_id_list,
+    load_tags_db,
     register_menu,
     register_menu_checkbutton,
     register_menu_command,
@@ -154,6 +158,7 @@ from .gui_defines import (
 from .logger import Logger, trace
 from .module import ProcModule
 from .settings import ConfigMgr
+from .tags import TagCategories
 from .tags_parser import parse_tags, reset_last_tags
 from .tagsdb import TagsDB
 from .useragent import UAManager
@@ -203,23 +208,44 @@ def _file_worker_report(succ_count: int, total_count: int, word1: str, word2='')
         trace(f'An error occured while {word1}ing {total_count:d} files{word2}.')
 
 
+def _gather_retag_info(base_path: pathlib.Path, load_db=False) -> dict[str, ItemInfo]:
+    try:
+        if all_infos := gather_item_infos_in_dir(base_path):
+            if (not load_db) or load_tags_db():
+                return all_infos
+        return {}
+    except Exception:
+        pass
+
+
 def _untag_files_do() -> None:
-    if filelist := get_all_media_files_in_cur_dir():
+    if filelist := ask_select_media_files_in_dir():
         update_lastpath(filelist[0])
         untagged_count = untag_files(filelist)
         _file_worker_report(untagged_count, len(filelist), 'un-tagg')
 
 
 def _retag_files_do() -> None:
-    if filelist := get_all_media_files_in_cur_dir():
-        update_lastpath(filelist[0])
-        module = get_new_downloader()
-        retagged_count = retag_files(filelist, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
-        _file_worker_report(retagged_count, len(filelist), 're-tagg')
+    if filelist := ask_select_media_files_in_dir():
+        aw = AskRetagParamsWindow(rootm())
+        aw.finalize()
+        rootm().wait_window(aw.window)
+        filter_type = aw.value()
+        if filter_type != [TagCategories.INVALID]:
+            update_lastpath(filelist[0])
+            if filter_type == [TagCategories.AUTO]:
+                module = get_new_downloader()
+                all_infos = _gather_retag_info(filelist[0].parent)
+                retagged_count = retag_files_any(filelist, all_infos, module.get_re_tags_to_process(), module.get_re_tags_to_exclude())
+            else:
+                all_infos = _gather_retag_info(filelist[0].parent, True)
+                retagged_count = retag_files_tagtype(filelist, all_infos, *filter_type)
+                TagsDB.clear()
+            _file_worker_report(retagged_count, len(filelist), 're-tagg')
 
 
 def _sort_files_by_type_do() -> None:
-    if filelist := get_all_media_files_in_cur_dir():
+    if filelist := ask_select_media_files_in_dir():
         aw = AskFileTypeFilterWindow(rootm())
         aw.finalize()
         rootm().wait_window(aw.window)
@@ -231,7 +257,7 @@ def _sort_files_by_type_do() -> None:
 
 
 def _sort_files_by_size_do() -> None:
-    if filelist := get_all_media_files_in_cur_dir():
+    if filelist := ask_select_media_files_in_dir():
         aw = AskFileSizeFilterWindow(rootm())
         aw.finalize()
         rootm().wait_window(aw.window)
@@ -242,7 +268,7 @@ def _sort_files_by_size_do() -> None:
 
 
 def _sort_files_by_score_do() -> None:
-    if filelist := get_all_media_files_in_cur_dir():
+    if filelist := ask_select_media_files_in_dir():
         aw = AskFileScoreFilterWindow(rootm())
         aw.finalize()
         rootm().wait_window(aw.window)
@@ -467,7 +493,7 @@ def _update_widget_enabled_states() -> None:
                     newstate = STATE_DISABLED
                 elif i == Menus.EDIT and j == SubMenus.SCOMMENTS and ProcModule.is_bb():  # Save comments, disabled for BB
                     newstate = STATE_DISABLED
-                elif i == Menus.TOOLS and j == SubMenus.AUTOCOMPLETER and TagsDB.empty():
+                elif i == Menus.TOOLS and j == SubMenus.AUTOCOMPLETER and TagsDB.is_empty():
                     newstate = STATE_DISABLED
                 elif i == Menus.CONNECTION and j == SubMenus.APIKEY and not ProcModule.is_rx():
                     newstate = STATE_DISABLED

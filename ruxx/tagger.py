@@ -17,10 +17,11 @@ from .rex import (
     re_tags_exclude_major1,
     re_tags_exclude_major2,
 )
-from .tagsdb import TAG_ALIASES
+from .tags import TagTypes
+from .tagsdb import TAG_ALIASES, TagsDB
 from .utils import trim_underscores
 
-__all__ = ('append_filtered_tags', 'no_validation_tag', 'normalize_wtag')
+__all__ = ('append_filtered_tags', 'append_filtered_tags_by_type', 'no_validation_tag', 'normalize_wtag')
 
 
 # unused
@@ -95,6 +96,35 @@ def append_filtered_tags(base_string: str, tags_str: str, re_tags_to_process: re
             tags_toadd_list.append(tag)
 
     return f'{base_string}{UNDERSCORE}{re_replace_symbols.sub(UNDERSCORE, UNDERSCORE.join(sorted(tags_toadd_list)))}'
+
+
+def append_filtered_tags_by_type(base_string: str, tags_str: str, module: str, *tag_types: TagTypes) -> str:
+    if not tags_str:
+        return base_string
+
+    tags_list = tags_str.split(' ')
+    tags_toadd_list = set[str]()
+
+    for tag in tags_list:
+        tag = tag.replace('-', '').replace('\'', '')
+        # filter bt type
+        tag_info = TagsDB.get_tag_info(module, tag)
+        if not tag_info or tag_info.tag_type not in tag_types:
+            continue
+
+        # remove series and other meta info from the tag, ex: 'character_name_(very_long_series_name)'
+        while True:
+            p1_idx, p2_idx = tag.find('_('), tag.rfind(')')
+            if all(0 <= _ < len(tag) for _ in (p1_idx, p2_idx)) and p1_idx < p2_idx:
+                tag = f'{tag[:p1_idx]}{tag[p2_idx + 1:]}'
+                continue
+            break
+
+        tags_toadd_list.add(tag)
+
+    if tags_toadd_list:
+        return f'{base_string}{UNDERSCORE}{re_replace_symbols.sub(UNDERSCORE, UNDERSCORE.join(sorted(tags_toadd_list)))}'
+    return base_string
 
 #
 #

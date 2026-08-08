@@ -13,6 +13,7 @@ import pathlib
 from .defines import FILE_NAME_ALIASES, MODULE_CHOICES, TAG_AUTOCOMPLETE_LENGTH_MIN, TAG_AUTOCOMPLETE_NUMBER_MAX, UTF8
 from .logger import trace
 from .rex import re_wtag
+from .tags import TagInfo, tag_type_from_name
 from .utils import format_exception
 
 __all__ = ('TAG_ALIASES', 'TagsDB', 'is_wtag', 'load_tag_aliases')
@@ -22,7 +23,7 @@ TAG_ALIASES: dict[str, str] = {}
 
 class TagsDB:
     """TagsDB !Static!"""
-    DB: dict[str, dict[str, int]] = {}
+    DB: dict[str, dict[str, TagInfo]] = {}
     DBFiles: dict[str, pathlib.Path] = {}
     AuxDB: dict[str, pathlib.Path] = {}
     AuxDBFiles: dict[str, pathlib.Path] = {}
@@ -88,7 +89,7 @@ class TagsDB:
         TagsDB.DBFiles.clear()
 
     @staticmethod
-    def empty() -> bool:
+    def is_empty() -> bool:
         return not TagsDB.DBFiles
 
     @staticmethod
@@ -101,15 +102,16 @@ class TagsDB:
                 for line in dbfile:
                     try:
                         kv_k, kv_v = tuple(line.strip(' ,"\n\ufeff').split('": "', 1))
-                        ivalue = int(kv_v[:kv_v.find(' ')])
-                        TagsDB.DB[module][kv_k] = ivalue
+                        posts_count = int(kv_v[:kv_v.find(' ')])
+                        tag_type = tag_type_from_name(kv_v, kv_v.find('('), kv_v.rfind(')'))
+                        TagsDB.DB[module][kv_k] = TagInfo(tag_type, posts_count)
                     except Exception:
                         continue
         except FileNotFoundError:
             return
 
     @staticmethod
-    def _get_tag_matches(module: str, tag: str) -> list[tuple[str, int]]:
+    def _get_tag_matches(module: str, tag: str) -> list[tuple[str, TagInfo]]:
         arr = list(TagsDB.DB[module].keys())
         lb, ub = 0, len(arr) - 1
         while lb < ub:
@@ -126,18 +128,25 @@ class TagsDB:
         return glist
 
     @staticmethod
-    def autocomplete_tag(module: str, tag: str) -> list[tuple[str, int]]:
-        matches: list[tuple[str, int]] = []
+    def autocomplete_tag(module: str, tag: str) -> list[tuple[str, TagInfo]]:
+        matches: list[tuple[str, TagInfo]] = []
         if not is_wtag(tag) and len(tag) >= TAG_AUTOCOMPLETE_LENGTH_MIN:
             TagsDB._load(module)
             base_matches = TagsDB._get_tag_matches(module, tag)
-            matches.extend((mtag[len(tag):], count) for mtag, count in base_matches[:TAG_AUTOCOMPLETE_NUMBER_MAX])
+            matches.extend((mtag[len(tag):], tag_info) for mtag, tag_info in base_matches[:TAG_AUTOCOMPLETE_NUMBER_MAX])
         return matches
+
+    @staticmethod
+    def get_tag_info(module: str, tag: str) -> TagInfo | None:
+        if not is_wtag(tag):
+            TagsDB._load(module)
+            return TagsDB.DB[module].get(tag)
+        return None
 
     @staticmethod
     def load_aux_file(filename: str, dest: dict[str, str]) -> None:
         assert filename not in TagsDB.AuxDB
-        if filepath := TagsDB.AuxDBFiles.get(filename, pathlib.Path()):
+        if filepath := TagsDB.AuxDBFiles.get(filename):
             with open(filepath, 'rt', encoding=UTF8) as auxfile:
                 dest.update(json.load(auxfile))
                 TagsDB.AuxDB[filename] = filepath
