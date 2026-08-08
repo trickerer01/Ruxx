@@ -643,13 +643,13 @@ class _AwaitableAskWindow(_BaseWindow, ABC):
     def _reset_indexes(self, except_idx: int) -> None:
         [self._set_variable(_, _AwaitableAskWindow.VALUE_OFF) for _ in range(len(self._variables)) if _ != except_idx]
 
-    def _set_variable(self, num: int, value: str) -> None:
-        assert 0 <= num < len(self._variables)
-        self._variables[num].set(value)
+    def _set_variable(self, idx: int, value: str) -> None:
+        assert 0 <= idx < len(self._variables)
+        self._variables[idx].set(value)
 
-    def get_variable(self, num: int) -> str:
-        assert 0 <= num < len(self._variables)
-        return self._variables[num].get()
+    def get_variable(self, idx: int) -> str:
+        assert 0 <= idx < len(self._variables)
+        return self._variables[idx].get()
 
     def config(self) -> None:
         self.window.title(self._title)
@@ -708,7 +708,7 @@ class AskChecksWindow(_AwaitableAskWindow):
         super().__init__(parent, 'Options', variables_count=len(self._checkbuttons))
 
     def finalize(self) -> None:
-        [self._set_variable(i, '0') for i in range(len(self._checkbuttons))]
+        [self._set_variable(i, _AwaitableAskWindow.VALUE_OFF) for i in range(len(self._checkbuttons))]
         _AwaitableAskWindow.finalize(self)
         self._checkbuttons[0].focus_set()
 
@@ -720,7 +720,9 @@ class AskChecksWindow(_AwaitableAskWindow):
                 command = (lambda: self._reset_indexes(uidx)) if i == uidx else (lambda: self._reset_index(uidx))
             else:
                 command = None
-            self._checkbuttons[i] = Checkbutton(frame, variable=self._variables[i], text=self._texts[i], command=command)
+            self._checkbuttons[i] = Checkbutton(frame, variable=self._variables[i], text=self._texts[i],
+                                                onvalue=_AwaitableAskWindow.VALUE_ON, offvalue=_AwaitableAskWindow.VALUE_OFF,
+                                                command=command)
             self._checkbuttons[i].grid(row=row, column=_first_column(), padx=12, columnspan=5, sticky=STICKY_LEFT)
 
     def value(self) -> list[bool] | None:
@@ -734,6 +736,12 @@ class AskRetagParamsWindow(AskChecksWindow):
     def __init__(self, parent) -> None:
         container = TAG_CATEGORY_NAMES_BY_TYPE
         super().__init__(parent, (_.value for i, _ in enumerate(container.values()) if i < TagCategories.MAX_CATEGORIES), unique_index=0)
+
+    def finalize(self) -> None:
+        AskChecksWindow.finalize(self)
+        self._set_variable(0, _AwaitableAskWindow.VALUE_ON)
+        if ProcModule.is_rn() or ProcModule.is_rp():
+            [_.configure(state=STATE_DISABLED) for _ in self._checkbuttons]
 
     def value(self) -> list[TagCategories]:
         try:
