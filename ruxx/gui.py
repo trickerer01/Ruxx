@@ -205,7 +205,7 @@ def _file_worker_report(succ_count: int, total_count: int, word1: str, word2='')
     elif succ_count > 0:
         trace(f'Warning: only {succ_count:d} / {total_count:d} files were {word1}ed{word2}.')
     else:
-        trace(f'An error occured while {word1}ing {total_count:d} files{word2}.')
+        trace(f'An error occured while {word1}ing {total_count:d} files{word2}. Code: {succ_count:d}')
 
 
 def _gather_retag_info(base_path: pathlib.Path, load_db=False) -> dict[str, ItemInfo]:
@@ -215,7 +215,7 @@ def _gather_retag_info(base_path: pathlib.Path, load_db=False) -> dict[str, Item
                 return all_infos
         return {}
     except Exception:
-        pass
+        return {}
 
 
 def _untag_files_do() -> None:

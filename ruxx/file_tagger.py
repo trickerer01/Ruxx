@@ -37,7 +37,8 @@ def untag_files(files: Iterable[pathlib.Path]) -> int:
 def retag_files_any(files: Sequence[pathlib.Path], infos: dict[str, ItemInfo], re_process: re.Pattern, re_exclude: re.Pattern) -> int:
     retagged_count = 0
     try:
-        assert infos
+        if not infos:
+            return -1
         re_media_untagged_name = re.compile(r'^([a-z]{2}_)?(\d+).*?$')
         base_path = files[0].parent
         load_tag_aliases()
@@ -65,8 +66,10 @@ def retag_files_any(files: Sequence[pathlib.Path], infos: dict[str, ItemInfo], r
 def retag_files_tagtype(files: Sequence[pathlib.Path], infos: dict[str, ItemInfo], *tag_types: TagTypes) -> int:
     retagged_count = 0
     try:
-        assert infos
-        assert not TagsDB.is_empty()
+        if not infos:
+            return -1
+        if TagsDB.is_empty():
+            return -2
         re_media_untagged_name = re.compile(r'^([a-z]{2}_)?(\d+).*?$')
         base_path = files[0].parent
         for fpath in files:
