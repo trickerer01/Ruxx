@@ -4,7 +4,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'Ruxx'
-version = '1.7.938'
+version = '1.7.939'
 authors = [
     {name = 'trickerer01'},
 ]
@@ -29,16 +29,17 @@ classifiers = [
     'Environment :: Console',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
+    'Programming Language :: Python :: 3.15',
     'Programming Language :: Python :: Implementation',
     'Programming Language :: Python :: Implementation :: CPython',
     'Typing :: Typed',
     'Operating System :: OS Independent',
 ]
-requires-python = '>=3.10'
+requires-python = '>=3.11'
 dependencies = [
     'beautifulsoup4>=4.9.3',
     'fake-useragent>=2.0.3',
@@ -48,10 +49,10 @@ dependencies = [
 [project.optional-dependencies]
 default = []
 static-analysis = [
-    'ruff~=0.14.0',
+    'ruff~=0.16.0',
 ]
 pyinstaller = [
-    'pyinstaller>=6.17.0',
+    'pyinstaller>=6.21.0',
 ]
 
 [project.urls]

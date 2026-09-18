@@ -18,6 +18,9 @@ Note that Ruxx does not restrict your searches to a couple pages or something. Y
 (everything), this won't work though as websites actually put a limit on maximum search depth. For something stupid like this you'll have 
 to split your searches using id filter. Plus you may still get banned for abusing the resource. **Ruxx is not a scraping tool**
 
+### Support
+For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/Ruxx/issues)
+
 #### Download Options
 - *Videos* ‒ some websites serve videos in multiple formats, here you can select a prefered one. You may also exclude videos altogether
 - *Images* ‒ some websites serve images in multiple resolutions / quilities (full, preview), which you can choose from. Just like with the videos, you may also filter all the images out
@@ -185,16 +188,16 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 3. `OR` groups
 - Ruxx syntax for `OR` group is simplified compared to what you would normally use for RX: `(tag1~tag2~...~tagN)` instead of `( tag1 ~ tag2 ~ ... ~ tagN )`
 - Ruxx allows using `OR` groups with any module, regardless of whether website supports it natively or not
-- The syntax is also the same for all modules, don't use curvy brackets for RS
+- The syntax is also the same for all modules, don't use curly brackets for RS
 - `OR` group can't be negative and needs to be unwrapped:
   - `-(tag1~tag2~tag3)` => `-tag1 -tag2 -tag3`
 - Since using meta tags in `OR` groups `(id:=X~score:=Y)` is broken (RX), not always reliable (EN) or straight impossible (RS, RN, RP), Ruxx will always unwrap such groups to process them properly
 4. Negative groups
-- Syntax: `-(tag1,tag2,...,tagN)`. Ruxx allows to filter out tag combinations (posts where all tags in group are present), which you can't normally do using website search engine. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for `any symbol` and `any number of any symbols` repectively. You can also use pipe symbol `|` for direct regex `OR` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regular expressions `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
+- Syntax: `-(tag1,tag2,...,tagN)`. Ruxx allows to filter out tag combinations (posts where all tags in group are present), which you can't normally do using any of the supported website search engines. In addition to normal tag symbols, in negative group tags you can use wildcard symbols `?` and `*` for `any symbol` and `any number of any symbols` repectively. You can also use pipe symbol `|` for direct regex `OR` group composition. Example: `-(tag?1,ta*g2|tag3)` will be effectively converted to regular expressions `"^tag.1$"` and `"^ta.*g2|tag3$"` to check for, posts with tags matching both will get filtered out
     - Important note: unlike normal `-tags`, negative group will not check tag aliases
 5. Tag limits
 - Any valid search query requires at least one positive non-sorting tag to search for. Search query cannot be formed using just `sort:...` tag or `-tags` only
-- Very long search queries will cause website to return empty result. Generally this happens when trying to add too many `-tags` to narrow down the search. If resulting query is too long Ruxx will automatically create a specific negative group from excessive `-tags` and use them as additional filter. The message will be given as follows: `<X> 'excluded tags combination' custom filter(s) parsed`
+- A very long search query string will cause website to return empty result. Generally this happens when trying to add too many `-tags` to narrow down the search. If resulting query is too long Ruxx will automatically create a specific negative group from excessive `-tags` and use them as additional filter (locally). The message will be given as follows: `<X> 'excluded tags combination' custom filter(s) parsed`
 - Some websites also put a limit on the number of tags used. While most of the time this is a soft limit (web interface), sometimes they also apply a hard limit (api internals), namely:
   - `RP`: max `3` `tags & -tags`, `3` `total`
   - `EN`: max `40` `tags & -tags`, `40` `total`, max `1` `wildcard`
@@ -218,7 +221,7 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
 - To force a non-wildcarded tag without validation surround it with `%`, ex: `%mumbling%` (1 post, unlisted), or, if negative: `-%mumbling%`
 
 #### Tag autocompletion
-Ruxx provide lists of known tags for all modules, which can also be used to attempt to complete whatever word typed in **Tags** field
+Ruxx provides a list of known tags for each module, which can also be used to attempt to complete whatever word typed in **Tags** field
 - Enable this feature by selecting **Tools -> Enable autocompletion**. You will be asked for a folder location - the folder containing tag list files. Once selected the following message will be logged (or similar):
   ```shell script
   Found 7 tag lists:
@@ -257,7 +260,7 @@ Some modules (RX only actually) require authentication info provided in order to
 It's strongly recommended to use your own API key and not rely on a default one. Visit module's respective website, sign in and generate yourself a key, you can then save it in config.
 
 #### Favorites
-Downloading user's favorites using native tags search functionality is only available with RN, RP and EN (see meta tags above), other websites don't implement that neither through tags nor through API. In order to enable users to download one's favorites Ruxx implements `favorited_by` tag for other modules as well. It's an extra layer of functionality but here is what you need to use it:
+Downloading user's favorites using native tags search functionality is only available with RN, RP and EN (see meta tags above), other websites don't implement that neither through tags nor through API. In order to enable users to download one's favorites Ruxx implements `favorited_by` tag for other modules as well
 - Syntax: `favorited_by:X`. `X` = `<user ID>`. User ID you can get from user's favorites page, it's a part of its web address. Note: this syntax is not invalid as RN / RP / EN tag either but it won't do anything there
 - Downloading from RX / XB / BB favorites pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
 - While searching favorites you can use normal filtering as well. Date filter, additional required / excluded tags, etc.
@@ -267,7 +270,7 @@ Downloading user's favorites using native tags search functionality is only avai
 Downloading post pool using native tags search functionality is not possible and only RX, EN, XB and BB implement pool functionality.  
 To download a pool use special `pool` tag:
 - Syntax: `pool:X`. `X` = `<pool ID>`. Pool ID you can get from pool page, it's a part of its web address
-- EN module also supports pool name syntax: `pool:Y`. `Y` = `<pool name>`. Pool name must be in lower case and with all spaces replaced with underscores, ex. `'Long Night' -> 'pool:long_night'`
+- EN module also supports pool name syntax: `pool:Y`. `Y` = `<pool name>`. Pool name must be in lower case and have all spaces replaced with underscores, ex. `'Long Night' -> 'pool:long_night'`
 - Downloading RX / XB / BB pool pages requires `cf_clearance` cookie (see above) as it isn't a part of dapi
 - Pool posts can be filtered as well. Date filter, additional required / excluded tags, etc.
 - Same as favorites, downloading using custom tags isn't particulary fast (RX / XB / BB), Ruxx will need to fetch info for every item in the list in order to enable filtering
@@ -281,7 +284,7 @@ EN module also allows creating post sets. Essentially they are no different from
   - download process suffers no speed penalty
 
 ### Technical info
-Ruxx is written in `Python 3.10`. Lines of code: 14000+. Releases built with `PyInstaller 6.21`
+Ruxx is written in `Python 3.11`. Lines of code: 14000+. Releases built with `PyInstaller 6.21`
 
 #### Logging
 Ruxx will log most of its actions, which you can see in **Log** window.  
@@ -298,7 +301,7 @@ If any problem occurs it will yield some info unless it's an unexpected fatal er
 Invoke `Ruxx.exe --help` to list all possible arguments
 
 #### Using through python interpreter
-- `Python 3.10` or greater is required. See `requirements.txt` for additional dependencies. Install with:
+- `Python 3.11` or greater is required. See `requirements.txt` for additional dependencies. Install with:
   - `python -m pip install -r requirements.txt`
 ##### Install as a module
 - `cd Ruxx`
@@ -320,7 +323,7 @@ Invoke `python ruxx --help` to list all possible arguments
 
 ### How to build a standalone executable
 - **Dependencies:**
-  - `Python 3.10` or greater
+  - `Python 3.11` or greater
   - `git`
 - Clone the repository:
   - `git clone https://github.com/trickerer01/Ruxx`
@@ -337,10 +340,8 @@ Invoke `python ruxx --help` to list all possible arguments
 #### Debug build
 To make a **Debug** build simply set `__RUXX_DEBUG__` variable to `True` in `debug.py`. Debug mode enables debug menu, console window display switch, additional logging and a few undocumented features. Some default settings are different in Debug mode
 
-### Support
-For bug reports, questions and feature requests use our [issue tracker](https://github.com/trickerer01/Ruxx/issues)
-
-#### Donate
-Support the author by donating or subscribing:
+#### Support me
+Wow, You made it to the end! Do you really like this project or is it just that this documentation is so entertaining (bah!)?  
+In any case, consider supporting the author by donating or subscribing:
 - Boosty: https://boosty.to/bad3dart/donate
-- USDT (TRC20): TVx8ufSm7DeoEnGPDiJu3aVb2sgqMfZuD7 
+- USDT (TRC20): TVx8ufSm7DeoEnGPDiJu3aVb2sgqMfZuD7

@@ -32,7 +32,7 @@ from ruxx.vcs.version import APP_NAME
 __all__ = ()
 
 
-RUN_CONN_TESTS = 0
+RUN_CONN_TESTS = 1
 CUR_PATH = pathlib.Path(__file__).resolve().parent.as_posix()
 
 DEFAULT_HEADERS = UAManager.orig_user_agent_as_header_json_str()

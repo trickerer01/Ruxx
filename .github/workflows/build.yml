@@ -14,10 +14,9 @@ on:
         type: boolean
       python:
         description: Python version
-        default: '3.10'
+        default: '3.11'
         type: choice
         options:
-          - '["3.10"]'
           - '["3.11"]'
           - '["3.12"]'
           - '["3.13"]'
