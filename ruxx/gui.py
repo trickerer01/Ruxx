@@ -1034,6 +1034,26 @@ def _finalize_additional_windows() -> None:
     Logger.print_pending_strings()
 
 
+def _init_logger_append_command() -> None:
+    Logger.append_to_window_proc = window_logm().append
+
+
+def _init_base_hotkeys() -> None:
+    # Window hotkeys in order
+    rootm().bind_all(hotkeys[Options.ISLOGOPEN], func=lambda _: window_logm().toggle_visibility())
+    rootm().bind_all(hotkeys[Options.ISPROXYOPEN], func=lambda e: window_proxym().ask() if e.state != 0x20000 else None)
+    rootm().bind_all(hotkeys[Options.ISHCOOKIESOPEN], func=lambda _: window_hcookiesm().toggle_visibility())
+    rootm().bind_all(hotkeys[Options.ISTIMEOUTOPEN], func=lambda e: window_timeoutm().ask() if e.state != 0x20000 else None)
+    rootm().bind_all(hotkeys[Options.ISRETRIESOPEN], func=lambda e: window_retriesm().ask() if e.state != 0x20000 else None)
+    rootm().bind_all(hotkeys[Options.ISAPIKEYOPEN], func=lambda e: window_apikeym().ask() if e.state != 0x20000 else None)
+    rootm().bind(BUT_ALT_F4, func=lambda _: rootm().destroy())
+    window_logm().window.bind(BUT_ALT_F4, func=lambda _: window_logm().hide() if window_logm().visible else None)
+    window_hcookiesm().window.bind(BUT_ALT_F4, func=lambda _: window_hcookiesm().hide() if window_hcookiesm().visible else None)
+    window_proxym().window.bind(BUT_ALT_F4, func=lambda _: window_proxym().cancel() if window_proxym().visible else None)
+    window_timeoutm().window.bind(BUT_ALT_F4, func=lambda _: window_timeoutm().cancel() if window_timeoutm().visible else None)
+    window_retriesm().window.bind(BUT_ALT_F4, func=lambda _: window_retriesm().cancel() if window_retriesm().visible else None)
+
+
 def _init_menus() -> None:
     # 1) File
     register_menu('File', Menus.FILE)
@@ -1125,32 +1145,14 @@ def _init_menus() -> None:
             register_menu_radiobutton(f'Download: {dmode}', CVARS[Options.DOWNLOAD_MODE], didx)
 
 
-def _init_gui() -> None:
-    # Create all app windows
-    create_base_window_widgets()
-    init_additional_windows()
-    Logger.append_to_window_proc = window_logm().append
-    # Window hotkeys in order
-    rootm().bind_all(hotkeys[Options.ISLOGOPEN], func=lambda _: window_logm().toggle_visibility())
-    rootm().bind_all(hotkeys[Options.ISPROXYOPEN], func=lambda e: window_proxym().ask() if e.state != 0x20000 else None)
-    rootm().bind_all(hotkeys[Options.ISHCOOKIESOPEN], func=lambda _: window_hcookiesm().toggle_visibility())
-    rootm().bind_all(hotkeys[Options.ISTIMEOUTOPEN], func=lambda e: window_timeoutm().ask() if e.state != 0x20000 else None)
-    rootm().bind_all(hotkeys[Options.ISRETRIESOPEN], func=lambda e: window_retriesm().ask() if e.state != 0x20000 else None)
-    rootm().bind_all(hotkeys[Options.ISAPIKEYOPEN], func=lambda e: window_apikeym().ask() if e.state != 0x20000 else None)
-    rootm().bind(BUT_ALT_F4, func=lambda _: rootm().destroy())
-    window_logm().window.bind(BUT_ALT_F4, func=lambda _: window_logm().hide() if window_logm().visible else None)
-    window_hcookiesm().window.bind(BUT_ALT_F4, func=lambda _: window_hcookiesm().hide() if window_hcookiesm().visible else None)
-    window_proxym().window.bind(BUT_ALT_F4, func=lambda _: window_proxym().cancel() if window_proxym().visible else None)
-    window_timeoutm().window.bind(BUT_ALT_F4, func=lambda _: window_timeoutm().cancel() if window_timeoutm().visible else None)
-    window_retriesm().window.bind(BUT_ALT_F4, func=lambda _: window_retriesm().cancel() if window_retriesm().visible else None)
-    # Main menu
-    _init_menus()
-    # Button commands
+def _init_buttons() -> None:
     get_global(Globals.BUTTON_CHECKTAGS).configure(command=_check_tags_direct)
     get_global(Globals.BUTTON_OPENFOLDER).configure(command=browse_path)
     get_global(Globals.BUTTON_DOWNLOAD).configure(command=_do_download)
     get_global(Globals.BUTTON_PATHOPTIONS).configure(command=_toggle_path_options_frame)
-    # Init settings if needed
+
+
+def _set_default_settings() -> None:
     setrootconf(Options.TAGS, 'sfw')
     setrootconf(Options.DOWNLOAD_LIMIT, 0)
     setrootconf(Options.FNAMEPREFIX, True)
@@ -1162,6 +1164,31 @@ def _init_gui() -> None:
     setrootconf(Options.SAVE_COMMENTS, not IS_IDE)
     setrootconf(Options.SAVE_HASHES, not IS_IDE)
     setrootconf(Options.WARN_NONEMPTY_DEST, not IS_IDE)
+
+
+def _init_os_specific_options() -> None:
+    # Linux
+    #  Allow os to automatically adjust the size of message windows
+    rootm().option_add('*Dialog.msg.width', 0)
+    rootm().option_add('*Dialog.msg.wrapLength', 0)
+
+
+def _init_config_manager() -> None:
+    ConfigMgr.initialize(tk=rootm(), on_proc_module_change_callback=_set_proc_module, on_init_autocompletion_callback=_init_autocompletion)
+
+
+def _init_gui() -> None:
+    # Create all app windows
+    create_base_window_widgets()
+    init_additional_windows()
+    _init_logger_append_command()
+    _init_base_hotkeys()
+    # Main menu
+    _init_menus()
+    # Buttons
+    _init_buttons()
+    # Init settings if needed
+    _set_default_settings()
     # Background looping tasks
     _update_frame_cmdline()
     _update_progressbar()
@@ -1172,12 +1199,9 @@ def _init_gui() -> None:
     # Update window geometry and set own widget bindings
     _finalize_additional_windows()
     # OS-specific
-    #  Linux
-    #   Allow os to automatically adjust the size of message windows
-    rootm().option_add('*Dialog.msg.width', 0)
-    rootm().option_add('*Dialog.msg.wrapLength', 0)
+    _init_os_specific_options()
     # Init Settings system
-    ConfigMgr.initialize(tk=rootm(), on_proc_module_change_callback=_set_proc_module, on_init_autocompletion_callback=_init_autocompletion)
+    _init_config_manager()
     # Init autocompletion from current folder
     _init_autocompletion(force=False)
     # Final widget states update
