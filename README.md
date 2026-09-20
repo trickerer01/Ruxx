@@ -63,6 +63,7 @@ For bug reports, questions and feature requests use our [issue tracker](https:/
 - **Actions -> Check tags** \<Ctrl+Shift+C> ‒ same as check tags button
 - **Actions -> Batch download using tag list...** ‒ read and process tags using a text file. Each line forms a string which then gets put into **Tags** field and downloaded. Warning: download starts immediately! Adjust settings and download options beforehand
 - **Actions -> Clear log** \<Ctrl+Shift+E> ‒ same as clear log button
+- **Tools -> Query builder** ‒ open a Query Builder tool. Drag & drop links, text files and plain strings into this windows to automatically parse tags and form downloader query, which can then be pushed to the `Tags` field with a single click
 - **Tools -> Load from ID list** ‒ load **ID** tag list from a text file. The resulting tags will look like `(id:x~id:y~id:z)` which is an ***OR*** group [expression](#tag-syntax), effectively allowing you to search for those ids. ~~Broken since about 10.07.2021. Refer to "Broken things" RX forum subsection for details.~~ Re-enabled since version `1.1.284` for all modules using a workaround, but doesn't run in parallel so be aware of that
 - **Tools -> Un-tag files...** ‒ renames selected Ruxx-downloaded media files, stripping file names of all extra info
 - **Tools -> Re-tag files...** ‒ renames selected Ruxx-downloaded media files, re-appending extra info. You'll need dumped tags info file(s) (see **Edit -> Save tags**)

@@ -36,6 +36,7 @@ BUT_F4 = '<F4>'
 BUT_F5 = '<F5>'
 BUT_F6 = '<F6>'
 BUT_F7 = '<F7>'
+BUT_F8 = '<F8>'
 BUT_ALT_F4 = '<Alt-F4>'
 # Colors
 #  Color enum
@@ -136,6 +137,12 @@ class Icons(IntEnum):
     ADD = auto()
     LEFT = auto()
     RIGHT = auto()
+    UP = auto()
+    DOWN = auto()
+    LEFT2 = auto()
+    RIGHT2 = auto()
+    UP2 = auto()
+    DOWN2 = auto()
     TEXT = auto()
 
     def __str__(self) -> str:
@@ -184,6 +191,7 @@ class Options(IntEnum):
     APIKEY_USERID = auto()
     APIKEY_KEY_TEMP = auto()
     APIKEY_USERID_TEMP = auto()
+    ISQUERYBUILDEROPEN = auto()
     MODULE = auto()
     IGNORE_PROXY = auto()
     PROXY_NO_DOWNLOAD = auto()
@@ -309,7 +317,7 @@ class SubMenus(IntEnum):
     RX, RN, RS, RP, EN, XB, BB = 0, 1, 2, 3, 4, 5, 6
     HEADERS, PROXY, TIMEOUT, RETRIES, APIKEY, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6, 7
     DOWNLOAD, CHECKTAGS, DBATCH, CLEARLOG = 0, 1, 3, 5
-    IDLIST, UNTAG, RETAG, SORT, DUPLICATES, AUTOCOMPLETEE, AUTOCOMPLETER = 0, 2, 3, 5, 7, 9, 10
+    QBUILDER, IDLIST, UNTAG, RETAG, SORT, DUPLICATES, AUTOCOMPLETEE, AUTOCOMPLETER = 0, 2, 4, 5, 7, 9, 11, 12
     DFULL, DSKIP, DTOUCH = 0, 1, 2
 
     def __str__(self) -> str:
@@ -333,7 +341,7 @@ menu_items = {
     Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.APIKEY, SubMenus.DWPROXY,
                                SubMenus.IGNOREPROXY, SubMenus.CACHEMODE),
     Menus.ACTIONS: RuxxMenu(SubMenus.DOWNLOAD, SubMenus.CHECKTAGS, SubMenus.DBATCH),
-    Menus.TOOLS: RuxxMenu(SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT, SubMenus.DUPLICATES,
+    Menus.TOOLS: RuxxMenu(SubMenus.QBUILDER, SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT, SubMenus.DUPLICATES,
                           SubMenus.AUTOCOMPLETEE, SubMenus.AUTOCOMPLETER),
     Menus.DEBUG: RuxxMenu(SubMenus.DFULL, SubMenus.DSKIP, SubMenus.DTOUCH),
 }
@@ -351,6 +359,7 @@ hotkeys = {
     Options.ISTIMEOUTOPEN: BUT_F5,
     Options.ISRETRIESOPEN: BUT_F6,
     Options.ISAPIKEYOPEN: BUT_F7,
+    Options.ISQUERYBUILDEROPEN: BUT_F8,
     Options.ISSAVESETTINGSOPEN: BUT_CTRL_S,
     Options.ISLOADSETTINGSOPEN: BUT_CTRL_O,
     Options.ACTION_DOWNLOAD: BUT_CTRL_SHIFT_D,
@@ -380,6 +389,7 @@ TOOLTIP_HCOOKIE_ADD_ENTRY = (' Must be in on of the valid formats: ',
                              '  2) [name]:[value] ',
                              '  3) [name],[value] ')
 TOOLTIP_INVALID_SYNTAX = ('Invalid syntax ',)
+TOOLTIP_INVALID_TAGS = ('Invalid tags ',)
 # end tooltips
 # images cache
 #  gif
@@ -401,10 +411,9 @@ IMG_LEFT_DATA = (
     'R0lGODlhEAAQAIIAMQbCBqzyrATiBDnCOUn+Sfz+/Az6DCH6JywAAAAAEAAQAAIDQli63BXENSiMkQoaAcSR2sYNHxMKKAeUD2GlKUC2LxwPVm3HHbfbss8A0PvJLo9hEXY0KY'
     'E4R+CJaoKUxCgmSdxKEgA7'
 )
-#  gif
-IMG_RIGHT_DATA = (
-    'R0lGODlhEAAQAIIAMQbCBqzyrATiBDnCOUn+Sfz+/Az6DCH6JywAAAAAEAAQAAIDQ1i63CUkuBaBMHEqY+zFknMInvBlzDGU5hkWB8C2LrzS+MfdOe3JPZNsYJsJAYOQgdcavg'
-    'rLktMRlSGfjGpSsyFyHQkAOw=='
+IMG_LEFT2_DATA = (
+    'R0lGODlhEAAQAIIAMQTBBK3wrgXhBTTaNPv++zrBOkr9Sw35DSwAAAAAEAAQAAIDPEi63NZQBSMim0cAS3DWkSeM4GUcH1l2Z6pqU/u+QDAAwExLBa5rm0Wgl5sFL0QVzjL0jY'
+    '4h4pLDm1J5CQA7'
 )
 #  gif
 IMG_TEXT_DATA = (

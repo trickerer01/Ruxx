@@ -15,9 +15,9 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 from ruxx.cmdargs import prepare_arglist
-from ruxx.defines import DATE_MIN_DEFAULT, MODULE_CHOICES, Comment, DownloadModes, ItemInfo, ThreadInterruptException
+from ruxx.defines import DATE_MIN_DEFAULT, IDVAL_EQ_SEPARATORS, MODULE_CHOICES, Comment, DownloadModes, ItemInfo, ThreadInterruptException
 from ruxx.downloaders import DOWNLOADERS_BY_PROC_MODULE, _make_downloader
-from ruxx.file_parser import IDSTRING_PATTERNS, IDVAL_EQ_SEPARATORS, PREFIX_OPTIONAL_PATTERNS
+from ruxx.file_parser import IDSTRING_PATTERNS, PREFIX_OPTIONAL_PATTERNS
 from ruxx.gui import ICON_TYPE_PER_PROC_MODULE
 from ruxx.gui_base import HELP_TAGS_PER_PROC_MODULE, SITENAMES_PER_PROC_MODULE
 from ruxx.logger import Logger

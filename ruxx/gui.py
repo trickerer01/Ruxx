@@ -91,6 +91,7 @@ from .gui_base import (
     window_hcookiesm,
     window_logm,
     window_proxym,
+    window_qbuilderm,
     window_retriesm,
     window_timeoutm,
 )
@@ -694,7 +695,7 @@ def _prepare_cmdline() -> list[str]:
     return newstr
 
 
-def _update_frame_cmdline() -> None:
+def _update_frame_cmdline(start_loop=True) -> None:
     can_update = True
     for gidx in {Globals.FIELD_DATEMIN, Globals.FIELD_DATEMAX}:
         can_update = can_update and not is_focusing(gidx)
@@ -713,7 +714,8 @@ def _update_frame_cmdline() -> None:
             text_cmdm().insert(1.0, newstr)
             text_cmdm().configure(state=STATE_DISABLED)
 
-    rootm().after(int(GUI2_UPDATE_DELAY_DEFAULT * 3), _update_frame_cmdline)
+    if start_loop:
+        rootm().after(int(GUI2_UPDATE_DELAY_DEFAULT * 3), _update_frame_cmdline)
 
 
 def _start_check_tags_thread(cmdline: list[str]) -> None:
@@ -735,10 +737,11 @@ def _check_tags_direct_do() -> None:
         Thread(target=lambda: messagebox.showwarning('Nope', msg)).start()
         return
 
-    _update_frame_cmdline()
+    _update_frame_cmdline(False)
     # hide modifyable windows
     window_proxym().hide()
     window_hcookiesm().hide()
+    window_qbuilderm().hide()
 
     # reset temporarily modified elements/widgets
     config_global(Globals.FIELD_TAGS, bg=COLOR_WHITE)
@@ -970,7 +973,7 @@ def _do_download(**options: bool | int | str) -> None:
         options[DownloaderOptions.OPTION_GARBLE_PERSONAL_INFO] = True
 
     # force cmd line update
-    _update_frame_cmdline()
+    _update_frame_cmdline(False)
     # prepare arg list
     cmdline = _prepare_cmdline()
 
@@ -1031,6 +1034,7 @@ def _finalize_additional_windows() -> None:
     window_timeoutm().finalize()
     window_retriesm().finalize()
     window_apikeym().finalize()
+    window_qbuilderm().finalize()
     Logger.print_pending_strings()
 
 
@@ -1048,10 +1052,12 @@ def _init_base_hotkeys() -> None:
     rootm().bind_all(hotkeys[Options.ISAPIKEYOPEN], func=lambda e: window_apikeym().ask() if e.state != 0x20000 else None)
     rootm().bind(BUT_ALT_F4, func=lambda _: rootm().destroy())
     window_logm().window.bind(BUT_ALT_F4, func=lambda _: window_logm().hide() if window_logm().visible else None)
-    window_hcookiesm().window.bind(BUT_ALT_F4, func=lambda _: window_hcookiesm().hide() if window_hcookiesm().visible else None)
     window_proxym().window.bind(BUT_ALT_F4, func=lambda _: window_proxym().cancel() if window_proxym().visible else None)
+    window_hcookiesm().window.bind(BUT_ALT_F4, func=lambda _: window_hcookiesm().hide() if window_hcookiesm().visible else None)
     window_timeoutm().window.bind(BUT_ALT_F4, func=lambda _: window_timeoutm().cancel() if window_timeoutm().visible else None)
     window_retriesm().window.bind(BUT_ALT_F4, func=lambda _: window_retriesm().cancel() if window_retriesm().visible else None)
+    window_apikeym().window.bind(BUT_ALT_F4, func=lambda _: window_apikeym().cancel() if window_apikeym().visible else None)
+    window_qbuilderm().window.bind(BUT_ALT_F4, func=lambda _: window_qbuilderm().cancel() if window_qbuilderm().visible else None)
 
 
 def _init_menus() -> None:
@@ -1116,6 +1122,8 @@ def _init_menus() -> None:
     register_menu_command('Clear log', window_logm().clear, Options.ACTION_CLEARLOG, True)
     # 7) Tools
     register_menu('Tools', Menus.TOOLS)
+    register_menu_command('Query builder...', window_qbuilderm().toggle_visibility, Options.ISQUERYBUILDEROPEN, True)
+    register_menu_separator()
     register_menu_command('Load from ID list...', load_id_list)
     register_menu_separator()
     register_menu_command('Un-tag files...', _untag_files_do)

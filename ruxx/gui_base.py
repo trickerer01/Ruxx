@@ -16,6 +16,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable
 from tkinter import (
     BOTH,
+    CENTER,
     END,
     FLAT,
     HORIZONTAL,
@@ -40,7 +41,6 @@ from tkinter import (
     Scrollbar,
     StringVar,
     Text,
-    Tk,
     Toplevel,
     W,
     Widget,
@@ -50,7 +50,9 @@ from tkinter import (
     messagebox,
     ttk,
 )
-from typing import Literal, TypeAlias, TypedDict
+from typing import Literal, NamedTuple, TypeAlias, TypedDict
+
+from tkinterdnd2 import DND_ALL, TkinterDnD
 
 from .defines import (
     API_KEY_LEN_RX,
@@ -69,6 +71,7 @@ from .defines import (
     SITENAME_B_RX,
     SITENAME_B_XB,
 )
+from .dnd_parser import analyze_dnd_string
 from .file_parser import prepare_id_list, prepare_tag_lists
 from .file_sorter import FileTypeFilter
 from .gui_defines import (
@@ -88,8 +91,10 @@ from .gui_defines import (
     FONT_SANS_MEDIUM,
     FONT_SANS_SMALL,
     GLOBAL_COLUMNCOUNT,
+    GUI2_UPDATE_DELAY_DEFAULT,
     IMG_ADD_DATA,
     IMG_DELETE_DATA,
+    IMG_LEFT2_DATA,
     IMG_LEFT_DATA,
     IMG_OPEN_DATA,
     IMG_PROC_BB_DATA,
@@ -100,7 +105,6 @@ from .gui_defines import (
     IMG_PROC_RUXX_DATA,
     IMG_PROC_RX_DATA,
     IMG_PROC_XB_DATA,
-    IMG_RIGHT_DATA,
     IMG_SAVE_DATA,
     IMG_TEXT_DATA,
     OPTION_VALUES_DOWNLOAD_ORDER,
@@ -126,6 +130,7 @@ from .gui_defines import (
     TOOLTIP_HCOOKIE_DELETE,
     TOOLTIP_IMAGES,
     TOOLTIP_INVALID_SYNTAX,
+    TOOLTIP_INVALID_TAGS,
     TOOLTIP_PARCHI,
     TOOLTIP_TAGS_CHECK,
     TOOLTIP_THREADING,
@@ -154,6 +159,7 @@ from .help import (
 from .module import ProcModule
 from .rex import re_ask_values, re_json_entry_value, re_space_mult
 from .tags import TAG_CATEGORY_NAMES_BY_TYPE, TagCategories
+from .tags_parser import parse_tags
 from .tagsdb import TagsDB
 from .tooltips import WidgetToolTip
 from .useragent import UAManager
@@ -217,6 +223,7 @@ __all__ = (
     'window_hcookiesm',
     'window_logm',
     'window_proxym',
+    'window_qbuilderm',
     'window_retriesm',
     'window_timeoutm',
 )
@@ -310,7 +317,7 @@ def _register_global(index: Globals, gobject: Widget) -> None:
     gobjects[index] = gobject
 
 
-class _AppRoot(Tk):
+class _AppRoot(TkinterDnD.Tk):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
@@ -1502,6 +1509,356 @@ class _ApiKeyWindow(_APIRequestStrIntWindow):
                          Options.APIKEY_KEY, Options.APIKEY_USERID, Options.APIKEY_KEY_TEMP, Options.APIKEY_USERID_TEMP)
 
 
+class _BaseTreeView(ttk.Treeview, TkinterDnD.DnDWrapper):
+    def __init__(self, parent, **kwargs) -> None:
+        super().__init__(parent, **kwargs)
+
+    @staticmethod
+    def prevent_resize(event) -> str:
+        if event.widget.identify_region(event.x, event.y) == 'separator':  # and event.widget.identify_column(event.x)[1:] in '01':
+            return 'break'
+        return 'move'
+
+
+class _TableFillColumn(NamedTuple):
+    id_: str
+    text: str
+    width: int
+    stretch: bool
+
+
+class _TableFillRow(TypedDict):
+    is_heading: bool
+    op_buttons: tuple[Button, Button, Button, Button]
+    text: str
+    is_negative: Checkbutton
+    del_button: Button
+
+
+class _TableFillWindow(_BaseWindow):
+    SIZE_LIMIT = (10, 50)
+
+    def __init__(self, parent, title: str, *, row_height: int, columns: tuple[_TableFillColumn, ...]) -> None:
+        self._title = title
+        self._row_height = row_height
+        self._columns: tuple[_TableFillColumn, ...] = columns
+        self._rows: dict[str, _TableFillRow] = {}
+        self._variables_is_negative: dict[str, BooleanVar] = {}
+        self._style = ttk.Style()
+        self._tree_frame: _BaseTreeView | None = None
+        self._op_buttons: list[Button] = []
+        self._text_idx = columns.index(next(_ for _ in columns if _.stretch is True)) - 1
+        self._edit_entry: ttk.Entry | None = None
+        self._text_qbuilder: Text | None = None
+        self._but_pushtottags: Button | None = None
+        self._err_message: WidgetToolTip | None = None
+        super().__init__(parent)
+
+    def config(self) -> None:
+        self.window.title(self._title)
+
+        upframe = _BaseFrame(self.window)
+        upframe.pack(fill=BOTH, expand=True)
+
+        downframe = _BaseFrame(upframe)
+        downframe.pack(fill=BOTH, expand=True)
+
+        s = self._style
+        s.configure('Treeview.Heading', rowheight=self._row_height)
+        s.configure('Treeview', rowheight=self._row_height)
+
+        self._tree_frame = _BaseTreeView(downframe,
+                                         columns=[_.id_ for _ in self._columns[1:]],
+                                         selectmode='none', height=self.SIZE_LIMIT[0])
+        self._tree_frame.parent_widget = self
+        self._tree_frame.drop_target_register(DND_ALL)
+        self._tree_frame.dnd_bind('<<Drop>>', self._on_drop)
+
+        self._tree_frame.bind('<Motion>', self._tree_frame.prevent_resize)
+        self._tree_frame.bind('<Button-1>', self._tree_frame.prevent_resize)
+        self._tree_frame.bind('<Double-1>', self._on_double_click)
+
+        for i, c in enumerate(self._columns):
+            self._tree_frame.heading(c.id_, text=c.text)
+            self._tree_frame.column(f'#{i}', width=c.width, minwidth=c.width, stretch=c.stretch, anchor=CENTER)
+
+        self._tree_frame.pack(fill=BOTH, expand=True, padx=8, pady=8, ipadx=0)
+
+        self._text_qbuilder = Text(downframe, font=FONT_SANS_SMALL, relief=SUNKEN, bd=0, bg=rootm().default_bg_color, height=2, width=0)
+        self._text_qbuilder.pack(fill=X, expand=True, padx=8, pady=2)
+
+        self._but_pushtottags = Button(downframe, width=16, text='Push to tags', command=self.ok)
+        self._but_pushtottags.pack(pady=16)
+
+        self._err_message = _attach_tooltip(self._but_pushtottags, TOOLTIP_INVALID_TAGS, 5000, timed=True)
+
+        self.window.configure(bg=self._parent.default_bg_color)
+
+    def finalize(self) -> None:
+        x = self._parent.winfo_x() + (self._parent.winfo_width() - self.window.winfo_reqwidth()) / 2
+        y = self._parent.winfo_y() + 20
+        self.window.geometry(f'+{x:.0f}+{y:.0f}')
+        self.window.update()
+        self.window.transient(self._parent)
+        self.window.minsize(self.window.winfo_reqwidth(), self.window.winfo_reqheight())
+        self.window.resizable(False, False)
+        self.window.bind(BUT_ESCAPE, lambda _: self.cancel())
+        self._update_query_text()
+
+    def ok(self) -> None:
+        tags_valid = self._update_query_text(False)
+        if not tags_valid:
+            self._err_message.showtip()
+            return
+        self._push_to_tags()
+        self.toggle_visibility()
+
+    def cancel_edit(self) -> bool:
+        if self._edit_entry:
+            self._edit_entry.destroy()
+            self._edit_entry = None
+            return True
+        return False
+
+    def cancel(self) -> None:
+        if not self.cancel_edit():
+            self.hide()
+
+    def on_destroy(self) -> None:
+        self.cancel_edit()
+        self.cancel()
+
+    def toggle_visibility(self) -> None:
+        if self.visible is True:
+            self.hide()
+        else:
+            self._show()
+        setrootconf(Options.ISQUERYBUILDEROPEN, self.visible)
+
+    @staticmethod
+    def _on_double_click(event) -> None:
+        event.widget.parent_widget.edit_cell(event.x, event.y)
+
+    @staticmethod
+    def _on_edit_entry_focus_out(event) -> None:
+        event.widget.master.parent_widget.edit_cell_finish()
+
+    @staticmethod
+    def _on_drop(event) -> str:
+        event_str = event.data
+        if '<body' in event_str:  # parse HTML buggily dragged into the window
+            from bs4 import BeautifulSoup
+            event_str = BeautifulSoup(event.data).find('body').get_text('\n')
+            while '\n\n' in event_str:
+                event_str = event_str.replace('\n\n', '\n')
+            event_str = event_str.replace('\n', ' ')
+            while '  ' in event_str:
+                event_str = event_str.replace('  ', ' ')
+            event_str = event_str.strip()
+        strings_to_append: list[str] = []
+        values: tuple[str, ...] = event.widget.tk.splitlist(event_str)
+        err_values: list[str] = []
+        for value in values:
+            parsed = analyze_dnd_string(value)
+            if parsed.is_invalid():
+                err_values.append(value)
+                continue
+            strings_to_append.extend(parsed.tags)
+        for astring in strings_to_append:
+            if not event.widget.parent_widget.add_row(len(event.widget.get_children()) + 1, astring):
+                break
+        if err_values:
+            messagebox.showwarning('Nope', '\n'.join(['Unable to parse:', *err_values]))
+        return 'copy'
+
+    def edit_cell(self, x: int, y: int) -> None:
+        click_area = self._tree_frame.identify_region(x, y)
+        if click_area not in ('tree', 'cell'):
+            return
+
+        column = self._tree_frame.identify_column(x)  # '#0', '#1', etc.
+        if column != f'#{self._text_idx + 1}':
+            return
+        iid = self._tree_frame.focus()
+        cur_item = self._tree_frame.item(iid)
+        cur_text = cur_item['values'][self._text_idx]
+        elem_bbox = self._tree_frame.bbox(iid, column)
+
+        if self._edit_entry:
+            self._edit_entry.destroy()
+
+        self._edit_entry = ttk.Entry(self._tree_frame, justify=CENTER)
+        self._edit_entry.insert(0, cur_text)
+        self._edit_entry.selection_range(0, END)
+        self._edit_entry.focus_set()
+        self._edit_entry.place_configure(anchor=CENTER, x=elem_bbox[0] + elem_bbox[2] // 2, y=elem_bbox[1] + elem_bbox[3] // 2,
+                                         width=elem_bbox[2], height=elem_bbox[3])
+        self._edit_entry.bind('<FocusOut>', self._on_edit_entry_focus_out)
+        self._edit_entry.bind('<Return>', self._on_edit_entry_focus_out)
+
+    def edit_cell_finish(self) -> None:
+        y_coord = self._edit_entry.winfo_y() + 1
+        text = self._edit_entry.get()
+        self._edit_entry.destroy()
+        self._edit_entry = None
+
+        iid = self._tree_frame.identify_row(y_coord)
+        assert iid in self._rows
+        self._rows[iid]['text'] = text
+        values = self._tree_frame.item(iid)['values']
+        values[self._text_idx] = text
+        self._tree_frame.item(iid, values=values)
+
+    def add_row(self, row_n: int, text: str, is_heading=False, group='') -> bool:
+        if len(self._tree_frame.get_children()) >= self.SIZE_LIMIT[1]:
+            messagebox.showwarning('Nope', f'Can\'t add more than {self.SIZE_LIMIT[1]} tags!')
+            return False
+
+        if is_heading:
+            iid = self._tree_frame.insert(group, END, values=(*('' for _ in range(self._text_idx)), text))
+        else:
+            iid = self._tree_frame.insert(group, END, values=(*('' for _ in range(self._text_idx)), text))
+            self._tree_frame.item(iid, tags=iid)
+
+        def get_widget_pos(column_idx: int) -> tuple[int, int]:
+            bbox = self._sum_widths(column_idx) + 1, 25 + self._row_height * (row_n - 1), self._columns[column_idx].width, self._row_height
+            return bbox[0] + bbox[2] // 2, bbox[1] + bbox[3] // 2
+
+        init_xb, init_yb = get_widget_pos(1)
+        op_buttons: list[Button] = []
+        for i, vals in enumerate(zip(
+            (Icons.UP, Icons.UP2, Icons.DOWN2, Icons.DOWN),
+            (lambda: self._move_row_first(iid), lambda: self._move_row_up(iid),
+             lambda: self._move_row_down(iid), lambda: self._move_row_last(iid)),
+            strict=True),
+        ):
+            icon, func = vals
+            bwidth = self._columns[i + 1].width
+            b = Button(self._tree_frame, image=get_icon(icon), command=func, height=self._row_height, width=bwidth, borderwidth=0)
+            b.place_configure(anchor=CENTER, x=init_xb + bwidth * i, y=init_yb, height=self._row_height, width=bwidth, bordermode='inside')
+            op_buttons.append(b)
+
+        init_xn, init_yn = get_widget_pos(6)
+        self._variables_is_negative[iid] = BooleanVar(self._parent, False)
+        n = Checkbutton(self._tree_frame, variable=self._variables_is_negative[iid], borderwidth=0)
+        nwidth = self._columns[6].width
+        n.place_configure(anchor=CENTER, x=init_xn, y=init_yn, height=self._row_height, width=nwidth)
+
+        init_xd, init_yd = get_widget_pos(7)
+        dwidth = self._columns[7].width
+        d = Button(self._tree_frame, image=get_icon(Icons.DELETE), height=self._row_height, width=dwidth, borderwidth=0,
+                   command=lambda: self._delete_row(iid))
+        d.place_configure(anchor=CENTER, x=init_xd, y=init_yd, height=self._row_height, width=dwidth)
+
+        assert iid not in self._rows
+        op_buttons_t = (op_buttons[0], op_buttons[1], op_buttons[2], op_buttons[3])
+        self._rows[iid] = _TableFillRow(is_heading=is_heading, op_buttons=op_buttons_t, text=text, is_negative=n, del_button=d)
+        self._update_window_size()
+        return True
+
+    def _delete_row(self, iid: str) -> None:
+        assert iid in self._rows
+        next_iid = iid
+        while next_iid := self._tree_frame.next(next_iid):
+            for nrw in self._get_row_widgets(next_iid):
+                nrw.place_configure(y=nrw.winfo_y() - self._row_height // 2)
+
+        self._tree_frame.delete(iid)
+        for w in self._get_row_widgets(iid):
+            w.destroy()
+        del self._rows[iid]
+        self._update_window_size()
+
+    def _move_row_first(self, iid: str) -> None:
+        assert iid in self._rows
+        prev_iid = last_iid = iid
+        while prev_iid := self._tree_frame.prev(prev_iid):
+            last_iid = prev_iid
+            for nrw in self._get_row_widgets(prev_iid):
+                nrw.place_configure(y=nrw.winfo_y() + self._row_height + self._row_height // 2)
+        frw = self._get_row_widgets(last_iid)[0]
+        for crw in self._get_row_widgets(iid):
+            crw.place_configure(y=frw.winfo_y() + self._row_height // 2)
+        self._tree_frame.move(iid, '', 0)
+
+    def _move_row_up(self, iid: str) -> None:
+        assert iid in self._rows
+        if prev_iid := self._tree_frame.prev(iid):
+            for prw in self._get_row_widgets(prev_iid):
+                prw.place_configure(y=prw.winfo_y() + self._row_height + self._row_height // 2)
+            for crw in self._get_row_widgets(iid):
+                crw.place_configure(y=crw.winfo_y() - self._row_height // 2)
+            self._tree_frame.move(iid, '', self._tree_frame.index(iid) - 1)
+
+    def _move_row_down(self, iid: str) -> None:
+        assert iid in self._rows
+        if next_iid := self._tree_frame.next(iid):
+            for nrw in self._get_row_widgets(next_iid):
+                nrw.place_configure(y=nrw.winfo_y() - self._row_height // 2)
+            for crw in self._get_row_widgets(iid):
+                crw.place_configure(y=crw.winfo_y() + self._row_height + self._row_height // 2)
+            self._tree_frame.move(iid, '', self._tree_frame.index(iid) + 1)
+
+    def _move_row_last(self, iid: str) -> None:
+        assert iid in self._rows
+        next_iid = last_iid = iid
+        while next_iid := self._tree_frame.next(next_iid):
+            last_iid = next_iid
+            for nrw in self._get_row_widgets(next_iid):
+                nrw.place_configure(y=nrw.winfo_y() - self._row_height // 2)
+        frw = self._get_row_widgets(last_iid)[0]
+        for crw in self._get_row_widgets(iid):
+            crw.place_configure(y=frw.winfo_y() + self._row_height // 2)
+        self._tree_frame.move(iid, '', self.SIZE_LIMIT[1])
+
+    def _push_to_tags(self) -> None:
+        get_global(Globals.FIELD_TAGS).settext(self._text_qbuilder.get(1.0, END).strip())
+
+    def _sum_widths(self, before_idx: int) -> int:
+        return sum(self._columns[_].width for _ in range(before_idx))
+
+    def _get_row_widgets(self, iid: str) -> list[Button | Checkbutton]:
+        assert iid in self._rows
+        return [*self._rows[iid]['op_buttons'], self._rows[iid]['is_negative'], self._rows[iid]['del_button']]
+
+    def _update_window_size(self) -> None:
+        self._tree_frame.configure(height=min(self.SIZE_LIMIT[1], max(self.SIZE_LIMIT[0], len(self._rows))))
+        self.window.minsize(self.window.winfo_reqwidth(), self.window.winfo_reqheight())
+
+    def _update_query_text(self, start_loop=True) -> bool:
+        tags: list[str] = []
+        # TODO: add composition rules: groups, etc.
+        for iid in self._tree_frame.get_children():
+            assert iid in self._rows
+            row = self._rows[iid]
+            is_negative = self._variables_is_negative[iid].get()
+            tag = f'-{row["text"]}' if is_negative and not row['text'].startswith(('id:', 'id=')) else row['text']
+            tag_valid, _ = parse_tags(tag)
+            tags.append(tag)
+            self._tree_frame.tag_configure(iid, background=('red', 'white')[tag_valid])
+        tags_valid, seq = parse_tags(' '.join(tags))
+        newstr = ' '.join(seq)
+        oldstr = self._text_qbuilder.get(1.0, END)
+        if oldstr != f'{newstr}\n':
+            self._text_qbuilder.configure(state=STATE_NORMAL)
+            self._text_qbuilder.delete(1.0, END)
+            self._text_qbuilder.insert(1.0, newstr)
+            self._text_qbuilder.configure(state=STATE_DISABLED)
+        if start_loop:
+            self.window.after(int(GUI2_UPDATE_DELAY_DEFAULT * 3), self._update_query_text)
+        return tags_valid
+
+
+class _QueryBuilderWindow(_TableFillWindow):
+    def __init__(self, parent) -> None:
+        super().__init__(parent, 'Query Builder', row_height=18, columns=(
+            _TableFillColumn('#0', 'Group', 80, False),
+            *(_TableFillColumn(f'op{_}', '', 20, False) for _ in range(1, 4 + 1)),
+            _TableFillColumn('tag', 'Tag', 200, True),
+            _TableFillColumn('neg', 'Negative', 60, False),
+            _TableFillColumn('del', '', 20, False)))
+
+
 def init_additional_windows() -> None:
     global _window_log
     global _window_proxy
@@ -1509,6 +1866,7 @@ def init_additional_windows() -> None:
     global _window_timeout
     global _window_retries
     global _window_apikey
+    global _window_qbuilder
     _window_log = _LogWindow(_root)
     _window_log.window.wm_protocol('WM_DELETE_WINDOW', _window_log.on_destroy)
     _window_proxy = _ProxyWindow(_root)
@@ -1521,6 +1879,8 @@ def init_additional_windows() -> None:
     _window_retries.window.wm_protocol('WM_DELETE_WINDOW', _window_retries.on_destroy)
     _window_apikey = _ApiKeyWindow(_root)
     _window_apikey.window.wm_protocol('WM_DELETE_WINDOW', _window_apikey.on_destroy)
+    _window_qbuilder = _QueryBuilderWindow(_root)
+    _window_qbuilder.window.wm_protocol('WM_DELETE_WINDOW', _window_qbuilder.on_destroy)
 
 
 def register_menu(label: str, menu_id: Menus = None) -> Menu:
@@ -1605,6 +1965,11 @@ def window_apikeym() -> _ApiKeyWindow:
     return _window_apikey
 
 
+def window_qbuilderm() -> _QueryBuilderWindow:
+    assert _window_qbuilder is not None
+    return _window_qbuilder
+
+
 def text_cmdm() -> Text:
     assert _text_cmd is not None
     return _text_cmd
@@ -1620,6 +1985,26 @@ def _CreateRoot() -> None:
 # noinspection PyPep8Naming
 def GetRoot() -> _AppRoot | None:
     return _root
+
+
+def _rotate_image_90(image: PhotoImage) -> PhotoImage:
+    height, width = image.height(), image.width()
+    new_image = PhotoImage(width=height, height=width)
+    for x in range(width):
+        for y in range(height):
+            r, g, b = image.get(x, y)
+            new_image.put(f'#{r:02X}{g:02X}{b:02X}', (height - (y + 1), x))
+    return new_image
+
+
+def _flip_image_h(image: PhotoImage) -> PhotoImage:
+    height, width = image.height(), image.width()
+    new_image = PhotoImage(width=width, height=height)
+    for x in range(width):
+        for y in range(height):
+            r, g, b = image.get(x, y)
+            new_image.put(f'#{r:02X}{g:02X}{b:02X}', (width - (x + 1), y))
+    return new_image
 
 
 def create_base_window_widgets() -> None:
@@ -1641,7 +2026,13 @@ def create_base_window_widgets() -> None:
     _icons[Icons.DELETE] = PhotoImage(data=base64.b64decode(IMG_DELETE_DATA))
     _icons[Icons.ADD] = PhotoImage(data=base64.b64decode(IMG_ADD_DATA))
     _icons[Icons.LEFT] = PhotoImage(data=base64.b64decode(IMG_LEFT_DATA))
-    _icons[Icons.RIGHT] = PhotoImage(data=base64.b64decode(IMG_RIGHT_DATA))
+    _icons[Icons.RIGHT] = _flip_image_h(_icons[Icons.LEFT])
+    _icons[Icons.UP] = _rotate_image_90(_icons[Icons.LEFT])
+    _icons[Icons.DOWN] = _rotate_image_90(_icons[Icons.RIGHT])
+    _icons[Icons.LEFT2] = PhotoImage(data=base64.b64decode(IMG_LEFT2_DATA))
+    _icons[Icons.RIGHT2] = _flip_image_h(_icons[Icons.LEFT2])
+    _icons[Icons.UP2] = _rotate_image_90(_icons[Icons.LEFT2])
+    _icons[Icons.DOWN2] = _rotate_image_90(_icons[Icons.RIGHT2])
     _icons[Icons.TEXT] = PhotoImage(data=base64.b64decode(IMG_TEXT_DATA))  # unused
 
     rootm().iconphoto(True, get_icon(Icons.RUXX))
@@ -2079,6 +2470,7 @@ _window_hcookies: _HeadersAndCookiesWindow | None = None
 _window_timeout: _ConnectionTimeoutWindow | None = None
 _window_retries: _ConnectionRetriesWindow | None = None
 _window_apikey: _ApiKeyWindow | None = None
+_window_qbuilder: _QueryBuilderWindow | None = None
 # counters
 _c_menu: _BaseMenu | None = None
 _c_submenu: _BaseMenu | None = None
@@ -2092,6 +2484,7 @@ _grid_params: dict[Globals, _GridInfo] = {}
 # loaded
 _console_shown: bool = True
 _text_cmd: Text | None = None
+_text_qbuilder: Text | None = None
 # end loaded
 
 # icons

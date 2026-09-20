@@ -19,13 +19,7 @@ from .defines import (
     FILE_NAME_PREFIX_RS,
     FILE_NAME_PREFIX_RX,
     FILE_NAME_PREFIX_XB,
-    ID_VALUE_SEPARATOR_CHAR_BB,
-    ID_VALUE_SEPARATOR_CHAR_EN,
-    ID_VALUE_SEPARATOR_CHAR_RN,
-    ID_VALUE_SEPARATOR_CHAR_RP,
-    ID_VALUE_SEPARATOR_CHAR_RS,
-    ID_VALUE_SEPARATOR_CHAR_RX,
-    ID_VALUE_SEPARATOR_CHAR_XB,
+    IDVAL_EQ_SEPARATORS,
     UTF8,
     ItemInfo,
 )
@@ -39,15 +33,6 @@ __all__ = ('gather_item_infos_in_dir', 'prepare_id_list', 'prepare_item_infos_di
 re_comments = re.compile(r'^(?:--|//|#).*?$')
 re_separators = re.compile(r'(?:, *| +)')
 
-IDVAL_EQ_SEPARATORS = {
-    ProcModule.RX: ID_VALUE_SEPARATOR_CHAR_RX,
-    ProcModule.RN: ID_VALUE_SEPARATOR_CHAR_RN,
-    ProcModule.RS: ID_VALUE_SEPARATOR_CHAR_RS,
-    ProcModule.RP: ID_VALUE_SEPARATOR_CHAR_RP,
-    ProcModule.EN: ID_VALUE_SEPARATOR_CHAR_EN,
-    ProcModule.XB: ID_VALUE_SEPARATOR_CHAR_XB,
-    ProcModule.BB: ID_VALUE_SEPARATOR_CHAR_BB,
-}
 IDSTRING_PATTERNS = {
     ProcModule.RX: re.compile(fr'^(?:{FILE_NAME_PREFIX_RX}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RX}?)?\d+?)*$'),
     ProcModule.RN: re.compile(fr'^(?:{FILE_NAME_PREFIX_RN}?)?\d+?(?:(?:, *?| +?)(?:{FILE_NAME_PREFIX_RN}?)?\d+?)*$'),
@@ -69,7 +54,7 @@ PREFIX_OPTIONAL_PATTERNS = {
 
 
 def _get_idval_eq_sep() -> str:
-    return IDVAL_EQ_SEPARATORS[ProcModule.value()]
+    return IDVAL_EQ_SEPARATORS[ProcModule.name()]
 
 
 def _get_r_idstring() -> re.Pattern:

@@ -6,7 +6,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
-from enum import Enum, IntEnum, auto
+from enum import IntEnum, StrEnum, auto
 from typing import NamedTuple
 
 __all__ = ('TAG_CATEGORY_NAMES_BY_TYPE', 'TagCategories', 'TagInfo', 'TagTypes', 'tag_type_from_name')
@@ -27,7 +27,7 @@ class TagTypes(IntEnum):
     TAG_TYPE_INVALID1 = auto()
 
 
-class TagTypeNames(str, Enum):
+class TagTypeNames(StrEnum):
     TAG_TYPE_NAME_GENERAL = 'general'
     TAG_TYPE_NAME_COPYRIGHT = 'copyright'
     TAG_TYPE_NAME_ARTIST = 'artist'
@@ -61,7 +61,7 @@ class TagCategories(IntEnum):
     INVALID = auto()
 
 
-class TagCategoryNames(str, Enum):
+class TagCategoryNames(StrEnum):
     AUTO = 'Auto'
     GENERAL = 'General'
     COPYRIGHT = 'Copyright'

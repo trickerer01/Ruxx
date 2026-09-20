@@ -14,6 +14,8 @@ from collections.abc import Iterable, MutableSequence
 from tkinter import messagebox
 from typing import Literal, Protocol, TypeVar
 
+from yarl import URL
+
 from .defines import FMT_DATE, MIN_PYTHON_VERSION, MIN_PYTHON_VERSION_STR, SUBFOLDER_NAME_LEN_MAX, SUPPORTED_PLATFORMS
 from .gui_defines import OPTION_CMD_PATH_CMD, OPTION_CMD_PROXY_CMD, UNDERSCORE
 from .rex import re_replace_symbols_sub, re_uscore_mult
@@ -133,6 +135,10 @@ def sanitize_path_name(filename_base: str) -> str:
     while '__' in filename:
         filename = filename.replace('__', '_')
     return filename.strip('_')
+
+
+def normalize_host(url: URL) -> URL:
+    return url.with_host('.'.join(url.host.split('.')[-2:]))
 
 #
 #
