@@ -1645,15 +1645,21 @@ class _TableFillWindow(_BaseWindow):
 
     @staticmethod
     def _on_drop(event) -> str:
-        event_str = event.data
-        if '<body' in event_str:  # parse HTML buggily dragged into the window
+        event_str = event.data.replace('\0', '')
+        has_href = ' href="' in event_str
+        has_body = '<body' in event_str
+        if has_href or has_body:
             from bs4 import BeautifulSoup
-            event_str = BeautifulSoup(event.data).find('body').get_text('\n')
-            while '\n\n' in event_str:
-                event_str = event_str.replace('\n\n', '\n')
-            event_str = event_str.replace('\n', ' ')
-            while '  ' in event_str:
-                event_str = event_str.replace('  ', ' ')
+            if has_href:  # parse raw html tag not processed by tkdnd internals
+                # noinspection PyTypeChecker
+                event_str = BeautifulSoup(event_str).find(attrs={'href': True})['href']
+            elif has_body:  # parse HTML buggily dragged into the window
+                event_str = BeautifulSoup(event_str).find('body').get_text('\n')
+            for c in '\n\r ':
+                while f'{c}{c}' in event_str:
+                    event_str = event_str.replace(f'{c}{c}', c)
+                if c != ' ':
+                    event_str = event_str.replace(c, ' ')
             event_str = event_str.strip()
         strings_to_append: list[str] = []
         values: tuple[str, ...] = event.widget.tk.splitlist(event_str)
