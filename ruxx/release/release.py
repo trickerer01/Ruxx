@@ -102,6 +102,7 @@ def build_exe() -> None:
         '-n', APP_NAME,
         '-i', f'./images/8_{RELEASE_ICON_SIZE:d}.ico',
         *(itertools.chain.from_iterable(zip(('--exclude-module',) * len(MODULES_EXCLUDED), MODULES_EXCLUDED, strict=True))),
+        '--collect-datas=fake_useragent',
         '--version-file=version_info.txt',
     ))
 
