@@ -120,7 +120,7 @@ class DownloaderRp(Downloader):
         return f'{self.url}&page={n + 1:d}'
 
     def _get_all_post_tags(self, raw_html_page: BeautifulSoup) -> list:
-        return raw_html_page.find_all('tag')
+        return raw_html_page.find_all('post')
 
     def _local_addr_from_string(self, h: str) -> str:
         return h
@@ -250,6 +250,9 @@ class DownloaderRp(Downloader):
 
     def _is_custom_sort_tag(self, tag_str: str) -> bool:
         return tag_str.startswith('order=') and tag_str != 'order=id_desc'
+
+    def _get_maxid_fetch_tags_string(self) -> str:
+        return '*'
 
     def _send_to_download(self, raw: str, item_id: str, is_video: bool) -> None:
         address, fmt = self._get_video_address(raw) if is_video else self._get_image_address(raw)

@@ -213,6 +213,10 @@ class DownloaderBase(ThreadedHtmlWorker):
         return ''
 
     @staticmethod
+    def _get_maxid_fetch_tags_string() -> str:
+        return ''
+
+    @staticmethod
     @final
     def get_module_specific_default_value(value_type: ModuleConfigType) -> int | str | None:
         if value_type == ModuleConfigType.CONFIG_API_KEY:

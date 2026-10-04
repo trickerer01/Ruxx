@@ -606,7 +606,7 @@ class Downloader(DownloaderBase):
 
     def _get_max_id(self) -> None:
         self.include_parchi = False
-        self.url = self._form_tags_search_address('', 1)
+        self.url = self._form_tags_search_address(self._get_maxid_fetch_tags_string(), 1)
         count_or_html = self._get_items_query_size_or_html(self.url)
         if isinstance(count_or_html, int):
             self.total_count = count_or_html
