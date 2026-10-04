@@ -69,7 +69,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14]
+        os: [macos-15]
         python-version: ${{ fromJSON(inputs.python) }}
     runs-on: ${{ matrix.os }}
     steps:
