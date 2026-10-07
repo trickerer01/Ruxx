@@ -7,6 +7,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 
 import datetime
+import inspect
+import itertools
 import math
 import sys
 import traceback
@@ -68,6 +70,10 @@ def find_first_not_of(s: str, chars: str) -> int:
         if c not in chars:
             return i
     return -1
+
+
+def startsendswith(string: str, c: str) -> bool:
+    return len(string) > 2 and string[::len(string) - 1] == c * 2
 
 
 def number_len_fmt(number: int) -> str:
@@ -139,6 +145,16 @@ def sanitize_path_name(filename_base: str) -> str:
 
 def normalize_host(url: URL) -> URL:
     return url.with_host('.'.join(url.host.split('.')[-2:]))
+
+
+def format_stack_frame_invalid_args(level=1) -> str:
+    frame = inspect.stack()[level].frame
+    arginfo = inspect.getargvalues(frame)
+    f_args: list[str] = arginfo.args
+    f_vargs: list[str] = arginfo.locals[arginfo.varargs] if arginfo.varargs else []
+    f_kwargs: dict[str, str] = arginfo.locals[arginfo.keywords] if arginfo.keywords else []
+    arguments = itertools.chain([f'{_}={arginfo.locals[_]}' for _ in f_args], f_vargs, [f'{_}={f_kwargs[_]}' for _ in f_kwargs])
+    return f'{frame.f_code.co_name}: invalid arguments {", ".join(arguments)}'
 
 #
 #

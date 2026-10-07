@@ -11,7 +11,7 @@ from collections.abc import Sequence
 
 from .module import ProcModule
 from .rex import re_favorited_by_tag, re_pool_tag, re_space_mult
-from .utils import unique_ordered
+from .utils import startsendswith, unique_ordered
 
 __all__ = ('convert_taglist', 'parse_tags', 'reset_last_tags')
 
@@ -275,7 +275,10 @@ def parse_tags(tags: str) -> tuple[bool, Sequence[str]]:
     custom_tags_count = 0
     tag: str
     for tag in unique_ordered(tags.split(' ')):
-        if tag.startswith('(') and re_orgr_full().fullmatch(tag):
+        tag_escaped = startsendswith(tag, '%')
+        if tag_escaped:
+            pass
+        elif tag.startswith('(') and re_orgr_full().fullmatch(tag):
             try:
                 tag = split_or_group(tag)
             except Exception:
@@ -296,9 +299,10 @@ def parse_tags(tags: str) -> tuple[bool, Sequence[str]]:
                 or re_andgr().fullmatch(tag)
                 or re_meta().fullmatch(tag)
                 or re_symbols().fullmatch(tag)
-                or re_plain().fullmatch(tag)):
+                or re_plain().fullmatch(tag)
+                or tag_escaped):
             return fail()
-        fulltags.append(tag)
+        fulltags.append(tag[1:-1] if tag_escaped else tag)
 
     if len(fulltags) <= sort_tags_count > 0 or custom_tags_count > 1:
         return fail()

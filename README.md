@@ -204,22 +204,11 @@ Ruxx normally allows most symbols for tags search, there are some specifics thou
   - `EN`: max `40` `tags & -tags`, `40` `total`, max `1` `wildcard`
 - In that case all extra `-tags` will be converted into a negative group and used locally as an internal filter (and mess up 'check tags' results). Note that this only applies to `-tags`, exceeding positive tag limit will result in an error
 - It is recommended to manually convert all wildcarded `-t*ags` into a single negative group to prevent unwanted tag expansion (see below) resulting in too many `-tags`, it's simple really: `'-a -b -c -d* -f*g*h*j' -> '-a -b -c -(*,d*|f*g*h*j)'`
-6. Tag validation
-- All `tags`, `-tags` and `tags` in `OR` group have to be valid in order to get any search results. Tags are considered valid only if they:
-  - have at least 10 posts tagged with them
-  - do not contain any special symbols like `\r`,`\t`, etc., also `&` and unicode escaped sequences like `\u00a0`
-- Wildcarded tags are expanded as follows:
-  - `t*ags`: never (invalid)
-  - `-t*ags`: always
-  - `(t1~t*2)`: never (invalid)
-  - `-(t1,t*2)`: never (converted to regex)
-  - Log message example:
-    ```shell script
-    Expanding tags from wtag 'pale*s'...
-     - 'pale_eyes'
-     - 'pale_soles'
-    ```
-- To force a non-wildcarded tag without validation surround it with `%`, ex: `%mumbling%` (1 post, unlisted), or, if negative: `-%mumbling%`
+6. Tag parsing
+- All tags you try to search for are first parsed and (optionally) converted to a proper search strings. This is exactly what allows custom tag types and other tags related features
+- There are a few tag syntax features available:
+  - surround tag with percent sign `%` to disable tag validation if Ruxx falsely marks your tags as invalid:
+    - `1+2=paradise` (invalid) `->` `%1+2=paradise%` (valid)
 
 #### Tag autocompletion
 Ruxx provides a list of known tags for each module, which can also be used to attempt to complete whatever word typed in **Tags** field
