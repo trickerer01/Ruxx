@@ -8,7 +8,7 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 
 import base64
 import re
-from typing import NoReturn, final
+from typing import Never, final
 
 from .defines import (
     API_KEY_DEFAULT_RX,
@@ -58,10 +58,10 @@ class DownloaderRx(DownloaderGelbooru):
     def _get_module_specific_default_cookies(self) -> dict[str, str]:
         return self._base_cookies
 
-    def _get_id_bounds(self) -> NoReturn:
+    def _get_id_bounds(self) -> Never:
         raise NotImplementedError
 
-    def _form_item_string_manually(self, *ignored) -> NoReturn:
+    def _form_item_string_manually(self, *ignored) -> Never:
         raise NotImplementedError
 
     def _get_re_post_page(self) -> re.Pattern:

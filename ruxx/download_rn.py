@@ -10,7 +10,7 @@ import base64
 import datetime
 import re
 from multiprocessing.dummy import current_process
-from typing import NoReturn, final
+from typing import Never, final
 
 from bs4 import BeautifulSoup
 
@@ -76,7 +76,7 @@ class DownloaderRn(Downloader):
     def _supports_native_id_filter(self) -> bool:
         return True
 
-    def _get_id_bounds(self) -> NoReturn:
+    def _get_id_bounds(self) -> Never:
         raise NotImplementedError
 
     def _get_sitename(self) -> str:
