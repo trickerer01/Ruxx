@@ -115,8 +115,8 @@ class DownloaderEn(Downloader):
     def _form_page_num_address(self, n: int) -> str:
         return f'{self.url}&page={n + 1:d}'
 
-    def _get_all_post_tags(self, raw_html_page: BeautifulSoup) -> list:
-        base_json = json.loads(raw_html_page.text)
+    def _get_all_post_tags(self, raw_html_page: bytes) -> list:
+        base_json = json.loads(raw_html_page)
         posts: list[str] = []
         for p in base_json['posts']:
             post_tags_list: list[str] = []
@@ -180,10 +180,10 @@ class DownloaderEn(Downloader):
 
     def _get_items_query_size_or_html(self, url: str, tries: int | None = None) -> int:
         page = 0
-        raw_html = self.fetch_html(self._form_page_num_address(page), tries, do_cache=True)
-        if raw_html is None:
+        raw_html_bytes = self.fetch_html(self._form_page_num_address(page), tries, do_cache=True)
+        if raw_html_bytes is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
-        if (last_count := len(json.loads(raw_html.text)['posts'])) >= self._get_items_per_page() and not self.get_max_id:
+        if (last_count := len(json.loads(raw_html_bytes.raw)['posts'])) >= self._get_items_per_page() and not self.get_max_id:
             trace(f'[{self._get_module_abbr().upper()}] Looking for max page...')
             divider = 1
             direction = 1
@@ -194,9 +194,9 @@ class DownloaderEn(Downloader):
                 page += min(MAX_SEARCH_DEPTH_PAGES - 1, max(MAX_SEARCH_DEPTH_PAGES // divider, 1)) * direction
                 if __RUXX_DEBUG__:
                     trace(f'page {page + 1:d}...')
-                if (raw_html := self.fetch_html(self._form_page_num_address(page), do_cache=True)) is None:
+                if (raw_html_bytes := self.fetch_html(self._form_page_num_address(page), do_cache=True)) is None:
                     thread_exit(f'ERROR: GetItemsQueSize: unable to retreive html (page {page:d})', code=-445)
-                last_count = len(json.loads(raw_html.text)['posts'])
+                last_count = len(json.loads(raw_html_bytes.raw)['posts'])
                 divider *= 2
                 direction = -1 if last_count == 0 else 1
         return page * self._get_items_per_page() + last_count
@@ -313,7 +313,7 @@ class DownloaderEn(Downloader):
                 if raw_html is None:
                     trace(f'Warning (W3): ProcItem: unable to retreive comments for {item_id}!', True)
                 else:
-                    self._extract_comments(raw_html, item_id)
+                    self._extract_comments(raw_html.raw, item_id)
 
             if self.download_mode == DownloadModes.SKIP:
                 self._inc_proc_count()
@@ -344,8 +344,8 @@ class DownloaderEn(Downloader):
     def _form_tags_search_address(self, tags: str, maxlim: int | None = None) -> str:
         return f'{self._get_sitename()}posts.json?tags={tags}{self._maxlim_str(maxlim)}'
 
-    def _extract_comments(self, raw_html: BeautifulSoup, item_id: str) -> None:
-        comments_json: list[dict[str, str]] = json.loads(raw_html.text)
+    def _extract_comments(self, raw_html: bytes, item_id: str) -> None:
+        comments_json: list[dict[str, str]] = json.loads(raw_html)
         if isinstance(comments_json, list):
             item_info = self.item_info_dict_per_task[f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}']
             for comment in comments_json:

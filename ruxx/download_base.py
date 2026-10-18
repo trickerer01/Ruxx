@@ -10,8 +10,8 @@ import os
 import pathlib
 import re
 from abc import abstractmethod
-from collections.abc import MutableSet
-from typing import final
+from collections.abc import Callable, MutableSet
+from typing import Any, TypeVar, final
 
 from bs4 import BeautifulSoup
 
@@ -28,8 +28,12 @@ from .defines import (
     PageCheck,
 )
 from .logger import trace
+from .module import ProcModule
 from .network import ThreadedHtmlWorker, thread_exit
 from .utils import as_date
+
+ST1 = TypeVar('ST1')
+ST2 = TypeVar('ST2')
 
 
 class DownloaderBase(ThreadedHtmlWorker):
@@ -144,7 +148,7 @@ class DownloaderBase(ThreadedHtmlWorker):
     def _form_page_num_address(self, n: int) -> str: ...
 
     @abstractmethod
-    def _get_all_post_tags(self, raw_html_page: BeautifulSoup) -> list: ...
+    def _get_all_post_tags(self, raw_html_page: BeautifulSoup | bytes) -> list: ...
 
     @abstractmethod
     def _local_addr_from_string(self, h: str) -> str: ...
@@ -222,6 +226,11 @@ class DownloaderBase(ThreadedHtmlWorker):
         if value_type == ModuleConfigType.CONFIG_API_KEY:
             return DownloaderBase._get_default_api_key()
         return None
+
+    @staticmethod
+    @final
+    def _argswitch2(func: Callable[[ST1 | ST2], Any], arg1: ST1, arg2: ST2, pred: bool) -> Any:
+        return func(arg1 if pred else arg2)
 
     def _extract_favorite_user(self, fav_user_tags: list[re.Match | None]) -> None:
         self.favorites_search_user = str(fav_user_tags[-1].group(1)) if fav_user_tags else 0
@@ -301,7 +310,7 @@ class DownloaderBase(ThreadedHtmlWorker):
                 if raw_html_page is None:
                     thread_exit(f'ERROR: ProcPage: unable to retreive html for page {pnum + 1:d}!', -14)
 
-                items_raw = self._get_all_post_tags(raw_html_page)
+                items_raw = self._argswitch2(self._get_all_post_tags, raw_html_page.raw, raw_html_page.html, ProcModule.is_en())
                 if len(items_raw) == 0:
                     thread_exit(f'ERROR: ProcPage: cannot find picture or video on page {pnum + 1:d}', -15)
 
@@ -409,9 +418,9 @@ class DownloaderBase(ThreadedHtmlWorker):
                 if raw_html_page is None:
                     thread_exit(f'ERROR: ProcPage: unable to retreive html for page {pnum + 1:d}!', -16)
 
-                items_raw = self._get_all_post_tags(raw_html_page)
+                items_raw = self._argswitch2(self._get_all_post_tags, raw_html_page.raw, raw_html_page.html, ProcModule.is_en())
                 if len(items_raw) == 0:
-                    reason = str((raw_html_page.find('response') or {}).get('reason', 'Unknown reason'))
+                    reason = str((raw_html_page.html.find('response') or {}).get('reason', 'Unknown reason'))
                     thread_exit(f'ERROR: ProcPage: cannot find picture or video on page {pnum + 1:d}! Reason: \'{reason}\'', -17)
 
                 # check first item if moving forward and last item if backwards

@@ -71,7 +71,6 @@ OPTION_CMD_HEADERS_CMD = '-headers'
 OPTION_CMD_PROXY_CMD = '-proxy'
 OPTION_CMD_IGNORE_PROXY = ('', '-noproxy')
 OPTION_CMD_PROXY_NO_DOWNLOAD = ('', '-proxynodown')
-OPTION_CMD_CACHE_PROCCED_HTML = ('', '-cache_html_bloat')
 OPTION_CMD_TIMEOUT_CMD = '-timeout'
 OPTION_CMD_RETRIES_CMD = '-retries'
 OPTION_CMD_FNAMEPREFIX = ('', '-prefix')
@@ -195,7 +194,6 @@ class Options(IntEnum):
     MODULE = auto()
     IGNORE_PROXY = auto()
     PROXY_NO_DOWNLOAD = auto()
-    CACHE_PROCCED_HTML = auto()
     ISHCOOKIESOPEN = auto()
     COOKIE_ADD_STR = auto()
     HEADER_ADD_STR = auto()
@@ -315,7 +313,7 @@ class SubMenus(IntEnum):
     SAVE, LOAD, RESET, OPENFOLDER = 0, 1, 3, 5
     PREFIX, STAGS, SSOURCE, SCOMMENTS, SHASHES, SMODE, EXTEND, DPRESERVE, WNONEMPTY, VERBOSE = 0, 2, 3, 4, 5, 6, 8, 9, 10, 11
     RX, RN, RS, RP, EN, XB, BB = 0, 1, 2, 3, 4, 5, 6
-    HEADERS, PROXY, TIMEOUT, RETRIES, APIKEY, DWPROXY, IGNOREPROXY, CACHEMODE = 0, 1, 2, 3, 4, 5, 6, 7
+    HEADERS, PROXY, TIMEOUT, RETRIES, APIKEY, DWPROXY, IGNOREPROXY = 0, 1, 2, 3, 4, 5, 6
     DOWNLOAD, CHECKTAGS, DBATCH, CLEARLOG = 0, 1, 3, 5
     QBUILDER, IDLIST, UNTAG, RETAG, SORT, DUPLICATES, AUTOCOMPLETEE, AUTOCOMPLETER = 0, 2, 4, 5, 7, 9, 11, 12
     DFULL, DSKIP, DTOUCH = 0, 1, 2
@@ -339,7 +337,7 @@ menu_items = {
                          SubMenus.SMODE, SubMenus.EXTEND, SubMenus.DPRESERVE, SubMenus.WNONEMPTY, SubMenus.VERBOSE),
     Menus.MODULE: RuxxMenu(SubMenus.RX, SubMenus.RN, SubMenus.RS, SubMenus.RP, SubMenus.EN, SubMenus.XB, SubMenus.BB),
     Menus.CONNECTION: RuxxMenu(SubMenus.HEADERS, SubMenus.PROXY, SubMenus.TIMEOUT, SubMenus.RETRIES, SubMenus.APIKEY, SubMenus.DWPROXY,
-                               SubMenus.IGNOREPROXY, SubMenus.CACHEMODE),
+                               SubMenus.IGNOREPROXY),
     Menus.ACTIONS: RuxxMenu(SubMenus.DOWNLOAD, SubMenus.CHECKTAGS, SubMenus.DBATCH),
     Menus.TOOLS: RuxxMenu(SubMenus.QBUILDER, SubMenus.IDLIST, SubMenus.UNTAG, SubMenus.RETAG, SubMenus.SORT, SubMenus.DUPLICATES,
                           SubMenus.AUTOCOMPLETEE, SubMenus.AUTOCOMPLETER),

@@ -6,6 +6,8 @@ Author: trickerer (https://github.com/trickerer, https://github.com/trickerer01)
 #
 #
 
+from __future__ import annotations
+
 import datetime
 import os
 import pathlib
@@ -16,6 +18,7 @@ from abc import ABC, abstractmethod
 from argparse import Namespace
 from multiprocessing.dummy import current_process
 from threading import Lock, Thread
+from typing import NamedTuple
 from urllib import parse as url_parse
 from warnings import filterwarnings
 
@@ -30,7 +33,6 @@ from .defines import (
     KNOWN_EXTENSIONS_VID,
     WRITE_CHUNK_SIZE,
     DownloadModes,
-    HtmlCacheMode,
     ThreadInterruptException,
 )
 from .logger import trace
@@ -38,7 +40,7 @@ from .module import ProcModule
 from .useragent import UAManager
 from .utils import format_exception
 
-__all__ = ('DownloadInterruptException', 'ThreadedHtmlWorker', 'thread_exit')
+__all__ = ('DownloadInterruptException', 'HTMLContent', 'ThreadedHtmlWorker', 'thread_exit')
 
 filterwarnings('ignore', category=UserWarning)
 
@@ -49,6 +51,18 @@ re_content_range_str = re.compile(r'bytes (\d+)-(\d+)?(?:/(\d+))?')
 
 class DownloadInterruptException(BaseException):
     pass
+
+
+class HTMLContent(NamedTuple):
+    html: BeautifulSoup
+    raw: bytes
+
+    @staticmethod
+    def init_empty() -> HTMLContent:
+        return HTMLContent(BeautifulSoup(), b'')
+
+    def __bool__(self) -> bool:
+        return bool(len(self.raw))
 
 
 class FileDownloadResult:
@@ -94,8 +108,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
     def __init__(self) -> None:
         super().__init__()
         self.verbose: bool = False
-        self.raw_html_cache: dict[str, BeautifulSoup | bytes] = {}
-        self.cache_mode: HtmlCacheMode = HtmlCacheMode.CACHE_BYTES
+        self.raw_html_cache: dict[str, HTMLContent] = {}
         self.add_headers: structures.CaseInsensitiveDict[str, str] = structures.CaseInsensitiveDict()
         self.add_cookies: structures.CaseInsensitiveDict[str, str] = structures.CaseInsensitiveDict()
         self.ignore_proxy: bool = False
@@ -134,7 +147,6 @@ class ThreadedHtmlWorker(ThreadedWorker):
 
     def _parse_args(self, args: Namespace) -> None:
         self.verbose = args.verbose or self.verbose
-        self.cache_mode = HtmlCacheMode.CACHE_BS if args.cache_html_bloat else HtmlCacheMode.CACHE_BYTES
         self.ignore_proxy = args.noproxy or self.ignore_proxy
         self.ignore_proxy_dwn = args.proxynodown or self.ignore_proxy_dwn
         self.proxies = {'http': str(args.proxy), 'https': str(args.proxy)} if args.proxy else None
@@ -372,13 +384,14 @@ class ThreadedHtmlWorker(ThreadedWorker):
         return r
 
     # threaded
-    def fetch_html(self, url: str, tries=0, do_cache=False, method='GET', **kwargs) -> BeautifulSoup | None:
-        if cached := self.raw_html_cache.get(url, b''):
-            return cached if isinstance(cached, BeautifulSoup) else BeautifulSoup(cached, 'html.parser')
+    def fetch_html(self, url: str, tries=0, do_cache=False, method='GET', **kwargs) -> HTMLContent | None:
+        if cached := self.raw_html_cache.get(url, HTMLContent.init_empty()):
+            return cached
         r = self.wrap_request(url, tries or self.retries, method, **kwargs)
-        result = BeautifulSoup(r.content, 'html.parser') if r is not None else None
+        content = r.content if r is not None else None
+        result = HTMLContent(BeautifulSoup(content, 'html.parser'), content) if content else None
         if result and do_cache:
-            self.raw_html_cache[url] = result if self.cache_mode == HtmlCacheMode.CACHE_BS else r.content
+            self.raw_html_cache[url] = result
         return result
 
 #

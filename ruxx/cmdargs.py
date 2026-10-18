@@ -20,7 +20,6 @@ from .defines import (
 from .gui_defines import (
     OPTION_CMD_APIKEY_CMD,
     OPTION_CMD_APPEND_SOURCE_AND_TAGS,
-    OPTION_CMD_CACHE_PROCCED_HTML,
     OPTION_CMD_COOKIES_CMD,
     OPTION_CMD_DATEAFTER_CMD,
     OPTION_CMD_DATEBEFORE_CMD,
@@ -56,7 +55,6 @@ from .gui_defines import (
 from .help import (
     HELP_ARG_API_KEY,
     HELP_ARG_APPEND_SOURCE_AND_TAGS,
-    HELP_ARG_CACHE_HTML_BLOAT,
     HELP_ARG_CON_RETRIES,
     HELP_ARG_CON_TIMEOUT,
     HELP_ARG_COOKIE,
@@ -166,7 +164,6 @@ def _add_common_args(par: ArgumentParser) -> None:
     co.add_argument(OPTION_CMD_COOKIES_CMD, metavar='#JSON', help=HELP_ARG_COOKIES, type=valid_json)
     co.add_argument(OPTION_CMD_HEADERS_CMD[:-1], metavar='#name=value', action=ACTION_APPEND, help=HELP_ARG_HEADER, type=valid_kwarg)
     co.add_argument(OPTION_CMD_COOKIES_CMD[:-1], metavar='#name=value', action=ACTION_APPEND, help=HELP_ARG_COOKIE, type=valid_kwarg)
-    co.add_argument(OPTION_CMD_CACHE_PROCCED_HTML[True], action=ACTION_STORE_TRUE, help=HELP_ARG_CACHE_HTML_BLOAT)
     au = par.add_argument_group(title='authentication options')
     au.add_argument(OPTION_CMD_APIKEY_CMD, metavar='#KEY,USER_ID', help=HELP_ARG_API_KEY, type=valid_api_key)
     do = par.add_argument_group(title='download options')

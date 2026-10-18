@@ -28,7 +28,7 @@ from .defines import (
 )
 from .download import Downloader
 from .logger import trace
-from .network import thread_exit
+from .network import HTMLContent, thread_exit
 from .rex import (
     re_comment_a_rs,
     re_comment_page_rs,
@@ -138,7 +138,7 @@ class DownloaderRs(Downloader):
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
         last = 1
-        last_page_buttons = raw_html.find_all('a', href=re_post_page_rs)
+        last_page_buttons = raw_html.html.find_all('a', href=re_post_page_rs)
         for but in last_page_buttons:
             href = str(but.get('href', '=0'))
             last = max(last, 1 + int(href[href.rfind('=') + 1:]))
@@ -153,7 +153,7 @@ class DownloaderRs(Downloader):
                 thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-445)
 
         # items count on all full pages plus items count on last page
-        last_thumbs = len(self._get_all_post_tags(raw_html))
+        last_thumbs = len(self._get_all_post_tags(raw_html.html))
         return (last - 1) * self._get_items_per_page() + last_thumbs
 
     def _get_image_address(self, h: str) -> tuple[str, str]:
@@ -182,14 +182,14 @@ class DownloaderRs(Downloader):
             if raw_html is None:
                 trace(f'Warning (W2): Item info was not extracted for {item_id}')
                 return item_info
-            if keywords_meta := raw_html.find('meta', attrs={'name': 'keywords'}):
+            if keywords_meta := raw_html.html.find('meta', attrs={'name': 'keywords'}):
                 tags_list = str(keywords_meta.get('content')).strip(', ').split(', ')
                 item_info.tags = ' '.join(tag.replace(' ', '_') for tag in tags_list)
-            orig_href = self._extract_orig_link(raw_html)
+            orig_href = self._extract_orig_link(raw_html.html)
             ext = orig_href[orig_href.rfind('.'):] if orig_href else ''
             item_info.ext = ext[1:]
             item_info.md5 = orig_href[orig_href.rfind('/') + 1:-len(ext)]
-            lis = raw_html.find_all('li', class_='general-tag', style='display: block; padding: 5px;')
+            lis = raw_html.html.find_all('li', class_='general-tag', style='display: block; padding: 5px;')
             for li in lis:
                 li_str: str = li.text
                 if li_str.startswith('Size:'):
@@ -241,7 +241,7 @@ class DownloaderRs(Downloader):
             h = self._extract_local_addr(raw)
             item_id = self._extract_id(h)
 
-            raw_html = BeautifulSoup()
+            raw_html = HTMLContent.init_empty()
             if self.download_mode != DownloadModes.SKIP or self.dump_comments is True:
                 raw_html = self.fetch_html(h)
                 if raw_html is None:
@@ -249,7 +249,7 @@ class DownloaderRs(Downloader):
                     self._inc_proc_count()
                     return
                 else:
-                    self._extract_comments(raw_html, item_id)
+                    self._extract_comments(raw_html.html, item_id)
 
             if self.download_mode == DownloadModes.SKIP:
                 self._inc_proc_count()
@@ -259,7 +259,7 @@ class DownloaderRs(Downloader):
                 item_id = f'{self._get_module_abbr_p()}{item_id}'
 
             is_vid = self._is_video(raw)
-            href = self._extract_sample_link(raw_html) if (self.low_res and not is_vid) else self._extract_orig_link(raw_html)
+            href = self._extract_sample_link(raw_html.html) if (self.low_res and not is_vid) else self._extract_orig_link(raw_html.html)
 
             if href:
                 if is_vid:

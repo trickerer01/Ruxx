@@ -278,7 +278,6 @@ class ConfigMgr:
         'proxy': Setting(Options.PROXYSTRING, ProxyValidator(), 'Invalid proxy value \'%s\'!'),
         'ignoreproxy': Setting(Options.IGNORE_PROXY, BoolStrValidator(), 'Invalid ignoreproxy bool value \'%s\'!'),
         'ignoreproxydwn': Setting(Options.PROXY_NO_DOWNLOAD, BoolStrValidator(), 'Invalid ignoreproxydwn bool value \'%s\'!'),
-        'cacheprocessedhtml': Setting(Options.CACHE_PROCCED_HTML, BoolStrValidator(), 'Invalid cacheprocessedhtml bool value \'%s\'!'),
         'timeout': Setting(Options.TIMEOUTSTRING, TimeoutValidator(), 'Invalid timeout value \'%s\'!'),
         'retries': Setting(Options.RETRIESSTRING, RetriesValidator(), 'Invalid retries value \'%s\'!'),
         'prefix': Setting(Options.FNAMEPREFIX, BoolStrValidator(), 'Invalid prefix bool value \'%s\'!'),

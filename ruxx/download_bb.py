@@ -83,7 +83,7 @@ class DownloaderBb(DownloaderGelbooru):
     def _extract_comments(self, item_id: str) -> None:
         if raw_html := self.fetch_html(self._form_comments_search_address(item_id)):
             full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
-            comment_divs = raw_html.find_all('comment')
+            comment_divs = raw_html.html.find_all('comment')
             for comment_div in comment_divs:
                 author = comment_div.get('creator')
                 body = comment_div.get('body')

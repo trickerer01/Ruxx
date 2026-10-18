@@ -150,7 +150,7 @@ class DownloaderRp(Downloader):
         raw_html = self.fetch_html(f'{url}&page=1', tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
-        return int(raw_html.find('posts').get('count'))
+        return int(raw_html.html.find('posts').get('count'))
 
     def _get_image_address(self, h: str) -> tuple[str, str]:
         def hi_res_addr() -> tuple[str, str]:
@@ -276,7 +276,7 @@ class DownloaderRp(Downloader):
                     self._inc_proc_count()
                     return
                 else:
-                    self._extract_comments(raw_html, item_id)
+                    self._extract_comments(raw_html.html, item_id)
 
             if self.download_mode == DownloadModes.SKIP:
                 self._inc_proc_count()

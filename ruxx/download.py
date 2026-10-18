@@ -229,11 +229,11 @@ class Downloader(DownloaderBase):
                         trace(f'ERROR: ProcPage: unable to retreive html for page {pnum:d}!', True)
                         raise ConnectionError
 
-                    if self._is_search_overload_page(raw_html_page):
+                    if self._is_search_overload_page(raw_html_page.html):
                         trace(f'Warning (W2): search was dropped on page {pnum:d} (too many threads?), retrying...', True)
                         raise KeyError
 
-                    items_raw_temp = self._get_all_post_tags(raw_html_page)
+                    items_raw_temp = self._argswitch2(self._get_all_post_tags, raw_html_page.raw, raw_html_page.html, ProcModule.is_en())
                     if len(items_raw_temp) == 0:
                         trace(f'ERROR: ProcPage: cannot find picture or video on page {pnum:d}, retrying...', True)
                         if __RUXX_DEBUG__:

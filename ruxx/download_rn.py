@@ -29,7 +29,7 @@ from .defines import (
 )
 from .download import Downloader
 from .logger import trace
-from .network import thread_exit
+from .network import HTMLContent, thread_exit
 from .rex import (
     re_item_info_part_rn,
     re_shimmie_image_href,
@@ -148,7 +148,7 @@ class DownloaderRn(Downloader):
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
         last = 1
-        for but in raw_html.find_all('a', string='Last'):
+        for but in raw_html.html.find_all('a', string='Last'):
             b = str(but)
             b = b[:b.rfind('">')]
             last = int(b[b.rfind('/') + 1:])
@@ -159,10 +159,10 @@ class DownloaderRn(Downloader):
                 thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-445)
 
         # items count on all full pages plus items count on last page
-        last_thumbs = len(self._get_all_post_tags(raw_html))
+        last_thumbs = len(self._get_all_post_tags(raw_html.html))
         count: int | BeautifulSoup = (last - 1) * self._get_items_per_page() + last_thumbs
-        if count == 0 and len(raw_html.find_all('a', attrs={'download': '', 'href': re_shimmie_image_href})) > 0:
-            count = raw_html
+        if count == 0 and len(raw_html.html.find_all('a', attrs={'download': '', 'href': re_shimmie_image_href})) > 0:
+            count = raw_html.html
 
         return count
 
@@ -246,7 +246,7 @@ class DownloaderRn(Downloader):
             h = self._extract_local_addr(raw)
             item_id = self._extract_id(h)
 
-            raw_html = BeautifulSoup()
+            raw_html = HTMLContent.init_empty()
             if self.download_mode != DownloadModes.SKIP or self.dump_sources or self.dump_comments:
                 raw_html = self.fetch_html(f'{self._get_sitename()}{h}', True)
                 if raw_html is None:
@@ -254,14 +254,14 @@ class DownloaderRn(Downloader):
                     self._inc_proc_count()
                     return
                 else:
-                    self._extract_comments(raw_html, item_id)
+                    self._extract_comments(raw_html.html, item_id)
                     full_item_id = f'{self._get_module_abbr_p() if self.add_filename_prefix else ""}{item_id}'
-                    if orig_source_div := raw_html.find('div', style=re_shimmie_orig_source):
+                    if orig_source_div := raw_html.html.find('div', style=re_shimmie_orig_source):
                         self.item_info_dict_per_task[full_item_id].source = orig_source_div.text
-                    if post_date := self._extract_post_date(raw_html):
+                    if post_date := self._extract_post_date(raw_html.html):
                         self.item_info_dict_per_task[full_item_id].date = post_date
                     # we can't extract actual score without account credentials AND cf_clearance, but favorites will do just fine
-                    if favorited_by_div := raw_html.find('h3', string='Favorited By'):
+                    if favorited_by_div := raw_html.html.find('h3', string='Favorited By'):
                         fav_sib = favorited_by_div.findNextSibling()
                         score_text = fav_sib.text[:max(fav_sib.text.find(' '), 0)]
                         self.item_info_dict_per_task[full_item_id].score = score_text
@@ -270,10 +270,10 @@ class DownloaderRn(Downloader):
                 self._inc_proc_count()
                 return
 
-            img_items = raw_html.find_all('img', id='main_image')
-            mp4_items = raw_html.find_all('source', type='video/mp4')
-            webm_items = raw_html.find_all('source', type='video/webm')
-            swf_items = raw_html.find_all('embed', type='application/x-shockwave-flash')
+            img_items = raw_html.html.find_all('img', id='main_image')
+            mp4_items = raw_html.html.find_all('source', type='video/mp4')
+            webm_items = raw_html.html.find_all('source', type='video/webm')
+            swf_items = raw_html.html.find_all('embed', type='application/x-shockwave-flash')
 
             imgs = len(img_items) != 0
             mp4s = len(mp4_items) != 0

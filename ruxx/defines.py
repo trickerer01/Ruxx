@@ -323,13 +323,6 @@ class Mem:
     GB: int = MB * 1024
 
 
-# PyCharm bug PY-53388 (IDE thinks auto() needs an argument)
-# noinspection PyArgumentList
-class HtmlCacheMode(IntEnum):
-    CACHE_BYTES = auto()
-    CACHE_BS = auto()  # cache BeautifulSoup objects
-
-
 class APIKey:
     __slots__ = ('key', 'user_id')
 

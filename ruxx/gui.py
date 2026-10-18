@@ -104,7 +104,6 @@ from .gui_defines import (
     GUI2_UPDATE_DELAY_DEFAULT,
     OPTION_CMD_APIKEY_CMD,
     OPTION_CMD_APPEND_SOURCE_AND_TAGS,
-    OPTION_CMD_CACHE_PROCCED_HTML,
     OPTION_CMD_COOKIES_CMD,
     OPTION_CMD_DATEAFTER_CMD,
     OPTION_CMD_DATEBEFORE_CMD,
@@ -646,8 +645,6 @@ def _prepare_cmdline() -> list[str]:
         newstr.append(addstr)
     if addstr := OPTION_CMD_PROXY_NO_DOWNLOAD[int(getrootconf(Options.PROXY_NO_DOWNLOAD))]:
         newstr.append(addstr)
-    if addstr := OPTION_CMD_CACHE_PROCCED_HTML[int(getrootconf(Options.CACHE_PROCCED_HTML))]:
-        newstr.append(addstr)
     # timeout
     if addstr := str(getrootconf(Options.TIMEOUTSTRING)):
         newstr.append(OPTION_CMD_TIMEOUT_CMD)
@@ -1111,7 +1108,6 @@ def _init_menus() -> None:
     register_menu_command('API key...', window_apikeym().ask, Options.ISAPIKEYOPEN)
     register_menu_checkbutton('Download without proxy', CVARS[Options.PROXY_NO_DOWNLOAD])
     register_menu_checkbutton('Ignore proxy', CVARS[Options.IGNORE_PROXY])
-    register_menu_checkbutton('Cache processed HTML', CVARS[Options.CACHE_PROCCED_HTML])
     # 6) Actions
     register_menu('Actions', Menus.ACTIONS)
     register_menu_command('Download', _do_download, Options.ACTION_DOWNLOAD, True)
@@ -1166,7 +1162,6 @@ def _set_default_settings() -> None:
     setrootconf(Options.FNAMEPREFIX, True)
     setrootconf(Options.APPEND_SOURCE_AND_TAGS, True)
     setrootconf(Options.IGNORE_PROXY, IS_IDE)
-    setrootconf(Options.CACHE_PROCCED_HTML, IS_IDE)
     setrootconf(Options.SAVE_TAGS, not IS_IDE)
     setrootconf(Options.SAVE_SOURCES, not IS_IDE)
     setrootconf(Options.SAVE_COMMENTS, not IS_IDE)

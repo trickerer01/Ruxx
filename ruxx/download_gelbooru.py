@@ -104,7 +104,7 @@ class DownloaderGelbooru(Downloader):
             if raw_html is None:
                 thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
             last = 1
-            last_page_buttons = raw_html.find_all('a', onclick=self._get_re_post_page())
+            last_page_buttons = raw_html.html.find_all('a', onclick=self._get_re_post_page())
             for but in last_page_buttons:
                 href = str(but.get('onclick', '=0'))
                 begin_idx = href.rfind('=') + 1
@@ -121,14 +121,14 @@ class DownloaderGelbooru(Downloader):
                     thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-448)
 
             # items count on all full pages plus items count on last page
-            last_thumbs = len(self._get_all_post_tags(raw_html))
+            last_thumbs = len(self._get_all_post_tags(raw_html.html))
             return (last - 1) + last_thumbs
         elif self.pool_search_str:
             raw_html = self.fetch_html(f'{url}&pid=0', tries, do_cache=True)
             if raw_html is None:
                 thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
             last = 1
-            last_page_buttons = raw_html.find_all('a', href=self._get_re_post_page())
+            last_page_buttons = raw_html.html.find_all('a', href=self._get_re_post_page())
             for but in last_page_buttons:
                 but_str = str(but.text)
                 if but_str.isnumeric():
@@ -144,7 +144,7 @@ class DownloaderGelbooru(Downloader):
                     thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-448)
 
             # items count on all full pages plus items count on last page
-            last_thumbs = len(self._get_all_post_tags(raw_html))
+            last_thumbs = len(self._get_all_post_tags(raw_html.html))
             return (last - 1) * self._get_items_per_page() + last_thumbs
         else:
             raw_html = self.fetch_html(f'{url}&pid=0', tries)
@@ -152,7 +152,7 @@ class DownloaderGelbooru(Downloader):
                 thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
 
             try:
-                return int(raw_html.find('posts').get('count'))
+                return int(raw_html.html.find('posts').get('count'))
             except Exception:
                 if ProcModule.is_rx() and 'Missing authentication' in str(raw_html):
                     thread_exit('FATAL: Invalid RX API key!', code=-478)
