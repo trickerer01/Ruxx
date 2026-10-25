@@ -384,7 +384,7 @@ class ThreadedHtmlWorker(ThreadedWorker):
         return r
 
     # threaded
-    def fetch_html(self, url: str, tries=0, do_cache=False, method='GET', **kwargs) -> HTMLContent | None:
+    def fetch_html(self, url: str, *, tries=0, do_cache=False, method='GET', **kwargs) -> HTMLContent | None:
         if cached := self.raw_html_cache.get(url, HTMLContent.init_empty()):
             return cached
         r = self.wrap_request(url, tries or self.retries, method, **kwargs)

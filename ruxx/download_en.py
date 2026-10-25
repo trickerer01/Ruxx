@@ -180,7 +180,7 @@ class DownloaderEn(Downloader):
 
     def _get_items_query_size_or_html(self, url: str, tries: int | None = None) -> int:
         page = 0
-        raw_html_bytes = self.fetch_html(self._form_page_num_address(page), tries, do_cache=True)
+        raw_html_bytes = self.fetch_html(self._form_page_num_address(page), tries=tries, do_cache=True)
         if raw_html_bytes is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
         if (last_count := len(json.loads(raw_html_bytes.raw)['posts'])) >= self._get_items_per_page() and not self.get_max_id:

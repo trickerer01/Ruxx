@@ -147,7 +147,7 @@ class DownloaderRp(Downloader):
             thread_exit(f'Unable to extract post date from raw: {raw}', -446)
 
     def _get_items_query_size_or_html(self, url: str, tries=0) -> int:
-        raw_html = self.fetch_html(f'{url}&page=1', tries, do_cache=True)
+        raw_html = self.fetch_html(f'{url}&page=1', tries=tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
         return int(raw_html.html.find('posts').get('count'))

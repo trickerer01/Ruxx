@@ -134,7 +134,7 @@ class DownloaderRs(Downloader):
         return DATE_MIN_DEFAULT
 
     def _get_items_query_size_or_html(self, url: str, tries: int | None = None) -> int:
-        raw_html = self.fetch_html(f'{url}&page=0', tries, do_cache=True)
+        raw_html = self.fetch_html(f'{url}&page=0', tries=tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
         last = 1

@@ -144,7 +144,7 @@ class DownloaderRn(Downloader):
             thread_exit(f'Unable to extract post date from raw: {raw_html!s}', -446)
 
     def _get_items_query_size_or_html(self, url: str, tries=0) -> int | BeautifulSoup:
-        raw_html = self.fetch_html(f'{url}{1:d}', tries, do_cache=True)
+        raw_html = self.fetch_html(f'{url}{1:d}', tries=tries, do_cache=True)
         if raw_html is None:
             thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
         last = 1
@@ -248,7 +248,7 @@ class DownloaderRn(Downloader):
 
             raw_html = HTMLContent.init_empty()
             if self.download_mode != DownloadModes.SKIP or self.dump_sources or self.dump_comments:
-                raw_html = self.fetch_html(f'{self._get_sitename()}{h}', True)
+                raw_html = self.fetch_html(f'{self._get_sitename()}{h}', do_cache=True)
                 if raw_html is None:
                     trace(f'ERROR: ProcItem: unable to retreive html for {item_id}!', True)
                     self._inc_proc_count()

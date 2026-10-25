@@ -100,7 +100,7 @@ class DownloaderGelbooru(Downloader):
 
     def _get_items_query_size_or_html(self, url: str, tries: int | None = None) -> int:
         if self.favorites_search_user:
-            raw_html = self.fetch_html(f'{url}&pid=0', tries, do_cache=True)
+            raw_html = self.fetch_html(f'{url}&pid=0', tries=tries, do_cache=True)
             if raw_html is None:
                 thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
             last = 1
@@ -124,7 +124,7 @@ class DownloaderGelbooru(Downloader):
             last_thumbs = len(self._get_all_post_tags(raw_html.html))
             return (last - 1) + last_thumbs
         elif self.pool_search_str:
-            raw_html = self.fetch_html(f'{url}&pid=0', tries, do_cache=True)
+            raw_html = self.fetch_html(f'{url}&pid=0', tries=tries, do_cache=True)
             if raw_html is None:
                 thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
             last = 1
@@ -147,7 +147,7 @@ class DownloaderGelbooru(Downloader):
             last_thumbs = len(self._get_all_post_tags(raw_html.html))
             return (last - 1) * self._get_items_per_page() + last_thumbs
         else:
-            raw_html = self.fetch_html(f'{url}&pid=0', tries)
+            raw_html = self.fetch_html(f'{url}&pid=0', tries=tries)
             if raw_html is None:
                 thread_exit('ERROR: GetItemsQueSize: unable to retreive html', code=-444)
 
